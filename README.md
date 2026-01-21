@@ -1,0 +1,3 @@
+# officeservice_object_editor
+
+支持三方应用提供在其它应用文档中嵌入本应用文档，并拉起本应用进行编辑的能力。
