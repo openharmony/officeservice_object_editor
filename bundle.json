@@ -1,0 +1,64 @@
+{
+    "name": "@ohos/object_editor_service",
+    "description": "The service for editing objects in the application files",
+    "version": "1.0",
+    "license": "Apache License 2.0",
+    "publishAs": "code-segment",
+    "segment": {
+      "destPath": "foundation/officeservice/object_editor"
+    },
+    "component": {
+        "name": "object_editor",
+        "subsystem": "officeservice",
+        "features": [
+            "object_editor_feature_coverage"
+        ],
+        "adapted_system_type": [ "standard" ],
+        "rom": "3000KB",
+        "ram": "3000KB",
+        "deps": {
+            "components": [
+                "ability_base",
+                "ability_runtime",
+                "access_token",
+                "app_file_service",
+                "bundle_manager",
+                "CJSON",
+                "c_utils",
+                "dlp_permission_servic",
+                "event_handler",
+                "hilog",
+                "image_framework",
+                "ipc",
+                "napi",
+                "relational_store",
+                "resource_manager",
+                "samgr",
+                "os_account",
+                "udmf"
+            ],
+            "third_party": []
+        },
+        "build": {
+            "group_type": {
+                "fwk_group": [
+                    "//foundation/officeservice/object_editor/frameworks/ndk:content_embed_ndk"
+                ]
+            },
+            "service_group": [
+                "//foundation/officeservice/object_editor/client:content_embed_client",
+                "//foundation/officeservice/object_editor/etc:object_editor_service_etc",
+                "//foundation/officeservice/object_editor/etc:object_editor_service_diversion",
+                "//foundation/officeservice/object_editor/frameworks/kits/extension:content_embed_extension",
+                "//foundation/officeservice/object_editor/frameworks/kits/extension:content_embed_extension_module",
+                "//foundation/officeservice/object_editor/sa_profile:object_editor_service_sa_profile",
+                "//foundation/officeservice/object_editor/system_ability:content_embed_service",
+                "//foundation/officeservice/object_editor/utils:content_embed_utils"
+            ],
+            "inner_kits": [],
+            "test": [
+                "//foundation/officeservice/object_editor/test:test_target"
+            ]
+        }
+    }
+}
