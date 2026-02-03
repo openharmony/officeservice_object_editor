@@ -149,7 +149,8 @@ void ObjectEditorExtension::ListenWindowManager()
 
     auto ret = abilityManager->SubscribeSystemAbility(WINDOW_MANAGER_SERVICE_ID, listener);
     if (ret != ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "failed to subscribe window manager sa!, ret: %{public}d", ret);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION,
+            "failed to subscribe window manager sa!, ret: %{public}d", ret);
     }
 }
 
@@ -191,7 +192,7 @@ void TransformToCWantElement(AbilityBase_Element &element, const AAFwk::Want &wa
         element.moduleName = nullptr;
         element.abilityName = nullptr;
         return;
-    }   
+    }
 }
 
 void DestroyCWantElement(AbilityBase_Element &element)
@@ -217,7 +218,8 @@ void ObjectEditorExtension::OnStart(const AAFwk::Want &want)
         AbilityBase_Want cWant;
         auto errCode = AAFwk::CWantManager::TransformToCWantWithoutElement(want, false, cwant);
         if (errCode != ABILITY_BASE_ERROR_CODE_NO_ERROR) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "failed to transform want to c want!, errCode: %{public}d", errCode);
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION,
+                "failed to transform want to c want!, errCode: %{public}d", errCode);
             return;
         }
         AbilityBase_Element element;
@@ -317,7 +319,8 @@ void ObjectEditorExtension::OnCommand(const AAFwk::Want &want, bool restart, int
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "in");
     Extension::OnCommand(want, restart, startId);
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "start restart: %{public}d, startId: %{public}d", restart, startId);
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION,
+        "start restart: %{public}d, startId: %{public}d", restart, startId);
 }
 
 void ObjectEditorExtension::OnCreate(Rosen::DisplayId displayId)
