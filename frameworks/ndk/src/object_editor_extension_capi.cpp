@@ -206,7 +206,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetCapabilityFunc(Con
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
         return CE_ERR_PARAM_INVALID;
     }
-    object->onGetCapabilityFunc = onGetCapabilityFunc;  
+    object->onGetCapabilityFunc = onGetCapabilityFunc;
     return CE_ERR_OK;
 }
 
@@ -542,7 +542,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextTerminateAbility(
     }
     std::shared_ptr<OHOS::AbilityRuntime::ObjectEditorContextContext> contextPtr =
         std::static_pointer_cast<OHOS::AbilityRuntime::ObjectEditorContextContext>(context->context.lock());
-    if (contextPtr == nullptr) {    
+    if (contextPtr == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "context is null");
         return CE_ERR_NULL_POINTER;
     }
@@ -552,7 +552,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextTerminateAbility(
         return CE_ERR_SYSTEM_ABNORMAL;
     }
     return CE_ERR_OK;
-} 
+}
 
 #ifdef __cplusplus
 }

@@ -37,7 +37,7 @@ ErrCode ObjectEditorClientCallbackProxy::onUpdate(std::unique_ptr<ObjectEditorDo
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "remote is nullptr");
         return ERR_INVALID_DATA;
     }
-    int32_t result = remote->SendRequest( static_cast<uint32_t>(IObjectEditorClientCallback::COMMAND_ON_UPDATE),
+    int32_t result = remote->SendRequest(static_cast<uint32_t>(IObjectEditorClientCallback::COMMAND_ON_UPDATE),
         data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "send request failed");
@@ -69,7 +69,7 @@ ErrCode ObjectEditorClientCallbackProxy::onError(ContentEmbed_ErrorCode error)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "remote is nullptr");
         return ERR_INVALID_DATA;
     }
-    int32_t result = remote->SendRequest( static_cast<uint32_t>(IObjectEditorClientCallback::COMMAND_ON_ERROR),
+    int32_t result = remote->SendRequest(static_cast<uint32_t>(IObjectEditorClientCallback::COMMAND_ON_ERROR),
         data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "send request failed");

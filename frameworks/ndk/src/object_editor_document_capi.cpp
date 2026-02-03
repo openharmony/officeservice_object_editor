@@ -34,7 +34,7 @@ constexpr int32_t HMID_MAX_LEN = 36;
 std::string OH_ContentEmbed_Helper_NormalizePath(const std::string &path)
 {
     if (path.empty()) {
-        return PATH_SEPARATOR_STR; 
+        return PATH_SEPARATOR_STR;
     }
     std::string normalizedPath = path;
     if (normalizedPath.front() != PATH_SEPARATOR) {
@@ -126,7 +126,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Helper_RequireStream(ContentEmbed_Stream 
         if (stream == nullptr) {
             return CE_ERR_STREAM_OPERATION_FAILED;
         }
-        StreamPos desired= handle->pos;
+        StreamPos desired = handle->pos;
         const StreamPos size = stream->size();
         if (desired > size) {
             desired = size;
@@ -388,7 +388,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetRootStorage(ContentEmbed_Docu
     *storage = nullptr;
     Storage *rootStorage = document->oeDocumentInner->GetRootStorage();
     if (rootStorage == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "root storage is null"); 
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "root storage is null");
         return CE_ERR_STORAGE_OPERATION_FAILED;
     }
     std::string path = PATH_SEPARATOR_STR;
@@ -396,7 +396,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetRootStorage(ContentEmbed_Docu
     path = OH_ContentEmbed_Helper_NormalizePath(path);
     auto *wrapper = new (std::nothrow) ContentEmbed_Storage{document, path};
     if (wrapper == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create storage wrapper failed"); 
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create storage wrapper failed");
         return CE_ERR_STORAGE_OPERATION_FAILED;
     }
     *storage = wrapper;
@@ -418,7 +418,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_Flush(ContentEmbed_Document *doc
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
         return CE_ERR_PARAM_INVALID;
     }
-    if(!document->oeDocumentInner->Flush()) {
+    if (!document->oeDocumentInner->Flush()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "flush failed");
         return CE_ERR_FILE_OPERATION_FAILED;
     }
@@ -464,7 +464,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_CreateStorage(const ContentEmbed
     auto *wrapper = new (std::nothrow) ContentEmbed_Storage{parentStorage->owner,
         OH_ContentEmbed_Helper_NormalizePath(targetPath)};
     if (wrapper == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create storage wrapper failed"); 
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create storage wrapper failed");
         return CE_ERR_STORAGE_OPERATION_FAILED;
     }
     *childStorage = wrapper;
@@ -509,7 +509,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetStorage(const ContentEmbed_Sto
     auto *wrapper = new (std::nothrow) ContentEmbed_Storage{parentStorage->owner,
         OH_ContentEmbed_Helper_NormalizePath(targetPath)};
     if (wrapper == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create storage wrapper failed"); 
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create storage wrapper failed");
         return CE_ERR_STORAGE_OPERATION_FAILED;
     }
     *childStorage = wrapper;
@@ -517,7 +517,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetStorage(const ContentEmbed_Sto
 }
 
 ContentEmbed_ErrorCode OH_ContentEmbed_Helper_GetStreamInternal(ContentEmbed_Storage *parentStorage,
-    const char *name, bool create,ContentEmbed_Stream **childStream)
+    const char *name, bool create, ContentEmbed_Stream **childStream)
 {
     if (!childStream) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "child stream is null");
@@ -547,7 +547,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Helper_GetStreamInternal(ContentEmbed_Sto
     auto *wrapper = new (std::nothrow) ContentEmbed_Stream{parentStorage->owner,
         targetPath, storage, stream, stream->Tell()};
     if (wrapper == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create stream wrapper failed"); 
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create stream wrapper failed");
         return CE_ERR_STORAGE_OPERATION_FAILED;
     }
     *childStream = wrapper;
@@ -812,7 +812,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_GetSize(ContentEmbed_Stream *strea
     }
     Stream *innerStream = nullptr;
     ContentEmbed_ErrorCode ret = OH_ContentEmbed_Helper_RequireStream(stream, innerStream);
-    if (ret != CE_ERR_OK) { 
+    if (ret != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create stream failed");
         return ret;
     }
