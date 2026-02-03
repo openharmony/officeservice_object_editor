@@ -752,7 +752,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetDocument(ContentEmbed_ExtensionP
     *ceDocument = proxy->ceDocument;
     return CE_ERR_OK;
 }
-
+// LCOV_EXCL_STOP
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
