@@ -104,9 +104,9 @@ struct ContentEmbed_Object {
     OHOS::sptr<OHOS::ObjectEditor::IObjectEditorClientCallback> clientCb = nullptr;
     OH_ContentEmbed_Extension_OnWriteToDataStreamFunc onWriteToDataStreamFunc = nullptr;
     OH_ContentEmbed_Extension_OnGetSnapshotFunc onGetSnapshotFunc = nullptr;
-    OH_ContentEmbed_Extension_OnEditFunc onEditFunc = nullptr;
-    OH_ContentEmbed_Extension_OnEditStatusFunc onEditStatusFunc = nullptr;
-    OH_ContentEmbed_Extension_OnCapabilityFunc onCloseFunc = nullptr;
+    OH_ContentEmbed_Extension_OnDoEditFunc onDoEditFunc = nullptr;
+    OH_ContentEmbed_Extension_OnGetEditStatusFunc onGetEditStatusFunc = nullptr;
+    OH_ContentEmbed_Extension_OnGetCapabilityFunc onGetCapabilityFunc = nullptr;
 };
 
 struct ContentEmbed_ExtensionContext : public AbilityRuntime_Context {

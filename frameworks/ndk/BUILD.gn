@@ -40,7 +40,12 @@ ohos_shared_library("content_embed_ndk") {
     ]
 
     deps = [
-        "//foundation/officeservice/object_editor:object_editor",
+        "${object_editor_path}/client:content_embed_client",
+        "${object_editor_path}/document:content_embed_document",
+        "${object_editor_path}/frameworks/kits/extension:content_embed_extension",
+    ]
+    configs += [
+        "${object_editor_path}/resources/config/build:coverage_flags",
     ]
     export_deps = [
         "ability_base:ability_base_want",
