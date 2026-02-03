@@ -39,7 +39,7 @@ public:
 
     /**
      * @brief Create and init context.
-     * 
+     *
      * @param record the extension record.
      * @param application the application info.
      * @param handler the extension handler.
@@ -52,7 +52,7 @@ public:
     
     /**
      * @brief Init the extension.
-     * 
+     *
      * @param record the extension record.
      * @param application the application info.
      * @param handler the extension handler.
@@ -64,7 +64,7 @@ public:
 
     /**
      * @brief Create extension.
-     * 
+     *
      * @param runtime The runtime.
      * @return The ObjectEditorExtension instance.
      */
@@ -73,7 +73,7 @@ public:
     /**
      * @brief Called when this extension is started. You must override this function if you want to perform some
      *        initialization operations during extension startup.
-     * 
+     *
      * This function can be called only once in the entire lifecycle of an extension.
      * @param want Indicates the {@link Want} structure containing startup information about the extension.
      */
@@ -81,20 +81,20 @@ public:
 
     /**
      * @brief Called when this extension is connected for the first time.
-     *  
+     *
      * You can override this function to implement your own processing logic.
-     * 
+     *
      * @param want Indicates the {@link Want} structure containing connection information about the extension.
-     * 
+     *
      * @return Returns a pointer to the <b>sid</b> of the connected extension.
      */
     virtual sptr<IRemoteObject> OnConnect(const AAFwk::Want &want) override;
 
     /**
      * @brief Called when all abilities connected to this extension are disconnected.
-     * 
+     *
      * You can override this function to implement your own processing logic.
-     * 
+     *
      */
     virtual void OnDisconnect(const AAFwk::Want &want) override;
 
