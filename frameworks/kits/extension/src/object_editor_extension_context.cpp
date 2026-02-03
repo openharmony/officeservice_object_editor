@@ -55,7 +55,8 @@ ErrCode ObjectEditorExtensionContext::StartAbility(
     ErrCode err = abilityManagerClient->StartAbility(want, startOptions, token_, ILLEGAL_REQUEST_CODE);
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "ret=%{public}d", err);
     if (err != ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "StartAbility with startOptions failed, err: %{public}d", err);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION,
+            "StartAbility with startOptions failed, err: %{public}d", err);
     }
     return err;
 }
@@ -99,7 +100,8 @@ ErrCode ObjectEditorExtensionContext::StartAbilityWithAccount(
     ErrCode err = abilityManagerClient->StartAbility(want, startOptions, token_, ILLEGAL_REQUEST_CODE, accountId);
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "ret=%{public}d", err);
     if (err != ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "StartAbility with startOptions failed, err: %{public}d", err);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION,
+            "StartAbility with startOptions failed, err: %{public}d", err);
     }
     return err;
 }
@@ -142,7 +144,7 @@ AppExecFwk::AbilityType ObjectEditorExtensionContext::GetAbilityInfoType() const
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "abilityInfo is nullptr");
         return AppExecFwk::AbilityType::UNKNOWN;
     }
-    return info->type;  
+    return info->type;
 }
 
 sptr<IObjectEditorManager> ObjectEditorExtensionContext::GetIObjectEditorManager() const
