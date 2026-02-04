@@ -1,0 +1,162 @@
+# Copyright (c) Huawei Device Co., Ltd. 2026-2026. All rights reserved.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+
+import("//foundation/officeservice/object_editor/object_editor.gni")
+
+config("ability_config") {
+    visivility = [ ":*" ]
+
+    cflags = []
+    if (target_cpu == "arm") {
+       cflags += [ "-DBINDER_IPC_32BIT" ]
+    }
+    defines = [
+        "APP_LOG_TAG = \"Ability\"",
+        "LOG_DOMAIN = 0xD005301",
+    ]
+}
+
+config("ability_public_config") {
+    visivility = [ ":*" ]
+    include_dirs = ["${object_editor_path}/frameworks/kits/extension/include"]
+}
+
+ohos_shared_library("content_embed_extension") {
+    branch_protector_ret = "pac_ret"
+    sanitize = [
+        boundary_sanitize = true
+        cfi = true
+        cfi_cross_dso = true
+        debug = false
+        integer_overflow = true
+        ubsan = true
+    ]
+    cflags_cc = [
+        "-fdata-sections",
+        "-ffunction-sections",
+        "-Os",
+    ]
+    include_dirs = [
+        "${object_editor_path}/frameworks/kits/extension/include",
+        "${object_editor_path}/common/include",
+        "${object_editor_path}/frameworks/ndk/include",
+        "${object_editor_path}/client/include",
+        "${object_editor_path}/interfaces/innerkits/include",
+        "${object_editor_path}/document/include",
+        "${object_editor_path}/extension_ability/include",
+        "${kits_path}/c"
+        "${innerkits_path}/include",
+    ]
+
+    sources = [
+        "${object_editor_path}/frameworks/kits/extension/src/object_editor_extension.cpp",
+        "${object_editor_path}/frameworks/kits/extension/src/object_editor_extension_context.cpp",
+        "${object_editor_path}/extension_ability/src/object_editor_extension_stub.cpp",
+        "${object_editor_path}/extension_ability/src/object_editor_client_callback_proxy.cpp",
+        "${object_editor_path}/client/src/object_editor_manager_proxy.cpp",
+        "${object_editor_path}/common/src/object_editor_format.cpp",
+    ]
+    configs = [ ":ability_config" ]
+    public_configs = [
+        ":ability_public_config",
+        "${object_editor_path}/resources/config/build:coverage_flags",
+    ]
+
+    deps = [
+        "${object_editor_path}/utils:object_editor_utils",
+        "${object_editor_path}/document:content_embed_document",
+    ]
+
+    export_deps = [
+        "ability_base:configuration",
+        "ability_base:ability_base_want",
+        "ability_runtime:ability_context_native",
+        "ability_runtime:ability_manager",
+        "ability_runtime:ability_start_options",
+        "ability_runtime:abilitykit_native",
+        "ability_runtime:app_context",
+        "ability_runtime:extensionkit_native",
+        "ability_runtime:napi_common",
+        "ability_runtime:runtime",
+        "c_utils:utils",
+        "eventhandler:libeventhandler",
+        "hilog:libhilog",
+        "ipc:ipc_napi",
+        "ipc:ipc_single",
+        "napi:ace_napi",
+        "samgr:samgr_proxy",
+        "image_framework:image_native",
+        "image_framework:pixelmap_ndk",
+        "ability_runtime:ability_runtime",
+    ]
+
+    subsystem_name = "officeservice"
+    part_name = "object_editor"
+}
+
+ohos_shared_library("content_embed_extension_module") {
+    branch_protector_ret = "pac_ret"
+    sanitize = [
+        boundary_sanitize = true
+        cfi = true
+        cfi_cross_dso = true
+        debug = false
+        integer_overflow = true
+        ubsan = true
+    ]
+    include_dirs = [
+        "${object_editor_path}/common/include",
+        "${object_editor_path}/frameworks/ndk/include",
+        "${object_editor_path}/client/include",
+        "${object_editor_path}/interfaces/innerkits/include",
+        "${object_editor_path}/document/include",
+        "${object_editor_path}/extension_ability/include",
+        "${kits_path}/c"
+        "${innerkits_path}/include",
+    ]
+
+    sources = [ "${object_editor_path}/frameworks/kits/extension/src/object_editor_extension_module.cpp" ]
+
+    configs = [ ":ability_config" ]
+    public_configs = [
+        ":ability_public_config",
+        "${object_editor_path}/resources/config/build:coverage_flags",
+    ]
+
+    deps = [
+        ":ability_public_config",
+        "${object_editor_path}/utils:object_editor_utils",
+    ]
+
+    export_deps = [
+        "ability_base:base",
+        "ability_base:ability_base_want",
+        "ability_base:zuri",
+        "ability_runtime:abilitykit_native",
+        "ability_runtime:runtime",
+        "c_utils:utils",
+        "hilog:libhilog",
+        "ipc:ipc_napi",
+        "ipc:ipc_single",
+        "napi:ace_napi",
+        "image_framework:image_native",
+        "image_framework:pixelmap_ndk",
+        "ability_runtime:ability_runtime",
+    ]
+
+    relative_install_dir = "extensionability/"
+    subsystem_name = "officeservice"
+    part_name = "object_editor"
+}
