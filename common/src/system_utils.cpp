@@ -65,7 +65,7 @@ std::string GetFileStream(const std::string &filePath)
     }
     std::stringstream infile;
     infile << file.rdbuf();
-    return infile.str();    
+    return infile.str();
 }
 
 std::vector<std::string> SplitString(const std::string &str, char pattern)
@@ -154,7 +154,7 @@ bool FileExtsHasFileExt(const std::string &fileExts, const std::string &fileExt)
         return false;
     }
     std::vector<std::string> extList = SplitString(fileExts, '|');
-    if(std::find(extList.begin(), extList.end(), fileExt) != extList.end()){
+    if (std::find(extList.begin(), extList.end(), fileExt) != extList.end()) {
         return true;
     }
     return false;
@@ -195,7 +195,7 @@ std::string GetFileSuffix(const std::string &filePath)
         return "";
     }
     std::transform(fileType.begin(), fileType.end(),
-    fileType.begin(), [](char c) { return static_cast<char>(std::tolower(c)); });
+        fileType.begin(), [](char c) { return static_cast<char>(std::tolower(c)); });
     return fileType;
 }
 

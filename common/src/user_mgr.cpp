@@ -19,7 +19,7 @@
 #include <vector>
 #include "os_account_manager.h"
 
- #include "hilog_object_editor.h"
+#include "hilog_object_editor.h"
 
 namespace OHOS {
 namespace ObjectEditor {

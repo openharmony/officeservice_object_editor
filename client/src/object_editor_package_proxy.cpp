@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
- #include "object_editor_package_proxy.h"
+#include "object_editor_package_proxy.h"
 
 namespace OHOS {
 namespace ObjectEditor {
@@ -31,7 +31,7 @@ ErrCode ObjectEditorPackageProxy::RegisterClientCB(const sptr<IObjectEditorClien
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "callback is null");
         return ERR_INVALID_DATA;
     }
-    if(!data.WriteRemoteObject(callback->AsObject())){
+    if (!data.WriteRemoteObject(callback->AsObject())) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "WriteRemoteObject failed");
         return ERR_INVALID_DATA;
     }
@@ -42,7 +42,7 @@ ErrCode ObjectEditorPackageProxy::RegisterClientCB(const sptr<IObjectEditorClien
     }
     int32_t ret = remoteObject->SendRequest(
         static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_REGISTER_CLIENT_CB), data, reply, option);
-    if(FAILED(ret)){
+    if (FAILED(ret)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "SendRequest failed, ret: %{public}d", ret);
         return ret;
     }
@@ -70,7 +70,7 @@ ErrCode ObjectEditorPackageProxy::GetSnapshot()
     }
     int32_t ret = remoteObject->SendRequest(
         static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_SNAPSHOT), data, reply, option);
-    if(FAILED(ret)){
+    if (FAILED(ret)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "SendRequest failed, ret: %{public}d", ret);
         return ret;
     }
@@ -98,7 +98,7 @@ ErrCode ObjectEditorPackageProxy::DoEdit()
     }
     int32_t ret = remoteObject->SendRequest(
         static_cast<int32_t>(IObjectEditorServiceIpcCode::COMMAND_DO_EDIT), data, reply, option);
-    if(FAILED(ret)){
+    if (FAILED(ret)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "SendRequest failed, ret: %{public}d", ret);
         return ret;
     }
@@ -110,7 +110,8 @@ ErrCode ObjectEditorPackageProxy::DoEdit()
     return ERR_OK;
 }
 
-ErrCode ObjectEditorPackageProxy::GetEditStatus(bool *isEditing, bool *isModified){
+ErrCode ObjectEditorPackageProxy::GetEditStatus(bool *isEditing, bool *isModified)
+{
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -153,7 +154,7 @@ ErrCode ObjectEditorPackageProxy::GetCapability(uint32_t *capability)
     }
     int32_t ret = remoteObject->SendRequest(
         static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_CAPABILITY), data, reply, option);
-    if(FAILED(ret)){
+    if (FAILED(ret)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "SendRequest failed, ret: %{public}d", ret);
         return ret;
     }
@@ -181,7 +182,7 @@ ErrCode ObjectEditorPackageProxy::Close()
     }
     int32_t ret = remoteObject->SendRequest(
         static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_CLOSE), data, reply, option);
-    if(FAILED(ret)){
+    if (FAILED(ret)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "SendRequest failed, ret: %{public}d", ret);
         return ret;
     }
@@ -209,7 +210,7 @@ ErrCode ObjectEditorPackageProxy::Initial(std::unique_ptr<ObjectEditorDocument> 
     }
     int32_t ret = remoteObject->SendRequest(
         static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_INITIAL), data, reply, option);
-    if(FAILED(ret)){
+    if (FAILED(ret)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "SendRequest failed, ret: %{public}d", ret);
         return ret;
     }

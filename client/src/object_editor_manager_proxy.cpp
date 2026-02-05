@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
- #include "object_editor_manager_proxy.h"
+#include "object_editor_manager_proxy.h"
 
- #include <memory>
- #include <vector>
+#include <memory>
+#include <vector>
 
 namespace OHOS {
 namespace ObjectEditor {
@@ -128,16 +128,16 @@ ErrCode ObjectEditorManagerProxy::GetHmidByFileExtension(const std::string &hmid
     int32_t ret = remoteObject->SendRequest(
         static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_HMID_BY_FILE_EXTENSION), data, reply, option);
     if (FAILED(ret)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,"SendRequest failed, ret: %{public}d", ret);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, ret: %{public}d", ret);
         return ret;
     }
     ErrCode errCode = reply.ReadInt32();
     if (FAILED(errCode)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,"ReadInt32 failed, errCode: %{public}d", errCode);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "ReadInt32 failed, errCode: %{public}d", errCode);
         return errCode;
     }
     fileExtension = Str16ToStr8(reply.ReadString16());
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT,"GetHmidByFileExtension success");
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "GetHmidByFileExtension success");
     return ERR_OK;
 }
 
@@ -147,35 +147,36 @@ ErrCode ObjectEditorManagerProxy::GetIconByHmid(const std::string &hmid, std::st
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(GetDescriptor())) {
-        OBJECT_EDITOR_LOGE("WriteInterfaceToken failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "WriteInterfaceToken failed");
         return ERR_INVALID_VALUE;
     }
     if (!data.WriteString16(Str8ToStr16(hmid))) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,"Write hmid failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "Write hmid failed");
         return ERR_INVALID_VALUE;
     }
     sptr<IRemoteObject> remoteObject = Remote();
     if (remoteObject == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,"Remote is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "Remote is null");
         return ERR_INVALID_DATA;
     }
     int32_t ret = remoteObject->SendRequest(
         static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_ICON_BY_HMID), data, reply, option);
     if (FAILED(ret)) {  
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,"SendRequest failed, ret: %{public}d", ret);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, ret: %{public}d", ret);
         return ret;
     }
     ErrCode errCode = reply.ReadInt32();
     if (FAILED(errCode)) {
-        OBJECT_EDITOR_LOGE("ReadInt32 failed, errCode: %{public}d", errCode);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "ReadInt32 failed, errCode: %{public}d", errCode);
         return errCode;
     }
     resFilePath = Str16ToStr8(reply.ReadString16());
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT,"GetIconByHmid success");
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "GetIconByHmid success");
     return ERR_OK;
 }
 
-ErrCode ObjectEditorManagerProxy::GetFormatName(const std::string &hmid, const std::string &locale, std::string &formatName)
+ErrCode ObjectEditorManagerProxy::GetFormatName(const std::string &hmid,
+    const std::string &locale, std::string &formatName)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -200,21 +201,21 @@ ErrCode ObjectEditorManagerProxy::GetFormatName(const std::string &hmid, const s
     int32_t ret = remoteObject->SendRequest(
         static_cast<int32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_FORMAT_NAME), data, reply, option);
     if (FAILED(ret)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,"SendRequest failed, ret: %{public}d", ret);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, ret: %{public}d", ret);
         return ret;
     }
     ErrCode errCode = reply.ReadInt32();
     if (FAILED(errCode)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,"ReadInt32 failed, errCode: %{public}d", errCode);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "ReadInt32 failed, errCode: %{public}d", errCode);
         return errCode;
     }
     formatName = Str16ToStr8(reply.ReadString16());
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT,"GetFormatName success");
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "GetFormatName success");
     return ERR_OK;  
 }
 
-ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatByHmidAndLocale(const std::string &hmid, const std::string &locale,
-    std::unique_ptr<ObjectEditorFormat> &format)
+ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatByHmidAndLocale(const std::string &hmid,
+    const std::string &locale, std::unique_ptr<ObjectEditorFormat> &format)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -239,12 +240,12 @@ ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatByHmidAndLocale(const std
     int32_t ret = remoteObject->SendRequest(
         static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_FORMAT_BY_HMID_AND_LOCALE), data, reply, option);
     if (FAILED(ret)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,"SendRequest failed, ret: %{public}d", ret);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, ret: %{public}d", ret);
         return ret;
     }
     ErrCode errCode = reply.ReadInt32();
     if (FAILED(errCode)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,"ReadInt32 failed, errCode: %{public}d", errCode);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "ReadInt32 failed, errCode: %{public}d", errCode);
         return errCode;
     }
     format = std::unique_ptr<ObjectEditorFormat>(reply.ReadParcelable<ObjectEditorFormat>());
@@ -252,8 +253,8 @@ ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatByHmidAndLocale(const std
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "ReadParcelable ObjectEditorFormat failed");
         return ERR_INVALID_VALUE;
     }
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT,"GetObjectEditorFormatByHmidAndLocale success");
-    return ERR_OK;      
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "GetObjectEditorFormatByHmidAndLocale success");
+    return ERR_OK;
 }
 
 ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatsByLocale(const std::string &locale,
@@ -274,16 +275,16 @@ ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatsByLocale(const std::stri
     if (remoteObject == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "Remote is null");   
         return ERR_INVALID_DATA;
-    }   
+    }
     int32_t ret = remoteObject->SendRequest(
-        static_cast<uint32_t>(IObjectEditorManager::Message::COMMAND_GET_FORMATS_BY_LOCALE), data, reply, option);   
+        static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_FORMATS_BY_LOCALE), data, reply, option);
     if (FAILED(ret)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,"SendRequest failed, ret: %{public}d", ret);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, ret: %{public}d", ret);
         return ret;
     }
     ErrCode errCode = reply.ReadInt32();
     if (FAILED(errCode)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,"ReadInt32 failed, errCode: %{public}d", errCode);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "ReadInt32 failed, errCode: %{public}d", errCode);
         return errCode;
     }
     int32_t count = reply.ReadInt32();
@@ -292,15 +293,16 @@ ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatsByLocale(const std::stri
         return ERR_INVALID_VALUE;
     }
     for (int32_t i = 0; i < count; i++) {
-        std::unique_ptr<ObjectEditorFormat> format = std::unique_ptr<ObjectEditorFormat>(reply.ReadParcelable<ObjectEditorFormat>());
+        std::unique_ptr<ObjectEditorFormat> format =
+            std::unique_ptr<ObjectEditorFormat>(reply.ReadParcelable<ObjectEditorFormat>());
         if (format == nullptr) {
             formats.clear();
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "ReadParcelable ObjectEditorFormat failed");
             return ERR_INVALID_VALUE;
         }
-        formats.emplace_back(std::move(format));   
+        formats.emplace_back(std::move(format));
     }
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT,"GetObjectEditorFormatsByLocale success, count: %{public}d", count);
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "GetObjectEditorFormatsByLocale success, count: %{public}d", count);
     return ERR_OK;
 }
 

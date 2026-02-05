@@ -36,8 +36,8 @@ public:
 
 class ObjectEditorAbilityListener : public SystemAbilityStatusChangeStub {
 public:
-    void OnAddSystemAbility(int32_t systemAbilityId,const std::string &deviceId) override;
-    void OnRemoveSystemAbility(int32_t systemAbilityId,const std::string &deviceId) override;
+    void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
+    void OnRemoveSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
 private:
     std::mutex mutex_;
 };
@@ -82,13 +82,12 @@ private:
     std::string GenRandomUuid();
 
     std::mutex proxyMutex_;
-    sptr<IObjectEditorManager> oeSAProxy_{nullptr};
-    sptr<IRemoteObject::DeathRecipient> deathRecipient_{nullptr};
+    sptr<IObjectEditorManager> oeSAProxy_{ nullptr };
+    sptr<IRemoteObject::DeathRecipient> deathRecipient_{ nullptr };
     std::condition_variable loadCond_;
     std::mutex loadMutex_;
-    bool loadState_{false};
-    sptr<ISystemAbilityStatusChange> saStatusListener_{nullptr};
-
+    bool loadState_{ false };
+    sptr<ISystemAbilityStatusChange> saStatusListener_{ nullptr };
 };
 } // namespace ObjectEditor
 } // namespace OHOS

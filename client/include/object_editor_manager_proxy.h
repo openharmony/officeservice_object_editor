@@ -27,7 +27,8 @@ public:
     explicit ObjectEditorManagerProxy(const sptr<IRemoteObject> &remote):IRemoteProxy<IObjectEditorManager>(remote){}
     virtual~ObjectEditorManagerProxy(){};
     ErrCode StartObjectEditorExtension(std::unique_ptr<ObjectEditorDocument> &document,
-        const sptr<IObjectEditorClientCallback> &callback, sptr<IRemoteObject> &objectEditorProxy,bool &isPackageExtension) override;
+        const sptr<IObjectEditorClientCallback> &callback, sptr<IRemoteObject> &objectEditorProxy,
+        bool &isPackageExtension) override;
     ErrCode StopObjectEditorExtension(const sptr<IObjectEditorService> &oeExtensionRemoteObject,
         const bool &isPackageExtension) override;
     ErrCode GetHmidByFileExtension(const std::string &hmid, std::string &fileExtension) override;
