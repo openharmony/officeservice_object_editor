@@ -58,6 +58,7 @@ std::string GetFileStream(const std::string &filePath)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Get canonical path failed, path: %{private}s", canonicalPath);
         return "";
     }
+    canonicalPath[PATH_MAX] = '\0';
     std::ifstream file(std::string(canonicalPath), std::ios::in | std::ios::binary);
     if (!file) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Open file failed, path: %{private}s", canonicalPath);
@@ -175,7 +176,10 @@ std::string UTCToBeijingTime(int64_t utcTime)
         timePtr->tm_mday++;
     }
     char buffer[64] = {0x00};
-    strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timePtr);
+    if (strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timePtr) == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "strftime failed, utcTime: %{private}s", ctime(&timeValue));
+        return "";
+    }
     return std::string(buffer);
 }
 

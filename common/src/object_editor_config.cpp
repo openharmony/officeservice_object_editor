@@ -58,5 +58,3 @@ bool ObjectEditorConfig::CheckIsInDlp()
 }
 } // namespace ObjectEditor
 } // namespace OHOS
-#endif // OHOS_OBJECT_EDITOR_OBJECT_EDITOR_CONFIG_H
-
