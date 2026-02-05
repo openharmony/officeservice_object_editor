@@ -24,14 +24,14 @@
 
 namespace OHOS {
 namespace ObjectEditor {
-namespace{
+namespace {
 constexpr const char *IS_SUPPORT_OBJECT_EDITOR = "const.object_editor.object_editor_enable";
 }
 IMPLEMENT_SINGLE_INSTANCE(ObjectEditorConfig);
 
 bool ObjectEditorConfig::IsSupportObjectEditor()
 {
-    if(!isSupportObjectEditor_.isLoaded){
+    if (!isSupportObjectEditor_.isLoaded) {
         isSupportObjectEditor_.value = system::GetBoolParameter(IS_SUPPORT_OBJECT_EDITOR, false);
         isSupportObjectEditor_.isLoaded = true;
         OBJECT_EDITOR_HILOGI("IsSupportObjectEditor: %{public}d", isSupportObjectEditor_.value);
@@ -44,16 +44,18 @@ bool ObjectEditorConfig::CheckIsInDlp()
 #ifdef WITH_DLP
     bool isInDlpSandbox = false;
     int32_t ret = OHOS::Security::DlpPermission::DlpPermissionKit::IsInDlpSandbox(isInDlpSandbox);
-    if(ret != OHOS::Security::DlpPermission::DLP_OK){
+    if (ret != OHOS::Security::DlpPermission::DLP_OK) {
         OBJECT_EDITOR_HILOGE("CheckIsInDlpSandbox failed, ret: %{public}d", ret);
+        return false;
     }
-    if(isInDlpSandbox){
+    if (isInDlpSandbox) {
         OBJECT_EDITOR_HILOGW("Application is in DLP sandbox");
     }
     return isInDlpSandbox;
 #else
     return false;
 #endif
+}
 } // namespace ObjectEditor
 } // namespace OHOS
 #endif // OHOS_OBJECT_EDITOR_OBJECT_EDITOR_CONFIG_H

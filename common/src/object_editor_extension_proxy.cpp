@@ -42,7 +42,7 @@ ErrCode ObjectEditorExtensionProxy::RegisterClientCB(const sptr<ObjectEditorClie
         return ERR_INVALID_DATA;
     }
     int32_t ret = remoteObject->SendRequest(
-        static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_REGISTER_CLIENT_CB), data, reply, option);   
+        static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_REGISTER_CLIENT_CB), data, reply, option);
     if (FAILED(ret)) {  
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, ret: %{public}d", ret);
         return ret;
@@ -71,7 +71,7 @@ ErrCode ObjectEditorExtensionProxy::GetSnapshot()
         return ERR_INVALID_DATA;
     }
     int32_t ret = remoteObject->SendRequest(
-        static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_SNAPSHOT), data, reply, option);   
+        static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_SNAPSHOT), data, reply, option);
     if (FAILED(ret)) {  
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, ret: %{public}d", ret);
         return ret;
@@ -100,7 +100,7 @@ ErrCode ObjectEditorExtensionProxy::DoEdit()
         return ERR_INVALID_DATA;
     }
     int32_t ret = remoteObject->SendRequest(
-        static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_DO_EDIT), data, reply, option);   
+        static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_DO_EDIT), data, reply, option);
     if (FAILED(ret)) {  
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, ret: %{public}d", ret);
         return ret;
@@ -129,7 +129,7 @@ ErrCode ObjectEditorExtensionProxy::GetEditStatus(bool *isEditing, bool *isModif
         return ERR_INVALID_DATA;
     }
     int32_t ret = remoteObject->SendRequest(
-        static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_EDIT_STATUS), data, reply, option);   
+        static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_EDIT_STATUS), data, reply, option);
     if (FAILED(ret)) {  
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, ret: %{public}d", ret);
         return ret;
@@ -160,7 +160,7 @@ ErrCode ObjectEditorExtensionProxy::GetCapability(uint32_t *capability)
         return ERR_INVALID_DATA;
     }
     int32_t ret = remoteObject->SendRequest(
-        static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_CAPABILITY), data, reply, option);   
+        static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_CAPABILITY), data, reply, option);
     if (FAILED(ret)) {  
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, ret: %{public}d", ret);
         return ret;
@@ -190,7 +190,7 @@ ErrCode ObjectEditorExtensionProxy::Close()
         return ERR_INVALID_DATA;
     }
     int32_t ret = remoteObject->SendRequest(
-        static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_CLOSE), data, reply, option);   
+        static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_CLOSE), data, reply, option);
     if (FAILED(ret)) {  
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, ret: %{public}d", ret);
         return ret;
@@ -223,7 +223,7 @@ ErrCode ObjectEditorExtensionProxy::Initial(std::unique_ptr<ObjectEditorDocument
         return ERR_INVALID_DATA;
     }
     int32_t ret = remoteObject->SendRequest(
-        static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_INITIAL), data, reply, option);   
+        static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_INITIAL), data, reply, option);
     if (FAILED(ret)) {  
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, ret: %{public}d", ret);
         return ret;

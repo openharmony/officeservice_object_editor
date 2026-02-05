@@ -14,7 +14,7 @@
  */
 
 #ifndef OHOS_OBJECT_EDITOR_OBJECT_EDITOR_CLIENT_CALLBACK_STUB_H
-#define OHOS_OBJECT_EDITOR_OBJECT_EDITOR_CLIENT_CALLBACK_STUB_H     
+#define OHOS_OBJECT_EDITOR_OBJECT_EDITOR_CLIENT_CALLBACK_STUB_H   
 
 #include <iremote_stub.h>
 #include "iobject_editor_client_callback.h"
@@ -23,7 +23,7 @@ namespace OHOS {
 namespace ObjectEditor {
 class ObjectEditorClientCallbackStub : public IRemoteStub<IObjectEditorClientCallback> {
 public:
-    ObjectEditorClientCallbackStub(bool serialInvokeFlag = false):IRemoteStub<IObjectEditorClientCallback>(serialInvokeFlag) {};
+    ObjectEditorClientCallbackStub(bool serialInvokeFlag = false) : IRemoteStub(serialInvokeFlag){};
     ~ObjectEditorClientCallbackStub() = default;
     int32_t OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
     virtual int32_t CallbackEnter([[maybe_unused]] uint32_t code);

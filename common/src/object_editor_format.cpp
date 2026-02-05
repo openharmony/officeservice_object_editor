@@ -22,51 +22,51 @@ namespace ObjectEditor {
 
 bool ObjectEditorFormat::Marshalling(Parcel &data) const
 {
-    if(!data.WriteString(hmid)){
+    if (!data.WriteString(hmid)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Write hmid failed");
         return false;
     }
-    if(!data.WriteString(bundleName)){
+    if (!data.WriteString(bundleName)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Write bundleName failed");
         return false;
     }
-    if(!data.WriteString(moduleName)){
+    if (!data.WriteString(moduleName)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Write moduleName failed");
         return false;
     }
-    if(!data.WriteString(abilityName)){
+    if (!data.WriteString(abilityName)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Write abilityName failed");
         return false;
     }
-    if(!data.WriteString(version)){
+    if (!data.WriteString(version)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Write version failed");
         return false;
     }
-    if(!data.WriteString(formatName)){
+    if (!data.WriteString(formatName)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Write formatName failed");
         return false;
     }
-    if(!data.WriteString(locale)){
+    if (!data.WriteString(locale)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Write locale failed");
         return false;
     }
-    if(!data.WriteString(description)){
+    if (!data.WriteString(description)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Write description failed");
         return false;
     }
-    if(!data.WriteString(fileExts)){
+    if (!data.WriteString(fileExts)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Write fileExts failed");
         return false;
     }
-    if(!data.WriteString(icon)){
+    if (!data.WriteString(icon)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Write icon failed");
         return false;
     }
-    if(!data.WriteParcelable(pIconPixelMap.get())){
+    if (!data.WriteParcelable(pIconPixelMap.get())) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Write pIconPixelMap failed");
         return false;
     }
-    if(!data.WriteInt64(createTime)){
+    if (!data.WriteInt64(createTime)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Write createTime failed");
         return false;
     }
@@ -76,59 +76,59 @@ bool ObjectEditorFormat::Marshalling(Parcel &data) const
 ObjectEditorFormat *ObjectEditorFormat::Unmarshalling(Parcel &data)
 {
     ObjectEditorFormat *format = new (std::nothrow) ObjectEditorFormat();
-    if(!data.ReadString(format->hmid)){
+    if (!data.ReadString(format->hmid)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Read hmid failed");
         delete format;
         return nullptr;
     }
-    if(!data.ReadString(format->bundleName)){
+    if (!data.ReadString(format->bundleName)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Read bundleName failed");
         delete format;
         return nullptr;
     }
-    if(!data.ReadString(format->moduleName)){
+    if (!data.ReadString(format->moduleName)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Read moduleName failed");
         delete format;
         return nullptr;
     }
-    if(!data.ReadString(format->abilityName)){
+    if (!data.ReadString(format->abilityName)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Read abilityName failed");
         delete format;
         return nullptr;
     }
-    if(!data.ReadString(format->version)){
+    if (!data.ReadString(format->version)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Read version failed");
         delete format;
         return nullptr;
     }
-    if(!data.ReadString(format->formatName)){
+    if (!data.ReadString(format->formatName)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Read formatName failed");
         delete format;
         return nullptr;
     }
-    if(!data.ReadString(format->locale)){
+    if (!data.ReadString(format->locale)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Read locale failed");
         delete format;
         return nullptr;
     }
-    if(!data.ReadString(format->description)){
+    if (!data.ReadString(format->description)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Read description failed");
         delete format;
         return nullptr;
     }
-    if(!data.ReadString(format->fileExts)){
+    if (!data.ReadString(format->fileExts)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Read fileExts failed");
         delete format;
         return nullptr;
     }
-    if(!data.ReadString(format->icon)){
+    if (!data.ReadString(format->icon)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Read icon failed");
         delete format;
         return nullptr;
     }
     std::shared_ptr<Media::PixelMap> pIconPixelMap = data.ReadParcelable<Media::PixelMap>();
     format->pIconPixelMap = pIconPixelMap;
-    if(!data.ReadInt64(format->createTime)){
+    if (!data.ReadInt64(format->createTime)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Read createTime failed");
         delete format;
         return nullptr;

@@ -23,7 +23,8 @@ namespace OHOS {
 namespace ObjectEditor {
 class ObjectEditorPackageProxy : public IRemoteProxy<IObjectEditorPackage> {
 public:
-    explicit ObjectEditorPackageProxy(const sptr<IRemoteObject> &remote): IRemoteProxy<IObjectEditorPackage>(remote){}
+    explicit ObjectEditorPackageProxy(const sptr<IRemoteObject> &remote) 
+        : IRemoteProxy<IObjectEditorPackage>(remote){}
     virtual ~ObjectEditorPackageProxy(){};
     ErrCode RegisterClientCB(const sptr<IObjectEditorClientCallback> &callback) override;
     ErrCode GetSnapshot() override;
