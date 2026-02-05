@@ -14,7 +14,7 @@
  */
 
 #ifndef OHOS_OBJECT_EDITOR_OBJECT_EDITOR_FORMAT_H
-#define OHOS_OBJECT_EDITOR_OBJECT_EDITOR_FORMAT_H   
+#define OHOS_OBJECT_EDITOR_OBJECT_EDITOR_FORMAT_H
 
 #include "parcel.h"
 #include "pixel_map.h"

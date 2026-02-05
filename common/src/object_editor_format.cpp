@@ -13,11 +13,11 @@
  * limitations under the License.
  */
 
- #include "object_editor_format.h"
- #include "hilog_object_editor.h"
- #include "pixel_map.h"
+#include "object_editor_format.h"
+#include "hilog_object_editor.h"
+#include "pixel_map.h"
 
- namespace OHOS {
+namespace OHOS {
 namespace ObjectEditor {
 
 bool ObjectEditorFormat::Marshalling(Parcel &data) const

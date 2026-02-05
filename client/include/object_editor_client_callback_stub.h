@@ -14,7 +14,7 @@
  */
 
 #ifndef OHOS_OBJECT_EDITOR_OBJECT_EDITOR_CLIENT_CALLBACK_STUB_H
-#define OHOS_OBJECT_EDITOR_OBJECT_EDITOR_CLIENT_CALLBACK_STUB_H   
+#define OHOS_OBJECT_EDITOR_OBJECT_EDITOR_CLIENT_CALLBACK_STUB_H
 
 #include <iremote_stub.h>
 #include "iobject_editor_client_callback.h"

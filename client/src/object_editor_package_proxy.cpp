@@ -126,7 +126,7 @@ ErrCode ObjectEditorPackageProxy::GetEditStatus(bool *isEditing, bool *isModifie
     }
     int32_t ret = remoteObject->SendRequest(
         static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_EDIT_STATUS), data, reply, option);
-    if(FAILED(ret)){
+    if (FAILED(ret)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "SendRequest failed, ret: %{public}d", ret);
         return ret;
     }
@@ -159,7 +159,7 @@ ErrCode ObjectEditorPackageProxy::GetCapability(uint32_t *capability)
         return ret;
     }
     ErrCode errCode = reply.ReadInt32();
-    if (FAILED(errCode)) {  
+    if (FAILED(errCode)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "GetCapability failed, errCode: %{public}d", errCode);
         return errCode;
     }
@@ -187,11 +187,11 @@ ErrCode ObjectEditorPackageProxy::Close()
         return ret;
     }
     ErrCode errCode = reply.ReadInt32();
-    if (FAILED(errCode)) {      
+    if (FAILED(errCode)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "Close failed, errCode: %{public}d", errCode);
         return errCode;
     }
-    return ERR_OK;  
+    return ERR_OK;
 }
 
 ErrCode ObjectEditorPackageProxy::Initial(std::unique_ptr<ObjectEditorDocument> &document)
@@ -219,7 +219,7 @@ ErrCode ObjectEditorPackageProxy::Initial(std::unique_ptr<ObjectEditorDocument> 
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "Initial failed, errCode: %{public}d", errCode);
         return errCode;
     }
-    return ERR_OK;  
+    return ERR_OK;
 }
 } // namespace ObjectEditor
 } // namespace OHOS

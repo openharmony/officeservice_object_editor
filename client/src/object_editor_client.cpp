@@ -248,7 +248,7 @@ void ObjectEditorClient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 }
 
 ErrCode ObjectEditorClient::StartObjectEditorExtension(std::unique_ptr<ObjectEditorDocument> &document,
-        const sptr<IObjectEditorClientCallback> &callback, sptr<IObjectEditorService> &oeExtensionRemoteObject,
+    const sptr<IObjectEditorClientCallback> &callback, sptr<IObjectEditorService> &oeExtensionRemoteObject,
     bool &isPackageExtension)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
@@ -261,7 +261,7 @@ ErrCode ObjectEditorClient::StartObjectEditorExtension(std::unique_ptr<ObjectEdi
         return ObjectEditorClientErrCode::CLIENT_UNKNOWN_OPERATE;
     }
     ErrCode ret = PrepareFiles(document);
-    if(ret != ObjectEditorClientErrCode::CLIENT_OK){
+    if (ret != ObjectEditorClientErrCode::CLIENT_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "PrepareFiles failed, ret: %{public}d", ret);
         return ret;
     }
@@ -276,7 +276,7 @@ ErrCode ObjectEditorClient::StartObjectEditorExtension(std::unique_ptr<ObjectEdi
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "StartObjectEditorExtension failed, ret: %{public}d", ret);
         return ret;
     }
-    if(isPackageExtension){
+    if (isPackageExtension) {
         oeExtensionRemoteObject = iface_cast<IObjectEditorPackage>(oeExtensionRemote);
     } else {
         oeExtensionRemoteObject = iface_cast<IObjectEditorExtension>(oeExtensionRemote);
@@ -324,10 +324,10 @@ std::string ObjectEditorClient::GenRandomUuid()
         tmp.push_back(hex[(*it >> 4) & 0xF]);
         tmp.push_back(hex[*it & 0xF]);
     }
-    ret = tmp.substr(0, UUID_HEAD_LEN)  +  "-"  + 
-    tmp.substr(UUID_START_POS_1, UUID_OTHER_LEN)  +  "-"  + 
-    tmp.substr(UUID_START_POS_2, UUID_OTHER_LEN)  +  "-"  + 
-    tmp.substr(UUID_START_POS_3, UUID_OTHER_LEN)  +  "-"  + 
+    ret = tmp.substr(0, UUID_HEAD_LEN) + "-" +
+    tmp.substr(UUID_START_POS_1, UUID_OTHER_LEN) + "-" +
+    tmp.substr(UUID_START_POS_2, UUID_OTHER_LEN) + "-" +
+    tmp.substr(UUID_START_POS_3, UUID_OTHER_LEN) + "-" +
     tmp.substr(UUID_START_POS_4);
     return ret;
 }
@@ -343,7 +343,8 @@ ErrCode FlushDocument(const std::unique_ptr<ObjectEditorDocument> &document)
 
 ErrCode ObjectEditorClient::PrepareFiles(const std::unique_ptr<ObjectEditorDocument> &document)
 {
-    std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> context = AbilityRuntime::Context::GetApplicationContext();
+    std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> context =
+        AbilityRuntime::Context::GetApplicationContext();
     if (context == nullptr || document == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "context or document is null");
         return ObjectEditorClientErrCode::CLENT_INVALID_PARAMETER;
@@ -396,7 +397,7 @@ ErrCode ObjectEditorClient::PrepareFiles(const std::unique_ptr<ObjectEditorDocum
 }
 
 ErrCode ObjectEditorClient::StopObjectEditorExtension(const sptr<IObjectEditorService> &oeExtensionRemoteObject,
-        const bool &isPackageExtension)
+    const bool &isPackageExtension)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "in");
     if (oeExtensionRemoteObject == nullptr) {
@@ -433,7 +434,8 @@ ErrCode ObjectEditorClient::GetIcon(const std::string &hmid, std::string &resFil
     return ERR_OK;
 }
 
-ErrCode ObjectEditorClient::GetFormatName(const std::string &hmid,const std::string &locale, std::string &formatName)
+ErrCode ObjectEditorClient::GetFormatName(const std::string &hmid,
+    const std::string &locale, std::string &formatName)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
     sptr<IObjectEditorManager> oeManager = GetIObjectEditorManager();
@@ -459,7 +461,7 @@ ErrCode ObjectEditorClient::GetObjectEditorFormatByHmidAndLocale(const std::stri
         return ERR_INVALID_VALUE;
     }
     ErrCode ret = oeManager->GetObjectEditorFormatByHmidAndLocale(hmid, locale, format);
-    if(ret != ERR_OK){
+    if (ret != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,
             "GetObjectEditorFormatByHmidAndLocale failed, ret is %{public}d", ret);
         return ret;
@@ -468,7 +470,7 @@ ErrCode ObjectEditorClient::GetObjectEditorFormatByHmidAndLocale(const std::stri
 }
 
 ErrCode ObjectEditorClient::GetObjectEditorFormatsByLocale(const std::string &locale,
-        std::vector<std::unique_ptr<ObjectEditorFormat>> &formats)
+    std::vector<std::unique_ptr<ObjectEditorFormat>> &formats)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
     sptr<IObjectEditorManager> oeManager = GetIObjectEditorManager();

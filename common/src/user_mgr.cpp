@@ -37,13 +37,15 @@ std::vector<int32_t> GetAllActiveUserIds()
     while ((result != ERR_OK || userIds.empty()) && retry < MAX_RETRY) {
         result = AccountSA::OsAccountManager::QueryActiveOsAccountIds(userIds);
         if (result != ERR_OK) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Query active os account ids failed, retry: %{public}d", retry);
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON,
+                "Query active os account ids failed, retry: %{public}d", retry);
             sleep(RETRY_INTERVAL_SECOND);
             retry++;
             continue;
         }
         if (userIds.empty()) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Query active os account ids failed, retry: %{public}d", retry);
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON,
+                "Query active os account ids failed, retry: %{public}d", retry);
             sleep(RETRY_INTERVAL_SECOND);
             retry++;
             continue;

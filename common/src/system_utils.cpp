@@ -84,12 +84,10 @@ void TrimString(std::string &inputStr)
     if (inputStr.empty()) {
         return;
     }
-    inputStr.erase(inputStr.begin(), std::find_if(inputStr.begin(), inputStr.end(), [](unsigned char ch) {
-        return !std::isspace(ch);
-    }));
-    inputStr.erase(std::find_if(inputStr.rbegin(), inputStr.rend(), [](unsigned char ch) {
-        return !std::isspace(ch);
-    }).base(), inputStr.end());
+    inputStr.erase(inputStr.begin(), std::find_if(inputStr.begin(), inputStr.end(), 
+        [](unsigned char ch) {return !std::isspace(ch); }));
+    inputStr.erase(std::find_if(inputStr.rbegin(), inputStr.rend(),
+        [](unsigned char ch) {return !std::isspace(ch); }).base(), inputStr.end());
 }
 
 bool StringToULong(const char *input, unsigned long &num)
