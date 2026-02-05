@@ -58,7 +58,7 @@ std::string GetFileStream(const std::string &filePath)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Get canonical path failed, path: %{private}s", canonicalPath);
         return "";
     }
-    canonicalPath[PATH_MAXN + 1] = '\0';
+    canonicalPath[PATH_MAXN] = '\0';
     std::ifstream file(std::string(canonicalPath), std::ios::in | std::ios::binary);
     if (!file) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Open file failed, path: %{private}s", canonicalPath);
