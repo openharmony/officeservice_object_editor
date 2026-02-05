@@ -26,7 +26,7 @@ class ObjectEditorManagerProxy : public IRemoteProxy<IObjectEditorManager> {
 public:
     explicit ObjectEditorManagerProxy(const sptr<IRemoteObject> &remote)
         : IRemoteProxy<IObjectEditorManager>(remote){}
-    virtual~ObjectEditorManagerProxy(){};
+    virtual ~ObjectEditorManagerProxy(){};
     ErrCode StartObjectEditorExtension(std::unique_ptr<ObjectEditorDocument> &document,
         const sptr<IObjectEditorClientCallback> &callback, sptr<IRemoteObject> &objectEditorProxy,
         bool &isPackageExtension) override;

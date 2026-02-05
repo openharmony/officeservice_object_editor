@@ -320,9 +320,11 @@ std::string ObjectEditorClient::GenRandomUuid()
     std::string tmp = "";
     std::string ret = "";
     static const char *hex = "0123456789ABCDEF";
+    static const int NIBBLE_SHIFT = 4;
+    static const int NIBBLE_MASK = 0xF;
     for (auto it = uuid_.begin(); it != uuid_.end(); it++) {
-        tmp.push_back(hex[(*it >> 4) & 0xF]);
-        tmp.push_back(hex[*it & 0xF]);
+        tmp.push_back(hex[(*it >> NIBBLE_SHIFT) & NIBBLE_MASK]); // 右移4位
+        tmp.push_back(hex[*it & NIBBLE_MASK]); // 取低4位
     }
     ret = tmp.substr(0, UUID_HEAD_LEN) + "-" +
     tmp.substr(UUID_START_POS_1, UUID_OTHER_LEN) + "-" +
@@ -355,7 +357,6 @@ ErrCode ObjectEditorClient::PrepareFiles(const std::unique_ptr<ObjectEditorDocum
         return ObjectEditorClientErrCode::CLENT_GET_PATH_ERROR;
     }
     std::string sandboxPath = fileDirPath + "/" + GenRandomUuid();
-    OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "sandboxPath is %{private}s", sandboxPath.c_str());
     fs::path targetDirPath(sandboxPath);
     bool ret = fs::create_directories(targetDirPath);
     if (!ret) {
