@@ -161,7 +161,7 @@ ErrCode ObjectEditorManagerProxy::GetIconByHmid(const std::string &hmid, std::st
     }
     int32_t ret = remoteObject->SendRequest(
         static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_ICON_BY_HMID), data, reply, option);
-    if (FAILED(ret)) {  
+    if (FAILED(ret)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, ret: %{public}d", ret);
         return ret;
     }
@@ -197,7 +197,7 @@ ErrCode ObjectEditorManagerProxy::GetFormatName(const std::string &hmid,
     if (remoteObject == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "Remote is null");
         return ERR_INVALID_DATA;
-    }   
+    }
     int32_t ret = remoteObject->SendRequest(
         static_cast<int32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_FORMAT_NAME), data, reply, option);
     if (FAILED(ret)) {
@@ -211,7 +211,7 @@ ErrCode ObjectEditorManagerProxy::GetFormatName(const std::string &hmid,
     }
     formatName = Str16ToStr8(reply.ReadString16());
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "GetFormatName success");
-    return ERR_OK;  
+    return ERR_OK;
 }
 
 ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatByHmidAndLocale(const std::string &hmid,
@@ -234,9 +234,9 @@ ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatByHmidAndLocale(const std
     }
     sptr<IRemoteObject> remoteObject = Remote();
     if (remoteObject == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "Remote is null");   
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "Remote is null");
         return ERR_INVALID_DATA;
-    }   
+    }
     int32_t ret = remoteObject->SendRequest(
         static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_FORMAT_BY_HMID_AND_LOCALE), data, reply, option);
     if (FAILED(ret)) {
@@ -273,7 +273,7 @@ ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatsByLocale(const std::stri
     }
     sptr<IRemoteObject> remoteObject = Remote();
     if (remoteObject == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "Remote is null");   
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "Remote is null");
         return ERR_INVALID_DATA;
     }
     int32_t ret = remoteObject->SendRequest(
@@ -321,12 +321,12 @@ ErrCode ObjectEditorManagerProxy::StartUIAbility(const std::unique_ptr<AAFwk::Wa
     }
     sptr<IRemoteObject> remoteObject = Remote();
     if (remoteObject == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "Remote is null");   
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "Remote is null");
         return ERR_INVALID_DATA;
-    }   
+    }
     int32_t ret = remoteObject->SendRequest(
-        static_cast<uint32_t>(IObjectEditorManager::Message::COMMAND_START_UI_ABILITY), data, reply, option);   
-    if (FAILED(ret)) {  
+        static_cast<uint32_t>(IObjectEditorManager::Message::COMMAND_START_UI_ABILITY), data, reply, option);
+    if (FAILED(ret)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, ret: %{public}d", ret);
         return ret;
     }
