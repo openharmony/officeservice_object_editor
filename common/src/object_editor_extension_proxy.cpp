@@ -67,7 +67,7 @@ ErrCode ObjectEditorExtensionProxy::GetSnapshot()
 
     sptr<IRemoteObject> remoteObject = Remote();
     if (remoteObject == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "Remote is null");   
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "Remote is null");
         return ERR_INVALID_DATA;
     }
     int32_t ret = remoteObject->SendRequest(

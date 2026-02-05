@@ -21,6 +21,7 @@
 
 namespace OHOS {
 namespace ObjectEditor {
+template<typename T>
 class DeviceConfiguration {
 public:
     bool isLoaded = false;
