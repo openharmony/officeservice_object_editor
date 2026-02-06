@@ -1191,6 +1191,43 @@ bool StorageIO::AllocateBigBlocksForConvert(uint32_t blocksNeeded, std::vector<u
     return true;
 }
 
+namespace {
+
+std::vector<Byte> BuildBatchBuffer(uint64_t &batchStartIdx, uint64_t &batchEndIdx, uint64_t newSize,
+    uint32_t blockSize, const std::vector<Byte> &smallBuffer, size_t &copied, uint32_t &batchWrittenLen,
+    uint64_t &lastWrittenIdx)
+{
+    std::vector<Byte> batchBuffer;
+    for (size_t idx = batchStartIdx; idx <= batchEndIdx; ++idx) {
+        const uint64_t offsetInStream = idx * static_cast<uint64_t>(blockSize);
+        uint64_t remaining = newSize > offsetInStream ? newSize - offsetInStream : 0;
+        const uint32_t chunk = static_cast<uint32_t>(std::min<uint64_t>(remaining, blockSize));
+        if (chunk == 0) {
+            exhausted = true;
+            break;
+        }
+        const size_t blockOffset = (idx - batchStartIdx) * static_cast<size_t>(blockSize);
+        const size_t required = blockOffset + static_cast<size_t>(chunk);
+        if (required > batchBuffer.size()) {
+            batchBuffer.resize(required, 0);
+        }
+        const size_t remainingOldData = copied < smallBuffer.size() ? smallBuffer.size() - copied : 0;
+        const size_t dataToWrite = std::min(static_cast<size_t>(chunk), remainingOldData);
+        if (dataToWrite > 0) {
+            auto ec = memcpy_s(batchBuffer.data() + blockOffset, batchBuffer.size() - blockOffset,
+                smallBuffer.data() + copied, dataToWrite);
+            if (ec != EOK) {
+                return false;
+            }
+            copied += dataToWrite;
+        }
+        batchWrittenLen += static_cast<uint32_t>(required);
+        lastWrittenIdx = idx;
+    }
+    return batchBuffer;
+}
+}
+
 bool StorageIO::CopyDataToBigBlocks(const std::vector<uint32_t> &blocks, const std::vector<Byte> &smallBuffer,
     uint64_t newSize, uint32_t blockSize)
 {
@@ -1213,35 +1250,16 @@ bool StorageIO::CopyDataToBigBlocks(const std::vector<uint32_t> &blocks, const s
             batchEndIdx = batchStartIdx + batchCount - 1;
         }
         std::vector<Byte> batchBuffer;
-        batchBuffer.resize(batchCount * static_cast<size_t>(blockSize));
+        batchBuffer.reserve(batchCount * static_cast<size_t>(blockSize));
         uint32_t batchWrittenLen = 0;
         size_t lastWrittenIdx = batchStartIdx;
 
-        for (size_t idx = batchStartIdx; idx <= batchEndIdx; ++idx) {
-            const uint64_t offsetInStream = idx * static_cast<uint64_t>(blockSize);
-            const uint32_t chunk = ComputeChunkSize(offsetInStream, newSize, blockSize);
-            if (chunk == 0) {
-                exhausted = true;
-                break;
-            }
-            const size_t blockOffset = (idx - batchStartIdx) * static_cast<size_t>(blockSize);
-            const size_t required = blockOffset + static_cast<size_t>(chunk);
-            if (required > batchBuffer.size()) {
-                batchBuffer.resize(required, 0);
-            }
-            const size_t remainingOldData = copied < smallBuffer.size() ? smallBuffer.size() - copied : 0;
-            const size_t dataToWrite = std::min(static_cast<size_t>(chunk), remainingOldData);
-            if (dataToWrite > 0) {
-                auto ec = memcpy_s(batchBuffer.data() + blockOffset, batchBuffer.size() - blockOffset,
-                    smallBuffer.data() + copied, dataToWrite);
-                if (ec != EOK) {
-                    return false;
-                }
-                batchWrittenLen += static_cast<uint32_t>(required);
-                lastWrittenIdx = idx;
-            }
+        batchBuffer = BuildBatchBuffer(batchStartIdx, batchEndIdx, newSize, blockSize, smallBuffer,
+            copied, batchWrittenLen, lastWrittenIdx);
+        if (batchBuffer.empty()) {
+            return false;
         }
-
+        
         if (batchWrittenLen > 0) {
             const uint64_t physicalOffset = BlockToOffset(blocks[batchStartIdx], blockSize);
             const std::string context = "converted blocks " + std::to_string(batchStartIdx) + " - " +
@@ -2375,18 +2393,23 @@ bool StorageIO::FlushHeader()
 
 namespace {
 std::string NormalizeFilePath(const std::string &filename) {
+    char canonicalDirPath[PATH_MAX + 1] = {0x00};
     std::filesystem::path path(filename);
     std::string directory = path.parent_path().string() + "/";
     std::string basename = path.filename().string();
-    char *canonicalDirPath = realpath(directory.c_str(), nullptr);
-    if (!canonicalDirPath) {
+    if (realpath(directory.c_str(), canonicalDirPath) == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
             "StorageIO::SaveToFile: realpath failed");
         return "";
     }
+    size_t len = strlen(canonicalDirPath);
+    if (len >= PATH_MAX) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "Storage::SaveToFile: canonicalDirPath too long");
+        return "";
+    }
+    canonicalDirPath[PATH_MAX] = '\0';
     std::string canonicalFileName = std::string(canonicalDirPath) + "/" + basename;
-    free(canonicalDirPath);
-    canonicalDirPath = nullptr;
     return canonicalFileName;
 }
 

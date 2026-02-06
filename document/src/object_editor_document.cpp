@@ -306,6 +306,53 @@ namespace {
     constexpr std::size_t MAX_VISITS = 10000;
 }
 
+namespace {
+void TraverseDirectory(Storage *storage, const std::string &path, std::size_t depth,
+    uint64_t &total, std::size_t &visitCount)
+{
+    if (total == std::numeric_limits<uint64_t>::max()) {
+        return;
+    }
+    if (depth > MAX_DEPTH) {
+        total = std::numeric_limits<uint64_t>::max();
+        return;
+    }
+    if (visitCount++ > MAX_VISITS) {
+        total = std::numeric_limits<uint64_t>::max();
+        return;
+    }
+    
+    std::string savedPath;
+    storage_->Path(savedPath);
+    std::vector<const DirEntry *> entries;
+    if (!storage_->EnterDirectory(path)) {
+        return;
+    }
+    storage_->ListEntries(entries);
+    if (!savedPath.empty()) {
+        (void)storage_->EnterDirectory(savedPath);
+    }
+
+    for (const DirEntry *e : entries) {
+        if (e == nullptr) {
+            continue;
+        }
+
+        std::string fullPath = (path == "/") ? ("/" + e->Name()) : (path + "/" + e->Name());
+        if (e->IsFile()) {
+            const uint64_t size = e->Size();
+            if (total > std::numeric_limits<uint64_t>::max() - size) {
+                total = std::numeric_limits<uint64_t>::max();
+                return;
+            }
+            total += size;
+        } else if (e->IsDir()) {
+            TraverseDirectory(storage, fullPath, depth + 1, total, visitCount);
+        }
+    }
+}
+}
+
 uint64_t ObjectEditorDocument::ComputeLiveDataSize() const
 {
     if (!storage_) {
@@ -313,51 +360,7 @@ uint64_t ObjectEditorDocument::ComputeLiveDataSize() const
     }
     uint64_t total = 0;
     std::size_t visitCount = 0;
-
-    std::function<void(const std::string &, std::size_t)> traverse = [&](
-        const std::string &path, std::size_t depth) {
-        if (total == std::numeric_limits<uint64_t>::max()) {
-            return;
-        }
-        if (depth > MAX_DEPTH) {
-            total = std::numeric_limits<uint64_t>::max();
-            return;
-        }
-        if (visitCount++ > MAX_VISITS) {
-            total = std::numeric_limits<uint64_t>::max();
-            return;
-        }
-        
-        std::string savedPath;
-        storage_->Path(savedPath);
-        std::vector<const DirEntry *> entries;
-        if (!storage_->EnterDirectory(path)) {
-            return;
-        }
-        storage_->ListEntries(entries);
-        if (!savedPath.empty()) {
-            (void)storage_->EnterDirectory(savedPath);
-        }
-
-        for (const DirEntry *e : entries) {
-            if (e == nullptr) {
-                continue;
-            }
-
-            std::string fullPath = (path == "/") ? ("/" + e->Name()) : (path + "/" + e->Name());
-            if (e->IsFile()) {
-                const uint64_t size = e->Size();
-                if (total > std::numeric_limits<uint64_t>::max() - size) {
-                    total = std::numeric_limits<uint64_t>::max();
-                    return;
-                }
-                total += size;
-            } else if (e->IsDir()) {
-                traverse(fullPath, depth + 1);
-            }
-        }
-    };
-    traverse("/", 0);
+    TraverseDirectory(storage_, "/", 0, total, visitCount);
     return total;
 }
 
@@ -448,56 +451,61 @@ bool ObjectEditorDocument::CopyStreamData(Storage *src, Storage *dst,
     return true;
 }
 
+namespace {
+bool CopyAllStreamRecursivelyImpl(Storage *src, Storage *dst,
+    const std::string& path, std::size_t depth, std::size_t &visitCount)
+{
+    if (depth > MAX_DEPTH)
+        return false;
+    if (visitCount++ > MAX_VISITS)
+        return false;
+    std::string savedPath;
+    src->Path(savedPath);
+    std::vector<const DirEntry *> entries;
+    if (!src->EnterDirectory(path)) {
+        if (!savedPath.empty())
+            (void)src->EnterDirectory(savedPath);
+        return false;
+    }
+    src->ListEntries(entries);
+    if (!savedPath.empty())
+        (void)src->EnterDirectory(savedPath);
+    for (const DirEntry *entry : entries) {
+        if (!entry) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+                "ObjectEditorDocument::CopyAllStreamRecursively - entry is null");
+            return false;
+        }
+        if (!entry->IsFile() && !entry->IsDir())
+            return false;
+        std::string fullPath = path;
+        if (path != "/")
+            fullPath += "/";
+        fullPath += entry->Name();
+
+        if (entry->IsDir()) {
+            DirEntry *newDir = dst->GetStorage(fullPath, true);
+            if (!newDir)
+                return false;
+            newDir->SetClsid(entry->Clsid(), std::size(entry->Clsid()));
+            if (!CopyAllStreamRecursivelyImpl(src, dst, fullPath, depth + 1, visitCount))
+                return false;
+            continue;
+        }
+
+        if (!CopyStreamData(src, dst, fullPath, entry->Size()))
+            return false;
+    }
+    return true;
+}
+}
+
 bool ObjectEditorDocument::CopyAllStreamRecursively(Storage *src, Storage *dst, const std::string &basePath)
 {
     if (!src || !dst)
         return false;
     std::size_t visitCount = 0;
-    const auto traverse = [&](auto &&self, const std::string &path, std::size_t depth) -> bool {
-        if (depth > MAX_DEPTH)
-            return false;
-        if (visitCount++ > MAX_VISITS)
-            return false;
-        std::string savedPath;
-        src->Path(savedPath);
-        std::vector<const DirEntry *> entries;
-        if (!src->EnterDirectory(path)) {
-            if (!savedPath.empty())
-                (void)src->EnterDirectory(savedPath);
-            return false;
-        }
-        src->ListEntries(entries);
-        if (!savedPath.empty())
-            (void)src->EnterDirectory(savedPath);
-        for (const DirEntry *entry : entries) {
-            if (!entry) {
-                OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-                    "ObjectEditorDocument::CopyAllStreamRecursively - entry is null");
-                return false;
-            }
-            if (!entry->IsFile() && !entry->IsDir())
-                return false;
-            std::string fullPath = path;
-            if (path != "/")
-                fullPath += "/";
-            fullPath += entry->Name();
-
-            if (entry->IsDir()) {
-                DirEntry *newDir = dst->GetStorage(fullPath, true);
-                if (!newDir)
-                    return false;
-                newDir->SetClsid(entry->Clsid(), std::size(entry->Clsid()));
-                if (!self(self, fullPath, depth + 1))
-                    return false;
-                continue;
-            }
-
-            if (!CopyStreamData(src, dst, fullPath, entry->Size()))
-                return false;
-        }
-        return true;
-    };
-    return traverse(traverse, basePath, 0);
+    return CopyAllStreamRecursivelyImpl(src, dst, basePath, 0, visitCount);
 }
 
 namespace {
