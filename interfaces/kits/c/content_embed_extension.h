@@ -21,7 +21,7 @@
  *
  * @brief Defines the content embed extension APIs.
  *
- * @library libcontent_embed_ndk.z.so
+ * @library libcontent_embed_ndk.so
  * @kit ContentEmbedKit
  * @syscap SystemCapability.ContentEmbed.ObjectEditor
  * @since 24
@@ -84,7 +84,7 @@ typedef struct ContentEmbed_ExtensionInstance ContentEmbed_ExtensionInstance;
  * Provides methods for Content Embed Kit.
  *
  * @since 24
- */ 
+ */
 typedef struct ContentEmbed_ExtensionInstance* ContentEmbed_ExtensionInstanceHandle;
 
 /**
