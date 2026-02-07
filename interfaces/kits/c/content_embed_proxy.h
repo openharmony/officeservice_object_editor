@@ -21,7 +21,7 @@
  *
  * @brief Defines the content embed proxy APIs.
  *
- * @library libcontent_embed_ndk.z.so
+ * @library libcontent_embed_ndk.so
  * @kit ContentEmbedKit
  * @syscap SystemCapability.ContentEmbed.ObjectEditor
  * @since 24
