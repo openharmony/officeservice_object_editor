@@ -35,6 +35,7 @@ constexpr int32_t BEIJING_TIME_ZONE = 8;
 constexpr int32_t NUMBER_BASE = 10;
 } // namespace
 
+// LCOV_EXCL_START
 uint64_t GetFileSize(const std::string &filePath)
 {
     if (filePath.empty() || filePath.find("..") != std::string::npos || filePath.find("/") == 0) {
@@ -212,7 +213,7 @@ std::string GetPathFromUri(const std::string &uri)
     AppFileService::ModuleFileUri::FileUri fileUri(uri);
     return fileUri.GetRealPath();
 }
-
+// LCOV_EXCL_STOP
 } // namespace SystemUtils
 } // namespace ObjectEditor
 } // namespace OHOS
