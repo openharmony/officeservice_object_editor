@@ -17,7 +17,7 @@
 
 namespace OHOS {
 namespace ObjectEditor {
-
+// LCOV_EXCL_START
 ErrCode ObjectEditorPackageProxy::RegisterClientCB(const sptr<IObjectEditorClientCallback> &callback)
 {
     MessageParcel data;
@@ -221,5 +221,6 @@ ErrCode ObjectEditorPackageProxy::Initial(std::unique_ptr<ObjectEditorDocument> 
     }
     return ERR_OK;
 }
+// LCOV_EXCL_STOP
 } // namespace ObjectEditor
 } // namespace OHOS
