@@ -53,6 +53,8 @@ std::mutex ObjectEditorManagerSystemAbility::mutexTimer_;
 std::condition_variable ObjectEditorManagerSystemAbility::cvTimer_;
 bool ObjectEditorManagerSystemAbility::timerRunning_ = false;
 bool ObjectEditorManagerSystemAbility::timerNotify_ = false;
+std::mutex ObjectEditorManagerSystemAbility::connectMapMutex_;
+std::map<sptr<IRemoteObject>, sptr<ObjectEditorConnection>> ObjectEditorManagerSystemAbility::connectMap_;
 
 ObjectEditorManagerSystemAbility::ObjectEditorManagerSystemAbility(int32_t saId, bool isSystemService)
     : SystemAbility(saId, isSystemService)
@@ -101,6 +103,17 @@ int32_t ObjectEditorManagerSystemAbility::OnIdle(const SystemAbilityOnDemandReas
     return 0;
 }
 
+void ObjectEditorManagerSystemAbilityConnectionStatusCallback::OnConnectionStatusChanged(
+    sptr<IRemoteObject> &remoteObject, const ObjectEditorConnectionStatus status)
+{
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "status:%{public}d", status);
+    if (status != ObjectEditorConnectionStatus::STATUS_DISCONNECTED) {
+        return;
+    }
+    std::lock_guard<std::mutex> lock(connectMapMutex_);
+    connectMap_.erase(remoteObject);
+}
+
 bool ObjectEditorManagerSystemAbility::ConnectObjectEditorExtAbility(
     std::unique_ptr<ObjectEditorFormat> &format, sptr<IRemoteObject> &remoteObject)
 {
@@ -122,6 +135,9 @@ bool ObjectEditorManagerSystemAbility::ConnectObjectEditorExtAbility(
     }
     std::lock_guard<std::mutex> lock(connectMapMutex_);
     connectionMap_[remoteObject] = connection;
+    std::shared_ptr<ObjectEditorConnectionStatusCallback> callback =
+        std::make_shared<ObjectEditorManagerSystemAbilityConnectionStatusCallback>();
+    connection->RegisterConnectionStatusCallback(callback);
     return true;
 }
 
@@ -509,13 +525,13 @@ ErrCode ObjectEditorManagerSystemAbility::StopObjectEditorExtension(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "object editor extension proxy is null");
         return ObjectEditorManagerErrCode::SA_CONNECT_EXTENSION_PROXY_IS_NULL;
     }
-    bool isAllOjectsRemoved = false;
-    ErrCode proxyResult = objectEditorExtensionProxy->Close(std::move(document), isAllOjectsRemoved);
+    bool isAllObjectsRemoved = false;
+    ErrCode proxyResult = objectEditorExtensionProxy->Close(std::move(document), isAllObjectsRemoved);
     if (proxyResult != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "stop object editor extension failed");
         return ObjectEditorManagerErrCode::SA_EXTENSION_REMOTE_SEND_FAILED;
     }
-    if (!isAllOjectsRemoved) {
+    if (!isAllObjectsRemoved) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "not all objects removed");
         return ObjectEditorManagerErrCode::SA_OK;
     }
@@ -534,13 +550,6 @@ ErrCode ObjectEditorManagerSystemAbility::StopObjectEditorExtension(
         code = objectEditorConnection->StopConnect();
         code = code != ObjectEditorManagerErrCode::SA_DISCONNECT_ABILITY_SUCCEED ?
             code : ObjectEditorManagerErrCode::SA_OK;
-    }
-    {
-        std::lock_guard<std::mutex> lock(connectMapMutex_);
-        if (connectMap_.erase(oeExtensionRemoteObject) == 0) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "remove connect failed");
-            code = ObjectEditorManagerErrCode::SA_DISCONNECT_ABILITY_FAILED;
-        }
     }
     return code;
 }
@@ -593,7 +602,7 @@ ErrCode ObjectEditorManagerSystemAbility::StartUIAbility(const std::unique_ptr<A
         return ObjectEditorManagerErrCode::SA_CONNECT_ABILITY_MANAGER_IS_NULL;
     }
     OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "bundlename: %{public}s", want->GetBundle().c_str());
-    ErrCode code = abilityMgr->StartAbility(*want, ILLIGAL_REQUEST_CODE,
+    ErrCode code = abilityMgr->StartAbility(*want, ILLEGAL_REQUEST_CODE,
         UserMgr::GetInstance().GetUserId());
     if (code != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "failed code: %{public}d", code);

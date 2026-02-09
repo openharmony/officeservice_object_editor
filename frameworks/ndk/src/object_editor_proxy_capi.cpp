@@ -109,12 +109,12 @@ char **SplitToCStrings(const std::string &str, char pattern, uint32_t &count)
         return nullptr;
     }
     for (size_t i = 0; i < size; i++) {
-        char *subcstr = CopyToCString(substrs[i]);
-        if (subcstr == nullptr) {
+        char *subCstr = CopyToCString(substrs[i]);
+        if (subCstr == nullptr) {
             FreeCString(cstrs, i);
             return nullptr;
         }
-        cstrs[i] = subcstr;
+        cstrs[i] = subCstr;
     }
     return cstrs;
 }
@@ -668,7 +668,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetSnapShot(ContentEmbed_ExtensionP
     uint32_t errCode2 = 0;
     auto pixelMap = CreatePixelMapNative(snapshotPath, "image/png", errCode2);
     if (pixelMap == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create pixelmap fialed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create pixelmap failed");
         return CE_ERR_NULL_POINTER;
     }
     *snapshot = pixelMap.get();

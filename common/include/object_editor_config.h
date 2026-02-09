@@ -18,6 +18,7 @@
 
 #include <mutex>
 #include "single_instance.h"
+#include "content_embed_common.h"
 
 namespace OHOS {
 namespace ObjectEditor {

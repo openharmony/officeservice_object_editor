@@ -35,7 +35,8 @@ bool ObjectEditorConfig::IsSupportObjectEditor()
     if (!isSupportObjectEditor_.isLoaded) {
         isSupportObjectEditor_.value = system::GetBoolParameter(IS_SUPPORT_OBJECT_EDITOR, false);
         isSupportObjectEditor_.isLoaded = true;
-        OBJECT_EDITOR_HILOGI("IsSupportObjectEditor: %{public}d", isSupportObjectEditor_.value);
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::COMMON, "IsSupportObjectEditor: %{public}d",
+            isSupportObjectEditor_.value);
     }
     return isSupportObjectEditor_.value;
 }
@@ -46,11 +47,11 @@ bool ObjectEditorConfig::CheckIsInDlp()
     bool isInDlpSandbox = false;
     int32_t ret = OHOS::Security::DlpPermission::DlpPermissionKit::IsInDlpSandbox(isInDlpSandbox);
     if (ret != OHOS::Security::DlpPermission::DLP_OK) {
-        OBJECT_EDITOR_HILOGE("CheckIsInDlpSandbox failed, ret: %{public}d", ret);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "CheckIsInDlpSandbox failed, ret: %{public}d", ret);
         return false;
     }
     if (isInDlpSandbox) {
-        OBJECT_EDITOR_HILOGW("Application is in DLP sandbox");
+        OBJECT_EDITOR_LOGW(ObjectEditorDomain::COMMON, "Application is in DLP sandbox");
     }
     return isInDlpSandbox;
 #else
