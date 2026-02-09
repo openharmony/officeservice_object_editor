@@ -80,19 +80,12 @@ inline constexpr int HexToNibble(char c) noexcept
     return -1;
 }
 
-// Parse UUID string into 16-byte CLSID in Windows GUID byte order:
-// Data1/Data2/Data3 are little-endian; Data4 remains in network order.
-// Accepts
-// - "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" (36 chars)
-// - "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" (32 chars)
-// Returns nullopt on failure.
 namespace {
     constexpr uint32_t LENGTH = 32;
     constexpr uint32_t LENGTH_HYPHEN = 36;
 }
 std::optional<CLSID> ParseHmidToClsid(const std::string &uuid);
 
-// Format 16-byte CLSID (Windows GUID byte order) as UUID string with hyphens.
 std::string FormatClsidToHmid(const CLSID &clsid);
 
 }  // namespace ObjectEditor

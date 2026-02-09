@@ -70,15 +70,15 @@ static inline unsigned int GetHilogDomain(ObjectEditorDomain domain)
     return static_cast<unsigned int>(domain);
 }
 
-#define OBJECT_EDITOR_HILOE(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_ERROR, GetHilogDomain(domain), \
+#define OBJECT_EDITOR_LOGE(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_ERROR, GetHilogDomain(domain), \
     GetHilogTag(domain), "[%{public}s]" fmt, __FUNCTION__, ##__VA_ARGS__)
-#define OBJECT_EDITOR_HILOF(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_FATAL, GetHilogDomain(domain), \
+#define OBJECT_EDITOR_LOGF(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_FATAL, GetHilogDomain(domain), \
     GetHilogTag(domain), "[%{public}s]" fmt, __FUNCTION__, ##__VA_ARGS__)
-#define OBJECT_EDITOR_HILOW(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_WARN, GetHilogDomain(domain), \
+#define OBJECT_EDITOR_LOGW(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_WARN, GetHilogDomain(domain), \
     GetHilogTag(domain), "[%{public}s]" fmt, __FUNCTION__, ##__VA_ARGS__)
-#define OBJECT_EDITOR_HILOI(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_INFO, GetHilogDomain(domain), \
+#define OBJECT_EDITOR_LOGI(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_INFO, GetHilogDomain(domain), \
     GetHilogTag(domain), "[%{public}s]" fmt, __FUNCTION__, ##__VA_ARGS__)
-#define OBJECT_EDITOR_HILOD(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_DEBUG, GetHilogDomain(domain), \
+#define OBJECT_EDITOR_LOGD(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_DEBUG, GetHilogDomain(domain), \
     GetHilogTag(domain), "[%{public}s]" fmt, __FUNCTION__, ##__VA_ARGS__)
 
 } // namespace ObjectEditor

@@ -21,6 +21,7 @@
 #include "iremote_object.h"
 #include "system_ability.h"
 
+#include "i_object_editor_connection_status_callback.h"
 #include "object_editor_connection.h"
 #include "object_editor_document.h"
 #include "object_editor_format.h"
@@ -38,6 +39,14 @@ struct ContentEmbed_Diversion {
 enum class ServiceRunningState {
     STATE_NOT_START = 0,
     STATE_RUNNING = 1,
+};
+
+class ObjectEditorManagerSystemAbilityConnectionStatusCallback : public IObjectEditorConnectionStatusCallback {
+public:
+    ObjectEditorManagerSystemAbilityConnectionStatusCallback() = default;
+    ~ObjectEditorManagerSystemAbilityConnectionStatusCallback() = default;
+    void OnConnectionStatusChanged(sptr<IRemoteObject> &remoteObject,
+        const ObjectEditorConnectionStatus status) override;
 };
 
 class ObjectEditorManagerSystemAbility : public SystemAbility, public ObjectEditorManagerStub {
@@ -65,6 +74,9 @@ public:
     ErrCode StartUIAbility(const std::unique_ptr<AAFwk::Want> &want) override;
     int32_t CallbackEnter([[maybe_unused]] uint32_t code) override;
     int32_t CallbackExit([[maybe_unused]] uint32_t code, [[maybe_unused]] int32_t result) override;
+
+    static std::mutex connectMapMutex_;
+    static std::map<sptr<IRemoteObject>, sptr<ObjectEditorConnection>> connectMap_;
 
 protected:
     void OnStart() override;
@@ -101,8 +113,6 @@ private:
     ServiceRunningState state_ = ServiceRunningState::STATE_NOT_START;
     std::shared_mutex diversionMapMutex_;
     std::map<std::string, ContentEmbed_Diversion> diversionMap_;
-    std::mutex connectMapMutex_;
-    std::map<sptr<IRemoteObject>, sptr<ObjectEditorConnection>> connectMap_;
 
     std::mutex mutexCallback_;
     static std::mutex mutexTimer_;
