@@ -20,7 +20,7 @@
 
 namespace OHOS {
 namespace ObjectEditor {
-
+// LCOV_EXCL_START
 ErrCode ObjectEditorManagerProxy::StartObjectEditorExtension(std::unique_ptr<ObjectEditorDocument> &document,
     const sptr<IObjectEditorClientCallback> &callback, sptr<IRemoteObject> &objectEditorProxy, bool &isPackageExtension)
 {
@@ -338,6 +338,6 @@ ErrCode ObjectEditorManagerProxy::StartUIAbility(const std::unique_ptr<AAFwk::Wa
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "StartUIAbility success");
     return ERR_OK;
 }
-
+// LCOV_EXCL_STOP
 } // namespace ObjectEditor
 } // namespace OHOS

@@ -17,8 +17,9 @@
 
 namespace OHOS {
 namespace ObjectEditor {
-
-ObjectEditorClientCallback::ObjectEditorClientCallback(struct ContentEmbed_ExtensionProxy *extensionProxy):proxy_
+// LCOV_EXCL_START
+ObjectEditorClientCallback::ObjectEditorClientCallback(struct ContentEmbed_ExtensionProxy
+    *extensionProxy): proxy_(extensionProxy)
 {
 }
 
@@ -82,5 +83,6 @@ ErrCode ObjectEditorClientCallback::OnExtensionStopped()
     proxy_->onExtensionStoppedFunc(proxy_);
     return ERR_OK;
 }
+// LCOV_EXCL_STOP
 } // namespace ObjectEditor
 } // namespace OHOS

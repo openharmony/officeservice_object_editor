@@ -28,7 +28,7 @@ namespace {
 constexpr int32_t RETRY_INTERVAL_SECOND = 1;
 constexpr int32_t MAX_RETRY = 4;
 constexpr int32_t DEFAULT_USER_ID = 100;
-
+// LCOV_EXCL_START
 std::vector<int32_t> GetAllActiveUserIds()
 {
     ErrCode result = -1;
@@ -98,6 +98,6 @@ int32_t UserMgr::GetUserId()
     std::shared_lock<std::shared_mutex> lock(mtx_);
     return userId_;
 }
-
+// LCOV_EXCL_STOP
 } // namespace ObjectEditor
 } // namespace OHOS

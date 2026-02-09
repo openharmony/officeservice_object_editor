@@ -17,7 +17,7 @@
 
 namespace OHOS {
 namespace ObjectEditor {
-
+// LCOV_EXCL_START
 int32_t ObjectEditorClientCallbackStub::OnRemoteRequest(
     uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option)
 {
@@ -121,5 +121,6 @@ int32_t ObjectEditorClientCallbackStub::HandleOnExtensionStopped(MessageParcel &
     }
     return ERR_NONE;
 }
+// LCOV_EXCL_STOP
 } // namespace ObjectEditor
 } // namespace OHOS

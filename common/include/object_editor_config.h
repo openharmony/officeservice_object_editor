@@ -31,8 +31,26 @@ public:
 class ObjectEditorConfig {
 DECLARE_SINGLE_INSTANCE(ObjectEditorConfig);
 public:
+    /**
+     * @brief Check if the object editor is supported.
+     *
+     * @return true if the object editor is supported, false otherwise.
+     */
     bool IsSupportObjectEditor();
+    /**
+     * @brief Check if the device is in DLP environment.
+     *
+     * @return true if the device is in DLP environment, false otherwise.
+     */
     bool CheckIsInDlp();
+    /**
+     * @brief Check if the object editor is supported on the device.
+     *
+     * @return ContentEmbed_ErrorCode::CE_ERR_OK if the object editor is supported,
+     *         ContentEmbed_ErrorCode::CE_ERR_DEVICE_NOT_SUPPORTED if device not support,
+     *         ContentEmbed_ErrorCode::CE_ERR_IN_DLP_SANDBOX if device in dlp environment.
+     */
+    ContentEmbed_ErrorCode CheckIsSupported();
 private:
     DeviceConfiguration<bool> isSupportObjectEditor_;
 };
