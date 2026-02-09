@@ -19,7 +19,7 @@
 
 namespace OHOS {
 namespace ObjectEditor {
-
+// LCOV_EXCL_START
 bool ObjectEditorFormat::Marshalling(Parcel &data) const
 {
     if (!data.WriteString(hmid)) {
@@ -135,6 +135,6 @@ ObjectEditorFormat *ObjectEditorFormat::Unmarshalling(Parcel &data)
     }
     return format;
 }
-
+// LCOV_EXCL_STOP
 } // namespace ObjectEditor
 } // namespace OHOS

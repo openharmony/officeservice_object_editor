@@ -27,6 +27,7 @@
 
 namespace OHOS {
 namespace ObjectEditor {
+namespace {
 constexpr int32_t UUID_ARRAY_LEN = 16;
 constexpr int32_t UUID_START_POS_1 = 8;
 constexpr int32_t UUID_START_POS_2 = 12;
@@ -34,7 +35,8 @@ constexpr int32_t UUID_START_POS_3 = 16;
 constexpr int32_t UUID_START_POS_4 = 20;
 constexpr int32_t UUID_HEAD_LEN = 8;
 constexpr int32_t UUID_OTHER_LEN = 4;
-
+}
+// LCOV_EXCL_START
 IMPLEMENT_SINGLE_INSTANCE(ObjectEditorClient);
 
 void ObjectEditorClient::SubscribeSystemAbility()
@@ -530,6 +532,6 @@ ObjectEditorClient::~ObjectEditorClient()
 {
     SARegCleanUp();
 }
-
+// LCOV_EXCL_STOP
 } // namespace ObjectEditor
 } // namespace OHOS

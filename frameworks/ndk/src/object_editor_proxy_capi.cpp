@@ -429,13 +429,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_CreateExtensionProxy(ContentEmbed_Documen
     ContentEmbed_ExtensionProxy **proxy)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
-    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported in dlp");
-        return CE_ERR_IN_DLP_SANDBOX;
+    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
+    if (supported != CE_ERR_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
+        return supported;
     }
     if (ceDocument == nullptr || proxy == nullptr) {    
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
@@ -453,13 +450,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_CreateExtensionProxy(ContentEmbed_Documen
 ContentEmbed_ErrorCode OH_ContentEmbed_DestroyExtensionProxy(ContentEmbed_ExtensionProxy *proxy)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
-    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported in dlp");
-        return CE_ERR_IN_DLP_SANDBOX;
+    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
+    if (supported != CE_ERR_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
+        return supported;
     }
     if (proxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is null");
@@ -478,13 +472,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_RegisterOnUpdateFunc(ContentEmbed_E
     OH_ContentEmbed_ClientCallbackOnUpdateFunc onUpdateFunc)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
-    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported in dlp");
-        return CE_ERR_IN_DLP_SANDBOX;
+    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
+    if (supported != CE_ERR_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
+        return supported;
     }
     if (proxy == nullptr || onUpdateFunc == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
@@ -498,13 +489,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_RegisterOnErrorFunc(ContentEmbed_Ex
     OH_ContentEmbed_ClientCallbackOnErrorFunc onErrorFunc)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
-    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported in dlp");
-        return CE_ERR_IN_DLP_SANDBOX;
+    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
+    if (supported != CE_ERR_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
+        return supported;
     }
     if (proxy == nullptr || onErrorFunc == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
@@ -518,13 +506,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_RegisterOnEditingFinishedFunc(Conte
     OH_ContentEmbed_ClientCallbackOnEditingFinishedFunc onEditingFinishedFunc)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
-    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported in dlp");
-        return CE_ERR_IN_DLP_SANDBOX;
+    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
+    if (supported != CE_ERR_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
+        return supported;
     }
     if (proxy == nullptr || onEditingFinishedFunc == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
@@ -538,13 +523,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_RegisterOnExtensionStoppedFunc(Cont
     OH_ContentEmbed_ClientCallbackOnExtensionStoppedFunc onExtensionStoppedFunc)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
-    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported in dlp");
-        return CE_ERR_IN_DLP_SANDBOX;
+    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
+    if (supported != CE_ERR_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
+        return supported;
     }
     if (proxy == nullptr || onExtensionStoppedFunc == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
@@ -557,13 +539,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_RegisterOnExtensionStoppedFunc(Cont
 ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StartWork(ContentEmbed_ExtensionProxy *proxy)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
-    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported in dlp");
-        return CE_ERR_IN_DLP_SANDBOX;
+    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
+    if (supported != CE_ERR_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
+        return supported;
     }
     if (proxy == nullptr || proxy->ceDocument == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is null");
@@ -592,13 +571,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StartWork(ContentEmbed_ExtensionPro
 ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_DoEdit(ContentEmbed_ExtensionProxy *proxy)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
-    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported in dlp");
-        return CE_ERR_IN_DLP_SANDBOX;
+    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
+    if (supported != CE_ERR_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
+        return supported;
     }
     if (proxy == nullptr || proxy->oeExtensionRemoteObject == nullptr ||
         proxy->ceDocument == nullptr || proxy->ceDocument->oeDocumentInner == nullptr) {
@@ -617,13 +593,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetEditStatus(ContentEmbed_Extensio
     bool *isEditing, bool *isModified)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
-    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported in dlp");
-        return CE_ERR_IN_DLP_SANDBOX;
+    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
+    if (supported != CE_ERR_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
+        return supported;
     }
     if (proxy == nullptr || proxy->oeExtensionRemoteObject == nullptr ||
         proxy->ceDocument == nullptr || proxy->ceDocument->oeDocumentInner == nullptr ||
@@ -645,13 +618,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetCapability(ContentEmbed_Extensio
     uint32_t *bitmask)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
-    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported in dlp");
-        return CE_ERR_IN_DLP_SANDBOX;
+    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
+    if (supported != CE_ERR_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
+        return supported;
     }
     if (proxy == nullptr || proxy->oeExtensionRemoteObject == nullptr ||
         proxy->ceDocument == nullptr || proxy->ceDocument->oeDocumentInner == nullptr ||
@@ -673,13 +643,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetSnapShot(ContentEmbed_ExtensionP
     OH_PixelMapNative **snapshot)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
-    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported in dlp");
-        return CE_ERR_IN_DLP_SANDBOX;
+    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
+    if (supported != CE_ERR_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
+        return supported;
     }
     if (proxy == nullptr || proxy->oeExtensionRemoteObject == nullptr ||
         proxy->ceDocument == nullptr || proxy->ceDocument->oeDocumentInner == nullptr ||
@@ -712,13 +679,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetSnapShot(ContentEmbed_ExtensionP
 ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StopWork(ContentEmbed_ExtensionProxy *proxy)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
-    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported in dlp");
-        return CE_ERR_IN_DLP_SANDBOX;
+    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
+    if (supported != CE_ERR_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
+        return supported;
     }
     if (proxy == nullptr || proxy->ceDocument == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is invalid");
@@ -737,13 +701,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetDocument(ContentEmbed_ExtensionP
     ContentEmbed_Document **ceDocument)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
-    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported in dlp");
-        return CE_ERR_IN_DLP_SANDBOX;
+    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
+    if (supported != CE_ERR_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
+        return supported;
     }
     if (proxy == nullptr || proxy->ceDocument == nullptr || ceDocument == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is invalid");
