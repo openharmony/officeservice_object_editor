@@ -476,7 +476,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StopWork(ContentEmbed_ExtensionProx
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
- *     {@link CE_ERR_EXTENSION_ERROR} - an error occured in the extension application.
+ *     {@link CE_ERR_EXTENSION_ERROR} - an error occurred in the extension application.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
@@ -492,7 +492,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetSnapShot(ContentEmbed_ExtensionP
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
- *     {@link CE_ERR_EXTENSION_ERROR} - an error occured in the extension application.
+ *     {@link CE_ERR_EXTENSION_ERROR} - an error occurred in the extension application.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
@@ -509,7 +509,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_DoEdit(ContentEmbed_ExtensionProxy 
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
- *     {@link CE_ERR_EXTENSION_ERROR} - an error occured in the extension application.
+ *     {@link CE_ERR_EXTENSION_ERROR} - an error occurred in the extension application.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
@@ -526,7 +526,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetEditStatus(ContentEmbed_Extensio
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
- *     {@link CE_ERR_EXTENSION_ERROR} - an error occured in the extension application.
+ *     {@link CE_ERR_EXTENSION_ERROR} - an error occurred in the extension application.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.

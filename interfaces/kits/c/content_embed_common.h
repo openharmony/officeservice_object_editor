@@ -76,7 +76,7 @@ typedef enum ContentEmbed_ErrorCode {
      */
     CE_ERR_CLIENT_CALLBACK_NOT_REGISTERED = 35300002,
     /**
-     * @brief The error code when an error occured in the extension application.
+     * @brief The error code when an error occurred in the extension application.
      * @since 24
      */
     CE_ERR_EXTENSION_ERROR = 35300003,

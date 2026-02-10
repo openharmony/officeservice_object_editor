@@ -15,7 +15,6 @@
 
 #include "object_editor_extension.h"
 
-#include <thread>
 #include "ability_loader.h"
 #include "configuration_utils.h"
 #include "connection_manager.h"
@@ -80,7 +79,7 @@ void ObjectEditorExtension::Init(const std::shared_ptr<AbilityLocalRecord> &reco
         return;
     }
 
-    if (Exttension::abilityInfo_ == nullptr) {
+    if (Extension::abilityInfo_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "abilityInfo_ is null");
         return;
     }
@@ -108,8 +107,6 @@ std::shared_ptr<ObjectEditorExtensionContext> ObjectEditorExtension::CreateAndIn
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "fail to create context");
         return nullptr;
     }
-    std::unique_lock<std::mutex> lock(mutexExtensionContext_);
-    extensionContext_ = context;
     return context;
 }
 
@@ -251,49 +248,6 @@ void ObjectEditorExtension::OnStop()
     }
     if (ceInstance_ != nullptr && ceInstance_->onDestroyFunc != nullptr) {
         ceInstance_->onDestroyFunc(ceInstance_.get());
-    }
-}
-
-void ObjectEditorExtension::TimerThreadStopExtension()
-{
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "enter TimerThreadStopExtension");
-    while (true) {
-        std::unique_lock<std::mutex> lock(mutexTimer_);
-        OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "start wait 20s");
-        auto waitResult = cvTimer_.wait_for(lock, std::chrono::seconds(EXTENSION_STOP_TIME_S),
-                                            [this]() { return timerNotify_.load() == true; });
-        if (!waitResult) {
-            bool isEditing = false;
-            bool isModified = false;
-            GetEditStatus(&isEditing, &isModified);
-            if (isEditing) {
-                OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "server is editing");
-                timerNotify_.store(false);
-                continue;
-            }
-            std::unique_lock<std::mutex> lock(mutexExtensionContext_);
-            if (extensionContext_ != nullptr) {
-                extensionContext_->TerminateAbility();
-            }
-            break;
-        }
-        timerNotify_.store(false);
-        OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "wait finish");
-    }
-    std::unique_lock<std::mutex> lock(mutexTimerRunning_);
-    timerRunning_.store(false);
-}
-
-void ObjectEditorExtension::ResetStopExtensionTimer()
-{
-    bool expected = false;
-    std::unique_lock<std::mutex> lock(mutexTimerRunning_);
-    if (timerRunning_.compare_exchange_strong(expected, true)) {
-        std::thread([this]() { TimerThreadStopExtension(); }).detach();
-    } else {
-        std::unique_lock<std::mutex> lock(mutexTimer_);
-        timerNotify_.store(true);
-        cvTimer_.notify_one();
     }
 }
 
@@ -507,7 +461,6 @@ ErrCode ObjectEditorExtension::Initial(std::unique_ptr<ObjectEditorDocument> doc
 int32_t ObjectEditorExtension::CallbackEnter([[maybe_unused]] uint32_t code)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "in");
-    ResetStopExtensionTimer();
     return ERR_OK;
 }
 
