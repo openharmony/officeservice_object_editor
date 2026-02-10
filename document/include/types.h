@@ -65,6 +65,43 @@ using StreamPos = uint64_t;
 using BlockCount = std::uint32_t;
 using CLSID = std::array<uint8_t, CLSID_SIZE>;
 
+constexpr uint32_t INDEX_ZERO = 0;
+constexpr uint32_t INDEX_ONE = 1;
+constexpr uint32_t INDEX_TWO = 2;
+constexpr uint32_t INDEX_THREE = 3;
+constexpr uint32_t INDEX_FOUR = 4;
+constexpr uint32_t INDEX_FIVE = 5;
+constexpr uint32_t INDEX_SIX = 6;
+constexpr uint32_t INDEX_SEVEN = 7;
+
+constexpr uint32_t BUFFER_OFFSET = 128;
+constexpr uint32_t TYPE_OFFSET = 0x42;
+constexpr uint32_t CHILD_OFFSET = 0x4C;
+constexpr uint32_t CLSID_OFFSET = 0x50;
+constexpr uint32_t FLAG_OFFSET = 0x43;
+constexpr uint32_t ROOT_ENTRY_NAME_LEN = 22;
+constexpr uint32_t OFFSET = 8;
+constexpr uint32_t MAX_NAME_LENGTH = 64;
+constexpr uint32_t MAX_NAME_LENGTH = 64;
+constexpr uint32_t CLSID_SIZE = 16;
+constexpr uint32_t DIFAT_ELEM_VALUE = 2;
+constexpr uint32_t LEAF_TYPE_DEFAULT = 2;
+constexpr uint32_t TWO_BYTE_SIZE = 2;
+constexpr uint32_t BIT_SHIFT = 32;
+constexpr uint32_t FOUR_BYTE_SIZE = 4;
+constexpr uint32_t CACHE_SIZE = 4096;
+constexpr uint32_t DEFAULT_BLOCK_SIZE = 128;
+constexpr uint32_t DIR_ENTRY_ROOT = 5;
+constexpr uint32_t DASH_FIRST = 8;
+constexpr uint32_t DASH_SECOND = 13;
+constexpr uint32_t DASH_THREE = 18;
+constexpr uint32_t DASH_FOUR = 23;
+
+constexpr uint32_t DASH_FIRST_INSERT = 4;
+constexpr uint32_t DASH_SECOND_INSERT = 4;
+constexpr uint32_t DASH_THREE_INSERT = 8;
+constexpr uint32_t DASH_FOUR_INSERT = 10;
+
 }  // namespace ObjectEditor
 }  // namespace OHOS
 
