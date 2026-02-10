@@ -76,7 +76,7 @@ typedef struct ContentEmbed_Stream ContentEmbed_Stream;
 /**
  * @brief Create a new {@link ContentEmbed_Document} instance using the provided hmid.
  * The caller is responsible for destroying the instance by calling
- * {@link OH_ContentEmbed_DestoryDocument} to avoid memory leaks.
+ * {@link OH_ContentEmbed_DestroyDocument} to avoid memory leaks.
  *
  * @param hmid Represents hmid value.
  * @param document Represents a pointer to an {@link ContentEmbed_Document} instance which will be created.
@@ -95,7 +95,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_CreateDocumentByHmid(
 /**
  * @brief Create a new {@link ContentEmbed_Document} instance from the source file.
  * The caller is responsible for destroying the instance by calling
- * {@link OH_ContentEmbed_DestoryDocument} to avoid memory leaks.
+ * {@link OH_ContentEmbed_DestroyDocument} to avoid memory leaks.
  *
  * @param srcFilePath Represents source file path.
  * @param length Represents source file path length.
@@ -116,7 +116,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_CreateDocumentByFile(
 /**
  * @brief Load an instance of {@link ContentEmbed_Document} from the source file.
  * The caller is responsible for destroying the instance by calling
- * {@link OH_ContentEmbed_DestoryDocument} to avoid memory leaks.
+ * {@link OH_ContentEmbed_DestroyDocument} to avoid memory leaks.
  *
  * @param srcFilePath Represents source file path.
  * @param length Represents source file path length.
@@ -206,7 +206,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetNativeFilePath(
 /**
  * @brief Get the {@link ContentEmbed_Storage} from a {@link ContentEmbed_Document} instance.
  * The caller is responsible for destroying the instance by calling
- * {@link OH_ContentEmbed_DestoryStorage} to avoid memory leaks.
+ * {@link OH_ContentEmbed_DestroyStorage} to avoid memory leaks.
  *
  * @param document Represents a pointer to an {@link ContentEmbed_Document} instance.
  * @param storage Output parameter represents a pointer to an {@link ContentEmbed_Storage} instance.
@@ -240,7 +240,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_Flush(const ContentEmbed_Documen
 /**
  * @brief Creates a new {@link ContentEmbed_Storage} instance.
  * The caller is responsible for destroying the instance by calling
- * {@link OH_ContentEmbed_DestoryStorage} to avoid memory leaks.
+ * {@link OH_ContentEmbed_DestroyStorage} to avoid memory leaks.
  *
  * @param parentStorage Represents a pointer to an {@link ContentEmbed_Storage} instance.
  * @param name Represents the name of an {@link ContentEmbed_Storage} instance which will be created.
@@ -261,7 +261,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_CreateStorage(
 /**
  * @brief Obtain the child {@link ContentEmbed_Storage} instance from its parent instance.
  * The caller is responsible for destroying the instance by calling
- * {@link OH_ContentEmbed_DestoryStorage} to avoid memory leaks.
+ * {@link OH_ContentEmbed_DestroyStorage} to avoid memory leaks.
  *
  * @param parentStorage Represents a pointer to an {@link ContentEmbed_Storage} instance.
  * @param name Represents the name of an {@link ContentEmbed_Storage} instance which will be obtained.
@@ -282,7 +282,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetStorage(
 /**
  * @brief Create a new {@link ContentEmbed_Stream} instance.
  * The caller is responsible for destroying the instance by calling
- * {@link OH_ContentEmbed_DestoryStream} to avoid memory leaks.
+ * {@link OH_ContentEmbed_DestroyStream} to avoid memory leaks.
  *
  * @param parentStorage Represents a pointer to an {@link ContentEmbed_Storage} instance.
  * @param name Represents the name of an {@link ContentEmbed_Stream} instance which will be created.
@@ -304,7 +304,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_CreateStream(
 /**
  * @brief Obtain the child {@link ContentEmbed_Stream} instance from the parent storage instance.
  * The caller is responsible for destroying the instance by calling
- * {@link OH_ContentEmbed_DestoryStream} to avoid memory leaks.
+ * {@link OH_ContentEmbed_DestroyStream} to avoid memory leaks.
  *
  * @param parentStorage Represents a pointer to an {@link ContentEmbed_Storage} instance.
  * @param name Represents the name of an {@link ContentEmbed_Stream} instance which will be obtained.
@@ -355,7 +355,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_DeleteEntry(
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
-ContentEmbed_ErrorCode OH_ContentEmbed_DestoryStorage(ContentEmbed_Storage *storage);
+ContentEmbed_ErrorCode OH_ContentEmbed_DestroyStorage(ContentEmbed_Storage *storage);
 
 /**
  * @brief Read the buffer data from an {@link ContentEmbed_Stream} instance.
@@ -402,7 +402,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_Write(
  * @brief Sets the current read position of the {@link ContentEmbed_Stream} to the specified offset.
  *
  * @param stream Represents a pointer to an {@link ContentEmbed_Stream} instance that will be modified.
- * @param position The offest in bytes from the beginning of the stream to which the position will be set.
+ * @param position The offset in bytes from the beginning of the stream to which the position will be set.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
@@ -469,7 +469,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_GetSize(ContentEmbed_Stream *strea
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
-ContentEmbed_ErrorCode OH_ContentEmbed_DestoryStream(ContentEmbed_Stream *stream);
+ContentEmbed_ErrorCode OH_ContentEmbed_DestroyStream(ContentEmbed_Stream *stream);
 
 /**
  * @brief Destroys an {@link ContentEmbed_Document} instance and reclaims the memory occupied by it.
@@ -484,7 +484,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_DestoryStream(ContentEmbed_Stream *stream
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
-ContentEmbed_ErrorCode OH_ContentEmbed_DestoryDocument(ContentEmbed_Document *document);
+ContentEmbed_ErrorCode OH_ContentEmbed_DestroyDocument(ContentEmbed_Document *document);
 
 #ifdef __cplusplus
 }

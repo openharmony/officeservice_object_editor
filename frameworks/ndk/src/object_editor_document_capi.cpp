@@ -83,12 +83,12 @@ Storage *OH_ContentEmbed_Helper_GetRootStorage(const ContentEmbed_Document *oeDo
     return oeDoc->oeDocumentInner->GetRootStorage();
 }
 
-Storage *OH_ContentEmbed_Helper_GetRootStorage(const ContentEmbed_Storage *oeStroage)
+Storage *OH_ContentEmbed_Helper_GetRootStorage(const ContentEmbed_Storage *oeStorage)
 {
-    if (!oeStroage || !oeStroage->owner) {
+    if (!oeStorage || !oeStorage->owner) {
         return nullptr;
     }
-    return OH_ContentEmbed_Helper_GetRootStorage(oeStroage->owner);
+    return OH_ContentEmbed_Helper_GetRootStorage(oeStorage->owner);
 }
 
 ContentEmbed_ErrorCode OH_ContentEmbed_Helper_RequireStorageEntry(const ContentEmbed_Storage *handle,
@@ -141,6 +141,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Helper_RequireStream(ContentEmbed_Stream 
     streamOut = handle->stream;
     handle->pos = streamOut->Tell();
     return CE_ERR_OK;
+}
 }
 
 #ifdef __cplusplus
