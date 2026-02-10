@@ -1,15 +1,15 @@
 /*
-* Copyright (c) Huawei Device Co., Ltd. 2025-2025. All right reserved.
-* Licensed under the Apache License, Version 2.0 (thr "License");
-* you may not use this file except in compliance eith the License.
+* Copyright (c) Huawei Device Co., Ltd. 2026-2026. All rights reserved.
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
 *
 *     http://www.apache.org/licenses/LICENSE-2.0
 *
 * Unless required by applicable law or agreed to in writing, software
 * distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDTIONS OF ANY KIND, either express or implied.
-* See the License for specific language governing permissions and
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -18,30 +18,29 @@
 #include <sstream>
 
 #include "alloctable.h"
-#include "types.h"
 #include "utils.h"
 
 namespace OHOS {
 namespace ObjectEditor {
-const uint32_t Alloctable::Avail = 0xffffffff;
-const uint32_t Alloctable::Eof = 0xfffffffe;
-const uint32_t Alloctable::Bat = 0xfffffffd;
-const uint32_t Alloctable::MetaBat = 0xfffffffc;
+const uint32_t AllocTable::Avail = 0xffffffff;
+const uint32_t AllocTable::Eof = 0xfffffffe;
+const uint32_t AllocTable::Bat = 0xfffffffd;
+const uint32_t AllocTable::MetaBat = 0xfffffffc;
 
-void Alloctable::Set(size_t index, uint32_t value)
+void AllocTable::Set(size_t index, uint32_t value)
 {
     if (index >= Count()) {
         Resize(index + 1);
     }
     data_[index] = value;
 }
-void Alloctable::SetBlockSize(uint32_t size)
+void AllocTable::SetBlockSize(uint32_t size)
 {
     blockSize_ = size;
-    data_clear();
+    data_.clear();
     Resize(DEFAULT_BLOCK_SIZE);
 }
-void Alloctable::SetChain(const std::vector<uint32_t> &chain)
+void AllocTable::SetChain(const std::vector<uint32_t> &chain)
 {
     if (chain.empty()) {
         return;
@@ -58,7 +57,7 @@ void Alloctable::SetChain(const std::vector<uint32_t> &chain)
     Set(chain.back(), Eof);
 }
 
-bool Alloctable::Follow(uint32_t start, std::vector<uint32_t> &chain) const
+bool AllocTable::Follow(uint32_t start, std::vector<uint32_t> &chain) const
 {
     if (start == Eof || start == Avail || start == MetaBat || start == Bat) {
         return true;
@@ -85,7 +84,7 @@ bool Alloctable::Follow(uint32_t start, std::vector<uint32_t> &chain) const
     return true;
 }
 
-size_t Alloctable::Unused()
+size_t AllocTable::Unused()
 {
     for (size_t i = 0; i < data_.size(); i++) {
         if (data_[i] == Avail) {
@@ -98,7 +97,7 @@ size_t Alloctable::Unused()
     return block;
 }
 
-bool Alloctable::Load(const Byte *buffer, size_t len)
+bool AllocTable::Load(const Byte *buffer, size_t len)
 {
     if ((len % FOUR_BYTE_SIZE != 0) || buffer == nullptr) [[unlikely]]
     {
@@ -111,7 +110,7 @@ bool Alloctable::Load(const Byte *buffer, size_t len)
     return true;
 }
 
-bool Alloctable::Save(Byte *buffer, size_t len)
+bool AllocTable::Save(Byte *buffer, size_t len)
 {
     size_t count = Count();
     const size_t required = FOUR_BYTE_SIZE * count;
@@ -119,17 +118,17 @@ bool Alloctable::Save(Byte *buffer, size_t len)
     {
         return false;
     }
-    size_t count = Count();
+
     for (size_t i = 0; i < count; i++)
         WriteUint32(buffer + i * FOUR_BYTE_SIZE, data_[i]);
     return true;
 }
 
-void Alloctable::Debug() const
+void AllocTable::Debug() const
 {
     constexpr int32_t MINI_WIDTH = 4;
     std::ostringstream oss;
-    oss << "==================== FAT ALLOCATION TABLE ==================" << std::endl;
+    oss << "==================== FAT ALLOCATION TABLE ====================" << std::endl;
     const size_t totalBlocks = data_.size();
     size_t usedBlocks = 0;
     size_t freeBlocks = 0;
@@ -152,21 +151,22 @@ void Alloctable::Debug() const
         if (val == Avail) {
             continue;
         }
-        oss << "0x" << std::hex << std::setw(MINI_WIDTH) << std::setfill('0') << i << std::dec << ":";
+        oss << "0x" << std::hex << std::setw(MINI_WIDTH) << std::setfill('0') << i << std::dec << ": ";
 
         if (val == Eof) {
             oss << "[EOF]";
         } else if (val == Bat) {
             oss << "[FAT]";
         } else if (val == MetaBat) {
-            oss << "[MetaFAT]"
+            oss << "[MetaFAT]";
         } else {
-            oss << "-> 0x" << std::hex << std::setw(MINI_WIDTH) << std::setfill('0') <<
-                static_cast<uint64_t>(val) << std::dec;
+            oss << "-> 0x" << std::hex << std::setw(MINI_WIDTH) << std::setfill('0') << static_cast<uint64_t>(val)
+                << std::dec;
         }
+        oss << std::endl;
     }
 
-    oss << "=====================================================================" << std::endl;
+    oss << "=================================================================" << std::endl;
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "AllocTable dump: %{public}s", oss.str().c_str());
 }
 

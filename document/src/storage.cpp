@@ -1,15 +1,15 @@
 /*
-* Copyright (c) Huawei Device Co., Ltd. 2025-2025. All right reserved.
-* Licensed under the Apache License, Version 2.0 (thr "License");
-* you may not use this file except in compliance eith the License.
+* Copyright (c) Huawei Device Co., Ltd. 2026-2026. All rights reserved.
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
 *
 *     http://www.apache.org/licenses/LICENSE-2.0
 *
 * Unless required by applicable law or agreed to in writing, software
 * distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDTIONS OF ANY KIND, either express or implied.
-* See the License for specific language governing permissions and
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -24,6 +24,7 @@
 #include <set>
 #include <utility>
 #include <filesystem>
+#include <array>
 
 #include "alloctable.h"
 #include "dirtree.h"
@@ -31,7 +32,6 @@
 #include "storage.h"
 #include "stream.h"
 #include "utils.h"
-#include "types.h"
 
 namespace OHOS {
 namespace ObjectEditor {
@@ -47,7 +47,7 @@ StorageIO::StorageIO(const char *filename)
         return;
     }
     file_ = std::move(f);
-    streams_ = file_.get();
+    stream_ = file_.get();
     const bool loaded = Load();
     if (!loaded) {
         return;
@@ -62,7 +62,7 @@ StorageIO::StorageIO(std::iostream *stream)
         SetError(ErrorCode::OpenFailed, "Invalid input stream");
         return;
     }
-    streams_ = stream;
+    stream_ = stream;
     const bool loaded = Load();
     if (!loaded) {
         return;
@@ -104,7 +104,7 @@ bool StorageIO::ConfigMinimalCd(const std::string &hmid)
     header_->SetFatSectorCount(1);
     header_->SetFirstDirSector(1);
     header_->SetFirstMiniFat(AllocTable::Eof);
-    header_->SetMiniFatCount(1);
+    header_->SetMiniFatCount(0);
     header_->SetFirstDifat(AllocTable::Eof);
     header_->SetDifatCount(0);
     header_->SetDifatElem(0, DIFAT_ELEM_VALUE);
@@ -134,7 +134,7 @@ bool StorageIO::ConfigMinimalCd(const std::string &hmid)
     protectedBlocksCache_.clear();
     protectedBlocksDirty_ = true;
 
-    for (size_t i = 0; i < fatEntriesPerSector; i++) {
+    for (size_t i = 3; i < fatEntriesPerSector; i++) {
         bbat_->Set(i, AllocTable::Avail);
     }
     return true;
@@ -196,7 +196,7 @@ void StorageIO::Init()
     auto newSbat = std::make_unique<AllocTable>(1 << newHeader->SmallBlockShift());
     std::vector<uint32_t> newFatSectors{};
     std::vector<uint32_t> newDifatSectors{};
-    std::set<uint32_t> newProtectBlocksCache{};
+    std::set<uint32_t> newProtectedBlocksCache{};
 
     error_ = ErrorCode::Ok;
     errorMsg_.clear();
@@ -211,7 +211,7 @@ void StorageIO::Init()
     size_ = 0;
     fatSectors_.swap(newFatSectors);
     difatSectors_.swap(newDifatSectors);
-    protectedBlocksCache_.swap(newProtectBlocksCache);
+    protectedBlocksCache_.swap(newProtectedBlocksCache);
     protectedBlocksDirty_ = true;
 }
 
@@ -242,7 +242,7 @@ const char *StorageIO::ErrorMessage() const noexcept
             return "Failed to open file";
         case ErrorCode::NotOLE:
             return "Not a valid OLE file";
-        case ErrorCode::BadOle:
+        case ErrorCode::BadOLE:
             return "Corrupted OLE structure";
         case ErrorCode::IOError:
             return "I/O operation failed";
@@ -264,7 +264,7 @@ void StorageIO::ClearError() noexcept
     isValid_ = true;
 }
 
-void StorageIO::SetError(ErrorCode code, const std::string &message, bool invalidate) noexcept
+void StorageIO::SetError(ErrorCode code, const std::string &message, bool invalidate)
 {
     error_ = code;
     if (!message.empty()) {
@@ -278,19 +278,20 @@ void StorageIO::SetError(ErrorCode code, const std::string &message, bool invali
 }
 
 namespace {
-bool IsValidReadParams(size_t len, uint8_t *buf, size_t *outRead) {
+bool IsValidReadParams(StorageIO *self, size_t len, uint8_t *buf, size_t *outRead)
+{
     if (!outRead || (!buf && len > 0)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
             "StorageIO::ReadRawCd - Invalid parameters");
         return false;
     }
-    if (IsDirty()) {
+    if (self->IsDirty()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
             "StorageIO::ReadRawCd - Storage is dirty. Flush before read.");
         return false;
     }
 
-    if (!file_ || !stream_) {
+    if (!self->file_ || !self->stream_) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
             "StorageIO::ReadRawCd - ReadRawCd requires file-backed storage");
         return false;
@@ -300,7 +301,7 @@ bool IsValidReadParams(size_t len, uint8_t *buf, size_t *outRead) {
 
 bool StorageIO::ReadRawCd(size_t offset, uint8_t *buf, size_t len, size_t *outRead)
 {
-    if (!IsValidReadParams(len, buf, outRead))
+    if (!IsValidReadParams(this, len, buf, outRead))
         return false;
     *outRead = 0;
     if (len == 0) {
@@ -325,7 +326,7 @@ bool StorageIO::ReadRawCd(size_t offset, uint8_t *buf, size_t len, size_t *outRe
     file_->flush();
     if (auto *rdbuf = file_->rdbuf())
         rdbuf->pubsync();
-    streams_->clear();
+    stream_->clear();
     stream_->seekg(static_cast<std::streamoff>(offset64), std::ios::beg);
     if (!stream_->good()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
@@ -419,7 +420,7 @@ bool StorageIO::LoadFatChain(uint32_t sectorSize, std::vector<uint32_t> &fatBloc
         const uint32_t bytesRead = LoadBigBlocks(fatBlocks, buffer.data(), bufLen);
         if (bytesRead != bufLen) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-                "StorageIO::LoadFatChain - Failed to load FAT chain");
+                "StorageIO::LoadFatChain - Failed to read FAT sectors");
             return false;
         }
         if (bbat_) {
@@ -433,7 +434,7 @@ bool StorageIO::ReadDifatSector(uint32_t sectorSize, uint32_t difatSector,
     std::vector<uint8_t> &difatBuf)
 {
     difatBuf.assign(sectorSize, 0xFF);
-    const uint32_t bytesRead = LoadBigBlocks(difatSector, difatBuf.data(), sectorSize);
+    const uint32_t bytesRead = LoadBigBlock(difatSector, difatBuf.data(), sectorSize);
     if (bytesRead != sectorSize) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
             "StorageIO::ReadDifatSector - Failed to load DIFAT sector");
@@ -450,7 +451,7 @@ bool StorageIO::ProcessDifatEntries(uint32_t entriesPerSector, uint32_t expected
     const std::vector<uint8_t> &difatBuf, std::vector<uint32_t> &fatBlocks)
 {
     const uint32_t difatEntries = entriesPerSector > 0 ? entriesPerSector - 1 : 0;
-    for (uint32_t i = 0; i < difatEntries && loadFromDifat < expectedFromDifat; ++i) {
+    for (uint32_t i = 0; i < difatEntries && loadedFromDifat < expectedFromDifat; ++i) {
         uint32_t entry = ReadUint32(difatBuf.data() + i * 4);
         if (entry == AllocTable::Avail) {
             continue;
@@ -530,15 +531,15 @@ bool StorageIO::LoadDifatChain(uint32_t sectorSize, std::vector<uint32_t> &fatBl
     const BlockCount numBat = header_->NumBat();
     const BlockCount headerFatCount = std::min<BlockCount>(numBat,
         static_cast<BlockCount>(HEADER_DIFAT_ARRAY_SIZE));
-    fatBlocks.reverse(static_cast<size_t>(numBat));
+    fatBlocks.reserve(static_cast<size_t>(numBat));
     for (uint32_t i = 0; i < headerFatCount; ++i) {
-        fatBlocks.push_back(header_->Bblocks()[i]);
+        fatBlocks.push_back(header_->BbBlocks()[i]);
     }
 
     const uint64_t fileSize = size_ >= 0 ? static_cast<uint64_t>(size_) : 0;
     uint32_t expectedMaxSectors = 0;
     if (sectorSize > 0 && fileSize >= sectorSize) {
-        const uint32_t maxBlocks64 = fileSize / sectorSize;
+        const uint64_t maxBlocks64 = fileSize / sectorSize;
         if (maxBlocks64 > 0) {
             expectedMaxSectors = static_cast<uint32_t>(std::min<uint64_t>(maxBlocks64 - 1,
                 std::numeric_limits<uint32_t>::max()));
@@ -568,7 +569,7 @@ bool StorageIO::LoadDirectoryTree(SectorIndex &sbStart)
 
     const uint32_t bufLen = static_cast<uint32_t>(blocks.size()) *
         static_cast<uint32_t>(bbat_->BlockSize());
-    std::vector<uint8_t> buffer(bufLen);
+    std::vector<Byte> buffer(bufLen);
     const uint32_t bytesRead = LoadBigBlocks(blocks, buffer.data(), bufLen);
     if (bytesRead != bufLen) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
@@ -584,7 +585,7 @@ bool StorageIO::LoadDirectoryTree(SectorIndex &sbStart)
             "StorageIO::LoadDirectoryTree - Failed to load directory tree");
         return false;
     }
-    sbStart = ReadInt32(buffer.data() + 0x74);
+    sbStart = ReadUint32(buffer.data() + 0x74);
     return true;
 }
 
@@ -598,11 +599,11 @@ bool StorageIO::LoadMiniFat(SectorIndex sbStart)
     if (!FollowMiniStream(sbStart)) {
         return false;
     }
-    size_t hightestUsed = 0;
-    if (!ValidateMiniFatEntries(hightestUsed)) {
+    size_t highestUsed = 0;
+    if (!ValidateMiniFatEntries(highestUsed)) {
         return false;
     }
-    return ValidateMiniRootCoverage(hightestUsed);
+    return ValidateMiniRootCoverage(highestUsed);
 }
 
 bool StorageIO::LoadMiniFatBlocks(std::vector<uint32_t> &blocks, std::vector<Byte> &buffer)
@@ -646,9 +647,9 @@ bool StorageIO::FollowMiniStream(SectorIndex sbStart)
     return true;
 }
 
-bool StorageIO::ValidateMiniFatEntries(size_t &hightestUsed)
+bool StorageIO::ValidateMiniFatEntries(size_t &highestUsed)
 {
-    hightestUsed = 0;
+    highestUsed = 0;
     if (!sbat_) {
         return false;
     }
@@ -656,7 +657,7 @@ bool StorageIO::ValidateMiniFatEntries(size_t &hightestUsed)
     for (size_t i = 0; i < miniEntries; ++i) {
         const uint32_t entry = (*sbat_)[i];
         if (entry != AllocTable::Avail) {
-            hightestUsed = i + 1;
+            highestUsed = i + 1;
         }
 
         const bool isSpecial = (entry == AllocTable::Avail || entry == AllocTable::Eof ||
@@ -670,12 +671,12 @@ bool StorageIO::ValidateMiniFatEntries(size_t &hightestUsed)
     return true;
 }
 
-bool StorageIO::ValidateMiniRootCoverage(size_t hightestUsed)
+bool StorageIO::ValidateMiniRootCoverage(size_t highestUsed)
 {
-    if (hightestUsed == 0) {
+    if (highestUsed == 0) {
         return true;
     }
-    const uint64_t requiredMiniBytes = static_cast<uint64_t>(hightestUsed) * SmallBlockSize();
+    const uint64_t requiredMiniBytes = static_cast<uint64_t>(highestUsed) * SmallBlockSize();
     const uint64_t bigBlockSz = BigBlockSize();
     if (bigBlockSz == 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
@@ -712,7 +713,7 @@ void StorageIO::Close()
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
             "StorageIO::Close - Failed to flush file");
     }
-    stream_.clear();
+    streams_.clear();
     if (file_) {
         file_->close();
         file_.reset();
@@ -727,7 +728,7 @@ uint32_t StorageIO::ReadBigBlocksFromMemory(const std::vector<uint32_t> &blocks,
         return 0;
     }
     const uint32_t blockSize32 = bbat_->BlockSize();
-    const uint32_t BlockSize = blockSize32;
+    const uint64_t blockSize = blockSize32;
     uint32_t bytes = 0;
     for (uint32_t i = 0; (i < blocks.size()) && (bytes < maxlen); ++i) {
         const uint32_t block = blocks[i];
@@ -760,7 +761,7 @@ uint32_t StorageIO::ReadBigBlocksFromFile(const std::vector<uint32_t> &blocks,
         return 0;
     }
     const uint32_t blockSize32 = bbat_->BlockSize();
-    const uint32_t BlockSize = blockSize32;
+    const uint64_t blockSize = blockSize32;
     if (blockSize32 == 0) {
         return 0;
     }
@@ -770,14 +771,14 @@ uint32_t StorageIO::ReadBigBlocksFromFile(const std::vector<uint32_t> &blocks,
             buf->pubsync();
         }
     }
-    const uint64_t maxStreamOff = static_cast<uint64_t>(std::numeric_limits<StreamPos>::max());
-    const uint64_t fileSize = size_ > 0 ? static_cast<uint64_t>(size_) : 0;
+    const uint64_t maxStreamOff = static_cast<uint64_t>(std::numeric_limits<std::streamoff>::max());
+    const uint64_t fileSize = size_ >= 0 ? static_cast<uint64_t>(size_) : 0;
 
     uint32_t bytes = 0;
     for (uint32_t i = 0; (i < blocks.size()) && (bytes < maxlen); ++i) {
         const uint32_t block = blocks[i];
         const uint64_t pos = BlockToOffset(block, blockSize);
-        if (pos >= maxStreamOff) {
+        if (pos > maxStreamOff) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
                 "StorageIO::ReadBigBlocksFromFile - Block offset overflow");
             return bytes;
@@ -795,7 +796,7 @@ uint32_t StorageIO::ReadBigBlocksFromFile(const std::vector<uint32_t> &blocks,
         stream_->seekg(static_cast<std::streamoff>(pos));
         stream_->read(reinterpret_cast<char *>(data) + bytes, p);
         const std::streamsize actualRead = stream_->gcount();
-        if ((actualRead < static_cast<std::streamsize>(p)) || stream_->eof()) {
+        if ((actualRead < static_cast<std::streamsize>(p)) && !stream_->eof()) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
                 "StorageIO::ReadBigBlocksFromFile - Failed to read big block");
             return bytes + static_cast<uint32_t>(actualRead);
@@ -822,7 +823,7 @@ uint32_t StorageIO::LoadBigBlocks(const std::vector<uint32_t> &blocks,
     return ReadBigBlocksFromFile(blocks, data, maxlen);
 }
 
-uint32_t StorageIO::LoadBigBlocks(uint32_t block, Byte *data, uint32_t maxlen)
+uint32_t StorageIO::LoadBigBlock(uint32_t block, Byte *data, uint32_t maxlen)
 {
     if (!data) {
         return 0;
@@ -841,7 +842,7 @@ bool StorageIO::ValidateMiniBlockAccess(uint32_t block, uint64_t pos64,
             "StorageIO::ValidateMiniBlockAccess - mini block offset exceeds miniStreamSize");
         return false;
     }
-    if (pos64 > std::numeric_limits<uint32_t>::max() || bigBlockSz == 0) {
+    if (pos64 > std::numeric_limits<uint64_t>::max() - bigBlockSz || bigBlockSz == 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
             "StorageIO::ValidateMiniBlockAccess - mini block offset exceeds uint32_t max");
         return false;
@@ -865,19 +866,19 @@ bool StorageIO::ReadMiniBlock(uint32_t block, uint64_t pos64, uint64_t miniStrea
         return false;
     }
     std::vector<Byte> buf(bigBlockSz);
-    const uint32_t read = LoadBigBlocks(sbBlocks_[bbindex], buf.data(), bigBlockSz);
+    const uint32_t read = LoadBigBlock(sbBlocks_[bbindex], buf.data(), bigBlockSz);
     if (read != bigBlockSz || bigBlockSz == 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
             "StorageIO::ReadMiniBlock - Failed to read mini stream backing block");
         return false;
     }
 
-    const uint32_t offset = static_cast<uint32_t>(pos64 % bigBlockSz);
-    const uint32_t p = std::min(remaining, bigBlockSz - offset);
+    uint32_t offset = static_cast<uint32_t>(pos64 % bigBlockSz);
+    uint32_t p = std::min(remaining, bigBlockSz - offset);
     if (p > smallBlockSz) {
         p = smallBlockSz;
     }
-    if (pos64 > std::numeric_limits<uint32_t>::max() - p) {
+    if (pos64 > std::numeric_limits<uint64_t>::max() - p) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
             "StorageIO::ReadMiniBlock - mini block offset exceeds uint32_t max");
         return false;
@@ -916,7 +917,7 @@ uint32_t StorageIO::ReadMiniBlocks(const std::vector<uint32_t> &blocks, Byte *da
         miniStreamSize = static_cast<uint64_t>(sbBlocks_.size()) * bigBlockSz;
     }
     uint32_t bytes = 0;
-    for (uint32_t i = 0; (i < blocks.size()) && (bytes < maxlen); i++) {
+    for (uint32_t i = 0; (i < blocks.size()) && (bytes < maxlen); ++i) {
         const uint32_t block = blocks[i];
         const uint64_t pos64 = static_cast<uint64_t>(block) * smallBlockSz;
         uint32_t copied = 0;
@@ -951,7 +952,7 @@ uint32_t StorageIO::SaveBlockToFile(uint64_t physicalOffset, const Byte *data, u
     if (!file_) {
         return 0;
     }
-    const uint64_t maxStreamOff = static_cast<uint64_t>(std::numeric_limits<uint32_t>::max());
+    const uint64_t maxStreamOff = static_cast<uint64_t>(std::numeric_limits<std::streamoff>::max());
     const std::streamoff offset = static_cast<std::streamoff>(physicalOffset);
     file_->clear();
     file_->seekp(offset);
@@ -975,7 +976,7 @@ uint32_t StorageIO::SaveBlockToFile(uint64_t physicalOffset, const Byte *data, u
     }
 
     const auto endPos = file_->tellp();
-    if (endPos == static_cast<std::streamoff>(-1)) {
+    if (endPos == static_cast<std::streampos>(-1)) {
         return 0;
     }
     file_->seekg(endPos);
@@ -990,7 +991,7 @@ uint32_t StorageIO::SaveBlockToFile(uint64_t physicalOffset, const Byte *data, u
     return len;
 }
 
-uint32_t StorageIO::SaveBlocksToBuffer(uint64_t physicalOffset, const Byte *data, uint32_t len,
+uint32_t StorageIO::SaveBlockToBuffer(uint64_t physicalOffset, const Byte *data, uint32_t len,
     std::vector<uint8_t> &buffer)
 {
     const uint64_t requiredSize = physicalOffset + static_cast<uint64_t>(len);
@@ -1049,7 +1050,7 @@ uint32_t StorageIO::SaveBlock(uint64_t physicalOffset, const Byte *data, uint32_
     if (!data || len == 0) {
         return 0;
     }
-    const uint64_t maxStreamOff = static_cast<uint64_t>(std::numeric_limits<uint32_t>::max());
+    const uint64_t maxStreamOff = static_cast<uint64_t>(std::numeric_limits<std::streamoff>::max());
     if (physicalOffset > maxStreamOff) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
             "StorageIO::SaveBlock: physicalOffset overflow");
@@ -1059,10 +1060,10 @@ uint32_t StorageIO::SaveBlock(uint64_t physicalOffset, const Byte *data, uint32_
         return SaveBlockToFile(physicalOffset, data, len);
     }
     if (flushWriteBuffer_) {
-        return SaveBlocksToBuffer(physicalOffset, data, len, *flushWriteBuffer_);
+        return SaveBlockToBuffer(physicalOffset, data, len, *flushWriteBuffer_);
     }
     if (memoryBuffer_) {
-        const uint32_t written = SaveBlocksToBuffer(physicalOffset, data, len, *memoryBuffer_);
+        const uint32_t written = SaveBlockToBuffer(physicalOffset, data, len, *memoryBuffer_);
         if (written > 0) {
             const uint64_t requiredSize = physicalOffset + static_cast<uint64_t>(written);
             const std::streamoff newEnd = static_cast<std::streamoff>(requiredSize);
@@ -1123,7 +1124,7 @@ bool StorageIO::ValidateConvertInputs(DirEntry *entry, uint64_t newSize, uint64_
     return true;
 }
 
-bool StorageIO::ReadMiniStream(DirEntry *entry, uint64_t oldSize, std::vector<uint64_t> &oldBlocks,
+bool StorageIO::ReadMiniStream(DirEntry *entry, uint64_t oldSize, std::vector<uint32_t> &oldBlocks,
     std::vector<Byte> &smallBuffer)
 {
     if (!entry) {
@@ -1159,7 +1160,7 @@ bool StorageIO::ComputeBlocksNeeded(uint64_t newSize, uint32_t blockSize, uint32
     }
     uint64_t blocksNeeded64 = (newSize + blockSize - 1) / blockSize;
     if (blocksNeeded64 == 0) {
-        blocksNeeded = 1;
+        blocksNeeded64 = 1;
     }
     if (blocksNeeded64 > static_cast<uint64_t>(std::numeric_limits<uint32_t>::max())) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
@@ -1170,7 +1171,7 @@ bool StorageIO::ComputeBlocksNeeded(uint64_t newSize, uint32_t blockSize, uint32
     return true;
 }
 
-bool StorageIO::AllocateBigBlocksForConvert(uint32_t blocksNeeded, std::vector<uint64_t> &newBlocks)
+bool StorageIO::AllocateBigBlocksForConvert(uint32_t blocksNeeded, std::vector<uint32_t> &newBlocks)
 {
     if (!bbat_) {
         return false;
@@ -1194,7 +1195,7 @@ bool StorageIO::AllocateBigBlocksForConvert(uint32_t blocksNeeded, std::vector<u
 namespace {
 
 std::vector<Byte> BuildBatchBuffer(uint64_t &batchStartIdx, uint64_t &batchEndIdx, uint64_t newSize,
-    uint32_t blockSize, const std::vector<Byte> &smallBuffer, size_t &copied, uint32_t &batchWrittenLen,
+    uint32_t blockSize, const std::vector<Byte> &smallBuffer, size_t &copied, uint32_t &batchWriteLen,
     uint64_t &lastWrittenIdx)
 {
     std::vector<Byte> batchBuffer;
@@ -1221,7 +1222,7 @@ std::vector<Byte> BuildBatchBuffer(uint64_t &batchStartIdx, uint64_t &batchEndId
             }
             copied += dataToWrite;
         }
-        batchWrittenLen += static_cast<uint32_t>(required);
+        batchWriteLen += static_cast<uint32_t>(required);
         lastWrittenIdx = idx;
     }
     return batchBuffer;
@@ -1237,34 +1238,33 @@ bool StorageIO::CopyDataToBigBlocks(const std::vector<uint32_t> &blocks, const s
     while (batchStartIdx < blocks.size() && !exhausted) {
         size_t batchEndIdx = batchStartIdx;
         while (batchEndIdx + 1 < blocks.size() && blocks[batchEndIdx + 1] == blocks[batchEndIdx] + 1) {
-            batchEndIdx++;
+            ++batchEndIdx;
         }
         const size_t contiguousCount = batchEndIdx - batchStartIdx + 1;
         if (blockSize == 0) {
             return false;
         }
-        const size_t maxBatchBlocks = std::max<size_t>(1,
-            std::numeric_limits<uint32_t>::max() / blockSize);
+        const size_t maxBatchBlocks = std::max<size_t>(1, std::numeric_limits<uint32_t>::max() / blockSize);
         const size_t batchCount = std::min<size_t>(contiguousCount, maxBatchBlocks);
         if (batchStartIdx + batchCount - 1 < batchEndIdx) {
             batchEndIdx = batchStartIdx + batchCount - 1;
         }
         std::vector<Byte> batchBuffer;
         batchBuffer.reserve(batchCount * static_cast<size_t>(blockSize));
-        uint32_t batchWrittenLen = 0;
+        uint32_t batchWriteLen = 0;
         size_t lastWrittenIdx = batchStartIdx;
 
         batchBuffer = BuildBatchBuffer(batchStartIdx, batchEndIdx, newSize, blockSize, smallBuffer,
-            copied, batchWrittenLen, lastWrittenIdx);
+            copied, batchWriteLen, lastWrittenIdx);
         if (batchBuffer.empty()) {
             return false;
         }
         
-        if (batchWrittenLen > 0) {
+        if (batchWriteLen > 0) {
             const uint64_t physicalOffset = BlockToOffset(blocks[batchStartIdx], blockSize);
-            const std::string context = "converted blocks " + std::to_string(batchStartIdx) + " - " +
+            const std::string context = "converted blocks " + std::to_string(blocks[batchStartIdx]) + "-" +
                 std::to_string(blocks[lastWrittenIdx]);
-            if (!WriteBlockChecked(physicalOffset, batchBuffer.data(), batchWrittenLen, context)) {
+            if (!WriteBlockChecked(physicalOffset, batchBuffer.data(), batchWriteLen, context)) {
                 return false;
             }
         }
@@ -1273,7 +1273,7 @@ bool StorageIO::CopyDataToBigBlocks(const std::vector<uint32_t> &blocks, const s
     return true;
 }
 
-void StorageIO::ReleaseMiniBlocks(const std::vector<uint32_t> &blocks)
+void StorageIO::ReleaseMiniBlocks(const std::vector<uint32_t> &oldBlocks)
 {
     if (!sbat_) {
         return;
@@ -1289,7 +1289,12 @@ bool StorageIO::ConvertSmallToBig(DirEntry *entry, uint64_t newSize)
     uint32_t blockSize = 0;
     uint32_t threshold = 0;
 
-    if (!ValidateConvert(entry, newSize, oldSize, blockSize, threshold)) {
+    if (!ValidateConvertInputs(entry, newSize, oldSize, blockSize, threshold)) {
+        return false;
+    }
+    std::vector<uint32_t> oldBlocks;
+    std::vector<Byte> smallBuffer;
+    if (!ReadMiniStream(entry, oldSize, oldBlocks, smallBuffer)) {
         return false;
     }
     uint32_t blocksNeeded = 0;
@@ -1316,8 +1321,8 @@ bool StorageIO::ConvertSmallToBig(DirEntry *entry, uint64_t newSize)
         return false;
     }
     ReleaseMiniBlocks(oldBlocks);
-    entry->SetSize(newSize);
     entry->SetStart(newBlocks.front());
+    entry->SetSize(newSize);
     dtModified_ = true;
     ClearError();
     return true;
@@ -1327,32 +1332,32 @@ bool StorageIO::ValidateFlushState(bool &memoryMode, size_t &blockSize)
 {
     if (!IsValid()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-            "StorageIO::ValidateFlushState: Object is in invalid state");
+            "StorageIO::ValidateFlushState - Object is in invalid state");
         return false;
     }
-    if (!header_ || !bbat_ || dirtree_) {
+    if (!header_ || !bbat_ || !dirtree_) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-            "StorageIO::ValidateFlushState: Alloc tables are not initialized");
+            "StorageIO::ValidateFlushState - Alloc tables are not initialized");
         return false;
     }
     memoryMode = (memoryBuffer_ != nullptr && file_ == nullptr);
-    blockSize = static_cast<size_t>(sbat_->BlockSize());
+    blockSize = static_cast<size_t>(BigBlockSize());
     if (blockSize == 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-            "StorageIO::ValidateFlushState: Block size is 0");
+            "StorageIO::ValidateFlushState - Block size is 0");
         return false;
     }
     return true;
 }
 
-bool StorageIO::PrePareDirectoryBlocks(size_t blockSize, size_t dirEntries, std::vector<uint32_t> &blocks,
+bool StorageIO::PrepareDirectoryBlocks(size_t blockSize, size_t dirEntries, std::vector<uint32_t> &blocks,
     size_t &neededBlocks)
 {
     if (blockSize == 0) {
         return false;
     }
-    const size_t needBytes = dirEntries * kDirectoryEntrySize;
-    neededBlocks = (needBytes + blockSize - 1) / blockSize;
+    const size_t neededBytes = dirEntries * kDirectoryEntrySize;
+    neededBlocks = (neededBytes + blockSize - 1) / blockSize;
     if (neededBlocks == 0) {
         neededBlocks = 1;
     }
@@ -1361,13 +1366,13 @@ bool StorageIO::PrePareDirectoryBlocks(size_t blockSize, size_t dirEntries, std:
     }
     if (!bbat_->Follow(header_->DirentStart(), blocks)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-            "StorageIO::PrePareDirectoryBlocks: Failed to follow dirent start");
+            "StorageIO::PrepareDirectoryBlocks - Failed to follow dirent start");
         return false;
     }
     for (uint32_t block : blocks) {
-        if ((*bbat_)[block] != AllocTable::Avail) {
+        if ((*bbat_)[block] == AllocTable::Avail) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-                "StorageIO::PrePareDirectoryBlocks: Block is not available");
+                "StorageIO::PrepareDirectoryBlocks - Block is not available");
             return false;
         }
     }
@@ -1380,11 +1385,11 @@ void StorageIO::BackupFlushState(FlushSnapshot &snap)
         return;
     }
     snap.headerBackup = *header_;
-    snap.fatSectorBackup = *fatSectors_;
-    snap.difatSectorBackup = *difatSectors_;
+    snap.fatSectorsBackup = fatSectors_;
+    snap.difatSectorsBackup = difatSectors_;
     snap.protectedBlocksCacheBackup = protectedBlocksCache_;
     snap.protectedBlocksDirtyBackup = protectedBlocksDirty_;
-    snap.sbBlocksBackup = SbBlocks_;
+    snap.sbBlocksBackup = sbBlocks_;
     snap.sizeBackup = size_;
     snap.prevFlushWriteBuffer = flushWriteBuffer_;
     if (bbat_ == nullptr) {
@@ -1405,11 +1410,11 @@ void StorageIO::RestoreFlushState(const FlushSnapshot &snap)
             bbat_->Set(i, snap.bbatSnapshot[i]);
         }
     }
-    fatSectors_ = snap.fatSectorBackup;
-    difatSectors_ = snap.difatSectorBackup;
+    fatSectors_ = snap.fatSectorsBackup;
+    difatSectors_ = snap.difatSectorsBackup;
     protectedBlocksCache_ = snap.protectedBlocksCacheBackup;
     protectedBlocksDirty_ = snap.protectedBlocksDirtyBackup;
-    SbBlocks_ = snap.sbBlocksBackup;
+    sbBlocks_ = snap.sbBlocksBackup;
     size_ = snap.sizeBackup;
     if (header_) {
         *header_ = snap.headerBackup;
@@ -1427,7 +1432,7 @@ bool StorageIO::SetupStagingBuffer(bool memoryMode, FlushSnapshot &snap)
 
 bool StorageIO::ExecuteFlushSequence(std::vector<uint32_t> &blocks, size_t neededBlocks, size_t blockSize)
 {
-    if (!FlushDirectoryBlocks(blocks, neededBlocks, blockSize)) {
+    if (!FlushDirectoryTree(blocks, neededBlocks, blockSize)) {
         return false;
     }
     if (!FlushMiniFat()) {
@@ -1478,24 +1483,24 @@ bool StorageIO::FinalizeFlush(bool memoryMode, FlushSnapshot &snap, size_t block
     return true;
 }
 
-bool StorageIO::ValidateDeletePreconditions(uint32_t &threshold, uint32_t &miniblockSize, uint32_t &bigBlockSize)
+bool StorageIO::ValidateDeletePreconditions(uint32_t &threshold, uint32_t &miniBlockSize, uint32_t &bigBlockSize)
 {
     if (!IsValid()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-            "StorageIO::ValidateDeletePreconditions: Storage is not valid");
+            "StorageIO::ValidateDeletePreconditions - Storage is not valid");
         return false;
     }
     if (!dirtree_ || !header_ || !bbat_ || !sbat_) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-            "StorageIO::ValidateDeletePreconditions: Storage is not valid");
+            "StorageIO::ValidateDeletePreconditions - Storage is not valid");
         return false;
     }
     threshold = header_->Threshold();
-    miniblockSize = header_->SmallBlockSize();
-    bigBlockSize = header_->BigBlockSize();
+    miniBlockSize = SmallBlockSize();
+    bigBlockSize = BigBlockSize();
     if (bigBlockSize == 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-            "StorageIO::ValidateDeletePreconditions: Invalid block size");
+            "StorageIO::ValidateDeletePreconditions - Invalid block size");
         return false;
     }
     return true;
@@ -1541,15 +1546,15 @@ bool StorageIO::CollectChainForEntry(const DirEntry &entry, bool useBig, uint32_
     if (out.empty()) {
         return true;
     }
-    const uint32_t blockSize = useBig ? bigBlockSize : miniblockSize;
+    const uint32_t blockSize = useBig ? bigBlockSize : miniBlockSize;
     if (blockSize == 0) {
         SetError(ErrorCode::InvalidOperation, "Cannot delete: block size is 0", false);
         return false;
     }
-    if (entry.size() && (static_cast<uint64_t>(out.size()) * blockSize < entry.size())) {
+    if (entry.Size() && (static_cast<uint64_t>(out.size()) * blockSize) < entry.Size()) {
         SetError(ErrorCode::Corruption, "Cannot delete: allocation chain is too short");
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-            "StorageIO::CollectChainForEntry: allocation chain is too short");
+            "StorageIO::CollectChainForEntry - allocation chain is too short");
         return false;
     }
     if (useBig) {
@@ -1557,7 +1562,7 @@ bool StorageIO::CollectChainForEntry(const DirEntry &entry, bool useBig, uint32_
             if (protectedBlocksCache_.count(block)) {
                 SetError(ErrorCode::InvalidOperation, "Cannot delete: protected block", false);
                 OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-                    "StorageIO::CollectChainForEntry: protected block");
+                    "StorageIO::CollectChainForEntry - protected block");
                 return false;
             }
         }
@@ -1576,7 +1581,7 @@ bool StorageIO::BuildReleasePlan(const std::vector<DirEntry> &targets,
         }
         const bool useBig = !(entry.Size() < threshold);
         std::vector<uint32_t> blocks;
-        if (!CollectChainForEntry(entry, useBig, miniblockSize, bigBlockSize, blocks)) {
+        if (!CollectChainForEntry(entry, useBig, miniBlockSize, bigBlockSize, blocks)) {
             return false;
         }
         if (!blocks.empty()) {
@@ -1586,7 +1591,7 @@ bool StorageIO::BuildReleasePlan(const std::vector<DirEntry> &targets,
     return true;
 }
 
-void StorageIO::ExcuteBlockRelease(const std::vector<std::pair<bool, std::vector<uint32_t>>> &plan)
+void StorageIO::ExecuteBlockRelease(const std::vector<std::pair<bool, std::vector<uint32_t>>> &plan)
 {
     for (const auto &item : plan) {
         AllocTable *table = item.first ? bbat_.get() : sbat_.get();
@@ -1601,19 +1606,19 @@ void StorageIO::ExcuteBlockRelease(const std::vector<std::pair<bool, std::vector
 bool StorageIO::DeleteEntry(const std::string &path)
 {
     uint32_t threshold = 0;
-    uint32_t miniblockSize = 0;
+    uint32_t miniBlockSize = 0;
     uint32_t bigBlockSize = 0;
-    if (!ValidateDeletePreconditions(threshold, miniblockSize, bigBlockSize)) {
+    if (!ValidateDeletePreconditions(threshold, miniBlockSize, bigBlockSize)) {
         return false;
     }
     std::vector<DirEntry> targets;
     if (!CollectDeleteTargets(path, targets)) {
         return false;
     }
-    RebuildProtectedBlockCache();
+    RebuildProtectedBlocksCache();
 
     std::vector<std::pair<bool, std::vector<uint32_t>>> plan;
-    if (!BuildReleasePlan(targets, threshold, miniblockSize, bigBlockSize, plan)) {
+    if (!BuildReleasePlan(targets, threshold, miniBlockSize, bigBlockSize, plan)) {
         return false;
     }
     if (dirtree_ == nullptr) {
@@ -1623,7 +1628,7 @@ bool StorageIO::DeleteEntry(const std::string &path)
         SetError(ErrorCode::InvalidOperation, "Cannot delete: failed to delete entry", false);
         return false;
     }
-    ExcuteBlockRelease(plan);
+    ExecuteBlockRelease(plan);
     dtModified_ = true;
     return Flush();
 }
@@ -1681,41 +1686,6 @@ bool StorageIO::EnsureRootForMiniGrowth(uint32_t requiredMiniBlocks, const std:;
     return false;
 }
 
-namespace {
-bool EnsureMiniRootIfNeeded(StorageIO *self, uint32_t additionalBlocks) {
-    uint64_t highestMiniBlock = 0;
-    if (self->sbat_ == nullptr) {
-        return false;
-    }
-    for (size_t i = 0; i < self->sbat_->Count(); ++i) {
-        if ((*(self->sbat_))[i] != AllocTable::Avail) {
-            highestMiniBlock = i + 1;
-        }
-    }
-    highestMiniBlock += additionalBlocks;
-    if (highestMiniBlock > std::numeric_limits<uint32_t>::max()) {
-        SetError(ErrorCode::InvalidOperation, "Cannot extend: block count overflow");
-        return false;
-    }
-    if (!self->EnsureRootForMiniGrowth(static_cast<uint32_t>(highestMiniBlock),
-        "Failed to extend root stream when growing small stream")) {
-        return false;
-    }
-    return true;
-}
-
-uint32_t ComputeBlockCount(uint64_t size, uint32_t blockSize)
-{
-    const uint64_t blockSize64 = blockSize;
-    const uint64_t blockNeeded64 = (size + blockSize64 - 1) / blockSize64;
-    const uint64_t maxBlocks = static_cast<uint64_t>(std::numeric_limits<uint32_t>::max());
-    if (blockNeeded64 > maxBlocks) {
-        SetError(ErrorCode::InvalidOperation, "Cannot extend: block count overflow");
-        return false;
-    }
-    return static_cast<uint32_t>(blockNeeded64);
-}
-
 bool StorageIO::ExtendSameTypeChain(DirEntry *entry, uint64_t oldSize, uint32_t newSize, bool useBig)
 {
     const uint32_t blockSize = useBig ? BigBlockSize() : SmallBlockSize();
@@ -1724,12 +1694,20 @@ bool StorageIO::ExtendSameTypeChain(DirEntry *entry, uint64_t oldSize, uint32_t 
         SetError(ErrorCode::InvalidOperation, "Cannot extend: alloc table is null", false);
         return false;
     }
-    const uint32_t oldBlockNeeded = ComputeBlockCount(oldSize, blockSize);
-    const uint32_t newBlockNeeded = ComputeBlockCount(newSize, blockSize);
+    const uint64_t blockSize64 = blockSize;
+    const uint64_t oldBlocksNeeded64 = (oldSize + blockSize64 - 1) / blockSize64;
+    const uint64_t newBlocksNeeded64 = (newSize + blockSize64 - 1) / blockSize64;
+    const uint64_t maxBlocks = static_cast<uint64_t>(std::numeric_limits<uint32_t>::max());
+    if (oldBlocksNeeded64 > maxBlocks || newBlocksNeeded64 > maxBlocks) {
+        SetError(ErrorCode::InvalidOperation, "Cannot extend: requested size exceeds FAT addressing range");
+        return false;
+    }
+    const uint32_t oldBlocksNeeded = static_cast<uint32_t>(oldBlocksNeeded64);
+    const uint32_t newBlocksNeeded = static_cast<uint32_t>(newBlocksNeeded64);
     if (entry == nullptr) {
         return false;
     }
-    if (newBlockNeeded <= oldBlockNeeded) {
+    if (newBlocksNeeded <= oldBlocksNeeded) {
         entry->SetSize(newSize);
         dtModified_ = true;
         ClearError();
@@ -1744,15 +1722,34 @@ bool StorageIO::ExtendSameTypeChain(DirEntry *entry, uint64_t oldSize, uint32_t 
         SetError(ErrorCode::Corruption, "Cannot extend: existing block chain is empty");
         return false;
     }
-    if (existingBlocks.size() < oldBlockNeeded) {
+    if (existingBlocks.size() < oldBlocksNeeded) {
         SetError(ErrorCode::Corruption, "Cannot extend: existing block chain is shorter than expected (expected " +
-            std::to_string(oldBlockNeeded) + ", got " + std::to_string(existingBlocks.size()) + ")");
+            std::to_string(oldBlocksNeeded) + ", got " + std::to_string(existingBlocks.size()) + ")");
         return false;
     }
-    const uint32_t additionalBlocks = newBlockNeeded - oldBlockNeeded;
-    if (!useBig && !EnsureMiniRootIfNeeded(this, additionalBlocks)) {
-        return false;
+    const uint32_t additionalBlocks = newBlocksNeeded - oldBlocksNeeded;
+
+    if (!useBig) {
+        uint64_t highestMiniBlock = 0;
+        if (sbat_ == nullptr) {
+            return false;
+        }
+        for (size_t i = 0; i < sbat_->Count(); ++i) {
+            if ((*sbat_)[i] != AllocTable::Avail) {
+                highestMiniBlock = i + 1;
+            }
+        }
+        highestMiniBlock += additionalBlocks;
+        if (highestMiniBlock > std::numeric_limits<uint32_t>::max()) {
+            SetError(ErrorCode::InvalidOperation, "Cannot extend: block count overflow");
+            return false;
+        }
+        if (!EnsureRootForMiniGrowth(static_cast<uint32_t>(highestMiniBlock),
+            "Failed to extend root stream when growing small stream")) {
+            return false;
+        }
     }
+
     for (uint32_t i = 0; i < additionalBlocks; ++i) {
         const uint32_t newBlock = allocTable->Unused();
         allocTable->Set(existingBlocks.back(), newBlock);
@@ -1770,7 +1767,7 @@ bool StorageIO::AllocateFreshChain(DirEntry *entry, uint64_t newSize, bool useBi
     const uint32_t blockSize = useBig ? BigBlockSize() : SmallBlockSize();
     AllocTable *allocTable = useBig ? bbat_.get() : sbat_.get();
     if (blockSize == 0 || allocTable == nullptr) {
-        SetError(ErrorCode::InvalidOperation, "Cannot allocate: alloc table is null", false);
+        SetError(ErrorCode::InvalidOperation, "Cannot extend: invalid block size", false);
         return false;
     }
     uint64_t blocksNeeded64 = (newSize + blockSize - 1) / blockSize;
@@ -1800,9 +1797,9 @@ bool StorageIO::AllocateFreshChain(DirEntry *entry, uint64_t newSize, bool useBi
     std::vector<uint32_t> blocks;
     blocks.reserve(blocksNeeded);
     for (uint32_t i = 0; i < blocksNeeded; ++i) {
-        const uint32_t newBlock = allocTable->Unused();
-        blocks.push_back(newBlock);
-        allocTable->Set(newBlock, AllocTable::Eof);
+        const uint32_t block = allocTable->Unused();
+        blocks.push_back(block);
+        allocTable->Set(block, AllocTable::Eof);
     }
     allocTable->SetChain(blocks);
     if (blocks.empty()) {
@@ -1848,9 +1845,6 @@ namespace {
 
 void AddBlocksFromChain(StorageIO *self, uint32_t start)
 {
-    if (start == AllocTable::Eof) {
-        return;
-    }
     std::vector<uint32_t> chain;
     if (self->bbat_->Follow(start, chain)) {
         for (uint32_t block : chain) {
@@ -1872,8 +1866,8 @@ void StorageIO::RebuildProtectedBlocksCache()
         return;
     }
 
-    if (!header_) {
-        AddBlocksFromChain(this, header_->DirentStart);
+    if (header_) {
+        AddBlocksFromChain(this, header_->DirentStart());
     }
     
     for (uint32_t fatSector : fatSectors_) {
@@ -1910,7 +1904,7 @@ uint32_t StorageIO::AllocateProtectedSector(uint32_t markerType)
     std::vector<std::pair<uint32_t, uint32_t>> tempMarks;
     uint32_t candidate = static_cast<uint32_t>(bbat_->Unused());
     while (protectedBlocksCache_.count(candidate) > 0) {
-        tempMarks.emmplace_back(candidate, (*bbat_)[candidate]);
+        tempMarks.emplace_back(candidate, (*bbat_)[candidate]);
         bbat_->Set(candidate, markerType);
         candidate = static_cast<uint32_t>(bbat_->Unused());
     }
@@ -1977,7 +1971,7 @@ void StorageIO::EnsureFatCapacity()
         }
 
         const uint32_t current = static_cast<uint32_t>(fatSectors_.size());
-        uint32_t newFat = AllocateProtectedSector(markerType);
+        uint32_t newFat = AllocateProtectedSector(AllocTable::Bat);
         if (newFat == AllocTable::Eof) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to allocate new FAT sector");
             return;
@@ -1996,28 +1990,10 @@ void StorageIO::EnsureFatCapacity()
 }
 
 namespace {
-bool ValidateDependencies(StorageIO *self)
-{
-    if (!self->bbat_ || !self->header_) {
-        return false;
-    }
-    DirEntry *root = self->GetRootEntry();
-    if (!root) {
-        return false;
-    }
-    const uint32_t bigBlockSize = self->BigBlockSize();
-    const uint32_t smallBlockSize = self->SmallBlockSize();
-    if (bigBlockSize == 0 || smallBlockSize == 0) {
-        return false;
-    }
-    const uint32_t miniBlocksPerBigBlock = bigBlockSize / smallBlockSize;
-    if (miniBlocksPerBigBlock == 0) {
-        self->SetError(ErrorCode::InvalidOperation, "Big block size is not divisible by small block size", false);
-        return false;
-    }
-}
 
-bool ExtendChainWithZeros(StorageIO *self, std::vector<uint32_t> &chain, uint32_t neededBigBlocks, uint32_t bigBlocks) {
+bool ExtendChainWithZeros(StorageIO *self, std::vector<uint32_t> &chain,
+    uint32_t &neededBigBlocks, uint32_t &bigBlocks)
+{
     while (chain.size() < neededBigBlocks) {
         uint32_t newBlock = self->bbat_->Unused();
         if (!chain.empty()) {
@@ -2047,15 +2023,21 @@ bool ExtendChainWithZeros(StorageIO *self, std::vector<uint32_t> &chain, uint32_
 
 bool StorageIO::ExtendRootStream(uint32_t requiredMiniBlocks)
 {
-    if (!ValidateDependencies(this)) {
+    if (!bbat_ || !header_)
         return false;
-    }
+    DirEntry *root = GetRootEntry();
+    if (!root)
+        return false;
+    
     const uint32_t bigBlockSize = BigBlockSize();
     const uint32_t smallBlockSize = SmallBlockSize();
-    if (smallBlockSize == 0) {
+    if (smallBlockSize == 0 || bigBlockSize == 0)
+        return false;
+    const uint32_t miniBlocksPerBigBlock = bigBlockSize / smallBlockSize;
+    if (miniBlocksPerBigBlock == 0) {
+        SetError(ErrorCode::InvalidOperation, "Big block size is not divisible by small block size", false);
         return false;
     }
-    const uint32_t miniBlocksPerBigBlock = bigBlockSize / smallBlockSize;
     const uint64_t neededBigBlocks64 = (static_cast<uint64_t>(requiredMiniBlocks) +
         static_cast<uint64_t>(miniBlocksPerBigBlock) - 1) / static_cast<uint64_t>(miniBlocksPerBigBlock);
     if (neededBigBlocks64 > static_cast<uint64_t>(std::numeric_limits<uint32_t>::max())) {
@@ -2066,20 +2048,17 @@ bool StorageIO::ExtendRootStream(uint32_t requiredMiniBlocks)
     std::vector<uint32_t> chain;
     const uint32_t rootStart = root->Start();
     if (rootStart != DIR_ENTRY_END && rootStart != AllocTable::Eof) {
-        if (!bbat_->Follow(root->Start(), chain)) {
+        if (!bbat_->Follow(root->Start(), chain))
             return false;
-        }
     }
 
     if (chain.size() < neededBigBlocks) {
-        if (!ExtendChainWithZeros(this, chain, neededBigBlocks, bigBlockSize)) {
+        if (!ExtendChainWithZeros(this, chain, neededBigBlocks, bigBlockSize))
             return false;
-        }
     }
 
-    if ((rootStart == DIR_ENTRY_END || rootStart == AllocTable::Eof) && !chain.empty()) {
+    if ((rootStart == DIR_ENTRY_END || rootStart == AllocTable::Eof) && !chain.empty())
         root->SetStart(chain.front());
-    }
 
     const uint64_t miniStreamSize = static_cast<uint64_t>(requiredMiniBlocks) *
         static_cast<uint64_t>(smallBlockSize);
@@ -2090,7 +2069,7 @@ bool StorageIO::ExtendRootStream(uint32_t requiredMiniBlocks)
 }
 
 namespace {
-bool ExtendAndFetchSbatChain(StorageIO *self, std::vector<uint32_t> &chain, uint32_t &neededBigBlocks)
+bool ExtendAndFetchSbatChain(StorageIO *self, std::vector<uint32_t> &chain, uint32_t &neededBlocks)
 {
     uint32_t currentStart = self->header_->SbatStart();
     if (currentStart != AllocTable::Eof && currentStart != AllocTable::Avail) {
@@ -2099,7 +2078,7 @@ bool ExtendAndFetchSbatChain(StorageIO *self, std::vector<uint32_t> &chain, uint
             return false;
         }
     }
-    while (chain.size() < neededBigBlocks) {
+    while (chain.size() < neededBlocks) {
         uint32_t newBlock = static_cast<uint32_t>(self->bbat_->Unused());
         if (!chain.empty()) {
             self->bbat_->Set(chain.back(), newBlock);
@@ -2120,14 +2099,14 @@ bool StorageIO::SaveMiniFat()
 {
     if (!sbat_ || !bbat_ || !header_)
         return false;
-    size_t hightestUsed = 0;
+    size_t highestUsed = 0;
     for (size_t i = 0; i < sbat_->Count(); ++i) {
         if ((*sbat_)[i] != AllocTable::Avail) {
-            hightestUsed = i + 1;
+            highestUsed = i + 1;
         }
     }
-    if (hightestUsed == 0) {
-        header_->SetFirstSbat(AllocTable::Eof);
+    if (highestUsed == 0) {
+        header_->SetFirstMiniFat(AllocTable::Eof);
         header_->SetMiniFatCount(0);
         protectedBlocksDirty_ = true;
         return true;
@@ -2139,26 +2118,26 @@ bool StorageIO::SaveMiniFat()
         return false;
     }
     const size_t bytesNeeded = entryCount * sizeof(uint32_t);
-    uint32_t neededBigBlocks = static_cast<uint32_t>((bytesNeeded + blockSize - 1) / blockSize);
-    if (neededBigBlocks == 0) {
-        neededBigBlocks = 1;
+    uint32_t neededBlocks = static_cast<uint32_t>((bytesNeeded + blockSize - 1) / blockSize);
+    if (neededBlocks == 0) {
+        neededBlocks = 1;
     }
     std::vector<uint32_t> chain;
 
-    if (!ExtendAndFetchSbatChain(this, chain, neededBigBlocks)) {
+    if (!ExtendAndFetchSbatChain(this, chain, neededBlocks)) {
         return false;
     }
     const size_t buflen = chain.size() * blockSize;
-    std::vector<Byte> buf(buflen, 0xFF);
-    if (!sbat_->Save(buf.data(), buflen)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to save SBAT");
+    std::vector<Byte> buffer(buflen, 0xFF);
+    if (!sbat_->Save(buffer.data(), buflen)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to save MiniFAT");
         return false;
     }
     for (size_t i = 0; i < chain.size(); ++i) {
         const uint32_t block = chain[i];
         const uint64_t physicalOffset = BlockToOffset(block, blockSize);
         const std::string context = "MiniFAT sector " + std::to_string(block);
-        if (!WriteBlockChecked(physicalOffset, buf.data() + (i * blockSize), blockSize, context)) {
+        if (!WriteBlockChecked(physicalOffset, buffer.data() + (i * blockSize), blockSize, context)) {
             return false;
         }
     }
@@ -2252,13 +2231,13 @@ bool StorageIO::Flush()
     if (!ValidateFlushState(memoryMode, blockSize)) {
         return false;
     }
-    if (dtModified_) {
+    if (!dtModified_) {
         ClearError();
         return true;
     }
     std::vector<uint32_t> blocks;
     size_t neededBlocks = 0;
-    if (dirtree_ && !PrePareDirectoryBlocks(blocks, dirtree_->EntryCount(), blocks, neededBlocks)) {
+    if (dirtree_ && !PrepareDirectoryBlocks(blockSize, dirtree_->EntryCount(), blocks, neededBlocks)) {
         return false;
     }
     FlushSnapshot snap;
@@ -2298,7 +2277,7 @@ bool StorageIO::FlushDirectoryTree(std::vector<uint32_t> &blocks, size_t neededB
         blocks.push_back(newBlock);
     }
     if (header_ && !blocks.empty() && header_->DirentStart() != blocks.front()) {
-        header_->SetDirentStart(blocks.front());
+        header_->SetFirstDirSector(blocks.front());
     }
     const size_t bufflen = blocks.size() * blockSize;
     if (bufflen == 0) {
@@ -2310,7 +2289,7 @@ bool StorageIO::FlushDirectoryTree(std::vector<uint32_t> &blocks, size_t neededB
     std::vector<Byte> buffer(bufflen);
     if (memset_s(buffer.data(), buffer.size(), 0, buffer.size()) != EOK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-            "StorageIO::FlushDirectoryTree: memset_s failed");
+            "StorageIO::FlushDirectoryTree - memset_s failed");
         return false;
     }
     if (dirtree_ == nullptr) {
@@ -2318,7 +2297,7 @@ bool StorageIO::FlushDirectoryTree(std::vector<uint32_t> &blocks, size_t neededB
     }
     if (!dirtree_->Save(buffer.data(), bufflen)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-            "StorageIO::FlushDirectoryTree: Save failed");
+            "StorageIO::FlushDirectoryTree - Save failed");
         return false;
     }
     for (size_t ndx = 0; ndx < blocks.size(); ++ndx) {
@@ -2378,7 +2357,7 @@ bool StorageIO::FlushHeader()
     if (!header_) {
         return false;
     }
-    if (!header_->Save(headerBuf, kHeaderSize)) {
+    if (header_->Save(headerBuf, kHeaderSize)) {
         if (!WriteBlockChecked(0, headerBuf, kHeaderSize, "storage header")) {
             return false;
         }
@@ -2392,7 +2371,8 @@ bool StorageIO::FlushHeader()
 }
 
 namespace {
-std::string NormalizeFilePath(const std::string &filename) {
+std::string NormalizeFilePath(const std::string &filename)
+{
     char canonicalDirPath[PATH_MAX + 1] = {0x00};
     std::filesystem::path path(filename);
     std::string directory = path.parent_path().string() + "/";
@@ -2413,7 +2393,8 @@ std::string NormalizeFilePath(const std::string &filename) {
     return canonicalFileName;
 }
 
-bool WriteBufferToFile(const std::string &filename, StorageIO *self) {
+bool WriteBufferToFile(const std::string &filename, StorageIO *self)
+{
     std::ofstream outFile(filename.c_str(), std::ios::binary | std::ios::trunc | std::ios::out);
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DOCUMENT,
         "StorageIO::SaveToFile: filename: %{private}%", filename.c_str());
@@ -2464,7 +2445,7 @@ bool StorageIO::SaveToFile(const char *filename, bool switchToFileMode)
     
     if (switchToFileMode) {
         if (file_) {
-            file_->Close();
+            file_->close();
             file_.reset();
             stream_ = nullptr;
         }
@@ -2473,7 +2454,7 @@ bool StorageIO::SaveToFile(const char *filename, bool switchToFileMode)
             std::make_unique<std::fstream>(canonicalFileName.c_str(),
             std::ios::binary | std::ios::in | std::ios::out);
         if (!f || f->fail()) {
-            SetError(ErrorCode::OpenFailed, "Failed to open file");
+            SetError(ErrorCode::OpenFailed, std::string("Failed to open file: ")+ filename);
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
                 "StorageIO::SaveToFile: open file failed");
             return false;
@@ -2481,7 +2462,7 @@ bool StorageIO::SaveToFile(const char *filename, bool switchToFileMode)
         file_ = std::move(f);
         stream_ = file_.get();
         file_->seekg(0, std::ios::end);
-        size_-> = file_->tellg();
+        size_ = file_->tellg();
         file_->seekg(0, std::ios::beg);
         memoryBuffer_.reset();
     }
@@ -2490,13 +2471,13 @@ bool StorageIO::SaveToFile(const char *filename, bool switchToFileMode)
 
 bool StorageIO::ReadAndLoadHeader()
 {
-    std::array<Byte, kHeaderSize> headerBuf{};
+    std::array<Byte, kHeaderSize> headerBuffer{};
     if (stream_ == nullptr || !header_) {
         return false;
     }
     stream_->seekg(0);
-    stream_->read(reinterpret_cast<char *>(headerBuf.data()), headerBuf.size());
-    if (!header_->Load(headerBuf.data(), headerBuf.size())) {
+    stream_->read(reinterpret_cast<char *>(headerBuffer.data()), headerBuffer.size());
+    if (!header_->Load(headerBuffer.data(), headerBuffer.size())) {
         SetError(ErrorCode::BadOLE, "Failed to load header");
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
             "StorageIO::ReadAndLoadHeader: load header failed");

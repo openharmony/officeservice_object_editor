@@ -1,15 +1,15 @@
 /*
-* Copyright (c) Huawei Device Co., Ltd. 2025-2025. All right reserved.
-* Licensed under the Apache License, Version 2.0 (thr "License");
-* you may not use this file except in compliance eith the License.
+* Copyright (c) Huawei Device Co., Ltd. 2026-2026. All rights reserved.
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
 *
 *     http://www.apache.org/licenses/LICENSE-2.0
 *
 * Unless required by applicable law or agreed to in writing, software
 * distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDTIONS OF ANY KIND, either express or implied.
-* See the License for specific language governing permissions and
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 #include <algorithm>
@@ -25,30 +25,30 @@
 #include "storage.h"
 #include "stream.h"
 #include "utils.h"
-#include "types.h"
+
 namespace OHOS {
 namespace ObjectEditor {
 namespace {
-    constexpr int EOF_FLAG = static_cast<unsigned int>(Stream::State::Eof);
-    constexpr int BAD_FLAG = static_cast<unsigned int>(Stream::State::Bad);
+    constexpr int EOF_FLAG = static_cast<unsigned int>(StreamImpl::State::Eof);
+    constexpr int BAD_FLAG = static_cast<unsigned int>(StreamImpl::State::Bad);
 }
 
 const std::string StreamImpl::nullPath;
 
 StreamImpl::StreamImpl(const StreamImpl &stream)
-    : io(stream.io_), entry_(stream.entry_), path_(stream.path_), cachedStart_(stream.cachedStart_),
-      cachedSize_(stream.cachedSize_), cacheUseBig_(stream.cacheUseBig_), blocks_(stream.blocks_), pos_(stream.pos_),
+    : io_(stream.io_), entry_(stream.entry_), path_(stream.path_), cachedStart_(stream.cachedStart_),
+      cachedSize_(stream.cachedSize_), cachedUseBig_(stream.cachedUseBig_), blocks_(stream.blocks_), pos_(stream.pos_),
       cache_(stream.cache_), cacheSize_(stream.cacheSize_), cachePos_(stream.cachePos_), state_(stream.state_)
 {
 }
 
-StreamImpl::StreamImpl(StorageIO *io, DirEntry *e) : io_(io), entry_(e), pos_(0), cachePos_(0), state_(0)
+StreamImpl::StreamImpl(StorageIO *io, DirEntry *e) : io_(io), entry_(e), pos_(0), cacheSize_(0), cachePos_(0), state_(0)
 {
     Init();
 }
 
-StreamImpl::StreamImpl(StorageIO *io, const std::string &path) : io_(io), entry_(io->Entry(path)), path_(path),
-    cachedSize_(0), pos_(0), cachePos_(0), state_(0)
+StreamImpl::StreamImpl(StorageIO *io, const std::string &path)
+    : io_(io), entry_(io->Entry(path)), path_(path), pos_(0), cacheSize_(0), cachePos_(0), state_(0)
 {
     Init();
 }
@@ -61,7 +61,7 @@ void StreamImpl::Init()
     cache_.assign(cacheSize_, 0);
     blocks_.clear();
     cachedStart_ = DIR_ENTRY_END;
-    cacheUseBig_ = false;
+    cachedUseBig_ = false;
     cachedSize_ = 0;
     if (!entry_) {
         return;
@@ -71,11 +71,11 @@ void StreamImpl::Init()
     if (!io_) {
         return;
     }
-    cacheUseBig_ = io_->GetHeader() && cacheSize_ >= io_->GetHeader()->Threshold();
-    if (cacheSize_ == 0) {
+    cachedUseBig_ = io_->GetHeader() && cachedSize_ >= io_->GetHeader()->Threshold();
+    if (cachedSize_ == 0) {
         return;
     }
-    if (cacheUseBig_) {
+    if (cachedUseBig_) {
         if (!io_->FollowBigBlockTable(cachedStart_, blocks_)) {
             state_ |= BAD_FLAG;
         }
@@ -100,7 +100,7 @@ bool StreamImpl::PrepareRead(size_t pos, Byte *buffer, std::streamsize maxlen, s
         }
         const bool useBig = io_->GetHeader() && entrySize >= io_->GetHeader()->Threshold();
         if (blocks_.empty() || cachedStart_ != entry_->Start() ||
-            cachedSize_ != entrySize || useBig != cacheUseBig_) {
+            cachedSize_ != entrySize || cachedUseBig_ != useBig) {
             RefreshBlocks();
         }
     }
@@ -150,7 +150,7 @@ std::streamsize StreamImpl::ReadSmallBlocks(size_t pos, Byte *buffer, size_t all
             break;
         }
         std::streamsize count = static_cast<std::streamsize>(io_->SmallBlockSize() - offset);
-        const std::streamsize remaining = static_cast<std::streamsize>(allowed - totalbytes);
+        const std::streamsize remaining = static_cast<std::streamsize>(allowed) - totalbytes;
         if (count > remaining) {
             count = remaining;
         }
@@ -198,8 +198,8 @@ std::streamsize StreamImpl::ReadBigBlocks(size_t pos, Byte *buffer, size_t allow
             break;
         }
         std::streamsize available = static_cast<std::streamsize>(read) - static_cast<std::streamsize>(offset);
-        std::streamsize count = (available < static_cast<std::streamsize>(allowed - totalbytes)) ?
-            available : static_cast<std::streamsize>(allowed - totalbytes);
+        std::streamsize count = (available < static_cast<std::streamsize>(allowed) - totalbytes) ?
+            available : static_cast<std::streamsize>(allowed) - totalbytes;
         if (count > 0) {
             const size_t destRemaining = allowed - static_cast<size_t>(totalbytes);
             if (memcpy_s(buffer + static_cast<size_t>(totalbytes), destRemaining, buf.data() + offset,
@@ -224,11 +224,11 @@ void StreamImpl::RefreshBlocks()
     cachedStart_ = DIR_ENTRY_END;
     cachedSize_ = 0;
     cachedUseBig_ = false;
-    if (!entry) {
+    if (!entry_) {
         return;
     }
-    cachedStart_ = entry->Start();
-    cachedSize_ = entry->Size();
+    cachedStart_ = entry_->Start();
+    cachedSize_ = entry_->Size();
     if (!io_) {
         return;
     }
@@ -239,12 +239,12 @@ void StreamImpl::RefreshBlocks()
     if (cachedUseBig_) {
         bool success = io_->FollowBigBlockTable(cachedStart_, blocks_);
         if (!success) {
-            state_ |= BAD_FLAG;
+            state_ = BAD_FLAG;
         }
     } else {
         bool success = io_->FollowSmallBlockTable(cachedStart_, blocks_);
         if (!success) {
-            state_ |= BAD_FLAG;
+            state_ = BAD_FLAG;
         }
     }
 }
@@ -257,10 +257,10 @@ int StreamImpl::Getch()
     if (pos_ > static_cast<std::streamsize>(entry_->Size())) {
         return -1;
     }
-    if (!cachedSize_ || (pos_ < cachePos_) || pos_ >= cachePos_ + cachedSize_) {
+    if (!cacheSize_ || (pos_ < cachePos_) || (pos_ >= cachePos_ + cachedSize_)) {
         UpdateCache();
     }
-    if (!cachedSize_) {
+    if (!cacheSize_) {
         return -1;
     }
     int data = cache_[pos_ - cachePos_];
@@ -289,7 +289,7 @@ std::streamsize StreamImpl::Read(Byte *data, std::streamsize maxlen)
 {
     std::streamsize bytes = Read(Tell(), data, maxlen);
     pos_ += bytes;
-    if (entry_ && pos_ > 0 && static_cast<StreamPos>(pos_) == entry_->Size()) {
+    if (entry_ && pos_ >= 0 && static_cast<StreamPos>(pos_) == entry_->Size()) {
         state_ |= EOF_FLAG;
     }
     return bytes;
@@ -306,14 +306,14 @@ void StreamImpl::UpdateCache()
     if (cacheSize_ == 0) {
         return;
     }
-    cachePos_ = pos_ - (pos_ % cachedSize_);
-    size_t bytes = static_cast<size_t>(cachedSize_);
+    cachePos_ = pos_ - (pos_ % cacheSize_);
+    size_t bytes = static_cast<size_t>(cacheSize_);
     const StreamPos entrySize = entry_->Size();
     const StreamPos cacheStart = cachePos_ < 0 ? 0 : static_cast<StreamPos>(cachePos_);
     if (static_cast<size_t>(cacheStart) + bytes > static_cast<size_t>(entrySize)) {
         bytes = static_cast<size_t>(entrySize - cacheStart);
     }
-    cachedSize_ = Read(static_cast<size_t>(cacheStart),
+    cacheSize_ = Read(static_cast<size_t>(cacheStart),
         cache_.data(), static_cast<std::streamsize>(bytes));
 }
 
@@ -330,7 +330,7 @@ bool StreamImpl::PrepareWrite(const Byte *data, uint32_t &maxlen)
             return false;
         }
         const bool useBig = io_->GetHeader() && entrySize >= io_->GetHeader()->Threshold();
-        if (blocks_.empty() && cachedStart_ != entry->Start() ||
+        if (blocks_.empty() || cachedStart_ != entry_->Start() ||
             cachedSize_ != entrySize || cachedUseBig_ != useBig) {
             RefreshBlocks();
         }
@@ -343,7 +343,7 @@ bool StreamImpl::EnsureWriteCapacity(uint32_t &targetLen)
 {
     const StreamPos currentPos = pos_ < 0 ? 0 : static_cast<StreamPos>(pos_);
     const StreamPos desiredSize = currentPos + static_cast<StreamPos>(targetLen);
-    if (desiredSize > entry_->Size()) {
+    if (desiredSize <= entry_->Size()) {
         return true;
     }
     if (!io_) {
@@ -375,7 +375,7 @@ uint32_t StreamImpl::WriteMiniBlocks(const Byte *data, uint32_t targetLen,
         return 0;
     }
     size_t index = static_cast<size_t>(pos_ / static_cast<std::streamsize>(smallBlockSize));
-    if (index >= sbrootEntry.size()) {
+    if (index > sbrootEntry.size()) {
         return 0;
     }
     uint64_t offset = static_cast<uint64_t>(pos_ % static_cast<std::streamsize>(smallBlockSize));
@@ -400,7 +400,7 @@ uint32_t StreamImpl::WriteMiniBlocks(const Byte *data, uint32_t targetLen,
             state_ |= BAD_FLAG;
             return count;
         }
-        count += canwrite;
+        count += written;
         offset = 0;
     }
     return count;
@@ -412,7 +412,7 @@ uint32_t StreamImpl::WriteBigBlocks(const Byte *data, uint32_t targetLen, uint64
         return 0;
     }
     size_t index = static_cast<size_t>(pos_ / static_cast<std::streamsize>(bigBlockSize));
-    if (index >= blocks_.size()) {
+    if (index > blocks_.size()) {
         return 0;
     }
     
@@ -463,7 +463,7 @@ uint32_t StreamImpl::Write(const Byte *data, uint32_t maxlen)
     if (count > INT32_MAX) {
         return 0;
     }
-    pos += static_cast<int32_t>(count);
+    pos_ += static_cast<int32_t>(count);
     return count;
 }
 } // namespace ObjectEditor

@@ -1,15 +1,15 @@
 /*
-* Copyright (c) Huawei Device Co., Ltd. 2025-2025. All right reserved.
-* Licensed under the Apache License, Version 2.0 (thr "License");
-* you may not use this file except in compliance eith the License.
+* Copyright (c) Huawei Device Co., Ltd. 2026-2026. All rights reserved.
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
 *
 *     http://www.apache.org/licenses/LICENSE-2.0
 *
 * Unless required by applicable law or agreed to in writing, software
 * distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDTIONS OF ANY KIND, either express or implied.
-* See the License for specific language governing permissions and
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -50,8 +50,8 @@ std::optional<CLSID> ParseHmidToClsid(const std::string &uuid)
         if (hi < 0 || lo < 0) {
             return std::nullopt;
         }
-        canonical[i] = static_cast<uint8_t>((static_cast<uint8_t>(hi) <<
-            FOUR_BYTE_SIZE) | static_cast<uint8_t>(lo));
+        canonical[i] = static_cast<uint8_t>((static_cast<unsigned>(hi) <<
+            FOUR_BYTE_SIZE) | static_cast<unsigned>(lo));
     }
     CLSID clsid{};
     clsid[INDEX_ZERO] = canonical[INDEX_THREE];
@@ -65,7 +65,7 @@ std::optional<CLSID> ParseHmidToClsid(const std::string &uuid)
     for (size_t i = 0; i < OFFSET; i++) {
         clsid[OFFSET + i] = canonical[OFFSET + i];
     }
-    return std::nullopt;
+    return clsid;
 }
 
 std::string FormatClsidToHmid(const CLSID &clsid)
