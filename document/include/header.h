@@ -1,20 +1,20 @@
 /*
-* Copyright (c) Huawei Device Co., Ltd. 2025-2025. All right reserved.
-* Licensed under the Apache License, Version 2.0 (thr "License");
-* you may not use this file except in compliance eith the License.
+* Copyright (c) Huawei Device Co., Ltd. 2026-2026. All rights reserved.
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
 *
 *     http://www.apache.org/licenses/LICENSE-2.0
 *
 * Unless required by applicable law or agreed to in writing, software
 * distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDTIONS OF ANY KIND, either express or implied.
-* See the License for specific language governing permissions and
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
-#ifndef HEADR_H
-#define HEADR_H
+#ifndef HEADER_H
+#define HEADER_H
 
 #include <array>
 #include <cstddef>
@@ -48,6 +48,10 @@ public:
     SectorIndex DirentStart() const
     {
         return direntStart_;
+    }
+    uint32_t TransactionSignature() const
+    {
+        return transactionSignature_;
     }
     uint32_t Threshold() const
     {
@@ -116,7 +120,7 @@ public:
     }
 
 private:
-    Byte id[FILE_SIGNATURE_SIZE]{};
+    Byte id_[FILE_SIGNATURE_SIZE]{};
     CLSID clsid_{};
     uint16_t minorVersion_ = 0;
     uint16_t majorVersion_ = 0;

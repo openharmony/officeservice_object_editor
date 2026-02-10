@@ -1,15 +1,15 @@
 /*
-* Copyright (c) Huawei Device Co., Ltd. 2025-2025. All right reserved.
-* Licensed under the Apache License, Version 2.0 (thr "License");
-* you may not use this file except in compliance eith the License.
+* Copyright (c) Huawei Device Co., Ltd. 2026-2026. All rights reserved.
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
 *
 *     http://www.apache.org/licenses/LICENSE-2.0
 *
 * Unless required by applicable law or agreed to in writing, software
 * distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDTIONS OF ANY KIND, either express or implied.
-* See the License for specific language governing permissions and
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -31,7 +31,7 @@ namespace ObjectEditor {
 class DirEntry;
 class StorageIO;
 class Stream;
-class StreamIpl;
+class StreamImpl;
 
 class Storage {
 public:
@@ -44,7 +44,7 @@ public:
         AllocationFailed,
         InvalidOperation,
         Corruption,
-        UnknowError
+        UnknownError
     };
     explicit Storage(const char *filename);
     explicit Storage(const std::string &hmid);
@@ -52,10 +52,10 @@ public:
     [[nodiscard]] int Result() const;
     void Path(std::string &result) const;
     void ListEntries(std::vector<const DirEntry *> &result) const;
-    [[nodiscard]] bool EntryDirectory(const std::string &directory);
+    [[nodiscard]] bool EnterDirectory(const std::string &directory);
     void LeaveDirectory();
     [[nodiscard]] DirEntry *GetStorage(const std::string &path, bool create = false);
-    [[nodiscard]] Stream *GetStream(const std::string &path, bool create = false, bool reuse = false);
+    [[nodiscard]] Stream *GetStream(const std::string &name, bool create = false, bool reuse = false);
     [[nodiscard]] DirEntry *GetRootEntry();
     [[nodiscard]] DirEntry *GetEntry(const std::string &path, bool create = false);
     [[nodiscard]] bool Flush();
@@ -65,7 +65,7 @@ public:
     [[nodiscard]] bool SaveToFile(const char *filename);
     void Debug();
     [[nodiscard]] const CLSID &Clsid() const;
-    [[nodiscard]] uint32_t transactionSignature() const;
+    [[nodiscard]] uint32_t TransactionSignature() const;
 private:
     std::unique_ptr<StorageIO> io_;
     std::list<std::unique_ptr<Stream>> streams_;
@@ -87,7 +87,7 @@ public:
     int Getch();
     std::streamsize Read(Byte *data, std::streamsize maxlen);
     Stream &Write(const Byte *data, uint32_t len);
-    Stream(StreamIpl *i)
+    Stream(StreamImpl *i)
     {
         impl = i;
     }
@@ -95,8 +95,9 @@ public:
 private:
     ~Stream();
     Stream();
+    Stream(const Stream &);
     Stream &operator=(const Stream &);
-    StreamIpl *impl = nullptr;
+    StreamImpl *impl = nullptr;
 };
 } // namespace ObjectEditor
 } // namespace OHOS

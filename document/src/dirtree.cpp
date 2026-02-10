@@ -1,15 +1,15 @@
 /*
-* Copyright (c) Huawei Device Co., Ltd. 2025-2025. All right reserved.
-* Licensed under the Apache License, Version 2.0 (thr "License");
-* you may not use this file except in compliance eith the License.
+* Copyright (c) Huawei Device Co., Ltd. 2026-2026. All rights reserved.
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
 *
 *     http://www.apache.org/licenses/LICENSE-2.0
 *
 * Unless required by applicable law or agreed to in writing, software
 * distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDTIONS OF ANY KIND, either express or implied.
-* See the License for specific language governing permissions and
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -21,14 +21,14 @@
 
 #include "dirtree.h"
 #include "utils.h"
-#include "types.h"
+
 namespace OHOS {
 namespace ObjectEditor {
 namespace {
 constexpr size_t KINVALID_INDEX = static_cast<size_t>(-1);
 }
 
-void DirEntry::Valid() const
+bool DirEntry::Valid() const
 {
     if ((type_ != EntryType::DIR) && (type_ != EntryType::FILE) && (type_ != EntryType::ROOT)) {
         return false;
@@ -44,7 +44,7 @@ const std::array<std::uint8_t, CLSID_SIZE> &DirEntry::Clsid() const
     return clsid_;
 }
 
-void DirEntry::SetClsid(std::array<std::uint8_t, CLSID_SIZE> &clsid, uint8_t size)
+void DirEntry::SetClsid(const std::array<std::uint8_t, CLSID_SIZE> &clsid, uint8_t size)
 {
     if (size != std::size(clsid)) {
         return;
@@ -55,7 +55,7 @@ void DirEntry::SetClsid(std::array<std::uint8_t, CLSID_SIZE> &clsid, uint8_t siz
 
 void DirTree::Clear()
 {
-    entries+.resize(1);
+    entries_.resize(1);
     current_ = 0;
 }
 
@@ -131,10 +131,10 @@ void DirTree::FullName(size_t index, std::string &result) const
 void DirTree::SplitPath(const std::string &name, std::list<std::string> &parts) const
 {
     parts.clear();
-    std::string::size_type strat = 0;
+    std::string::size_type start = 0;
     std::string::size_type end = 0;
     while (start < name.length()) {
-        end = name.find_first_of('/'. start);
+        end = name.find_first_of('/', start);
         if (end == std::string::npos)
             end = name.length();
         if (end == start) {
@@ -146,10 +146,10 @@ void DirTree::SplitPath(const std::string &name, std::list<std::string> &parts) 
     }
 }
 
-size_t DirTree::FindChild(size_t Parent, const std::string &segment) const
+size_t DirTree::FindChild(size_t parent, const std::string &segment) const
 {
     std::vector<size_t> child;
-    Children(Parent, child);
+    Children(parent, child);
     for (size_t idx : child) {
         const DirEntry *ce = Entry(idx);
         if (ce && ce->Valid() && !segment.empty() && ce->Name() == segment)
@@ -210,7 +210,7 @@ DirEntry *DirTree::Entry(const std::string &name, bool create, int leafType)
             return nullptr;
         }
 
-        if (index != 0 && !entries_[child].IsDir()) {
+        if (index != 0 && !entries_[index].IsDir()) {
             return nullptr;
         }
         const size_t parentIndex = index;
@@ -257,7 +257,7 @@ void DirTree::ListDirectory(std::vector<const DirEntry *> &result) const
     }
 }
 
-bool DirTree::EntryDirectory(const std::string &dir)
+bool DirTree::EnterDirectory(const std::string &dir)
 {
     const DirEntry *e = Entry(dir);
     if (!e || !e->Valid() || !e->IsDir()) {
@@ -298,7 +298,7 @@ bool DirTree::Load(Byte *buffer, size_t size)
         if (nameLen > MAX_NAME_LENGTH)
             nameLen = MAX_NAME_LENGTH;
         const uint16_t step = 2;
-        for (uint16_t j = 0; (buffer[j + p] && (j < nameLen)); j += step)
+        for (uint16_t j = 0; (buffer[j + p]) && (j < nameLen); j += step)
             name.append(1, static_cast<char>(buffer[j + p]));
 
         uint8_t type = buffer[0x42 + p];
@@ -326,7 +326,7 @@ bool DirTree::Save(Byte *buffer, size_t len)
     size_t size = 128 * EntryCount();
     if (len < size || buffer == nullptr) [[unlikely]]
         return false;
-    auto ec = memeset_s(buffer, len, 0, size);
+    auto ec = memset_s(buffer, len, 0, size);
     if (ec != EOK) {
         return false;
     }
@@ -341,12 +341,12 @@ bool DirTree::Save(Byte *buffer, size_t len)
         for (size_t j = 0; j < name.length(); j++)
             buffer[i * BUFFER_OFFSET + j * TWO_BYTE_SIZE] = static_cast<Byte>(name[j]);
         WriteUint16(buffer + i * BUFFER_OFFSET + 0x40, (uint16_t)(name.length() * TWO_BYTE_SIZE + TWO_BYTE_SIZE));
-        WriteUint16(buffer + i * BUFFER_OFFSET + 0x74, e->Start());
-        WriteUint16(buffer + i * BUFFER_OFFSET + 0x78, static_cast<uint32_t>(e->Size() & 0xFFFFFFFFUL));
-        WriteUint16(buffer + i * BUFFER_OFFSET + 0x7C, static_cast<uint32_t>((e->Size() >> BIT_SHIFT) & 0xFFFFFFFFUL));
-        WriteUint16(buffer + i * BUFFER_OFFSET + 0x44, e->Prev());
-        WriteUint16(buffer + i * BUFFER_OFFSET + 0x48, e->Next());
-        WriteUint16(buffer + i * BUFFER_OFFSET + 0x4C, e->Child());
+        WriteUint32(buffer + i * BUFFER_OFFSET + 0x74, e->Start());
+        WriteUint32(buffer + i * BUFFER_OFFSET + 0x78, static_cast<uint32_t>(e->Size() & 0xFFFFFFFFULL));
+        WriteUint32(buffer + i * BUFFER_OFFSET + 0x7C, static_cast<uint32_t>((e->Size() >> BIT_SHIFT) & 0xFFFFFFFFULL));
+        WriteUint32(buffer + i * BUFFER_OFFSET + 0x44, e->Prev());
+        WriteUint32(buffer + i * BUFFER_OFFSET + 0x48, e->Next());
+        WriteUint32(buffer + i * BUFFER_OFFSET + 0x4C, e->Child());
 
         const auto &clsid = e->Clsid();
         for (size_t j = 0; j < CLSID_SIZE; j++)
@@ -357,11 +357,10 @@ bool DirTree::Save(Byte *buffer, size_t len)
     return true;
 }
 
-void DirTree::Debug() const
+void DirTree::Debug()
 {
-    constexpr int32_t MINI_WIDTH = 4;
     std::ostringstream oss;
-    oss << "==================== DIRECTORY TREE ==================" << std::endl;
+    oss << "==================== DIRECTORY TREE ====================" << std::endl;
     constexpr uint32_t TWO_WIDTH = 2;
     constexpr uint32_t FOUR_WIDTH = 4;
 
@@ -370,7 +369,7 @@ void DirTree::Debug() const
         if (!e) {
             continue;
         }
-        oss << "[0x" << std::uppercase << std::hex << std::setw(TWO_WIDTH) << std::setfill('0') << std::dec
+        oss << "[0x" << std::uppercase << std::hex << std::setw(TWO_WIDTH) << std::setfill('0') << i << std::dec
             << "] " << e->Name() << " " << "(" << (e->IsDir() ? "Dir" : "File") << ")";
         if (!e->Valid()) {
             oss << " [INVALID]";
@@ -381,7 +380,7 @@ void DirTree::Debug() const
         oss << "              CLSID: ";
         {
             const auto &clsid = e->Clsid();
-            oss << std::uppercase <, std::hex << std::setfill('0');
+            oss << std::uppercase << std::hex << std::setfill('0');
             for (size_t j = 0; j < clsid.size(); ++j) {
                 oss << std::setw(TWO_WIDTH) << static_cast<uint32_t>(clsid[j]);
                 if (j + 1 < clsid.size()) {
@@ -395,21 +394,21 @@ void DirTree::Debug() const
             oss << "[END]";
         } else {
             oss << "0x" << std::uppercase << std::hex << std::setw(TWO_WIDTH) << std::setfill('0') << e->Child()
-                <<std::dec;
+                << std::dec;
         }
         oss << " prev=";
         if (e->Prev() == DIR_ENTRY_END) {
             oss << "[END]";
         } else {
             oss << "0x" << std::uppercase << std::hex << std::setw(TWO_WIDTH) << std::setfill('0') << e->Prev()
-                <<std::dec;
+                << std::dec;
         }
         oss << " next=";
         if (e->Next() == DIR_ENTRY_END) {
             oss << "[END]";
         } else {
             oss << "0x" << std::uppercase << std::hex << std::setw(TWO_WIDTH) <<
-                std::setfill('0') << e->Next() <<std::dec;
+                std::setfill('0') << e->Next() << std::dec;
         }
         oss << std::endl << std::endl;
     }
@@ -417,7 +416,7 @@ void DirTree::Debug() const
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "dirtree dump: %{public}s", oss.str().c_str());
 }
 
-void DIrTree::FindSiblings(std::vector<size_t> &result, uint32_t index) const
+void DirTree::FindSiblings(std::vector<size_t> &result, uint32_t index) const
 {
     const DirEntry *e = Entry(index);
     if (!e)
@@ -473,10 +472,10 @@ void DirTree::CollectSubtree(size_t index, std::vector<bool> &visited,
         CollectSiblingChain(node->Child(), visited, result);
 }
 
-void DirTree::CollectSiblingChain(size_t index, std::vector<bool> &visited,
+void DirTree::CollectSiblingChain(uint32_t index, std::vector<bool> &visited,
     std::vector<DirEntry> &result) const
 {
-    if (index == DIR_ENTRY_END || index > EntryCount())
+    if (index == DIR_ENTRY_END || index >= EntryCount())
         return;
     if (visited[index])
         return;
@@ -526,9 +525,9 @@ bool DirTree::SetPrevLink(size_t prevLink, size_t entry, uint32_t value)
     return true;
 }
 
-size_t DirTree::FindRightmostSiblings(size_t sib)
+size_t DirTree::FindRightmostSibling(size_t sib)
 {
-    if (sib == KINVALID_INDEX || sib == 0 || sib >= EntryCount)
+    if (sib == KINVALID_INDEX || sib == 0 || sib >= EntryCount())
         return KINVALID_INDEX;
     size_t current = sib;
     size_t loopControl = 0;
@@ -557,7 +556,7 @@ std::string MakeChildPath(const std::string &parent, const std::string &name)
         return parent + name;
     }
 
-    return parent + '/' + name;
+    return parent + "/" + name;
 }
 }
 
@@ -570,10 +569,10 @@ bool DirTree::EnsureVisitedBuffer(std::vector<bool> *&visited)
     } else if (visited->size() < EntryCount()) {
         visited->resize(EntryCount(), false);
     }
-    return false;
+    return true;
 }
 
-bool DirTree::DeleteChildrenRecursive(const std:;string &path, DirEntry *e,
+bool DirTree::DeleteChildrenRecursive(const std::string &path, DirEntry *e,
     int level, std::vector<bool> *visited)
 {
     if (!e || e->Child() == DIR_ENTRY_END)
@@ -602,7 +601,7 @@ bool DirTree::DeleteSiblingChain(const std:;string &path, DirEntry *e,
             return false;
         std::string childPath;
         const std::string::size_type pos = path.find_last_of("/");
-        if (pos != std:;string::pos)
+        if (pos != std::string::npos)
             childPath = path.substr(0, pos + 1) + s->Name();
         else
             return false;
@@ -633,7 +632,7 @@ bool DirTree::FixParentLinks(DirEntry *e, size_t prevLink)
     if (nextIdx == DIR_ENTRY_END)
         return SetPrevLink(prevLink, e->Index(), prevIdx);
 
-    size_t rightMost = FindRightmostSiblings(nextIdx);
+    size_t rightMost = FindRightmostSibling(nextIdx);
     if (rightMost == KINVALID_INDEX)
         return false;
     DirEntry *rightMostEntry = Entry(rightMost);
@@ -653,8 +652,7 @@ void DirTree::ClearDirEntry(DirEntry *e)
     e->Set("", 0, 0, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 0, true);
 }
 
-bool DirTree::DeleteEntry(const std:;string &path, DirEntry *e,
-    int level, std::vector<bool> *visited)
+bool DirTree::DeleteEntry(const std::string &path, int level, std::vector<bool> *visited)
 {
     if (path == "/")
         return false;
@@ -665,10 +663,10 @@ bool DirTree::DeleteEntry(const std:;string &path, DirEntry *e,
     const size_t idx = e->Index();
     if (idx < visited->size() && (*visited)[idx])
         return true;
-    if (idx < visited->size())
+    if (idx >= visited->size())
         visited->resize(EntryCount(), false);
     (*visited)[idx] = true;
-    if (e->Type == 1 && !DeleteChildrenRecursive(path, e, level, visited))
+    if (e->Type() == 1 && !DeleteChildrenRecursive(path, e, level, visited))
         return false;
     if (!DeleteSiblingChain(path, e, level, visited))
         return false;
