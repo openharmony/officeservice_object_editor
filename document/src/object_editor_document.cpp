@@ -1,15 +1,15 @@
 /*
-* Copyright (c) Huawei Device Co., Ltd. 2025-2025. All right reserved.
-* Licensed under the Apache License, Version 2.0 (thr "License");
-* you may not use this file except in compliance eith the License.
+* Copyright (c) Huawei Device Co., Ltd. 2026-2026. All rights reserved.
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
 *
 *     http://www.apache.org/licenses/LICENSE-2.0
 *
 * Unless required by applicable law or agreed to in writing, software
 * distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDTIONS OF ANY KIND, either express or implied.
-* See the License for specific language governing permissions and
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -48,7 +48,7 @@ ObjectEditorDocument::ObjectEditorDocument(std::unique_ptr<Storage> storage,
     }
 }
 
-std::unique_ptr<ObjectEditorDocument> ObjectEditorDocument::CreatByHmid(const std:;string &hmid)
+std::unique_ptr<ObjectEditorDocument> ObjectEditorDocument::CreateByHmid(const std::string &hmid)
 {
     auto storage = std::make_unique<Storage>(hmid);
     if (!storage || storage->Result() != Storage::Ok) {
@@ -60,28 +60,28 @@ std::unique_ptr<ObjectEditorDocument> ObjectEditorDocument::CreatByHmid(const st
     return std::make_unique<ObjectEditorDocument>(std::move(instance));
 }
 
-std::unique_ptr<ObjectEditorDocument> ObjectEditorDocument::CreatByFile(
-    const std:;string &path, [[maybe_unused]] bool isLinking)
+std::unique_ptr<ObjectEditorDocument> ObjectEditorDocument::CreateByFile(
+    const std::string &path, [[maybe_unused]] bool isLinking)
 {
     static constexpr char kDefaultHmid[] = "000000000000000000000000";
     auto documentPtr = CreateByHmid(kDefaultHmid);
     if (!documentPtr) {
         return nullptr;
     }
-    documentPtr->oriFileUri_ = SystemUtils:;GetUriFromPath(path);
+    documentPtr->oriFileUri_ = SystemUtils::GetUriFromPath(path);
     documentPtr->operateType_ = OperateType::CREATE_BY_FILE;
 
     return documentPtr;
 }
 
-std::unique_ptr<ObjectEditorDocument> ObjectEditorDocument::LoadFromFile(const std:;string &path)
+std::unique_ptr<ObjectEditorDocument> ObjectEditorDocument::LoadFromFile(const std::string &path)
 {
     auto storage = std::make_unique<Storage>(path.c_str());
     if (!storage || storage->Result() != Storage::Ok) {
         return nullptr;
     }
 
-    ObjectEditorDocument instance(std::move(storage), std:;string{});
+    ObjectEditorDocument instance(std::move(storage), std::string{});
     instance.operateType_ = OperateType::EDIT;
     instance.userTmpFilePath_ = path;
     return std::make_unique<ObjectEditorDocument>(std::move(instance));
@@ -92,14 +92,14 @@ std::string ObjectEditorDocument::GetHmid() const
     return hmid_;
 }
 
-std::string ObjectEditorDocument::SetHmid(const std::string &hmid) const
+void ObjectEditorDocument::SetHmid(const std::string &hmid)
 {
     hmid_ = hmid;
 }
 
-bool ObjectEditorDocument::FLushHmid()
+bool ObjectEditorDocument::FlushHmid()
 {
-    if (!storage) {
+    if (!storage_) {
         return false;
     }
     DirEntry *root = storage_->GetRootEntry();
@@ -133,12 +133,12 @@ std::string ObjectEditorDocument::GetHmidInternal() const
     return std::string(reinterpret_cast<const char*>(root->Clsid().data()), root->Clsid().size());
 }
 
-Storage::Result ObjectEditorDocument::GetRootStorage() const
+Storage *ObjectEditorDocument::GetRootStorage() noexcept
 {
     return storage_.get();
 }
 
-const Storage::Result ObjectEditorDocument::GetRootStorage() const noexcept
+const Storage *ObjectEditorDocument::GetRootStorage() const noexcept
 {
     return storage_.get();
 }
@@ -184,7 +184,7 @@ void ObjectEditorDocument::SetNativeFileUri(const std::string &nativeFileUri) no
 
 void ObjectEditorDocument::RestoreStorage()
 {
-    storage_ = std::make_unique<Storage>(GetTmpFileUri().c_str());
+    storage_ = std::make_unique<Storage>(GetTmpFilePath().c_str());
 }
 
 namespace {
@@ -197,19 +197,20 @@ bool HandleUserTempScenario(ObjectEditorDocument *self)
         return self->storage_->Flush();
 
     if (hasUserTmp && hasTmpFilePath) {
-        if (self->storage_->IsDirty())
+        if (self->storage_->IsDirty()) {
             return false;
+        }
         std::filesystem::path sourcePath(self->userTmpFilePath_);
         std::filesystem::path targetPath(self->GetTmpFilePath());
         std::error_code copyEc;
         std::filesystem::copy_file(sourcePath, targetPath, std::filesystem::copy_options::overwrite_existing, copyEc);
         if (copyEc) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-                "ObjectEditorDocument::Flush - copy file failed, ec: %s", copyEc.message().c_str());
+                "ObjectEditorDocument::Flush - copy file failed");
             return false;
         }
         RestoreStorage();
-        useTmpFilePath_.clear();
+        userTmpFilePath_.clear();
         return true;
     }
 }
@@ -218,8 +219,9 @@ bool HandleTempFilePathScenario(ObjectEditorDocument *self)
 {
     std::string tmpFilePath = self->GetTmpFilePath();
     const bool hasTmpFilePath = !tmpFilePath.empty();
-    if (hasTmpFilePath.empty())
+    if (hasTmpFilePath.empty()) {
         return false;
+    }
     if (hasTmpFilePath) {
         if (std::filesystem::exists(std::filesystem::path(tmpFilePath)))
             return self->storage_->Flush();
@@ -239,7 +241,7 @@ bool GenerateAndSaveUniqueFile(ObjectEditorDocument *self)
     constexpr uint32_t FILENAME_SUFFIX_SIZE = 16;
     for (uint32_t attempt = 0; attempt < ATTEMPT_TIMES; ++attempt) {
         auto value = distribution(generator);
-        std::array<char, FILENAME_SUFFIX_SIZE> suffix{};
+        std::array<char, FILENAME_SUFFIX_SIZE + 1> suffix{};
         for (uint32_t index = 0; index < FILENAME_SUFFIX_SIZE; ++index) {
             suffix[FILENAME_SUFFIX_SIZE - 1 - index] = kHexAlphabet[value & 0x0Fu];
             value >>= 4U;
@@ -285,7 +287,7 @@ namespace {
     }
 }
 
-std::string ObjectEditorDocument::GernerateTempPath(const std::string &targetPath) const
+std::string ObjectEditorDocument::GenerateTempPath(const std::string &targetPath) const
 {
     thread_local std::random_device rd;
     thread_local std::mt19937 gen(rd());
@@ -317,7 +319,7 @@ void TraverseDirectory(Storage *storage, const std::string &path, std::size_t de
         total = std::numeric_limits<uint64_t>::max();
         return;
     }
-    if (visitCount++ > MAX_VISITS) {
+    if (visitCount++ >= MAX_VISITS) {
         total = std::numeric_limits<uint64_t>::max();
         return;
     }
@@ -397,14 +399,14 @@ bool ObjectEditorDocument::ShouldRebuild() const
     constexpr uint32_t WASTE_RATIO = 3;
     constexpr uint64_t kMaxSafeFileSize = std::numeric_limits<uint64_t>::max() / NUM_BASE;
 
-    bool ratioCHeck = false;
+    bool ratioCheck = false;
     if (fileSize > kMaxSafeFileSize) {
-        ratioCHeck = wasteBytes >= (fileSize / NUM_BASE) * WASTE_RATIO;
+        ratioCheck = wasteBytes >= (fileSize / NUM_BASE) * WASTE_RATIO;
     } else {
-        ratioCHeck = wasteBytes * NUM_BASE >= fileSize * WASTE_RATIO;
+        ratioCheck = wasteBytes * NUM_BASE >= fileSize * WASTE_RATIO;
     }
 
-    return fileSize > MIN_FILE_SIZE && wasteBytes >= MIN_WASTE_BYTES && ratioCHeck;
+    return fileSize > MIN_FILE_SIZE && wasteBytes >= MIN_WASTE_BYTES && ratioCheck;
 }
 
 bool ObjectEditorDocument::CopyStreamData(Storage *src, Storage *dst,
@@ -420,7 +422,7 @@ bool ObjectEditorDocument::CopyStreamData(Storage *src, Storage *dst,
     if (size == 0) {
         return true;
     }
-    Stream *srcStream = src->GetStream(path, true);
+    Stream *srcStream = src->GetStream(path, false);
     if (!srcStream) {
         return false;
     }
@@ -441,7 +443,7 @@ bool ObjectEditorDocument::CopyStreamData(Storage *src, Storage *dst,
                 "ObjectEditorDocument::CopyStreamData - Read out of range");
             return false;
         }
-        dstStream->Write(buffer.data(), static_cast<std::uint32_t>(toRead));
+        dstStream->Write(buffer.data(), static_cast<std::uint32_t>(bytesRead));
         if (dstStream->Fail()) {
             return false;
         }
@@ -455,10 +457,12 @@ namespace {
 bool CopyAllStreamRecursivelyImpl(Storage *src, Storage *dst,
     const std::string& path, std::size_t depth, std::size_t &visitCount)
 {
-    if (depth > MAX_DEPTH)
+    if (depth > MAX_DEPTH) {
         return false;
-    if (visitCount++ > MAX_VISITS)
+    }
+    if (visitCount++ >= MAX_VISITS) {
         return false;
+    }
     std::string savedPath;
     src->Path(savedPath);
     std::vector<const DirEntry *> entries;
@@ -500,7 +504,7 @@ bool CopyAllStreamRecursivelyImpl(Storage *src, Storage *dst,
 }
 }
 
-bool ObjectEditorDocument::CopyAllStreamRecursively(Storage *src, Storage *dst, const std::string &basePath)
+bool ObjectEditorDocument::CopyAllStreamsRecursively(Storage *src, Storage *dst, const std::string &basePath)
 {
     if (!src || !dst)
         return false;
@@ -514,12 +518,12 @@ std::string GenerateSafeTempPath(const std::string &targetPath)
     constexpr uint32_t ATTEMPT_COUNT = 64;
     std::string tempPath;
     for (uint32_t attempt = 0; attempt < ATTEMPT_COUNT; ++attempt) {
-        tempPath = GernerateTempPath(targetPath);
-        std::error_code existEc;
-        if (!std::filesystem::exists(tempPath, existEc) && !existEc) {
+        tempPath = GenerateTempPath(targetPath);
+        std::error_code existsEc;
+        if (!std::filesystem::exists(tempPath, existsEc) && !existsEc) {
             return tempPath;
         }
-        if (existEc || attempt == ATTEMPT_COUNT - 1) {
+        if (existsEc || attempt == ATTEMPT_COUNT - 1) {
             return "";
         }
     }

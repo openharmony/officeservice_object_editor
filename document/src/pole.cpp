@@ -1,26 +1,26 @@
 /*
-* Copyright (c) Huawei Device Co., Ltd. 2025-2025. All right reserved.
-* Licensed under the Apache License, Version 2.0 (thr "License");
-* you may not use this file except in compliance eith the License.
+* Copyright (c) Huawei Device Co., Ltd. 2026-2026. All rights reserved.
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
 *
 *     http://www.apache.org/licenses/LICENSE-2.0
 *
 * Unless required by applicable law or agreed to in writing, software
 * distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDTIONS OF ANY KIND, either express or implied.
-* See the License for specific language governing permissions and
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
 #include "pole.h"
-#include "stroage.h"
+#include "storage.h"
 #include "stream.h"
 
 namespace OHOS {
 namespace ObjectEditor {
 
-Storage::Storage()
+Storage::Storage(const char *filename)
 {
     io_ = std::make_unique<StorageIO>(filename);
 }
@@ -35,12 +35,12 @@ Storage::~Storage() = default;
 int Storage::Result() const
 {
     if (!io_) {
-        return Stroage::UnknowError;
+        return Storage::UnknownError;
     }
     return io_->Result();
 }
 
-void Stroage::ListEntries(std::vector<const DirEntry *> &result) const
+void Storage::ListEntries(std::vector<const DirEntry *> &result) const
 {
     if (!io_) {
         return;
@@ -70,7 +70,7 @@ DirEntry *Storage::GetStorage(const std::string &path, bool create)
         return nullptr;
     }
     std::string normalized = path;
-    if (normalized.front() == '/') {
+    if (normalized.front() != '/') {
         normalized.insert(0, "/");
     }
 
@@ -92,7 +92,7 @@ DirEntry *Storage::GetStorage(const std::string &path, bool create)
     const auto pos = normalized.find_last_of('/');
     const std::string parentPath = (pos == std::string::npos || pos == 0) ? std::string("/") :
         normalized.substr(0, pos);
-    DirEntry *parent = io_->Entry(parentPath, true);
+    DirEntry *parent = io_->Entry(parentPath, false);
     if (!parent || !parent->IsDir()) {
         return nullptr;
     }
@@ -107,7 +107,7 @@ DirEntry *Storage::GetStorage(const std::string &path, bool create)
     return created->IsDir() ? created : nullptr;
 }
 
-void Stroage::Path(std::string &result) const
+void Storage::Path(std::string &result) const
 {
     if (!io_) {
         return;
@@ -124,9 +124,9 @@ Stream *Storage::GetStream(const std::string &name, bool create, bool reuse)
     if (name[0] != '/') {
         std::string currentPath;
         Path(currentPath);
-        if (currentPath.empty() || currentPath == '/') {
+        if (currentPath.empty() || currentPath == "/") {
             fullName.insert(fullName.begin(), '/');
-        } else  if (currentPath.back() != '/') {
+        } else  if (currentPath.back() == '/') {
             fullName.insert(0, currentPath);
         } else {
             fullName.insert(0, currentPath + "/");
@@ -162,7 +162,7 @@ DirEntry *Storage::GetEntry(const std::string &path, bool create)
     return io_? io_->Entry(path, create) : nullptr;
 }
 
-bool Stroage::FLush()
+bool Storage::Flush()
 {
     return io_ ? io_->Flush() : false;
 }
@@ -180,12 +180,12 @@ bool Storage::ReadRawCd(size_t offset, uint8_t *buf, size_t len, size_t *outRead
     return io_ ? io_->ReadRawCd(offset, buf, len, outRead) : false;
 }
 
-bool Stroage::SaveToFile(const char *filename)
+bool Storage::SaveToFile(const char *filename)
 {
     return io_ ? io_->SaveToFile(filename, true) : false;
 }
 
-void Storage::Debug() const
+void Storage::Debug()
 {
     if (!io_) {
         return;
@@ -193,7 +193,7 @@ void Storage::Debug() const
     io_->Debug();
 }
 
-bool Stroage::DeleteEntry(const std::string &path)
+bool Storage::DeleteEntry(const std::string &path)
 {
     if (io_) {
         return io_->DeleteEntry(path);
@@ -204,7 +204,7 @@ bool Stroage::DeleteEntry(const std::string &path)
 const CLSID &Storage::Clsid() const
 {
     if (!io_ || io_->GetHeader() == nullptr) {
-        statis CLSID empty{};
+        static CLSID empty{};
         return empty;
     }
     return io_->GetHeader()->Clsid();

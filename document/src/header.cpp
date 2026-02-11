@@ -1,26 +1,23 @@
 /*
-* Copyright (c) Huawei Device Co., Ltd. 2025-2025. All right reserved.
-* Licensed under the Apache License, Version 2.0 (thr "License");
-* you may not use this file except in compliance eith the License.
+* Copyright (c) Huawei Device Co., Ltd. 2026-2026. All rights reserved.
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
 *
 *     http://www.apache.org/licenses/LICENSE-2.0
 *
 * Unless required by applicable law or agreed to in writing, software
 * distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDTIONS OF ANY KIND, either express or implied.
-* See the License for specific language governing permissions and
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
-#ifndef HEADR_H
-#define HEADR_H
-
 #include <cstring>
-#include <cstdint>
 #include <iomanip>
 #include <sstream>
 #include <securec.h>
+#include <iostream>
 
 #include "header.h"
 #include "alloctable.h"
@@ -31,10 +28,10 @@ namespace ObjectEditor {
 
 static const Byte g_cdMagic[] = {0xD0u, 0xCFu, 0x11u, 0xE0u, 0xA1u, 0xB1u, 0x1Au, 0xE1u};
 
-Header::header()
+Header::Header()
 {
     minorVersion_ = DEFAULT_MINOR_VERSION;
-    majorVersion_ = DEFAULT_NAJOR_VERSION;
+    majorVersion_ = DEFAULT_MAJOR_VERSION;
     byteOrder_ = DEFAULT_BYTE_ORDER;
     bigBlockShift_ = DEFAULT_SECTOR_SHIFT;
     miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT;
@@ -105,7 +102,7 @@ bool Header::Load(const Byte *buffer, size_t len)
         id_[i] = buffer[i];
     }
 
-    if (memecpy_s(clsid_.data(), clsid_.size(), buffer + 0x08, clsid_size()) != EOK) {
+    if (memcpy_s(clsid_.data(), clsid_.size(), buffer + 0x08, clsid_.size()) != EOK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Header::Load - memcpy_s failed");
         return false;
     }
@@ -146,9 +143,9 @@ bool Header::Save(Byte *buffer, size_t len)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Header::Save - magic data memcpy_s failed");
         return false;
     }
-    ec = memset_s(buffer + FILE_SIGNATURE_SIZE, len - FILE_SIGNATURE_SIZE, clsid_.data(), clsid_size());
+    ec = memcpy_s(buffer + FILE_SIGNATURE_SIZE, len - FILE_SIGNATURE_SIZE, clsid_.data(), clsid_.size());
     if (ec != EOK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Header::Save - signature memset_s failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Header::Save - signature memcpy_s failed");
         return false;
     }
 
@@ -164,9 +161,10 @@ bool Header::Save(Byte *buffer, size_t len)
     WriteUint32(buffer + HEADER_MINI_STREAM_CUTOFF_OFFSET, threshold_);
     WriteUint32(buffer + HEADER_FIRST_MINI_FAT_SECTOR_OFFSET, sbatStart_);
     WriteUint32(buffer + HEADER_MINI_FAT_SECTOR_NUMBER_OFFSET, numSbat_);
+    WriteUint32(buffer + HEADER_FIRST_DIFAT_SECTOR_OFFSET, difatStart_);
     WriteUint32(buffer + HEADER_DIFAT_SECTOR_NUMBER_OFFSET, numDifat_);
     for (size_t i = 0; i < HEADER_DIFAT_ARRAY_SIZE; i++) {
-        WriteUint32(buffer + HEADER_FIXED_SIZE + i * FOUR_BYTE_SIZE, bbBlocks[i]);
+        WriteUint32(buffer + HEADER_FIXED_SIZE + i * FOUR_BYTE_SIZE, bbBlocks_[i]);
     }
     return true;
 }
@@ -177,7 +175,7 @@ void Header::Debug()
     constexpr uint32_t HEX_WIDTH = 8;
     std::ostringstream oss;
     auto fmtHex8 = [&oss](uint32_t v) {
-        oss << "0x" << std::hex << std::setw(HEX_WDITH) << std::setfill('0') << std::nouppercase << v;
+        oss << "0x" << std::hex << std::setw(HEX_WIDTH) << std::setfill('0') << std::nouppercase << v;
         return oss.str();
     };
     auto sectorOrNone = [&](uint32_t v) {
@@ -186,27 +184,27 @@ void Header::Debug()
     auto indexOrNoneDec = [&](uint32_t v) {
         return v == ENDOFCHAIN ? std::string("[NONE]") : std::to_string(v);
     };
-    constexpr uint32_t PRINT_WDITH = 16;
+    constexpr uint32_t PRINT_WIDTH = 16;
     oss << "===================== OLE HEADER ====================" << std::endl;
-    oss << std::left << std::setw(PRINT_WDITH) << "Block Shift:" << std::right << bigBlockShift_ << " (2^"
+    oss << std::left << std::setw(PRINT_WIDTH) << "Block Shift:" << std::right << bigBlockShift_ << " (2^"
         << bigBlockShift_ << " = " << (1u << bigBlockShift_) << " bytes)" << std::endl;
-    oss << std::left << std::setw(PRINT_WDITH) << "Mini Shift:" << std::right << miniBlockShift_ << " (2^"
+    oss << std::left << std::setw(PRINT_WIDTH) << "Mini Shift:" << std::right << miniBlockShift_ << " (2^"
         << miniBlockShift_ << " = " << (1u << miniBlockShift_) << " bytes)" << std::endl;
-    oss << std::left << std::setw(PRINT_WDITH) << "FAT Blocks:" << std::right << numBat_ << std::endl;
-    oss << std::left << std::setw(PRINT_WDITH) << "Dir Start:" <<
+    oss << std::left << std::setw(PRINT_WIDTH) << "FAT Blocks:" << std::right << numBat_ << std::endl;
+    oss << std::left << std::setw(PRINT_WIDTH) << "Dir Start:" <<
         std::right << indexOrNoneDec(direntStart_) << std::endl;
-    oss << std::left << std::setw(PRINT_WDITH) << "Threshold" << std::right << threshold_ << " bytes" << std::endl;
-    oss << std::left << std::setw(PRINT_WDITH) << "MiniFAT Start:" <<
+    oss << std::left << std::setw(PRINT_WIDTH) << "Threshold" << std::right << threshold_ << " bytes" << std::endl;
+    oss << std::left << std::setw(PRINT_WIDTH) << "MiniFAT Start:" <<
         std::right << sectorOrNone(sbatStart_) << std::endl;
     if (numSbat_ != 0) {
-        oss << std::left << std::setw(PRINT_WDITH) << "MiniFAT Count:" << std::right << numSbat_ << std::endl;
+        oss << std::left << std::setw(PRINT_WIDTH) << "MiniFAT Count:" << std::right << numSbat_ << std::endl;
     }
-    oss << std::left << std::setw(PRINT_WDITH) << "DIFAT Start:" <<
+    oss << std::left << std::setw(PRINT_WIDTH) << "DIFAT Start:" <<
         std::right << sectorOrNone(difatStart_) << std::endl;
     if (numDifat_ != 0)
-        oss << std::left << std::setw(PRINT_WDITH) << "DIFAT Count:" << std::right << numDifat_ << std::endl;
+        oss << std::left << std::setw(PRINT_WIDTH) << "DIFAT Count:" << std::right << numDifat_ << std::endl;
     uint32_t s = (numBat_ <= HEADER_DIFAT_ARRAY_SIZE) ? numBat_ : HEADER_DIFAT_ARRAY_SIZE;
-    oss << std::left << std::setw(PRINT_WDITH) << (std::string("BAT Blocks (first ") +
+    oss << std::left << std::setw(PRINT_WIDTH) << (std::string("BAT Blocks (first ") +
         std::to_string(s) + "): ");
     if (s == 0) {
         oss << "";
@@ -223,5 +221,3 @@ void Header::Debug()
 }
 } // namespace ObjectEditor
 } // namespace OHOS
-
-#endif
