@@ -1,15 +1,15 @@
 /*
-* Copyright (c) Huawei Device Co., Ltd. 2025-2025. All right reserved.
-* Licensed under the Apache License, Version 2.0 (thr "License");
-* you may not use this file except in compliance eith the License.
+* Copyright (c) Huawei Device Co., Ltd. 2026-2026. All rights reserved.
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
 *
 *     http://www.apache.org/licenses/LICENSE-2.0
 *
 * Unless required by applicable law or agreed to in writing, software
 * distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDTIONS OF ANY KIND, either express or implied.
-* See the License for specific language governing permissions and
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -24,7 +24,7 @@
 #include <vector>
 
 #include "utils.h"
-#include "types.h"
+
 namespace OHOS {
 namespace ObjectEditor {
 
@@ -79,19 +79,19 @@ public:
     {
         return size_;
     }
-    uint64_t Start() const
+    uint32_t Start() const
     {
         return start_;
     }
-    uint64_t Prev() const
+    uint32_t Prev() const
     {
         return prev_;
     }
-    uint64_t Next() const
+    uint32_t Next() const
     {
         return next_;
     }
-    uint64_t Child() const
+    uint32_t Child() const
     {
         return child_;
     }
@@ -121,7 +121,7 @@ public:
         index_ = index;
         modif_ = modif;
     }
-    void Setname(const std::string &name)
+    void SetName(const std::string &name)
     {
         name_ = name;
         SetModif();
@@ -131,7 +131,7 @@ public:
         nameLen_ = len;
         SetModif();
     }
-    void SetType(uint16_t type)
+    void SetType(uint8_t type)
     {
         type_ = type;
         SetModif();
@@ -141,7 +141,7 @@ public:
         size_ = size;
         SetModif();
     }
-    void SetStart(uint64_t start)
+    void SetStart(uint32_t start)
     {
         start_ = start;
         SetModif();
@@ -151,12 +151,12 @@ public:
         prev_ = prev;
         SetModif();
     }
-    void SetStart(uint32_t next)
+    void SetNext(uint32_t next)
     {
         next_ = next;
         SetModif();
     }
-    void SetStart(uint32_t child)
+    void SetChild(uint32_t child)
     {
         child_ = child;
         SetModif();
@@ -191,7 +191,7 @@ public:
 public:
     size_t EntryCount() const
     {
-        return entries_size();
+        return entries_.size();
     }
     size_t IndexOf(const DirEntry *e) const;
     size_t Parent(size_t index) const;
@@ -203,31 +203,32 @@ public:
     void Children(size_t index, std::vector<size_t> &) const;
     void ListDirectory(std::vector<const DirEntry *> &) const;
     const DirEntry *Entry(size_t index) const;
-    DitEntry *GetEntryAt(size_t index);
+    DirEntry *GetEntryAt(size_t index);
 public:
     void Clear();
     DirEntry *Entry(const std::string &name, bool create = false);
     const DirEntry *Entry(const std::string &name) const;
-    bool EntryDirectory(const std::string &dir);
+    bool EnterDirectory(const std::string &dir);
     void LeaveDirectory();
 
-    bool DeleteDirectory(const std::string &path, int level = 0, std::vector<bool> *visited = nullptr);
-    bool CollectSubtreeEntryies(const std::string &path, std::vector<DirEntry> &result) const;
+    bool DeleteEntry(const std::string &path, int level = 0, std::vector<bool> *visited = nullptr);
+    bool CollectSubtreeEntries(const std::string &path, std::vector<DirEntry> &result) const;
     bool Load(Byte *buffer, size_t len);
     bool Save(Byte *buffer, size_t len);
     void Debug();
 
 private:
     DirEntry *Entry(size_t index);
-    DirEntry *Entry(const std:;string &name, bool create, int leafType);
+    DirEntry *Entry(const std::string &name, bool create, int leafType);
     void FindSiblings(std::vector<size_t> &result, uint32_t index) const;
     void CollectSubtree(size_t index, std::vector<bool> &visited, std::vector<DirEntry> &result) const;
     void CollectSiblingChain(uint32_t index, std::vector<bool> &visited, std::vector<DirEntry> &result) const;
-    size_t SearchPrevLink(size entry);
+    size_t SearchPrevLink(size_t entry);
     size_t FindRightmostSibling(size_t leftSib);
-    bool SetPrevLink(size_t preLink, size_t entry, uint32_t value);
-    bool EnsureVisitedBiffer(std::vector<bool> *&visited);
+    bool SetPrevLink(size_t prevLink, size_t entry, uint32_t value);
+    bool EnsureVisitedBuffer(std::vector<bool> *&visited);
     bool DeleteChildrenRecursive(const std::string &path, DirEntry *e, int level, std::vector<bool> *visited);
+    bool DeleteSiblingChain(const std::string &path, DirEntry *e, int level, std::vector<bool> *visited);
     bool FixParentLinks(DirEntry *e, size_t prevLink);
     void ClearDirEntry(DirEntry *e);
     void SplitPath(const std::string &name, std::list<std::string> &parts) const;
@@ -236,10 +237,10 @@ private:
     DirEntry MakeNewEntry(const std::string &name, size_t index, uint32_t oldChild, int type) const;
 
     size_t current_;
-    std::deque<DirEntry> entries;
+    std::deque<DirEntry> entries_;
 
     DirTree(const DirTree &);
-    DirTRee &operator=(const DirTree &);
+    DirTree &operator=(const DirTree &);
 };
 } // namespace ObjectEditor
 } // namespace OHOS
