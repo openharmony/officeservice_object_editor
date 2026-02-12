@@ -1,0 +1,641 @@
+# Copyright (c) Huawei Device Co., Ltd. 2026-2026. All rights reserved.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# Description: oe service test build.gn file
+
+import("//build/test.gni")
+import("//vendor/huawei/domains/officeservice/object_editor_service/object_editor.gni")
+module_output_path = "object_editor/fuzztest"
+
+config("fuzzer_config") {
+  include_dirs = [
+    "${kits_path}/c",
+    "${innerkits_path}/include",
+    "${object_editor_path}/common/include",
+    "${object_editor_path}/document/include",
+    "${object_editor_path}/client/include",
+    "${object_editor_path}/utils/include/dfx",
+    "${object_editor_path}/extension_ability/include",
+    "${object_editor_path}/frameworks/kits/extension/include",
+    "${object_editor_path}/frameworks/ndk/include",
+  ]
+
+  cflags = [
+    "-g",
+    "-O0",
+    "-Wno-unused-variable",
+    "-fno-omit-frame-pointer",
+  ]
+}
+
+ohos_fuzztest("OHContentEmbedGetContentEmbedFormatByHmidAndLocaleFuzzTest") {
+  module_out_path = module_output_path
+  fuzz_config_file = "ohcontentembedgetcontentembedformatbyhmidandlocale_fuzzer"
+  configs = [
+    ":fuzzer_config",
+  ]
+  sources = [
+    "ohcontentembedgetcontentembedformatbyhmidandlocale_fuzzer/oh_contentembed_getcontentembedformatbyhmidandlocale_fuzzer.cpp"
+  ]
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/frameworks/ndk:content_embed_ndk",
+  ]
+  external_deps = [
+    "c_utils:utils",
+    "napi:ace_napi",
+    "ipc:ipc_core",
+    "image_framework:image_native",
+    "image_framework:pixelmap",
+    "safwk:system_ability_fwk",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "ability_base:ability_base_want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "ability_runtime:ability_start_options",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:napi_common",
+    "ability_runtime:ability_runtime",
+  ]
+}
+
+ohos_fuzztest("OhContentEmbedGetcontentEmbedInfoFuzzTest") {
+  module_out_path = module_output_path
+  fuzz_config_file = "ohcontentembedgetcontentembedinfo_fuzzer"
+  configs = [
+    ":fuzzer_config",
+  ]
+  sources = [ "ohcontentembedgetcontentembedinfo_fuzzer/oh_contentembed_getcontentembedinfo_fuzzer.cpp" ]
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/frameworks/ndk:content_embed_ndk",
+  ]
+  external_deps = [
+    "c_utils:utils",
+    "napi:ace_napi",
+    "ipc:ipc_core",
+    "image_framework:image_native",
+    "image_framework:pixelmap",
+    "safwk:system_ability_fwk",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "ability_base:ability_base_want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "ability_runtime:ability_start_options",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:napi_common",
+    "ability_runtime:ability_runtime",
+  ]
+}
+
+ohos_fuzztest("OHContentEmbedCreateContentEmbedInfoFuzzTest") {
+  module_out_path = module_output_path
+  fuzz_config_file = "ohcontentembedcreatecontentembedinfo_fuzzer"
+  configs = [
+    ":fuzzer_config",
+  ]
+  sources = [ "ohcontentembedcreatecontentembedinfo_fuzzer/oh_contentembed_createcontentembedinfo_fuzzer.cpp" ]
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/frameworks/ndk:content_embed_ndk",
+  ]
+  external_deps = [
+    "c_utils:utils",
+    "napi:ace_napi",
+    "ipc:ipc_core",
+    "image_framework:image_native",
+    "image_framework:pixelmap",
+    "safwk:system_ability_fwk",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "ability_base:ability_base_want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "ability_runtime:ability_start_options",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:napi_common",
+    "ability_runtime:ability_runtime",
+  ]
+}
+
+ohos_fuzztest("OHContentEmbedDestroyContentEmbedInfoFuzzTest") {
+  module_out_path = module_output_path
+  fuzz_config_file = "ohcontentembeddestroycontentembedinfo_fuzzer"
+  configs = [
+    ":fuzzer_config",
+  ]
+  sources = [ "ohcontentembeddestroycontentembedinfo_fuzzer/oh_contentembed_destroycontentembedinfo_fuzzer.cpp" ]
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/frameworks/ndk:content_embed_ndk",
+  ]
+  external_deps = [
+    "c_utils:utils",
+    "napi:ace_napi",
+    "ipc:ipc_core",
+    "image_framework:image_native",
+    "image_framework:pixelmap",
+    "safwk:system_ability_fwk",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "ability_base:ability_base_want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "ability_runtime:ability_start_options",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:napi_common",
+    "ability_runtime:ability_runtime",
+  ]
+}
+
+ohos_fuzztest("OHContentEmbedInfoGetFormatCountFuzzTest") {
+  module_out_path = module_output_path
+  fuzz_config_file = "ohcontentembedinfogetformatcount_fuzzer"
+  configs = [
+    ":fuzzer_config",
+  ]
+  sources = [ "ohcontentembedinfogetformatcount_fuzzer/oh_contentembed_info_getformatcount.cpp" ]
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/frameworks/ndk:content_embed_ndk",
+  ]
+  external_deps = [
+    "c_utils:utils",
+    "napi:ace_napi",
+    "ipc:ipc_core",
+    "image_framework:image_native",
+    "image_framework:pixelmap",
+    "safwk:system_ability_fwk",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "ability_base:ability_base_want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "ability_runtime:ability_start_options",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:napi_common",
+    "ability_runtime:ability_runtime",
+  ]
+}
+
+ohos_fuzztest("OHContentEmbedGetFormatFromInfoFuzzTest") {
+  module_out_path = module_output_path
+  fuzz_config_file = "ohcontentembedgetformatfrominfo_fuzzer"
+  configs = [
+    ":fuzzer_config",
+  ]
+  sources = [ "ohcontentembedgetformatfrominfo_fuzzer/oh_contentembed_getformatfrominfo.cpp" ]
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/frameworks/ndk:content_embed_ndk",
+  ]
+  external_deps = [
+    "c_utils:utils",
+    "napi:ace_napi",
+    "ipc:ipc_core",
+    "image_framework:image_native",
+    "image_framework:pixelmap",
+    "safwk:system_ability_fwk",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "ability_base:ability_base_want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "ability_runtime:ability_start_options",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:napi_common",
+    "ability_runtime:ability_runtime",
+  ]
+}
+
+ohos_fuzztest("OHContentEmbedCreateContentEmbedFormatFuzzTest") {
+  module_out_path = module_output_path
+  fuzz_config_file = "ohcontentembedcreatecontentembedformat_fuzzer"
+  configs = [
+    ":fuzzer_config",
+  ]
+  sources = [ "ohcontentembedcreatecontentembedformat_fuzzer/oh_contentembed_createcontentembedformat.cpp" ]
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/frameworks/ndk:content_embed_ndk",
+  ]
+  external_deps = [
+    "c_utils:utils",
+    "napi:ace_napi",
+    "ipc:ipc_core",
+    "image_framework:image_native",
+    "image_framework:pixelmap",
+    "safwk:system_ability_fwk",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "ability_base:ability_base_want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "ability_runtime:ability_start_options",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:napi_common",
+    "ability_runtime:ability_runtime",
+  ]
+}
+
+ohos_fuzztest("OHContentEmbedDestroyContentEmbedFormatFuzzTest") {
+  module_out_path = module_output_path
+  fuzz_config_file = "ohcontentembeddestroycontentembedformat_fuzzer"
+  configs = [
+    ":fuzzer_config",
+  ]
+  sources = [ "ohcontentembeddestroycontentembedformat_fuzzer/oh_contentembed_destroycontentembedformat.cpp" ]
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/frameworks/ndk:content_embed_ndk",
+  ]
+  external_deps = [
+    "c_utils:utils",
+    "napi:ace_napi",
+    "ipc:ipc_core",
+    "image_framework:image_native",
+    "image_framework:pixelmap",
+    "safwk:system_ability_fwk",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "ability_base:ability_base_want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "ability_runtime:ability_start_options",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:napi_common",
+    "ability_runtime:ability_runtime",
+  ]
+}
+
+ohos_fuzztest("OHContentEmbedFormatGetHmidFuzzTest") {
+  module_out_path = module_output_path
+  fuzz_config_file = "ohcontentembedformatgethmid_fuzzer"
+  configs = [
+    ":fuzzer_config",
+  ]
+  sources = [ "ohcontentembedformatgethmid_fuzzer/oh_contentembed_format_gethmid.cpp" ]
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/frameworks/ndk:content_embed_ndk",
+  ]
+  external_deps = [
+    "c_utils:utils",
+    "napi:ace_napi",
+    "ipc:ipc_core",
+    "image_framework:image_native",
+    "image_framework:pixelmap",
+    "safwk:system_ability_fwk",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "ability_base:ability_base_want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "ability_runtime:ability_start_options",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:napi_common",
+    "ability_runtime:ability_runtime",
+  ]
+}
+
+ohos_fuzztest("OHContentEmbedGetIconFromFormatFuzzTest") {
+  module_out_path = module_output_path
+  fuzz_config_file = "ohcontentembedgeticonfromformat_fuzzer"
+  configs = [
+    ":fuzzer_config",
+  ]
+  sources = [ "ohcontentembedgeticonfromformat_fuzzer/oh_contentembed_geticonfromformat.cpp" ]
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/frameworks/ndk:content_embed_ndk",
+  ]
+  external_deps = [
+    "c_utils:utils",
+    "napi:ace_napi",
+    "ipc:ipc_core",
+    "image_framework:image_native",
+    "image_framework:pixelmap",
+    "safwk:system_ability_fwk",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "ability_base:ability_base_want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "ability_runtime:ability_start_options",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:napi_common",
+    "ability_runtime:ability_runtime",
+  ]
+}
+
+ohos_fuzztest("OHContentEmbedGetFileNameExtensionsFromFormatFuzzTest") {
+  module_out_path = module_output_path
+  fuzz_config_file = "ohcontentembedgetfilenameextensionsfromformat_fuzzer"
+  configs = [
+    ":fuzzer_config",
+  ]
+  sources = [ "ohcontentembedgetfilenameextensionsfromformat_fuzzer/oh_contentembed_getfilenameextensionsfromformat.cpp" ]
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/frameworks/ndk:content_embed_ndk",
+  ]
+  external_deps = [
+    "c_utils:utils",
+    "napi:ace_napi",
+    "ipc:ipc_core",
+    "image_framework:image_native",
+    "image_framework:pixelmap",
+    "safwk:system_ability_fwk",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "ability_base:ability_base_want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "ability_runtime:ability_start_options",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:napi_common",
+    "ability_runtime:ability_runtime",
+  ]
+}
+
+ohos_fuzztest("OHContentEmbedCreateExtensionProxyFuzzTest") {
+  module_out_path = module_output_path
+  fuzz_config_file = "ohcontentembedcreateextensionproxy_fuzzer"
+  configs = [
+    ":fuzzer_config",
+  ]
+  sources = [ "ohcontentembedcreateextensionproxy_fuzzer/oh_contentembed_createextensionproxy.cpp" ]
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/document:content_embed_document",
+    "${object_editor_path}/frameworks/ndk:content_embed_ndk",
+  ]
+  external_deps = [
+    "c_utils:utils",
+    "napi:ace_napi",
+    "ipc:ipc_core",
+    "image_framework:image_native",
+    "image_framework:pixelmap",
+    "safwk:system_ability_fwk",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "ability_base:ability_base_want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "ability_runtime:ability_start_options",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:napi_common",
+    "ability_runtime:ability_runtime",
+  ]
+}
+
+ohos_fuzztest("OHContentEmbedDestroyExtensionProxyFuzzTest") {
+  module_out_path = module_output_path
+  fuzz_config_file = "ohcontentembeddestroyextensionproxy_fuzzer"
+  configs = [
+    ":fuzzer_config",
+  ]
+  sources = [ "ohcontentembeddestroyextensionproxy_fuzzer/oh_contentembed_destroyextensionproxy.cpp" ]
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/frameworks/ndk:content_embed_ndk",
+  ]
+  external_deps = [
+    "c_utils:utils",
+    "napi:ace_napi",
+    "ipc:ipc_core",
+    "image_framework:image_native",
+    "image_framework:pixelmap",
+    "safwk:system_ability_fwk",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "ability_base:ability_base_want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "ability_runtime:ability_start_options",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:napi_common",
+    "ability_runtime:ability_runtime",
+  ]
+}
+
+ohos_fuzztest("OHContentEmbedProxyRegisterOnUpdateFuncFuzzTest") {
+  module_out_path = module_output_path
+  fuzz_config_file = "ohcontentembedproxyregisteronupdatefunc_fuzzer"
+  configs = [
+    ":fuzzer_config",
+  ]
+  sources = [ "ohcontentembedproxyregisteronupdatefunc_fuzzer/oh_contentembed_proxy_registeronupdatefunc.cpp" ]
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/frameworks/ndk:content_embed_ndk",
+  ]
+  external_deps = [
+    "c_utils:utils",
+    "napi:ace_napi",
+    "ipc:ipc_core",
+    "image_framework:image_native",
+    "image_framework:pixelmap",
+    "safwk:system_ability_fwk",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "ability_base:ability_base_want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "ability_runtime:ability_start_options",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:napi_common",
+    "ability_runtime:ability_runtime",
+  ]
+}
+
+ohos_fuzztest("OHContentEmbedProxyRegisterOnErrorFuncFuzzTest") {
+  module_out_path = module_output_path
+  fuzz_config_file = "ohcontentembedproxyregisteronerrorfunc_fuzzer"
+  configs = [
+    ":fuzzer_config",
+  ]
+  sources = [ "ohcontentembedproxyregisteronerrorfunc_fuzzer/oh_contentembed_proxy_registeronerrorfunc.cpp" ]
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/frameworks/ndk:content_embed_ndk",
+  ]
+  external_deps = [
+    "c_utils:utils",
+    "napi:ace_napi",
+    "ipc:ipc_core",
+    "image_framework:image_native",
+    "image_framework:pixelmap",
+    "safwk:system_ability_fwk",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "ability_base:ability_base_want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "ability_runtime:ability_start_options",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:napi_common",
+    "ability_runtime:ability_runtime",
+  ]
+}
+
+ohos_fuzztest("OHContentEmbedProxyRegisterOnEditingFinishedFuncFuzzTest") {
+  module_out_path = module_output_path
+  fuzz_config_file = "ohcontentembedproxyregisteroneditingfinishedfunc_fuzzer"
+  configs = [
+    ":fuzzer_config",
+  ]
+  sources = [ "ohcontentembedproxyregisteroneditingfinishedfunc_fuzzer/oh_contentembed_proxy_registeroneditingfinishedfunc.cpp" ]
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/frameworks/ndk:content_embed_ndk",
+  ]
+  external_deps = [
+    "c_utils:utils",
+    "napi:ace_napi",
+    "ipc:ipc_core",
+    "image_framework:image_native",
+    "image_framework:pixelmap",
+    "safwk:system_ability_fwk",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "ability_base:ability_base_want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "ability_runtime:ability_start_options",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:napi_common",
+    "ability_runtime:ability_runtime",
+  ]
+}
+
+ohos_fuzztest("OHContentEmbedProxyRegisterOnExtensionStoppedFuncFuzzTest") {
+  module_out_path = module_output_path
+  fuzz_config_file = "ohcontentembedproxyregisteronextensionstoppedfunc_fuzzer"
+  configs = [
+    ":fuzzer_config",
+  ]
+  sources = [ "ohcontentembedproxyregisteronextensionstoppedfunc_fuzzer/oh_contentembed_proxy_registeronextensionstoppedfunc.cpp" ]
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/frameworks/ndk:content_embed_ndk",
+  ]
+  external_deps = [
+    "c_utils:utils",
+    "napi:ace_napi",
+    "ipc:ipc_core",
+    "image_framework:image_native",
+    "image_framework:pixelmap",
+    "safwk:system_ability_fwk",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "ability_base:ability_base_want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "ability_runtime:ability_start_options",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:napi_common",
+    "ability_runtime:ability_runtime",
+  ]
+}
+
+ohos_fuzztest("OHContentEmbedGetNameAndDescriptionFromFormatFuzzTest") {
+  module_out_path = module_output_path
+  fuzz_config_file = "ohcontentembedgetnameanddescriptionfromformat_fuzzer"
+  configs = [
+    ":fuzzer_config",
+  ]
+  sources = [ "ohcontentembedgetnameanddescriptionfromformat_fuzzer/oh_contentembed_getnameanddescriptionfromformat.cpp" ]
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/frameworks/ndk:content_embed_ndk",
+  ]
+  external_deps = [
+    "c_utils:utils",
+    "napi:ace_napi",
+    "ipc:ipc_core",
+    "image_framework:image_native",
+    "image_framework:pixelmap",
+    "safwk:system_ability_fwk",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "ability_base:ability_base_want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "ability_runtime:ability_start_options",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:napi_common",
+    "ability_runtime:ability_runtime",
+  ]
+}
+
+group("fuzztest") {
+  testonly = true
+  deps = [
+    ":OHContentEmbedGetContentEmbedFormatByHmidAndLocaleFuzzTest",
+    ":OhContentEmbedGetcontentEmbedInfoFuzzTest",
+    ":OHContentEmbedCreateContentEmbedInfoFuzzTest",
+    ":OHContentEmbedDestroyContentEmbedInfoFuzzTest",
+    ":OHContentEmbedInfoGetFormatCountFuzzTest",
+    ":OHContentEmbedGetFormatFromInfoFuzzTest",
+    ":OHContentEmbedCreateContentEmbedFormatFuzzTest",
+    ":OHContentEmbedDestroyContentEmbedFormatFuzzTest",
+    ":OHContentEmbedFormatGetHmidFuzzTest",
+    ":OHContentEmbedGetNameAndDescriptionFromFormatFuzzTest",
+    ":OHContentEmbedGetIconFromFormatFuzzTest",
+    ":OHContentEmbedGetFileNameExtensionsFromFormatFuzzTest",
+    ":OHContentEmbedCreateExtensionProxyFuzzTest",
+    ":OHContentEmbedDestroyExtensionProxyFuzzTest",
+    ":OHContentEmbedProxyRegisterOnUpdateFuncFuzzTest",
+    ":OHContentEmbedProxyRegisterOnErrorFuncFuzzTest",
+    ":OHContentEmbedProxyRegisterOnEditingFinishedFuncFuzzTest",
+    ":OHContentEmbedProxyRegisterOnExtensionStoppedFuncFuzzTest",
+  ]
+}
