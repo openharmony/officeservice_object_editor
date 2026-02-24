@@ -1,0 +1,135 @@
+/*
+ * Copyright (c) Huawei Device Co., Ltd. 2026-2026. All rights reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * @addtogroup ContentEmbed
+ * @{
+ *
+ * @file content_embed_common.h
+ *
+ * @brief Declare the common types for the native ContentEmbed.
+ *
+ * @library libcontent_embed_ndk.so
+ * @kit ContentEmbedKit
+ * @syscap SystemCapability.ContentEmbed.ObjectEditor
+ * @since 24
+ */
+
+#ifndef OHOS_CONTENT_EMBED_COMMON_H
+#define OHOS_CONTENT_EMBED_COMMON_H
+
+#include <stdint.h>
+#include <stdlib.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+/**
+ * @brief The maximum length of an hmid.
+ *
+ * @since 24
+ */
+#define MAX_HMID_LENGTH (1 * 40)
+
+/**
+ * @brief The value type of command data.
+ *
+ * @since 24
+ */
+typedef enum ContentEmbed_ErrorCode {
+    /**
+     * @brief The error code in the correct case.
+     * @since 24
+     */
+    CE_ERR_OK = 0,
+    /**
+     * @brief The error code when parameter check failed.
+     * @since 24
+     */
+    CE_ERR_PARAM_INVALID = 401,
+    /**
+     * @brief The error code when the device is not supported.
+     * @since 24
+     */
+    CE_ERR_DEVICE_NOT_SUPPORTED = 801,
+    /**
+     * @brief The error code when unexpected null pointer.
+     * @since 24
+     */
+    CE_ERR_NULL_POINTER = 35300001,
+    /**
+     * @brief The error code when the client callback is not registered.
+     * @since 24
+     */
+    CE_ERR_CLIENT_CALLBACK_NOT_REGISTERED = 35300002,
+    /**
+     * @brief The error code when an error occurred in the extension application.
+     * @since 24
+     */
+    CE_ERR_EXTENSION_ERROR = 35300003,
+    /**
+     * @brief The error code when the system service works abnormally.
+     * @since 24
+     */
+    CE_ERR_SYSTEM_ABNORMAL = 35300004,
+    /**
+     * @brief The error code when the storage operation failed.
+     * @since 24
+     */
+    CE_ERR_STORAGE_OPERATION_FAILED = 35300005,
+    /**
+     * @brief The error code when the stream operation failed.
+     * @since 24
+     */
+    CE_ERR_STREAM_OPERATION_FAILED = 35300006,
+    /**
+     * @brief The error code when the file operation failed.
+     * @since 24
+     */
+    CE_ERR_FILE_OPERATION_FAILED = 35300007,
+    /**
+     * @brief The error code when application is in dlp sandbox.
+     * @since 24
+     */
+    CE_ERR_IN_DLP_SANDBOX = 35300008,
+    /**
+     * @brief The error code when the image packer operation failed.
+     * @since 24
+     */
+    CE_ERR_IMAGE_PACKER_OPERATION_FAILED = 35300009,
+    /**
+     * @brief The error code is returned when the client callback fails.
+     * @since 24
+     */
+    CE_ERR_CLIENT_CALLBACK_FAILED = 35300010,
+} ContentEmbed_ErrorCode;
+
+typedef enum ContentEmbed_CapabilityCode {
+    /**
+     * @brief The code means application supports document snapshot capture.
+     */
+    CE_CAPABILITY_SUPPORT_SNAPSHOT = 1 << 0,
+    /**
+     * @brief The code means application supports document editing.
+     */
+    CE_CAPABILITY_SUPPORT_DO_EDIT = 1 << 1,
+} ContentEmbed_CapabilityCode;
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+/** @} */
+#endif // OHOS_CONTENT_EMBED_COMMON_H

@@ -198,8 +198,6 @@ private:
 
     void GetSrcPath(std::string &srcPath);
     void ListenWindowManager();
-    void TimerThreadStopExtension();
-    void ResetStopExtensionTimer();
 
     std::shared_ptr<AbilityHandler> handler_ = nullptr;
     std::shared_ptr<struct ContentEmbed_ExtensionInstance> ceInstance_ = nullptr;
@@ -207,15 +205,6 @@ private:
     sptr<ObjectEditorExtensionDisplayListener> displayListener_ = nullptr;
     std::shared_ptr<struct ContentEmbed_Document> document_ = nullptr;
     sptr<IObjectEditorClientCallback> clientCb_ = nullptr;
-    std::shared_ptr<ObjectEditorExtensionContext> extensionContext_;
-
-    std::mutex mutexExtensionContext_;
-    std::mutex mutexTimer_;
-    std::mutex mutexTimerRunning_;
-    std::condition_variable cvTimer_;
-    std::atomic<bool> timerRunning_{false};
-    std::atomic<bool> timerNotify_{false};
-    static const int32_t EXTENSION_STOP_TIME_S = 20;
 };
 
 } // namespace AbilityRuntime
