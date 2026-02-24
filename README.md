@@ -6,7 +6,8 @@
 * 提供框架，供三方应用实现OE服务端程序，以向客户端应用提供某些格式类型文档被嵌入和拉起编辑的能力。
 * 提供客户端接口，供三方应用使用OE服务端的能力，以在本应用的文档中嵌入其它文档并按需拉起编辑。
 
-`object_editor` 是一个可选系统能力，应用需要通过 SystemCapability.ContentEmbed.ObjectEditor 判断OpenHarmony设备是否支持本能力。
+`object_editor` 是一个可选系统能力，应用需要通过 SystemCapability.ContentEmbed.ObjectEditor [**判断OpenHarmony设备是否支持本能力**](https://gitcode.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/common/syscap__ndk_8h.md)。
+
 
 ## 术语与缩略语
 1. **OE**：object editor缩写，OpenHarmony提供的对象编辑功能框架和技术。
@@ -36,7 +37,7 @@
   * **OE Client**：负责对外提供 `OH_ContentEmbed_CreateExtensionProxy` 和 `OH_ContentEmbed_DestroyExtensionProxy` 等客户端应用需要使用的接口及框架实现。
   * **OE Document**：负责对外提供OE文档读写能力的API接口及框架实现，供客户端和服务端应用生成和解析符合OE文档标准的数据。
   * **OE Extension**：负责对外提供OE Extension组件的开发接口及框架实现，供服务端应用使用，实现应用嵌入和拉起编辑业务能力。
-  * **OE ExtensionContext**：负责管理OE Extension组件的运行时环境和相关资源。
+  * **OE Extension Context**：负责管理OE Extension组件的运行时环境和相关资源。
 
 * **系统服务层 (Object Editor Service)**
   * **OE 客户端会话管理**：负责响应客户端的 IPC 请求，管理跨进程会话资源。
