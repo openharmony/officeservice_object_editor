@@ -278,7 +278,7 @@ void StorageIO::SetError(ErrorCode code, const std::string &message, bool invali
 }
 
 namespace {
-bool IsValidReadParams(StorageIO *self, size_t len, uint8_t *buf, size_t *outRead)
+bool IsValidReadParams(StorageIO *self, size_t len, const uint8_t *buf, size_t *outRead)
 {
     if (!outRead || (!buf && len > 0)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
