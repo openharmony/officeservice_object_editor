@@ -52,7 +52,7 @@ bool OH_ContentEmbed_Helper_IsValidName(const char *name)
         return false;
     }
     size_t len = 0;
-    for (const char *p = name; *p; ++p, ++len) {
+    for (const char *p = name; *p != '\0'; ++p, ++len) {
         if (len >= MAX_NAME_LEN) {
             return false;
         }
