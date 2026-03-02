@@ -76,20 +76,16 @@ int32_t GetCurrentUserId()
 }
 } // namespace
 
+IMPLEMENT_SINGLE_INSTANCE(UserMgr);
+
 UserMgr::UserMgr()
 {
     userId_ = GetCurrentUserId();
 }
 
-UserMgr &UserMgr::GetInstance()
+void UserMgr::SetNewUserId(int32_t newUserId)
 {
-    static UserMgr instance;
-    return instance;
-}
-
-void UserMgr::SetNewUserId(int32_t userId)
-{
-    std::unique_lock<std::mutex> lock(mtx_);
+    std::unique_lock<std::shared_mutex> lock(mtx_);
     userId_ = newUserId;
 }
 

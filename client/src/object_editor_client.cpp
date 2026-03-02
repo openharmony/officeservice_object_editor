@@ -55,7 +55,7 @@ void ObjectEditorClient::SubscribeSystemAbility()
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "sam is null");
         return;
     }
-    int32_t ret = sam->SubscribeSystemAbility(OBJECT_EDITOR_SERVICE_SA_ID, this);
+    int32_t ret = sam->SubscribeSystemAbility(static_cast<int32_t>(OBJECT_EDITOR_SERVICE_SA_ID), saStatusListener_);
     if (ret != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SubscribeSystemAbility failed, ret: %{public}d", ret);
     }
@@ -72,9 +72,12 @@ void ObjectEditorClient::UnsubscribeSystemAbility()
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "sam is null");
         return;
     }
-    int32_t ret = sam->UnsubscribeSystemAbility(static_cast<int32_t>(OBJECT_EDITOR_SERVICE_SA_ID), saStatusListener_);
+    int32_t ret = sam->UnSubscribeSystemAbility(
+        static_cast<int32_t>(OBJECT_EDITOR_SERVICE_SA_ID), saStatusListener_);
     if (ret != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "UnsubscribeSystemAbility failed, ret: %{public}d", ret);
+    } else {
+        saStatusListener_ = nullptr;
     }
 }
 
@@ -92,6 +95,7 @@ void ObjectEditorAbilityListener::OnRemoveSystemAbility(int32_t systemAbilityId,
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
     std::lock_guard<std::mutex> (this->mutex_);
     if (systemAbilityId == OBJECT_EDITOR_SERVICE_SA_ID) {
+        ObjectEditorClient::GetInstance().SARegCleanUp();
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "OBJECT_EDITOR_SERVICE_SA_ID is removed");
     }
 }
@@ -104,9 +108,9 @@ sptr<IObjectEditorManager> ObjectEditorClient::GetObjectEditorProxy(const sptr<I
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "oeSAProxy_ is null");
         return oeSAProxy_;
     }
-    deathRecipient_ = sptr<IRemoteObject::DeathRecipient>(new ObjectEditorDeathRecipient());
+    deathRecipient_ = sptr<IRemoteObject::DeathRecipient>(new ObjectEditorSADeathRecipient());
     if (deathRecipient_ == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, " deathRecipient_ is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, " deathRecipient is null");
         return nullptr;
     }
     if (remoteObject == nullptr) {
@@ -143,14 +147,14 @@ sptr<IObjectEditorManager> ObjectEditorClient::GetIObjectEditorManager()
     if (remoteObject != nullptr) {
         return GetObjectEditorProxy(remoteObject);
     }
-    sptr<ObjectEditorLoaderCallback> loaderCallback = new (std::nothrow)ObjectEditorLoaderCallback();
-    if (loaderCallback == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "loaderCallback is null");
+    sptr<ObjectEditorLoadCallback> loadCallback = new (std::nothrow)ObjectEditorLoadCallback();
+    if (loadCallback == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "loadCallback is null");
         return nullptr;
     }
     InitLoadState();
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "load SA: %{public}d", OBJECT_EDITOR_SERVICE_SA_ID);
-    int32_t ret = samgrProxy->LoadSystemAbility(OBJECT_EDITOR_SERVICE_SA_ID, loaderCallback);
+    int32_t ret = samgrProxy->LoadSystemAbility(OBJECT_EDITOR_SERVICE_SA_ID, loadCallback);
     if (ret != ERR_NONE) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "LoadSystemAbility failed, ret: %{public}d", ret);
         return nullptr;
@@ -173,8 +177,9 @@ void ObjectEditorClient::InitLoadState()
 bool ObjectEditorClient::WaitLoadStateChange()
 {
     std::unique_lock<std::mutex> lock(loadMutex_);
-    auto wait = loadCond_.wait_for(lock, std::chrono::seconds(LOAD_TIMEOUT_MS),
-        [this] { return loadState_ == true; });
+    auto wait = loadCond_.wait_for(lock, std::chrono::milliseconds(LOAD_TIMEOUT_MS), [this] {
+        return loadState_ == true;
+    });
     if (!wait) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "WaitLoadStateChange timeout");
         return false;
@@ -182,8 +187,8 @@ bool ObjectEditorClient::WaitLoadStateChange()
     return true;
 }
 
-void ObjectEditorLoadCallback::OnLoadSystemAbilitySuccess(int32_t systemAbilityId,
-    const sptr<IRemoteObject> &remoteObject)
+void ObjectEditorLoadCallback::OnLoadSystemAbilitySuccess(
+    int32_t systemAbilityId, const sptr<IRemoteObject> &remoteObject)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
     if (systemAbilityId != OBJECT_EDITOR_SERVICE_SA_ID) {
@@ -192,6 +197,7 @@ void ObjectEditorLoadCallback::OnLoadSystemAbilitySuccess(int32_t systemAbilityI
     }
     if (remoteObject == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "remoteObject is null");
+        ObjectEditorClient::GetInstance().LoadSystemAbilityFail();
         return;
     }
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT,
@@ -249,8 +255,10 @@ void ObjectEditorClient::OnRemoteDied(const wptr<IRemoteObject> &remote)
     }
 }
 
-ErrCode ObjectEditorClient::StartObjectEditorExtension(std::unique_ptr<ObjectEditorDocument> &document,
-    const sptr<IObjectEditorClientCallback> &callback, sptr<IObjectEditorService> &oeExtensionRemoteObject,
+ErrCode ObjectEditorClient::StartObjectEditorExtension(
+    std::unique_ptr<ObjectEditorDocument> &document,
+    const sptr<IObjectEditorClientCallback> &callback,
+    sptr<IObjectEditorService> &oeExtensionRemoteObject,
     bool &isPackageExtension)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
@@ -381,6 +389,7 @@ ErrCode ObjectEditorClient::PrepareFiles(const std::unique_ptr<ObjectEditorDocum
         return ObjectEditorClientErrCode::CLENT_GET_PATH_ERROR;
     }
     std::string sandboxPath = fileDirPath + "/" + GenRandomUuid();
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "sandboxPath: %{private}s", sandboxPath.c_str());
     fs::path targetDirPath(sandboxPath);
     bool ret = fs::create_directories(targetDirPath);
     if (!ret) {
@@ -395,7 +404,7 @@ ErrCode ObjectEditorClient::PrepareFiles(const std::unique_ptr<ObjectEditorDocum
         }
         fs::path sourceFilePathPath(sourceFilePath);
         fs::path targetFilePathPath(targetDirPath.string() + "/" + sourceFilePathPath.filename().string());
-        ret = fs::copy_file(sourceFilePathPath, targetFilePathPath);
+        ret = fs::copy_file(sourceFilePathPath, targetFilePathPath, fs::copy_options::overwrite_existing);
         if (!ret) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "copy sourceFilePath to sandboxPath failed");
             return ObjectEditorClientErrCode::CLENT_UNKNOWN_OPERATE;
@@ -422,10 +431,11 @@ ErrCode ObjectEditorClient::PrepareFiles(const std::unique_ptr<ObjectEditorDocum
     return FlushDocument(document);
 }
 
-ErrCode ObjectEditorClient::StopObjectEditorExtension(const sptr<IObjectEditorService> &oeExtensionRemoteObject,
+ErrCode ObjectEditorClient::StopObjectEditorExtension(
+    const sptr<IObjectEditorService> &oeExtensionRemoteObject,
     const bool &isPackageExtension)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "in");
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
     if (oeExtensionRemoteObject == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "oeExtensionRemoteObject is null");
         return ERR_INVALID_VALUE;
@@ -446,7 +456,7 @@ ErrCode ObjectEditorClient::StopObjectEditorExtension(const sptr<IObjectEditorSe
 
 ErrCode ObjectEditorClient::GetIcon(const std::string &hmid, std::string &resFilePath)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "in");
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
     sptr<IObjectEditorManager> oeManager = GetIObjectEditorManager();
     if (oeManager == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "oeManager is null");
@@ -469,16 +479,18 @@ ErrCode ObjectEditorClient::GetFormatName(const std::string &hmid,
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "oeManager is null");
         return ERR_INVALID_VALUE;
     }
-    ErrCode ret = oeManager->GetFormatNameByHmid(hmid, formatName);
+    ErrCode ret = oeManager->GetFormatName(hmid, locale, formatName);
     if (ret != ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "GetFormatNameByHmid failed, ret is %{public}d", ret);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "GetFormatName failed, ret is %{public}d", ret);
         return ret;
     }
     return ERR_OK;
 }
 
-ErrCode ObjectEditorClient::GetObjectEditorFormatByHmidAndLocale(const std::string &hmid,
-    const std::string &locale, std::unique_ptr<ObjectEditorFormat> &format)
+ErrCode ObjectEditorClient::GetObjectEditorFormatByHmidAndLocale(
+    const std::string &hmid,
+    const std::string &locale,
+    std::unique_ptr<ObjectEditorFormat> &format)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
     sptr<IObjectEditorManager> oeManager = GetIObjectEditorManager();
@@ -489,7 +501,7 @@ ErrCode ObjectEditorClient::GetObjectEditorFormatByHmidAndLocale(const std::stri
     ErrCode ret = oeManager->GetObjectEditorFormatByHmidAndLocale(hmid, locale, format);
     if (ret != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,
-            "GetObjectEditorFormatByHmidAndLocale failed, ret is %{public}d", ret);
+            "failed, ret is %{public}d", ret);
         return ret;
     }
     return ERR_OK;
@@ -507,7 +519,7 @@ ErrCode ObjectEditorClient::GetObjectEditorFormatsByLocale(const std::string &lo
     ErrCode ret = oeManager->GetObjectEditorFormatsByLocale(locale, formats);
     if (ret != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,
-            "GetObjectEditorFormatsByLocale failed, ret is %{public}d", ret);
+            "failed, ret is %{public}d", ret);
         return ret;
     }
     return ERR_OK;

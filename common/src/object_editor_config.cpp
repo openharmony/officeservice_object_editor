@@ -62,6 +62,7 @@ bool ObjectEditorConfig::CheckIsInDlp()
 ContentEmbed_ErrorCode ObjectEditorConfig::CheckIsSupported()
 {
     if (!IsSupportObjectEditor()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "device not supported");
         return CE_ERR_DEVICE_NOT_SUPPORTED;
     }
     if (CheckIsInDlp()) {

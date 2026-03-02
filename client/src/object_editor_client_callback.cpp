@@ -18,8 +18,7 @@
 namespace OHOS {
 namespace ObjectEditor {
 // LCOV_EXCL_START
-ObjectEditorClientCallback::ObjectEditorClientCallback(struct ContentEmbed_ExtensionProxy
-    *extensionProxy): proxy_(extensionProxy)
+ObjectEditorClientCallback::ObjectEditorClientCallback(struct ContentEmbed_ExtensionProxy *proxy): proxy_(proxy)
 {
 }
 
@@ -28,14 +27,16 @@ int32_t ObjectEditorClientCallback::CallbackEnter(uint32_t code)
     return 0;
 }
 
-int32_t ObjectEditorClientCallback::CallbackExit(uint32_t code, uint32_t result)
+int32_t ObjectEditorClientCallback::CallbackExit(uint32_t code, int32_t result)
 {
     return result;
 }
 
 ErrCode ObjectEditorClientCallback::OnUpdate(std::unique_ptr<ObjectEditorDocument> &document)
 {
-    if (proxy_ == nullptr || proxy_->ceDocument == nullptr || proxy_->onUpdateFunc == nullptr) {
+    if (proxy_ == nullptr ||
+        proxy_->ceDocument == nullptr ||
+        proxy_->onUpdateFunc == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "OnUpdateEditResult, proxy_ or document is null");
         return ERR_INVALID_VALUE;
     }
@@ -50,13 +51,13 @@ ErrCode ObjectEditorClientCallback::OnUpdate(std::unique_ptr<ObjectEditorDocumen
     return ERR_OK;
 }
 
-ErrCode ObjectEditorClientCallback::OnError(ContentEmbed_ErrorCode errorCode)
+ErrCode ObjectEditorClientCallback::OnError(ContentEmbed_ErrorCode error)
 {
     if (proxy_ == nullptr || proxy_->onErrorFunc == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "OnError, proxy_ or onErrorFunc is null");
         return ERR_INVALID_VALUE;
     }
-    proxy_->onErrorFunc(proxy_, errorCode);
+    proxy_->onErrorFunc(proxy_, error);
     return ERR_OK;
 }
 

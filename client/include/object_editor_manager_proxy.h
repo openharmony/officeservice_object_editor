@@ -29,19 +29,39 @@ public:
     {}
     virtual ~ObjectEditorManagerProxy()
     {}
-    ErrCode StartObjectEditorExtension(std::unique_ptr<ObjectEditorDocument> &document,
-        const sptr<IObjectEditorClientCallback> &callback, sptr<IRemoteObject> &objectEditorProxy,
+    ErrCode StartObjectEditorExtension(
+        std::unique_ptr<ObjectEditorDocument> &document,
+        const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
+        sptr<IRemoteObject> &oeExtensionRemoteObject,
         bool &isPackageExtension) override;
-    ErrCode StopObjectEditorExtension(const sptr<IObjectEditorService> &oeExtensionRemoteObject,
+
+    ErrCode StopObjectEditorExtension(
+        const sptr<IRemoteObject> &oeExtensionRemoteObject,
         const bool &isPackageExtension) override;
-    ErrCode GetHmidByFileExtension(const std::string &hmid, std::string &fileExtension) override;
-    ErrCode GetIconByHmid(const std::string &hmid, std::string &resourceId) override;
-    ErrCode GetFormatName(const std::string &hmid, const std::string &locale, std::string &formatName) override;
-    ErrCode GetObjectEditorFormatByHmidAndLocale(const std::string &hmid, const std::string &locale,
-        ObjectEditorFormat &format) override;
+
+    ErrCode GetHmidByFileExtension(
+        const std::string &hmid,
+        std::string &fileExtension) override;
+
+    ErrCode GetIconByHmid(
+        const std::string &hmid,
+        std::string &resourceId) override;
+
+    ErrCode GetFormatName(
+        const std::string &hmid,
+        const std::string &locale,
+        std::string &formatName) override;
+
+    ErrCode GetObjectEditorFormatByHmidAndLocale(
+        const std::string &hmid,
+        const std::string &locale,
+        std::unique_ptr<ObjectEditorFormat> &format) override;
+
     ErrCode GetObjectEditorFormatsByLocale(const std::string &locale,
-        std::vector<ObjectEditorFormat> &formats) override;
+        std::vector<std::unique_ptr<ObjectEditorFormat>> &formats) override;
+
     ErrCode StartUIAbility(const std::unique_ptr<AAFwk::Want> &want) override;
+
 private:
     static inline BrokerDelegator<ObjectEditorManagerProxy> delegator_;
     const int32_t MAX_READ_COUNT = INT32_MAX;

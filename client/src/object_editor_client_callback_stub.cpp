@@ -46,7 +46,7 @@ int32_t ObjectEditorClientCallbackStub::OnRemoteRequestInner(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "OnRemoteRequestInner, invalid descriptor");
         return ERR_TRANSACTION_FAILED;
     }
-    switch (static_cast<IObjectEditorClientCallbackIpcCode>) {
+    switch (static_cast<IObjectEditorClientCallbackIpcCode>(code)) {
         case IObjectEditorClientCallbackIpcCode::COMMAND_ON_UPDATE:
             return HandleOnUpdate(data, reply);
         case IObjectEditorClientCallbackIpcCode::COMMAND_ON_ERROR:
@@ -73,7 +73,7 @@ int32_t ObjectEditorClientCallbackStub::HandleOnUpdate(MessageParcel &data, Mess
     if (!reply.WriteInt32(ret)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,
             "HandleOnUpdate, OnUpdate failed, ret = %{public}d", ret);
-        return ret;
+        return ERR_INVALID_VALUE;
     }
     return ERR_NONE;
 }

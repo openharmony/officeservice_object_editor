@@ -23,9 +23,14 @@ namespace OHOS {
 namespace ObjectEditor {
 class ObjectEditorExtensionProxy : public IRemoteProxy<IObjectEditorExtension> {
 public:
-    explicit ObjectEditorExtensionProxy(const sptr<IRemoteObject> &impl): IRemoteProxy<IObjectEditorExtension>(impl){};
-    virtual ~ObjectEditorExtensionProxy(){};
-    ErrCode RegisterClientCB(const sptr<IObjectEditorClientCallback> &callback) override;
+    explicit ObjectEditorExtensionProxy(
+        const sptr<IRemoteObject> &remote)
+        : IRemoteProxy<IObjectEditorExtension>(remote)
+    {}
+    virtual ~ObjectEditorExtensionProxy()
+    {}
+    ErrCode RegisterClientCB(
+        const sptr<IObjectEditorClientCallback> &callback) override;
     ErrCode GetSnapshot() override;
     ErrCode DoEdit() override;
     ErrCode GetEditStatus(bool *isEditing, bool *isModified) override;

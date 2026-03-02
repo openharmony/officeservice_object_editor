@@ -26,7 +26,7 @@ namespace OHOS {
 namespace ObjectEditor {
 // LCOV_EXCL_START
 namespace {
-constexpr const char* APP_INDEX = "app_index";
+constexpr const char* APP_INDEX = "appIndex";
 const std::string TABLE_NAME = "object_editor_info";
 
 std::vector<std::string> GetDefaultDbSql()
@@ -48,6 +48,7 @@ std::vector<std::string> GetDefaultDbSql()
         "file_exts TEXT NOT NULL, "
         "icon_id INTEGER NOT NULL, "
         "create_time INTEGER NOT NULL);"
+    );
     defaultSqlList.emplace_back("CREATE INDEX IF NOT EXISTS idx_hmid ON object_editor_info (hmid);");
     return defaultSqlList;
 }
@@ -146,11 +147,6 @@ void ObjectEditorManagerDatabase::Init()
     }
 }
 
-bool ObjectEditorManagerDatabase::Initted() const
-{
-    return store_ != nullptr;
-}
-
 bool ObjectEditorManagerDatabase::OpenDb()
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "in");
@@ -166,7 +162,7 @@ bool ObjectEditorManagerDatabase::OpenDb()
     config.SetTokenizer(NativeRdb::CUSTOM_TOKENIZER);
     ObjectEditorOpenCallBack openCallBack;
     int32_t errCode = NativeRdb::E_OK;
-    store_ = NativeRdb::RdbStore::GetRdbStore(config, version, openCallBack, errCode);
+    store_ = NativeRdb::RdbHelper::GetRdbStore(config, version, openCallBack, errCode);
     if (errCode != NativeRdb::E_OK || store_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get store failed, errCode: %{public}d", errCode);
         store_ = nullptr;
@@ -180,7 +176,7 @@ bool ObjectEditorManagerDatabase::OpenDb()
     return true;
 }
 
-bool ObjectEditorManagerDatabase::OpenDb()
+bool ObjectEditorManagerDatabase::DeleteDb()
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "in");
     store_ = nullptr;
@@ -363,9 +359,9 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetBundleInfoValuesBucke
     }
     AppExecFwk::BundleInfo bundleInfo;
     ErrCode ret = bundleMgr_->GetBundleInfoV9(bundleName,
-        static_cast<int32_t>(AppExecFwk::BundleFlag::GET_BUNDLE_WITH_HAP_MODULE) |
-        static_cast<int32_t>(AppExecFwk::BundleFlag::GET_BUNDLE_WITH_EXTENSION_ABILITY) |
-        static_cast<int32_t>(AppExecFwk::BundleFlag::GET_BUNDLE_WITH_METADATE),
+        static_cast<int32_t>(AppExecFwk::GetBundleInfoFlag::GET_BUNDLE_INFO_WITH_HAP_MODULE) |
+        static_cast<int32_t>(AppExecFwk::GetBundleInfoFlag::GET_BUNDLE_INFO_WITH_EXTENSION_ABILITY) |
+        static_cast<int32_t>(AppExecFwk::GetBundleInfoFlag::GET_BUNDLE_INFO_WITH_METADATA),
         bundleInfo, UserMgr::GetInstance().GetUserId());
     if (ret != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "GetBundleInfo failed, errCode: %{public}d", ret);
@@ -376,19 +372,19 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetBundleInfoValuesBucke
             if (it2->type != AppExecFwk::ExtensionAbilityType::CONTENT_EMBED) {
                 continue;
             }
-            if (!BuildValueBuckets(buckets, bundleInfo, *it2)) {
-                OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "BuildValueBuckets failed");
+            if (!BuildValuesBuckets(buckets, bundleInfo, *it2)) {
+                OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "build buckets failed");
             }
         }
     }
     if (buckets.empty()) {
-        OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "buckets is empty");
-        return ObjectEditorManagerErrCode::SA_QB_QUERY_FAIL;
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "buckets is empty");
+        return ObjectEditorManagerErrCode::SA_DB_QUERY_EMPTY;
     }
     return ObjectEditorManagerErrCode::SA_OK;
 }
 
-bool ObjectEditorManagerDatabase::DoInsert(const std::vector<NativeRdb::ValueBucket> &buckets)
+bool ObjectEditorManagerDatabase::DoInsert(const std::vector<NativeRdb::ValuesBucket> &buckets)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DATABASE, "in");
     if (store_ == nullptr) {

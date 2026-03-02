@@ -38,7 +38,7 @@ void GetBundleInfos(const sptr<AppExecFwk::IBundleMgr> &bundleMgr,
     std::map<std::string, AppExecFwk::BundleInfo> &bundleInfos);
 bool BuildObjectEditorFormat(ObjectEditorFormat &format, NativeRdb::RowEntity &rowEntity,
     const std::string &locale);
-bool BuildValueBuckets(std::vector<NativeRdb::ValueBucket> &buckets, const AppExecFwk::BundleInfo &bundleInfo,
+bool BuildValuesBuckets(std::vector<NativeRdb::ValuesBucket> &buckets, const AppExecFwk::BundleInfo &bundleInfo,
     const AppExecFwk::ExtensionAbilityInfo &extensionInfo);
 bool IsLegalCalling();
 } // namespace ObjectEditor

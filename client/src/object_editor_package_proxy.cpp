@@ -18,6 +18,8 @@
 namespace OHOS {
 namespace ObjectEditor {
 // LCOV_EXCL_START
+using namespace OHOS::ObjectEditor;
+
 ErrCode ObjectEditorPackageProxy::RegisterClientCB(const sptr<IObjectEditorClientCallback> &callback)
 {
     MessageParcel data;
@@ -35,7 +37,7 @@ ErrCode ObjectEditorPackageProxy::RegisterClientCB(const sptr<IObjectEditorClien
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "WriteRemoteObject failed");
         return ERR_INVALID_DATA;
     }
-    sptr<IRemoteObject> remoteObject = reply.ReadRemoteObject();
+    sptr<IRemoteObject> remoteObject = Remote();
     if (remoteObject == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "ReadRemoteObject failed");
         return ERR_INVALID_DATA;
@@ -59,10 +61,12 @@ ErrCode ObjectEditorPackageProxy::GetSnapshot()
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
+
     if (!data.WriteInterfaceToken(GetDescriptor())) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "WriteInterfaceToken failed");
         return ERR_INVALID_VALUE;
     }
+
     sptr<IRemoteObject> remoteObject = Remote();
     if (remoteObject == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "remoteObject is null");
@@ -125,7 +129,7 @@ ErrCode ObjectEditorPackageProxy::GetEditStatus(bool *isEditing, bool *isModifie
         return ERR_INVALID_DATA;
     }
     int32_t ret = remoteObject->SendRequest(
-        static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_EDIT_STATUS), data, reply, option);
+        static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_EDITING_STATE), data, reply, option);
     if (FAILED(ret)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "SendRequest failed, ret: %{public}d", ret);
         return ret;
@@ -194,7 +198,7 @@ ErrCode ObjectEditorPackageProxy::Close()
     return ERR_OK;
 }
 
-ErrCode ObjectEditorPackageProxy::Initial(std::unique_ptr<ObjectEditorDocument> &document)
+ErrCode ObjectEditorPackageProxy::Initial(std::unique_ptr<ObjectEditorDocument> document)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -203,6 +207,12 @@ ErrCode ObjectEditorPackageProxy::Initial(std::unique_ptr<ObjectEditorDocument> 
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "WriteInterfaceToken failed");
         return ERR_INVALID_VALUE;
     }
+
+    if (!data.WriteParcelable(document.get())) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "write document failed");
+        return ERR_INVALID_DATA;
+    }
+
     sptr<IRemoteObject> remoteObject = Remote();
     if (remoteObject == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "remoteObject is null");

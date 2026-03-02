@@ -47,26 +47,35 @@ uint64_t GetFileSize(const std::string &filePath)
     if (stat(filePath.c_str(), &statbuf) == 0) {
         fileSize = static_cast<uint64_t>(statbuf.st_size);
     } else {
-        OBJECT_EDITOR_LOGI(ObjectEditorDomain::COMMON, "Get file size failed, errno: %{public}d", errno);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Get file size failed, errno: %{public}d", errno);
     }
     return fileSize;
 }
 
-std::string GetFileStream(const std::string &filePath)
+std::string ReadFile(const std::string &filePath)
 {
-    char canonicalPath[PATH_MAX + 1] = {0x00};
-    if (realpath(filePath.c_str(), canonicalPath) == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Get canonical path failed, path: %{private}s", canonicalPath);
+    std::filesystem::path path(filePath);
+    std::string directory = path.parent_path().string() + "/";
+    std::string filename = path.filename().string();
+
+    char *canonicalDirPath = realpath(directory.c_str(), nullptr);
+    if (canonicalDirPath == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "canonical directory path is null");
         return "";
     }
-    canonicalPath[PATH_MAXN] = '\0';
-    std::ifstream file(std::string(canonicalPath), std::ios::in | std::ios::binary);
-    if (!file) {
+
+    std::string canonicalFilePath = std::string(canonicalDirPath) + "/" + filename;
+    free(canonicalDirPath);
+    canonicalDirPath = nullptr;
+
+    std::ifstream in(canonicalFilePath, std::ios::in | std::ios::binary);
+    if (!in.is_open()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Open file failed, path: %{private}s", canonicalPath);
         return "";
     }
     std::stringstream infile;
-    infile << file.rdbuf();
+    infile << in.rdbuf();
+    in.close();
     return infile.str();
 }
 
@@ -124,6 +133,21 @@ bool StringToLong(const char *input, long &num)
     return true;
 }
 
+bool StringToFloat(const char *input, float &num)
+{
+    char *endPtr = nullptr;
+    if (input == nullptr) {
+        return false;
+    }
+    errno = 0;
+    float result = strtof(input, &endPtr);
+    if (input == endPtr || errno == ERANGE || *endPtr != '\0') {
+        return false;
+    }
+    num = result;
+    return true;
+}
+
 bool StringToInt(const char *input, int &num)
 {
     if (input == nullptr) {
@@ -146,6 +170,13 @@ bool StringToInt(const char *input, int &num)
 bool HasSQLWildcard(const std::string &str)
 {
     return str.find('%') != std::string::npos || str.find('_') != std::string::npos;
+}
+
+bool IsValidFileExt(const std::string &fileExt)
+{
+    return std::all_of(fileExt.begin(), fileExt.end(), [](char ch) {
+        return std::isalnum(ch) || ch == '.';
+    });
 }
 
 bool FileExtsHasFileExt(const std::string &fileExts, const std::string &fileExt)
@@ -172,8 +203,8 @@ std::string UTCToBeijingTime(int64_t utcTime)
         return "";
     }
     timePtr->tm_hour += BEIJING_TIME_ZONE;
-    if (timePtr->tm_hour >= HOUR_OF_ONE_DAY) {
-        timePtr->tm_hour -= HOUR_OF_ONE_DAY;
+    if (timePtr->tm_hour >= HOURS_OF_ONE_DAY) {
+        timePtr->tm_hour -= HOURS_OF_ONE_DAY;
         timePtr->tm_mday++;
     }
     char buffer[64] = {0x00};
@@ -212,6 +243,28 @@ std::string GetPathFromUri(const std::string &uri)
 {
     AppFileService::ModuleFileUri::FileUri fileUri(uri);
     return fileUri.GetRealPath();
+}
+
+std::string GetSubstrByPrefix(const std::string &str, const std::string &prefix)
+{
+    size_t pos = str.rfind(prefix);
+    if ((pos == std::string::npos) || (pos == str.size() - prefix.size())) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "find value fail, str:%{private}s, prefix:%{private}s",
+            str.c_str(), prefix.c_str());
+        return "";
+    }
+    return str.substr(pos + prefix.size());
+}
+
+bool GetIntByPrefix(const std::string &str, const std::string &prefix, int &num)
+{
+    std::string strValue = GetSubstrByPrefix(str, prefix);
+    if (!StringToInt(strValue.c_str(), num)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "StringToInt fail, str:%{private}s, prefix:%{private}s",
+            str.c_str(), prefix.c_str());
+        return false;
+    }
+    return true;
 }
 // LCOV_EXCL_STOP
 } // namespace SystemUtils
