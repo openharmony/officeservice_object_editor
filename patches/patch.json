@@ -2,8 +2,8 @@
     "patches": [
         {
             "project":"productdefine_common",                                                  #主线仓名称
-            "path":"productdefine/common",                            #主线仓在openharmony项目中还原路径
-            "pr_url":"https://gitcode.com/openharmony/productdefine_common/pull/1105"             #主线仓的PR
+            "path":"productdefine/common",                                                     #主线仓在openharmony项目中还原路径
+            "pr_url":"https://gitcode.com/openharmony/productdefine_common/pull/1105"          #主线仓的PR
         }
     ]
 }
