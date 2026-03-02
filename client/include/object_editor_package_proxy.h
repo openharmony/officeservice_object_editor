@@ -24,7 +24,8 @@ namespace ObjectEditor {
 class ObjectEditorPackageProxy : public IRemoteProxy<IObjectEditorPackage> {
 public:
     explicit ObjectEditorPackageProxy(
-        const sptr<IRemoteObject> &remote) : IRemoteProxy<IObjectEditorPackage>(remote)
+        const sptr<IRemoteObject> &remote)
+         : IRemoteProxy<IObjectEditorPackage>(remote)
     {}
     virtual ~ObjectEditorPackageProxy()
     {}

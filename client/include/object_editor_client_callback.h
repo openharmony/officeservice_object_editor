@@ -23,19 +23,20 @@ namespace OHOS {
 namespace ObjectEditor {
 class ObjectEditorClientCallback : public ObjectEditorClientCallbackStub {
 public:
-    explicit ObjectEditorClientCallback(struct ContentEmbed_ExtensionProxy *extensionProxy);
+    explicit ObjectEditorClientCallback(struct ContentEmbed_ExtensionProxy *proxy);
     ~ObjectEditorClientCallback() = default;
     int32_t CallbackEnter(uint32_t code) override;
-    int32_t CallbackExit(uint32_t code, uint32_t result) override;
+    int32_t CallbackExit(uint32_t code, int32_t result) override;
 
-    ErrCode OnUpdate(std::unique_ptr<ObjectEditorFormat> &format) override;
-    ErrCode OnError(ContentEmbed_ErrorCCode errorCode) override;
+    ErrCode OnUpdate(std::unique_ptr<ObjectEditorDocument> &document) override;
+    ErrCode OnError(ContentEmbed_ErrorCode error) override;
     ErrCode OnStopEdit(bool dataModified) override;
     ErrCode OnExtensionStopped() override;
 
 private:
-    struct ContentEmbed_ExtensionProxy *proxy_{nullptr};
+    struct ContentEmbed_ExtensionProxy *proxy_ {nullptr};
 };
+
 } // namespace ObjectEditor
 } // namespace OHOS
 #endif // OHOS_OBJECT_EDITOR_OBJECT_EDITOR_CLIENT_CALLBACK_H

@@ -18,7 +18,8 @@
 namespace OHOS {
 namespace ObjectEditor {
 // LCOV_EXCL_START
-ErrCode ObjectEditorExtensionProxy::RegisterClientCB(const sptr<ObjectEditorClientCallback> &clientCallback)
+ErrCode ObjectEditorExtensionProxy::RegisterClientCB(
+    const sptr<ObjectEditorClientCallback> &clientCallback)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -122,6 +123,10 @@ ErrCode ObjectEditorExtensionProxy::GetEditStatus(bool *isEditing, bool *isModif
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "WriteInterfaceToken failed");
         return ERR_INVALID_VALUE;
     }
+    if (isEditing == nullptr || isModified == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "isEditing or isModified is null");
+        return ERR_INVALID_VALUE;
+    }
 
     sptr<IRemoteObject> remoteObject = Remote();
     if (remoteObject == nullptr) {
@@ -129,7 +134,7 @@ ErrCode ObjectEditorExtensionProxy::GetEditStatus(bool *isEditing, bool *isModif
         return ERR_INVALID_DATA;
     }
     int32_t ret = remoteObject->SendRequest(
-        static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_EDIT_STATUS), data, reply, option);
+        static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_EDITING_STATE), data, reply, option);
     if (FAILED(ret)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, ret: %{public}d", ret);
         return ret;
@@ -152,6 +157,10 @@ ErrCode ObjectEditorExtensionProxy::GetCapability(uint32_t *capability)
     if (!data.WriteInterfaceToken(GetDescriptor())) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "WriteInterfaceToken failed");
         return ERR_INVALID_VALUE;
+    }
+    if (capability == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "capability is null");
+        return ERR_INVALID_DATA;
     }
 
     sptr<IRemoteObject> remoteObject = Remote();

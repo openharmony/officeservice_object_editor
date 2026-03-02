@@ -136,7 +136,7 @@ ErrCode ObjectEditorClientCallbackProxy::OnExtensionStoped()
         return ERR_INVALID_DATA;
     }
     int32_t result = remote->SendRequest(
-        static_cast<uint32_t>(IObjectEditorClientCallback::COMMAND_ON_EXTENSION_STOPED),
+        static_cast<uint32_t>(IObjectEditorClientCallback::COMMAND_ON_EXTENSION_STOPPED),
         data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "send request failed");

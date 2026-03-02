@@ -29,8 +29,8 @@ namespace OHOS {
 namespace ObjectEditor {
 class ObjectEditorLoadCallback : public SystemAbilityLoadCallbackStub {
 public:
-    ObjectEditorLoadCallback()=default;
-    void OnLoadSystemAbilitySuccess(int32_t systemAbilityId, const sptr<IRemoteObject> &remoteObject);
+    ObjectEditorLoadCallback() = default;
+    void OnLoadSystemAbilitySuccess(int32_t systemAbilityId, const sptr<IRemoteObject> &object);
     void OnLoadSystemAbilityFail(int32_t systemAbilityId);
 };
 
@@ -45,49 +45,49 @@ private:
 class ObjectEditorClient {
     DECLARE_SINGLE_INSTANCE_BASE(ObjectEditorClient);
 public:
-    Errcode StartObjectEditorExtension(std::unique_ptr<ObjectEditorDocument> &document,
+    ErrCode StartObjectEditorExtension(std::unique_ptr<ObjectEditorDocument> &document,
         const sptr<IObjectEditorClientCallback> &callback, sptr<IObjectEditorService> &oeExtensionRemoteObject,
-    bool &isPackageExtension);
-    Errcode StopObjectEditorExtension(const sptr<IObjectEditorService> &oeExtensionRemoteObject,
+        bool &isPackageExtension);
+    ErrCode StopObjectEditorExtension(const sptr<IObjectEditorService> &oeExtensionRemoteObject,
         const bool &isPackageExtension);
-    Errcode GetIcon(const std::string &hmid, std::string &resourceId);
-    Errcode GetFormatName(const std::string &hmid, std::string &locale, std::string &formatName);
-    Errcode GetObjectEditorFormatByHmidAndLocale(const std::string &hmid, const std::string &locale,
+    ErrCode GetIcon(const std::string &hmid, std::string &resourceId);
+    ErrCode GetFormatName(const std::string &hmid, const std::string &locale, std::string &formatName);
+    ErrCode GetObjectEditorFormatByHmidAndLocale(const std::string &hmid, const std::string &locale,
         std::unique_ptr<ObjectEditorFormat> &format);
-    Errcode GetObjectEditorFormatsByLocale(const std::string &locale,
+    ErrCode GetObjectEditorFormatsByLocale(const std::string &locale,
         std::vector<std::unique_ptr<ObjectEditorFormat>> &formats);
-    void LoadSystemAbilitySuccess(const sptr<IRemoteObject> &remoteObject);
+    void LoadSystemAbilitySuccess(const sptr<IRemoteObject> &object);
     void LoadSystemAbilityFail();
     void SARegCleanUp();
 private:
-    class ObjectEditorDeathRecipient : public IRemoteObject::DeathRecipient {
+    class ObjectEditorSADeathRecipient : public IRemoteObject::DeathRecipient {
     public:
-        ObjectEditorDeathRecipient()=default;
-        ~ObjectEditorDeathRecipient() override=default;
+        ObjectEditorSADeathRecipient()=default;
+        ~ObjectEditorSADeathRecipient() override=default;
         void OnRemoteDied(const wptr<IRemoteObject> &remote) override
         {
             ObjectEditorClient::GetInstance().OnRemoteDied(remote);
-        };
+        }
     };
     void OnRemoteDied(const wptr<IRemoteObject> &remote);
     void SubscribeSystemAbility();
     void UnsubscribeSystemAbility();
     ~ObjectEditorClient();
     ObjectEditorClient()=default;
-    sptr<IObjectEditorManager> GetObjectEditorManager();
-    sptr<IObjectEditorManager> GetObjectEditorProxy(const sptr<IRemoteObject> &remoteObject);
+    sptr<IObjectEditorManager> GetIObjectEditorManager();
+    sptr<IObjectEditorManager> GetObjectEditorProxy(const sptr<IRemoteObject> &object);
     void InitLoadState();
     bool WaitLoadStateChange();
     ErrCode PrepareFiles(const std::unique_ptr<ObjectEditorDocument> &document);
     std::string GenRandomUuid();
 
     std::mutex proxyMutex_;
-    sptr<IObjectEditorManager> oeSAProxy_{ nullptr };
-    sptr<IRemoteObject::DeathRecipient> deathRecipient_{ nullptr };
+    sptr<IObjectEditorManager> oeSAProxy_ { nullptr };
+    sptr<IRemoteObject::DeathRecipient> deathRecipient_ { nullptr };
     std::condition_variable loadCond_;
     std::mutex loadMutex_;
-    bool loadState_{ false };
-    sptr<ISystemAbilityStatusChange> saStatusListener_{ nullptr };
+    bool loadState_ { false };
+    sptr<ISystemAbilityStatusChange> saStatusListener_ { nullptr };
 };
 } // namespace ObjectEditor
 } // namespace OHOS

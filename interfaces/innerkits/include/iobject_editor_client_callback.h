@@ -29,7 +29,7 @@ enum class IObjectEditorClientCallbackIpcCode {
     COMMAND_ON_UPDATE = MIN_TRANSACTION_ID,
     COMMAND_ON_ERROR,
     COMMAND_ON_STOP_EDIT,
-    COMMAND_ON_EXTENSION_STOPED,
+    COMMAND_ON_EXTENSION_STOPPED,
 };
 
 class IObjectEditorClientCallback : public IRemoteBroker {

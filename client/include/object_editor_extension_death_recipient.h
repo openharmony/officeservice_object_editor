@@ -12,30 +12,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef OHOS_OBJECT_EDITOR_OBJECT_EDITOR_EXTENSION_DEATH_RECIPIENT_H
+#define OHOS_OBJECT_EDITOR_OBJECT_EDITOR_EXTENSION_DEATH_RECIPIENT_H
 
-#ifndef OHOS_OBJECT_EDITOR_USER_MGR_H
-#define OHOS_OBJECT_EDITOR_USER_MGR_H
-
-#include <shared_mutex>
-#include "single_instance.h"
+#include "iremote_object.h"
+#include "native_object_editor_types.h"
+#include "hilog_object_editor.h"
 
 namespace OHOS {
 namespace ObjectEditor {
-class UserMgr {
-    DECLARE_SINGLE_INSTANCE_BASE(UserMgr);
-
+class ObjectEditorExtensionDeathRecipient : public IRemoteObject::DeathRecipient {
 public:
-    void SetNewUserId(int32_t newUserId);
-    int32_t GetUserId();
+    explicit ObjectEditorExtensionDeathRecipient(struct ContentEmbed_ExtensionProxy *proxy);
+    void OnRemoteDied(const wptr<IRemoteObject> &remote) override;
 private:
-    UserMgr();
-    ~UserMgr() = default;
-
-private:
-    int32_t userId_ = 100;
-    std::shared_mutex mtx_;
+    struct ContentEmbed_ExtensionProxy *proxy_ {nullptr};
 };
 
 } // namespace ObjectEditor
 } // namespace OHOS
-#endif // OHOS_OBJECT_EDITOR_USER_MGR_H
+#endif // OHOS_OBJECT_EDITOR_OBJECT_EDITOR_EXTENSION_DEATH_RECIPIENT_H
