@@ -23,16 +23,17 @@ config("libobject_editor_utils_private_config") {
 config("libobject_editor_utils_public_config") {
     include_dirs = [
         "include",
-        "include/dfx",
+        "include/dfx"
     ]
 }
 
+# Build ObjectEditorUtils.so
 ohos_shared_library("content_embed_utils") {
-    sanitize = [ 
-        cfi = true,
-        cfi_cross_dso = true,
-        debug = false,
-    ]
+    sanitize = {
+        cfi = true
+        cfi_cross_dso = true
+        debug = false
+    }
     configs = [
         ":libobject_editor_utils_private_config",
     ]
@@ -40,7 +41,7 @@ ohos_shared_library("content_embed_utils") {
         ":libobject_editor_utils_public_config",
     ]
     deps = []
-    export_deps = [
+    external_deps = [
         "hilog:libhilog",
     ]
     defines = []

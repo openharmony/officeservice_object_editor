@@ -27,9 +27,9 @@
 
 namespace OHOS {
 namespace ObjectEditor {
-class ObjectEditorConnection : public AAFwk::AbilityConnectCallbackStub {
+class ObjectEditorConnection : public AAFwk::AbilityConnectionStub {
 public:
-    ObjectEditorConnection();
+    ObjectEditorConnection(){};
     ~ObjectEditorConnection();
 
     void OnAbilityConnectDone(const AppExecFwk::ElementName &element,
@@ -62,9 +62,10 @@ private:
     std::mutex mutexTimerRunning_;
     std::condition_variable cvTimer_;
     std::atomic<bool> timerRunning_{false};
-    std::atomic<bool> timerNotify__{false};
+    std::atomic<bool> timerNotify_{false};
     std::thread timerThread_;
     std::atomic<bool> timerStopFlag_{false};
+    static const int32_t EXTENSION_STOP_TIME_S = 20;
 };
 
 } // namespace ObjectEditor

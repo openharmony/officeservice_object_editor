@@ -16,9 +16,7 @@ import("//build/ohos_var.gni")
 import("//foundation/officeservice/object_editor/object_editor.gni")
 
 config("libobject_editor_service_private_config") {
-    visibility = [
-        ":*",
-    ]
+    visibility = [ ":*" ]
     include_dirs = [
         "include",
         "${innerkits_path}/include",
@@ -34,16 +32,13 @@ config("libobject_editor_service_private_config") {
 }
 
 ohos_shared_library("content_embed_service") {
-    sanitize = [ 
-        cfi = true,
-        cfi_cross_dso = true,
-        debug = false,
-    ]
-    configs = [
-        ":libobject_editor_service_private_config",
-        "${object_editor_path}/resources/config/build:coverage_flags",
-    ]
-    install_enable = target_cpu
+    sanitize = {
+        cfi = true
+        cfi_cross_dso = true
+        debug = false
+    }
+    install_enable = true
+    use_exceptions = true
     sources = [
         "${object_editor_path}/common/src/object_editor_config.cpp",
         "${object_editor_path}/common/src/object_editor_extension_proxy.cpp",
@@ -53,34 +48,43 @@ ohos_shared_library("content_embed_service") {
         "${object_editor_path}/database/src/object_editor_manager_database.cpp",
         "${object_editor_path}/database/src/object_editor_manager_resmgr.cpp",
         "${object_editor_path}/database/src/object_editor_manager_utils.cpp",
-        "${object_editor_path}/document/src/object_editor_manager_document.cpp",
+        "${object_editor_path}/document/src/object_editor_document.cpp",
         "${object_editor_path}/extension_ability/src/object_editor_client_callback_proxy.cpp",
-        "${object_editor_path}/proxy/src/object_editor_proxy.cpp",
-        "${object_editor_path}/proxy/src/object_editor_proxy_stub.cpp",
+
         "${object_editor_path}/system_ability/src/object_editor_connection.cpp",
         "${object_editor_path}/system_ability/src/object_editor_manager_stub.cpp",
         "${object_editor_path}/system_ability/src/object_editor_manager_system_ability.cpp",
+        "${object_editor_path}/system_ability/src/object_editor_client_death_recipient.cpp",
     ]
+    configs = [
+        ":libobject_editor_service_private_config",
+    ]
+    public_configs = [
+        "${object_editor_path}/resources/config/build:coverage_flags",
+    ]
+
     deps = [
-        "${object_editor_path}/utils:content_embed_document",
-        "${object_editor_path}/utils:object_editor_utils",
+        "${object_editor_path}/utils:content_embed_utils",
+        "${object_editor_path}/document:content_embed_document",
     ]
-    export_deps = [
+    external_deps = [
         "ability_base:want",
         "ability_base:zuri",
         "ability_runtime:ability_connect_callback_stub",
         "ability_runtime:ability_manager",
         "ability_runtime:uri_permission_mgr",
+        "ability_runtime:wantagent_innerkits",
         "app_file_service:fileuri_native",
         "access_token:libaccesstoken_sdk",
         "bundle_framework:bundle_napi_common",
         "c_utils:utils",
+        "cJSON:cjson",
         "hilog:libhilog",
         "image_framework:image_native",
         "ipc:ipc_core",
         "napi:ace_napi",
-        "relational_store:native_db",
-        "resource_manager:global_resmgr",
+        "relational_store:native_rdb",
+        "resource_management:global_resmgr",
         "safwk:system_ability_fwk",
         "samgr:samgr_proxy",
         "os_account:os_account_innerkits",

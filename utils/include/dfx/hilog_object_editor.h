@@ -16,13 +16,16 @@
 #ifndef OHOS_OBJECT_EDITOR_HILOG_OBJECT_EDITOR_H
 #define OHOS_OBJECT_EDITOR_HILOG_OBJECT_EDITOR_H
 
+#include "hilog/log.h"
+
 namespace OHOS {
 namespace ObjectEditor {
 static constexpr uint32_t OBJECT_EDITOR_HILOG_DOMAIN = 0xD003901;
 
+// 设置Domain ID，新加模块，加到UNDEFINED前
 enum class ObjectEditorDomain {
     COMMON = OBJECT_EDITOR_HILOG_DOMAIN,
-    UITLS,
+    UTILS,
     SA,
     CLIENT,
     CLIENT_NDK,
@@ -34,28 +37,29 @@ enum class ObjectEditorDomain {
     UNDEFINED,
 };
 
-#define OBJECT_EDITOR_MASK_STR(name) #name
-#define OBJECT_EDITOR_MASK_TAG(name) OBJECT_EDITOR_MASK_STR(CE_##name)
+// 设置Domain Tag，新加模块，加到 OBJECT_EDITOR_MAKE_TAG(UNDEFINED) 前
+#define OBJECT_EDITOR_MAKE_STR(name) #name
+#define OBJECT_EDITOR_MAKE_TAG(name) OBJECT_EDITOR_MAKE_STR(CE_##name)
 static constexpr const char* logTags[] = {
-    OBJECT_EDITOR_MASK_TAG(COMMON),
-    OBJECT_EDITOR_MASK_TAG(UITLS),
-    OBJECT_EDITOR_MASK_TAG(SA),
-    OBJECT_EDITOR_MASK_TAG(CLIENT),
-    OBJECT_EDITOR_MASK_TAG(CLIENT_NDK),
-    OBJECT_EDITOR_MASK_TAG(EXTENSION),
-    OBJECT_EDITOR_MASK_TAG(EXTENSION_NDK),
-    OBJECT_EDITOR_MASK_TAG(DOCUMENT),
-    OBJECT_EDITOR_MASK_TAG(DATABASE),
-    OBJECT_EDITOR_MASK_TAG(PACKAGE),
-    OBJECT_EDITOR_MASK_TAG(UNDEFINED),
-}
+    OBJECT_EDITOR_MAKE_TAG(COMMON),
+    OBJECT_EDITOR_MAKE_TAG(UTILS),
+    OBJECT_EDITOR_MAKE_TAG(SA),
+    OBJECT_EDITOR_MAKE_TAG(CLIENT),
+    OBJECT_EDITOR_MAKE_TAG(CLIENT_NDK),
+    OBJECT_EDITOR_MAKE_TAG(EXTENSION),
+    OBJECT_EDITOR_MAKE_TAG(EXTENSION_NDK),
+    OBJECT_EDITOR_MAKE_TAG(DOCUMENT),
+    OBJECT_EDITOR_MAKE_TAG(DATABASE),
+    OBJECT_EDITOR_MAKE_TAG(PACKAGE),
+    OBJECT_EDITOR_MAKE_TAG(UNDEFINED),
+};
 
 static_assert(sizeof(logTags) / sizeof(logTags[0]) ==
     static_cast<size_t>(ObjectEditorDomain::UNDEFINED) -
     static_cast<size_t>(ObjectEditorDomain::COMMON) + 1,
     "logTags size not match ObjectEditorDomain size");
 
-static inline const char* GetHilogTag(ObjectEditorDomain domain)
+static inline const char* GetHiLogTag(ObjectEditorDomain domain)
 {
     size_t index = static_cast<size_t>(domain) -
         static_cast<size_t>(ObjectEditorDomain::COMMON);
@@ -65,23 +69,23 @@ static inline const char* GetHilogTag(ObjectEditorDomain domain)
     return logTags[index];
 }
 
-static inline unsigned int GetHilogDomain(ObjectEditorDomain domain)
+static inline unsigned int GetHiLogDomain(ObjectEditorDomain domain)
 {
     return static_cast<unsigned int>(domain);
 }
 
-#define OBJECT_EDITOR_LOGE(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_ERROR, GetHilogDomain(domain), \
-    GetHilogTag(domain), "[%{public}s]" fmt, __FUNCTION__, ##__VA_ARGS__)
-#define OBJECT_EDITOR_LOGF(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_FATAL, GetHilogDomain(domain), \
-    GetHilogTag(domain), "[%{public}s]" fmt, __FUNCTION__, ##__VA_ARGS__)
-#define OBJECT_EDITOR_LOGW(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_WARN, GetHilogDomain(domain), \
-    GetHilogTag(domain), "[%{public}s]" fmt, __FUNCTION__, ##__VA_ARGS__)
-#define OBJECT_EDITOR_LOGI(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_INFO, GetHilogDomain(domain), \
-    GetHilogTag(domain), "[%{public}s]" fmt, __FUNCTION__, ##__VA_ARGS__)
-#define OBJECT_EDITOR_LOGD(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_DEBUG, GetHilogDomain(domain), \
-    GetHilogTag(domain), "[%{public}s]" fmt, __FUNCTION__, ##__VA_ARGS__)
+#define OBJECT_EDITOR_LOGE(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_ERROR, GetHiLogDomain(domain), \
+    GetHiLogTag(domain), "[%{public}s]" fmt, __FUNCTION__, ##__VA_ARGS__)
+#define OBJECT_EDITOR_LOGF(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_FATAL, GetHiLogDomain(domain), \
+    GetHiLogTag(domain), "[%{public}s]" fmt, __FUNCTION__, ##__VA_ARGS__)
+#define OBJECT_EDITOR_LOGW(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_WARN, GetHiLogDomain(domain), \
+    GetHiLogTag(domain), "[%{public}s]" fmt, __FUNCTION__, ##__VA_ARGS__)
+#define OBJECT_EDITOR_LOGI(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_INFO, GetHiLogDomain(domain), \
+    GetHiLogTag(domain), "[%{public}s]" fmt, __FUNCTION__, ##__VA_ARGS__)
+#define OBJECT_EDITOR_LOGD(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_DEBUG, GetHiLogDomain(domain), \
+    GetHiLogTag(domain), "[%{public}s]" fmt, __FUNCTION__, ##__VA_ARGS__)
 
 } // namespace ObjectEditor
 } // namespace OHOS
 
-#endif // OHOS_OBJECT_EDITOR_OBJECT_EDITOR_MANAGER_SYSTEM_ABILITY_H
+#endif // OHOS_OBJECT_EDITOR_HILOG_OBJECT_EDITOR_H

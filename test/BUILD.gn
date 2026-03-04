@@ -10,19 +10,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# Description: oe service test build.gn file
 
-object_editor_path = "//foundation/officeservice/object_editor"
-
-kits_path = "${object_editor_path}/interfaces/kits"
-
-innerkits_path = "${object_editor_path}/interfaces/innerkits"
-
-ndk_path = "${object_editor_path}/frameworks/ndk"
-
-declare_args() {
-  object_editor_dlp_part_enabled = true
-  if (defined(global_parts_info) &&
-      !defined(global_parts_info.security_dlp_permission_service)) {
-    object_editor_dlp_part_enabled = false
-  }
+group("test_target") {
+  testonly = true
+  deps = [
+    "fuzztest:fuzztest",
+  ]
 }
