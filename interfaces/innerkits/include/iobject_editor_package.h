@@ -22,9 +22,7 @@
 namespace OHOS {
 namespace ObjectEditor {
 
-class IObjectEditorPackage : public IRemoteBroker, public IObjectEditorService {
-public:
-    DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.ObjectEditor.IObjectEditorPackage");
+class IObjectEditorPackage : public IObjectEditorService {
 };
 
 } // namespace ObjectEditor

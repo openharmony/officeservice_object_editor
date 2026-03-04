@@ -63,7 +63,7 @@ public:
      *
      * @return True means success and false means failure.
      */
-    ErrCode ConnectAbility(const AAFwk::Want &want, const sptr<AbilityConnectCallback> &connectCallback) const;
+    bool ConnectAbility(const AAFwk::Want &want, const sptr<AbilityConnectCallback> &connectCallback) const;
 
     /**
      * @brief Starts a new ability.
@@ -96,7 +96,7 @@ public:
      *
      * @return True means success and false means failure.
      */
-    ErrCode ConnectAbilityWithAccount(const AAFwk::Want &want, int accountId,
+    bool ConnectAbilityWithAccount(const AAFwk::Want &want, int accountId,
         const sptr<AbilityConnectCallback> &connectCallback) const;
     
     /**

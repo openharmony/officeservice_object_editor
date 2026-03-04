@@ -39,6 +39,11 @@ public:
         const std::string &moduleName, sptr<IRemoteObject> &remoteObject);
     ObjectEditorManagerErrCode StopConnect();
     void RegisterConnectionStatusCallback(const std::shared_ptr<IObjectEditorConnectionStatusCallback> callback);
+    std::string& GetExtensionBundleName();
+    void SetClientBundleName(const std::string &bundleName);
+    std::string& GetClientBundleName();
+    bool IsElementMatch(const std::string &bundleName, const std::string &abilityName,
+        const std::string &moduleName);
 
 protected:
     const int8_t CONNECT_TIME_OUT = 3;
@@ -47,6 +52,10 @@ private:
     ObjectEditorManagerErrCode DoConnect(const std::string &bundleName, const std::string &abilityName,
         const std::string &moduleName, sptr<IRemoteObject> &remoteObject);
 
+    std::string extensionBundleName_;
+    std::string extensionAbilityName_;
+    std::string extensionModuleName_;
+    std::string clientBundleName_;
     std::mutex extensionProxyMutex_;
     sptr<IRemoteObject> extensionProxy_ = nullptr;
     std::condition_variable connectCondition_;
@@ -56,7 +65,7 @@ private:
 
     void TimerThreadStopExtension();
     void ResetStopExtensionTimer();
-    void CheckRemoteEditStatus(bool *isEditing, bool *isModified);
+    bool CheckRemoteEditStatus();
 
     std::mutex mutexTimer_;
     std::mutex mutexTimerRunning_;

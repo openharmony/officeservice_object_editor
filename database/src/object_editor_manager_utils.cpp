@@ -292,7 +292,7 @@ sptr<AppExecFwk::IBundleMgr> GetBundleMgr()
 
 bool GetAppIdentifier(std::string &appIdentifier)
 {
-    uint32_t callerToken = 0;
+    uint32_t callerToken = IPCSkeleton::GetCallingTokenID();
     Security::AccessToken::HapTokenInfo hapTokenInfo;
     Errcode ret = Security::AccessToken::AccessTokenKit::GetHapTokenInfo(callerToken, hapTokenInfo)
     if (ret != ERR_OK) {

@@ -39,7 +39,7 @@ public:
     virtual ErrCode OnUpdate(std::unique_ptr<ObjectEditorDocument> &document) = 0;
     virtual ErrCode OnError(ContentEmbed_ErrorCode error) = 0;
     virtual ErrCode OnStopEdit(bool dataModified) = 0;
-    virtual ErrCode OnExtensionStoped() = 0;
+    virtual ErrCode OnExtensionStopped() = 0;
 
 protected:
     const int VECTOR_MAX_SIZE = 102400;

@@ -24,7 +24,7 @@ namespace ObjectEditor {
 
 class ObjectEditorExtensionStub : public IRemoteStub<IObjectEditorExtension> {
 public:
-    explicit ObjectEditorExtensionStub(bool serialInvokeFlag = false) : IRemoteStub(serialInvokeFlag) {}
+    ObjectEditorExtensionStub(bool serialInvokeFlag = false) : IRemoteStub(serialInvokeFlag) {}
     int32_t OnRemoteRequest(uint32_t code, MessageParcel &data,
         MessageParcel &reply, MessageOption &option) override;
     virtual int32_t CallbackEnter([[maybe_unused]] uint32_t code) = 0;
@@ -33,13 +33,13 @@ public:
         MessageParcel &reply, MessageOption &option);
 
 private:
-    int32_t HandleExtensionRegisterClientCB(MessageParcel &data, MessageParcel &reply);
     int32_t HandleExtensionGetSnapshot(MessageParcel &data, MessageParcel &reply);
     int32_t HandleExtensionDoEdit(MessageParcel &data, MessageParcel &reply);
     int32_t HandleExtensionInitial(MessageParcel &data, MessageParcel &reply);
     int32_t HandleExtensionGetCapability(MessageParcel &data, MessageParcel &reply);
     int32_t HandleExtensionGetEditStatus(MessageParcel &data, MessageParcel &reply);
     int32_t HandleExtensionClose(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleExtensionGetExtensionEditStatus(MessageParcel &data, MessageParcel &reply);
 };
 
 } // namespace ObjectEditor

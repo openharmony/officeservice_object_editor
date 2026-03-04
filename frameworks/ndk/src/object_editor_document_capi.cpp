@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-#include <cstdint>
 #include <cstring>
 #include <string_ex.h>
 
@@ -94,7 +93,11 @@ Storage *OH_ContentEmbed_Helper_GetRootStorage(const ContentEmbed_Storage *oeSto
 ContentEmbed_ErrorCode OH_ContentEmbed_Helper_RequireStorageEntry(const ContentEmbed_Storage *handle,
     Storage *&storageOut)
 {
-    if (handle == nullptr || storageOut == nullptr) {
+    if (handle == nullptr) {
+        return CE_ERR_NULL_POINTER;
+    }
+    storageOut = OH_ContentEmbed_Helper_GetRootStorage(handle);
+    if (storageOut == nullptr) {
         return CE_ERR_NULL_POINTER;
     }
     const std::string normalizedPath = OH_ContentEmbed_Helper_NormalizePath(handle->name);
@@ -119,6 +122,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Helper_RequireStream(ContentEmbed_Stream 
         return CE_ERR_NULL_POINTER;
     }
     if (!storage->GetEntry(handle->path, false)) {
+        handle->stream = nullptr;
         return CE_ERR_NULL_POINTER;
     }
     if (!handle->stream || handle->storage != storage) {
@@ -135,8 +139,8 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Helper_RequireStream(ContentEmbed_Stream 
         if (stream->Fail()) {
             return CE_ERR_STREAM_OPERATION_FAILED;
         }
-        handle->stream = stream;
         handle->storage = storage;
+        handle->stream = stream;
     }
     streamOut = handle->stream;
     handle->pos = streamOut->Tell();
@@ -155,11 +159,15 @@ ContentEmbed_ErrorCode OH_ContentEmbed_CreateDocumentByHmid(const char *hmid, Co
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (hmid == nullptr || document == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (document == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
         return CE_ERR_PARAM_INVALID;
     }
     *document = nullptr;
+    if (hmid == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "hmid is null");
+        return CE_ERR_PARAM_INVALID;
+    }
     const std::string hmidStr(hmid);
     if (!(hmidStr.size() == HMID_LEN || hmidStr.size() == HMID_MAX_LEN)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "hmid length is invalid");
@@ -188,11 +196,15 @@ ContentEmbed_ErrorCode OH_ContentEmbed_CreateDocumentByFile(const char *srcFileP
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (srcFilePath == nullptr || document == nullptr || length <= 0) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (document == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
         return CE_ERR_PARAM_INVALID;
     }
     *document = nullptr;
+    if (srcFilePath == nullptr || length <= 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+        return CE_ERR_PARAM_INVALID;
+    }
     std::string path(srcFilePath, length);
     auto doc = ObjectEditorDocument::CreateByFile(path, isLinking);
     if (doc == nullptr) {
@@ -217,8 +229,13 @@ ContentEmbed_ErrorCode OH_ContentEmbed_LoadDocumentFromFile(const char *srcFileP
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (srcFilePath == nullptr || document == nullptr || length <= 0 || !(*srcFilePath)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (document == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    *document = nullptr;
+    if (srcFilePath == nullptr || length <= 0 || !(*srcFilePath)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "srcFilePath is null");
         return CE_ERR_PARAM_INVALID;
     }
     *document = nullptr;
@@ -247,9 +264,16 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_Read(uint8_t *buffer, size_t len
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (document == nullptr || document->oeDocumentInner == nullptr ||
-        buffer == nullptr || readSize == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (document == nullptr || document->oeDocumentInner == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (buffer == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "buffer is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (readSize == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "readSize is null");
         return CE_ERR_PARAM_INVALID;
     }
     *readSize = 0;
@@ -282,7 +306,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_Read(uint8_t *buffer, size_t len
 }
 
 ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetHmid(ContentEmbed_Document *document,
-    char *hmid, size_t hmidSize)
+    char *hmid)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
@@ -290,17 +314,16 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetHmid(ContentEmbed_Document *d
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (document == nullptr || document->oeDocumentInner == nullptr ||
-        hmid == nullptr || hmidSize == 0) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (hmid == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "hmid is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (document == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
         return CE_ERR_PARAM_INVALID;
     }
     std::string hmidStr = document->hmid;
-    if (hmidStr.size() >= hmidSize) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "hmid size is too small");
-        return CE_ERR_PARAM_INVALID;
-    }
-    if (strcpy_s(hmid, hmidSize, hmidStr.c_str()) != 0) {
+    if (strcpy_s(hmid, MAX_HMID_LENGTH, hmidStr.c_str()) != 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "strcpy_s failed");
         return CE_ERR_PARAM_INVALID;
     }
@@ -316,8 +339,12 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_IsLinking(ContentEmbed_Document 
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (document == nullptr || isLinking == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (document == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (isLinking == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "isLinking is null");
         return CE_ERR_PARAM_INVALID;
     }
     *isLinking = document->linking;
@@ -333,8 +360,12 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetNativeFilePath(ContentEmbed_D
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (document == nullptr || nativeFilePath == nullptr || nativeFilePathSize == 0) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (document == nullptr || document->oeDocumentInner == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (nativeFilePath == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "nativeFilePath is null");
         return CE_ERR_PARAM_INVALID;
     }
     std::string filePathStr = document->oeDocumentInner->GetNativeFilePath();
@@ -358,11 +389,15 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetRootStorage(ContentEmbed_Docu
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (document == nullptr || document->oeDocumentInner == nullptr || rootStorage == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (storage == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storage is null");
         return CE_ERR_PARAM_INVALID;
     }
     *storage = nullptr;
+    if (document == nullptr || document->oeDocumentInner == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
+        return CE_ERR_PARAM_INVALID;
+    };
     Storage *rootStorage = document->oeDocumentInner->GetRootStorage();
     if (rootStorage == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "root storage is null");
@@ -389,7 +424,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_Flush(ContentEmbed_Document *doc
         return supported;
     }
     if (document == nullptr || document->oeDocumentInner == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
         return CE_ERR_PARAM_INVALID;
     }
     if (!document->oeDocumentInner->Flush()) {
@@ -413,8 +448,12 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_CreateStorage(const ContentEmbed_
         return CE_ERR_PARAM_INVALID;
     }
     *childStorage = nullptr;
-    if (parentStorage == nullptr || !OH_ContentEmbed_Helper_ValidatePath(name)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (parentStorage == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "parentStorage is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (!OH_ContentEmbed_Helper_IsValidName(name)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "name is invalid");
         return CE_ERR_PARAM_INVALID;
     }
     Storage *storage = nullptr;
@@ -456,8 +495,12 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetStorage(const ContentEmbed_Sto
         return CE_ERR_PARAM_INVALID;
     }
     *childStorage = nullptr;
-    if (parentStorage == nullptr || !OH_ContentEmbed_Helper_IsValidName(name)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (parentStorage == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "parentStorage is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (!OH_ContentEmbed_Helper_IsValidName(name)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "name is invalid");
         return CE_ERR_PARAM_INVALID;
     }
     Storage *storage = nullptr;
@@ -492,19 +535,23 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Helper_GetStreamInternal(ContentEmbed_Sto
         return CE_ERR_PARAM_INVALID;
     }
     *childStream = nullptr;
-    if (!parentStorage || !OH_ContentEmbed_Helper_ValidatePath(name)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (parentStorage == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "parentStorage is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (!OH_ContentEmbed_Helper_IsValidName(name)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "name is invalid");
         return CE_ERR_PARAM_INVALID;
     }
     Storage *storage = nullptr;
     ContentEmbed_ErrorCode ret = OH_ContentEmbed_Helper_RequireStorageEntry(parentStorage, storage);
     if (ret != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create storage failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create storage entry failed");
         return ret;
     }
     const std::string targetPath = OH_ContentEmbed_Helper_JoinPath(parentStorage->name, name);
-    if (!storage->GetStream(targetPath, create)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "get stream failed");
+    if (!storage->GetStorage(targetPath, false)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "get storage failed");
         return CE_ERR_STORAGE_OPERATION_FAILED;
     }
     Stream *stream = storage->GetStream(targetPath, create, true);
@@ -516,7 +563,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Helper_GetStreamInternal(ContentEmbed_Sto
         targetPath, storage, stream, stream->Tell()};
     if (wrapper == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create stream wrapper failed");
-        return CE_ERR_STORAGE_OPERATION_FAILED;
+        return CE_ERR_NULL_POINTER;
     }
     *childStream = wrapper;
     return CE_ERR_OK;
@@ -555,8 +602,12 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_DeleteEntry(ContentEmbed_Storage 
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (!parentStorage || !OH_ContentEmbed_Helper_ValidatePath(name)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (!parentStorage) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "parentStorage is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (!OH_ContentEmbed_Helper_IsValidName(name)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "name is invalid");
         return CE_ERR_PARAM_INVALID;
     }
     Storage *storage = nullptr;
@@ -607,25 +658,28 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_Read(ContentEmbed_Stream *stream,
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (!stream || !buffer || !num) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (buffer == nullptr || num == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "buffer or num is null");
         return CE_ERR_PARAM_INVALID;
     }
     *buffer = nullptr;
     *num = 0;
-    if (length > static_cast<size_t>(std::numeric_limits<std::streamsize>::max()) ||
-        length <= 0) {
+    if (stream == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "stream is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (length > static_cast<size_t>(std::numeric_limits<std::streamsize>::max()) || length <= 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "length is invalid");
         return CE_ERR_PARAM_INVALID;
     }
     Stream *innerStream = nullptr;
     ContentEmbed_ErrorCode ret = OH_ContentEmbed_Helper_RequireStream(stream, innerStream);
     if (ret != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create stream failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "require stream failed");
         return ret;
     }
     *buffer = new unsigned char[length];
-    const std::streamsize read = innerStream->read(*buffer, static_cast<std::streamsize>(length));
+    const std::streamsize read = innerStream->Read(*buffer, static_cast<std::streamsize>(length));
     if (read < 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "read stream failed");
         delete[] *buffer;
@@ -638,6 +692,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_Read(ContentEmbed_Stream *stream,
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "stream fail");
         delete[] *buffer;
         *buffer = nullptr;
+        *num = 0;
         return CE_ERR_STREAM_OPERATION_FAILED;
     }
     return CE_ERR_OK;
@@ -652,29 +707,32 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_Write(ContentEmbed_Stream *stream,
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (!stream || !buffer || !num) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (stream == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "stream is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (buffer == nullptr || num == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "buffer or num is null");
         return CE_ERR_PARAM_INVALID;
     }
     if (length == 0) {
         *num = 0;
         return CE_ERR_OK;
     }
-    if (length > static_cast<size_t>(std::numeric_limits<std::streamsize>::max()) ||
-        length <= 0) {
+    if (length > static_cast<size_t>(std::numeric_limits<std::streamsize>::max()) || length <= 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "length is invalid");
         return CE_ERR_PARAM_INVALID;
     }
     Stream *innerStream = nullptr;
     ContentEmbed_ErrorCode ret = OH_ContentEmbed_Helper_RequireStream(stream, innerStream);
     if (ret != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create stream failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "require stream failed");
         return ret;
     }
     const auto beforePos = innerStream->Tell();
     innerStream->Write(buffer, static_cast<std::streamsize>(length));
     const auto afterPos = innerStream->Tell();
-    const size_t written = (afterPos >= beforePos) ? (afterPos - beforePos) : 0;
+    const size_t written = (afterPos >= beforePos) ? static_cast<size_t>(afterPos - beforePos) : 0U;
     stream->pos = afterPos;
     if (written != length || innerStream->Fail()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "stream fail");
@@ -692,25 +750,29 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_Seek(ContentEmbed_Stream *stream, 
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (!stream) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (stream == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "stream is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (position > std::numeric_limits<uint64_t>::max()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "position exceeds limit");
         return CE_ERR_PARAM_INVALID;
     }
     Stream *innerStream = nullptr;
     ContentEmbed_ErrorCode ret = OH_ContentEmbed_Helper_RequireStream(stream, innerStream);
     if (ret != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create stream failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "require stream failed");
         return ret;
     }
     const uint64_t size = innerStream->Size();
     if (position > size) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "position exceeds size:%{public}zu", size);
-        return CE_ERR_STREAM_OPERATION_FAILED
+        return CE_ERR_STREAM_OPERATION_FAILED;
     }
     innerStream->Seek(static_cast<uint64_t>(position));
     stream->pos = static_cast<uint64_t>(position);
     if (innerStream->Fail()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "stream fail");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "stream failed");
         return CE_ERR_STREAM_OPERATION_FAILED;
     }
     return CE_ERR_OK;
@@ -724,14 +786,18 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_GetPosition(ContentEmbed_Stream *s
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (!stream || !position) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (stream == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "stream is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (position == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "position is null");
         return CE_ERR_PARAM_INVALID;
     }
     Stream *innerStream = nullptr;
     ContentEmbed_ErrorCode ret = OH_ContentEmbed_Helper_RequireStream(stream, innerStream);
     if (ret != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create stream failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "require stream failed");
         return ret;
     }
     stream->pos = innerStream->Tell();
@@ -747,14 +813,18 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_GetSize(ContentEmbed_Stream *strea
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (!stream || !size) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (stream == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "stream is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (size == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "size is null");
         return CE_ERR_PARAM_INVALID;
     }
     Stream *innerStream = nullptr;
     ContentEmbed_ErrorCode ret = OH_ContentEmbed_Helper_RequireStream(stream, innerStream);
     if (ret != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create stream failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "require stream failed");
         return ret;
     }
     *size = static_cast<size_t>(innerStream->Size());
@@ -769,8 +839,8 @@ ContentEmbed_ErrorCode OH_ContentEmbed_DestroyStream(ContentEmbed_Stream *stream
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (!stream) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (stream == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "stream is null");
         return CE_ERR_PARAM_INVALID;
     }
     delete stream;
@@ -786,8 +856,8 @@ ContentEmbed_ErrorCode OH_ContentEmbed_DestroyDocument(ContentEmbed_Document *do
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (!document) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (document == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
         return CE_ERR_PARAM_INVALID;
     }
     delete document;

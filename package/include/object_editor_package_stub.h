@@ -31,9 +31,8 @@ public:
     int32_t OnRemoteRequestInner(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);
 
 private:
-    int32_t HandlePackageRegisterClientCallback(MessageParcel &data, MessageParcel &reply);
     int32_t HandlePackageGetSnapshot(MessageParcel &data, MessageParcel &reply);
-    int32_t HandlePackageGetDoEdit(MessageParcel &data, MessageParcel &reply);
+    int32_t HandlePackageDoEdit(MessageParcel &data, MessageParcel &reply);
 };
 } // namespace ObjectEditor
 } // namespace OHOS

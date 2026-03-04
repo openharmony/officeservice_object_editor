@@ -45,10 +45,13 @@ private:
 class ObjectEditorClient {
     DECLARE_SINGLE_INSTANCE_BASE(ObjectEditorClient);
 public:
-    ErrCode StartObjectEditorExtension(std::unique_ptr<ObjectEditorDocument> &document,
-        const sptr<IObjectEditorClientCallback> &callback, sptr<IObjectEditorService> &oeExtensionRemoteObject,
+    ErrCode StartObjectEditorExtension(
+        std::unique_ptr<ObjectEditorDocument> &document,
+        const sptr<IObjectEditorClientCallback> &callback,
+        sptr<IObjectEditorService> &oeExtensionRemoteObject,
         bool &isPackageExtension);
-    ErrCode StopObjectEditorExtension(const sptr<IObjectEditorService> &oeExtensionRemoteObject,
+    ErrCode StopObjectEditorExtension(
+        const sptr<IObjectEditorService> &oeExtensionRemoteObject,
         const bool &isPackageExtension);
     ErrCode GetIcon(const std::string &hmid, std::string &resourceId);
     ErrCode GetFormatName(const std::string &hmid, const std::string &locale, std::string &formatName);

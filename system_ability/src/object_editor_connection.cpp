@@ -25,6 +25,28 @@ constexpr int32_t RETRY_TIMES = 1;
 constexpr int32_t EXTENSION_STOP_TIME_S = 20;
 }
 
+std::string& ObjectEditorConnection::GetExtensionBundleName()
+{
+    return extensionBundleName_;
+}
+
+void ObjectEditorConnection::SetClientBundleName(const std::string &bundleName)
+{
+    clientBundleName_ = bundleName;
+}
+
+std::string& ObjectEditorConnection::GetClientBundleName()
+{
+    return clientBundleName_;
+}
+
+bool ObjectEditorConnection::IsElementMatch(const std::string &bundleName, const std::string &abilityName,
+    const std::string &moduleName)
+{
+    return bundleName == extensionBundleName_ && abilityName == extensionAbilityName_ &&
+        moduleName == extensionModuleName_;
+}
+
 void ObjectEditorConnection::OnAbilityConnectDone(const AppExecFwk::ElementName &element,
     const sptr<IRemoteObject> &remoteObject, int32_t resultCode)
 {
@@ -83,6 +105,70 @@ ObjectEditorManagerErrCode ObjectEditorConnection::StartConnect(
     return errCode;
 }
 
+void ObjectEditorConnection::ResetStopExtensionTimer()
+{
+    bool expected = false;
+    if (timerRunning_.compare_exchange_strong(expected, true)) {
+        if (timerThread_.joinable()) {
+            timerStopFlag_.store(true);
+            {
+                std::unique_lock<std::mutex> lock(mutexTimerRunning_);
+                timerNotify_.store(true);
+                cvTimer_.notify_one();
+            }
+            timerThread_.join();
+            timerStopFlag_.store(false);
+        }
+        timerThread_ = std::thread([this]() { TimerThreadStopExtension(); });
+    } else {
+        std::unique_lock<std::mutex> lock(mutexTimer_);
+        timerNotify_.store(true);
+        cvTimer_.notify_one();
+    }
+}
+
+void ObjectEditorConnection::TimerThreadStopExtension()
+{
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "in");
+    while (!timerStopFlag_.load()) {
+        std::unique_lock<std::mutex> lock(mutexTimer_);
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "start wait %{public}ds", EXTENSION_STOP_TIME_S);
+        auto waitResult = cvTimer_.wait_for(lock, std::chrono::seconds(EXTENSION_STOP_TIME_S),
+                                            [this] { return timerNotify_.load() || timerStopFlag_.load(); });
+        if (!waitResult) {
+            bool isEditing = CheckRemoteEditStatus();
+            if (isEditing) {
+                OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "server is editing");
+                timerNotify_.store(false);
+                continue;
+            }
+            StopConnect();
+            break;
+        }
+        timerNotify_.store(false);
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "wait finish");
+    }
+    timerRunning_.store(false);
+}
+
+bool ObjectEditorConnection::CheckRemoteEditStatus()
+{
+    bool isEditing = false;
+    std::unique_lock<std::mutex> lock(extensionProxyMutex_);
+    if (extensionProxy_ == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "extensionProxy is null");
+        return isEditing;
+    }
+    sptr<ObjectEditorExtensionProxy> objectEditorExtensionProxy =
+        iface_cast<ObjectEditorExtensionProxy>(extensionProxy_);
+    if (objectEditorExtensionProxy == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "objectEditorExtensionProxy is null");
+        return false;
+    }
+    objectEditorExtensionProxy->GetExtensionEditStatus(isEditing);
+    return isEditing;
+}
+
 ObjectEditorManagerErrCode ObjectEditorConnection::StopConnect()
 {
     auto abilityManagerClient = AppExecFwk::AbilityManagerClient::GetInstance();
@@ -127,6 +213,9 @@ ObjectEditorManagerErrCode ObjectEditorConnection::DoConnect(
             bundleName.c_str(), moduleName.c_str(), abilityName.c_str());
         return ObjectEditorManagerErrCode::SA_CONNECT_ABILITY_FAILED;
     }
+    extensionBundleName_ = element.GetBundleName();
+    extensionAbilityName_ = element.GetAbilityName();
+    extensionModuleName_ = element.GetModuleName();
     remoteObject = extensionProxy_;
     return ObjectEditorManagerErrCode::SA_CONNECT_ABILITY_SUCCEED;
 }
@@ -140,72 +229,6 @@ void ObjectEditorConnection::RegisterConnectionStatusCallback(
         return;
     }
     connectionStatusCallback_ = callback;
-}
-
-void ObjectEditorConnection::TimerThreadStopExtension()
-{
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "in");
-    while (!timerStopFlag_.load()) {
-        std::unique_lock<std::mutex> lock(mutexTimer_);
-        OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "start wait %{public}ds", EXTENSION_STOP_TIME_S);
-        auto waitResult = cvTimer_.wait_for(lock, std::chrono::seconds(EXTENSION_STOP_TIME_S),
-                                            [this] { return timerNotify_.load() || timerStopFlag_.load(); });
-        if (!waitResult) {
-            bool isEditing = false;
-            bool isModified = false;
-            CheckRemoteEditStatus(&isEditing, &isModified);
-            if (isEditing) {
-                OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "server is editing");
-                timerNotify_.store(false);
-                continue;
-            }
-            StopConnect();
-            break;
-        }
-        timerNotify_.store(false);
-        OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "wait finish");
-    }
-    timerRunning_.store(false);
-}
-
-void ObjectEditorConnection::ResetStopExtensionTimer()
-{
-    bool expected = false;
-    if (timerRunning_.compare_exchange_strong(expected, true)) {
-        if (timerThread_.joinable()) {
-            timerStopFlag_.store(true);
-            {
-                std::unique_lock<std::mutex> lock(mutexTimerRunning_);
-                timerNotify_.store(true);
-                cvTimer_.notify_one();
-            }
-            timerThread_.join();
-            timerStopFlag_.store(false);
-        }
-        timerThread_ = std::thread([this]() { TimerThreadStopExtension(); });
-    } else {
-        std::unique_lock<std::mutex> lock(mutexTimer_);
-        timerNotify_.store(true);
-        cvTimer_.notify_one();
-    }
-}
-
-void ObjectEditorConnection::CheckRemoteEditStatus(bool *isEditing, bool *isModified)
-{
-    sptr<ObjectEditorExtensionProxy> objectEditorExtensionProxy = nullptr;
-    {
-        std::unique_lock<std::mutex> lock(extensionProxyMutex_);
-        if (extensionProxy_ == nullptr) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "extensionProxy is null");
-            return;
-        }
-        objectEditorExtensionProxy = iface_cast<ObjectEditorExtensionProxy>(extensionProxy_);
-    }
-    if (objectEditorExtensionProxy == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "objectEditorExtensionProxy is null");
-        return;
-    }
-    objectEditorExtensionProxy->GetEditStatus(isEditing, isModified);
 }
 
 ObjectEditorConnection::~ObjectEditorConnection()
