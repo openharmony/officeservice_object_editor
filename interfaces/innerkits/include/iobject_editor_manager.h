@@ -51,7 +51,8 @@ public:
                                                sptr<IRemoteObject> &oeExtensionRemoteObject,
                                                bool &isPackageExtension) = 0;
 
-    virtual ErrCode StopObjectEditorExtension(const sptr<IRemoteObject> &oeExtensionRemoteObject,
+    virtual ErrCode StopObjectEditorExtension(const std::string &documentId,
+                                              const sptr<IRemoteObject> &oeExtensionRemoteObject,
                                               const bool &isPackageExtension) = 0;
 
     virtual ErrCode GetHmidByFileExtension(const std::string &hmid, std::string &fileExtension) = 0;

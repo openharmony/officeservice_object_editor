@@ -15,32 +15,52 @@
 #ifndef OHOS_OBJECT_EDITOR_OBJECT_EDITOR_PACKAGE_H
 #define OHOS_OBJECT_EDITOR_OBJECT_EDITOR_PACKAGE_H
 
-#include "object_editor_package_stub.h"
-#include <cstdint>
+#include "iobject_editor_package.h"
 
 namespace OHOS {
 namespace ObjectEditor {
+struct ExtractionResult {
+    std::string filename;
+    std::string filepath;
+    uint32_t fileSize = 0;
+    std::vector<uint8_t> data;
+    std::string outputPath;
+    bool success = false;
+    std::string error;
+};
+
+struct Ole10NativeHeader {
+    uint32_t totalSize = 0;
+    uint32_t dataSize = 0;
+    uint16_t type = 0;
+    uint16_t unknown1 = 0;
+    wchar_t filename[260] = {0};
+};
+
 class ObjectEditorPackage : public ObjectEditorPackageStub {
 public:
     ObjectEditorPackage();
     ~ObjectEditorPackage();
+    ErrCode GetSnapshot(std::string &documentId) override;
 
-    ErrCode RegisterClientCB(const sptr<IObjectEditorPackageCallback> &clientCb) override;
+    ErrCode DoEdit(std::string &documentId) override;
 
-    ErrCode GetSnapshot() override;
+    ErrCode GetEditStatus(std::string &documentId, bool isEditing, bool *isModified) override;
 
-    ErrCode DoEdit() override;
+    ErrCode GetExtensionEditStatus(bool &isEditing) override;
 
-    ErrCode GetEditStatus(bool isEditing, bool *isModified) override;
+    ErrCode GetCapability(std::string &documentId, uint32_t &bitmask) override;
 
-    ErrCode GetCapability(uint32_t &bitmask) override;
+    ErrCode Close(const std::string &documentId, bool &isAllObjectsRemoved) override;
 
-    ErrCode Close() override;
+    ErrCode Initial(std::unique_ptr<IObjectEditorDocument> document,
+        const sptr<IObjectEditorClientCallback> &clientCb) override;
+private:
+    ExtractionResult ParseOle10NativeStream(Stream *stream);
+    ErrCode CreatePackageObject();
 
-    ErrCode Initial(std::unique_ptr<IObjectEditorDocument> document) override;
-
-    int32_t CallbackEnter([[maybe_unused]] uint32_t code) override;
-    int32_t CallbackExit([[maybe_unused]] uint32_t code, [[maybe_unused]] int32_t result) override;
+    std::shared_ptr<IObjectEditorDocument> document_ = nullptr;
+    sptr<IObjectEditorClientCallback> clientCb_ = nullptr;
 };
 
 } // namespace ObjectEditor

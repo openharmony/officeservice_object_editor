@@ -19,6 +19,7 @@
 #include <map>
 #include <mutex>
 #include "iremote_object.h"
+#include "single_instance.h"
 #include "system_ability.h"
 #include "single_instance.h"
 
@@ -57,12 +58,11 @@ class ObjectEditorManagerSystemAbility : public SystemAbility, public ObjectEdit
 public:
     ObjectEditorManagerSystemAbility();
     ~ObjectEditorManagerSystemAbility();
-
     ErrCode StartObjectEditorExtension(std::unique_ptr<ObjectEditorDocument> &document,
                                        const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
                                        sptr<IRemoteObject> &oeExtensionRemoteObject,
                                        bool &isPackageExtension) override;
-    ErrCode StopObjectEditorExtension(std::unique_ptr<ObjectEditorDocument> &document,
+    ErrCode StopObjectEditorExtension(const std::string &documentId,
                                       const sptr<IRemoteObject> &oeExtensionRemoteObject,
                                       const bool &isPackageExtension) override;
     ErrCode GetHmidByFileExtension(
@@ -103,11 +103,8 @@ private:
     bool GrantClientFileUriPermissionToServerExtension(const ObjectEditorDocument &document,
         const std::string &targetBundleName);
     void ReadDiversionsJsonFile();
-    ObjectEditorManagerErrCode HandlePackage(std::unique_ptr<ObjectEditorDocument> document,
-        const sptr<IObjectEditorClientCallback> &clientCallback,
-        sptr<IRemoteObject> &oeExtensionRemoteObject, bool &isPackageExtension);
-    ObjectEditorManagerErrCode GetTargetHmid(const std::string &sourceHmid,
-        std::string &targetHmid, std::string &minVersion);
+    ObjectEditorManagerErrCode GetTargetHmid(const std::string &sourceHmid, std::string &targetHmid,
+        std::string &minVersion);
     ObjectEditorManagerErrCode HandleDefaultAppFormatPolicy(const std::string &fileExt,
         std::vector<std::unique_ptr<ObjectEditorFormat>> &formats,
         std::unique_ptr<ObjectEditorFormat> &objectEditorFormat);
@@ -119,19 +116,19 @@ private:
     ObjectEditorManagerErrCode StartObjectEditorExtensionByFile(const ObjectEditorDocument &document,
         const sptr<IObjectEditorClientCallback> &clientCallback,
         sptr<IRemoteObject> &oeExtensionRemoteObject, bool &isPackageExtension);
+    bool CheckConnectionLimit(const std::string &clientBundleName, std::unique_ptr<ObjectEditorFormat> &format);
 
-    void TimerThreadStopSA();
-    void ResetStopSATimer();
-    
     ServiceRunningState state_ = ServiceRunningState::STATE_NOT_START;
     std::shared_mutex diversionMapMutex_;
     std::map<std::string, ContentEmbed_Diversion> diversionMap_;
 
+    void TimerThreadStopSA();
+    void ResetStopSATimer();
     std::mutex mutexCallback_;
     static std::mutex mutexTimer_;
     static std::condition_variable cvTimer_;
-    static bool timerRunning_;
-    static bool timerNotify_;
+    static std::atomic<bool> timerRunning_;
+    static std::atomic<bool> timerNotify_;
 };
 
 } // namespace ObjectEditor

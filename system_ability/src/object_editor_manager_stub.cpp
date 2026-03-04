@@ -23,14 +23,14 @@ int32_t ObjectEditorManagerStub::OnRemoteRequest(
 {
     int32_t ret = CallbackEnter(code);
     if (ret != ERR_NONE) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "CallbackEnter ret: %{public}d, code: %{public}u",
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "CallbackEnter ret: %{public}d, code: %{public}u",
             ret, code);
         return ret;
     }
     ret = OnRemoteRequestInner(code, data, reply, option);
-    ret = CallbackExit(ret, code);
+    ret = CallbackExit(code, ret);
     if (ret != ERR_NONE) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "CallbackExit ret: %{public}d, code: %{public}u",
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "CallbackExit ret: %{public}d, code: %{public}u",
             ret, code);
     }
     return ret;
@@ -39,8 +39,8 @@ int32_t ObjectEditorManagerStub::OnRemoteRequest(
 int32_t ObjectEditorManagerStub::OnRemoteRequestInner(
     uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option)
 {
-    std::u16string localDescriptor = data.ReadInterfaceToken();
-    std::u16string remoteDescriptor = GetDescriptor();
+    std::u16string localDescriptor = GetDescriptor();
+    std::u16string remoteDescriptor = data.ReadInterfaceToken();
     if (localDescriptor != remoteDescriptor) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "descriptor invalid");
         return ERR_TRANSACTION_FAILED;
@@ -81,8 +81,8 @@ int32_t ObjectEditorManagerStub::HandleStartObjectEditorExtension(MessageParcel 
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "clientCallbackRemoteObject is nullptr");
         return ERR_INVALID_DATA;
     }
-    const sptr<IObjectEditorManagerCallback> clientCallback =
-        iface_cast<IObjectEditorManagerCallback>(clientCallbackRemoteObject);
+    const sptr<IObjectEditorClientCallback> clientCallback =
+        iface_cast<IObjectEditorClientCallback>(clientCallbackRemoteObject);
     if (clientCallback == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "clientCallback is nullptr");
         return ERR_INVALID_DATA;
@@ -99,12 +99,12 @@ int32_t ObjectEditorManagerStub::HandleStartObjectEditorExtension(MessageParcel 
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "errCode is failed");
         return errCode;
     }
-    if (!reply.WriteRemoteObject(oeExtensionRemoteObject)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "write oeExtensionRemoteObject failed");
-        return ERR_INVALID_DATA;
-    }
     if (!reply.WriteBool(isPackageExtension)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "write isPackageExtension failed");
+        return ERR_INVALID_DATA;
+    }
+    if (!isPackageExtension && !reply.WriteRemoteObject(oeExtensionRemoteObject)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "write oeExtensionRemoteObject failed");
         return ERR_INVALID_DATA;
     }
     return ERR_NONE;
@@ -114,11 +114,10 @@ int32_t ObjectEditorManagerStub::HandleStartObjectEditorExtension(MessageParcel 
 int32_t ObjectEditorManagerStub::HandleStopObjectEditorExtension(MessageParcel &data, MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::SA, "call");
-    std::unique_ptr<ObjectEditorDocument> document =
-        std::unique_ptr<ObjectEditorDocument>(data.ReadParcelable<ObjectEditorDocument>());
-    if (document == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "document is nullptr");
-        return ERR_INVALID_DATA;
+    std::string documentId = data.ReadString();
+    if (documentId.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "documentId is empty");
+        return ERR_INVALID_VALUE;
     }
     sptr<IRemoteObject> extensionRemoteObject = data.ReadRemoteObject();
     if (extensionRemoteObject == nullptr) {
@@ -126,7 +125,7 @@ int32_t ObjectEditorManagerStub::HandleStopObjectEditorExtension(MessageParcel &
         return ERR_INVALID_DATA;
     }
     bool isPackageExtension = data.ReadBool();
-    ErrCode errCode = StopObjectEditorExtension(document, extensionRemoteObject, isPackageExtension);
+    ErrCode errCode = StopObjectEditorExtension(documentId, extensionRemoteObject, isPackageExtension);
     if (!reply.WriteInt32(errCode)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "write errCode failed");
         return ERR_INVALID_VALUE;
@@ -152,7 +151,7 @@ int32_t ObjectEditorManagerStub::HandleGetHmidByFileExtension(MessageParcel &dat
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "errCode is failed");
         return errCode;
     }
-    if (!reply.WriteString(Str8ToStr16(fileExtension))) {
+    if (!reply.WriteString16(Str8ToStr16(fileExtension))) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "write fileExtension failed");
         return ERR_INVALID_DATA;
     }
@@ -173,7 +172,7 @@ int32_t ObjectEditorManagerStub::HandleGetIconByHmid(MessageParcel &data, Messag
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "errCode is failed");
         return errCode;
     }
-    if (!reply.WriteString(Str8ToStr16(resourceId))) {
+    if (!reply.WriteString16(Str8ToStr16(resourceId))) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "write resourceId failed");
         return ERR_INVALID_DATA;
     }
