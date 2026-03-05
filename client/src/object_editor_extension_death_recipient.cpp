@@ -19,25 +19,18 @@
 namespace OHOS {
 namespace ObjectEditor {
 ObjectEditorExtensionDeathRecipient::ObjectEditorExtensionDeathRecipient(
-    struct ContentEmbed_ExtensionProxy *proxy): proxy_(proxy)
+    struct ContentEmbed_ExtensionProxy *proxy) : proxy_(proxy)
 {
 }
 
 void ObjectEditorExtensionDeathRecipient::OnRemoteDied(const OHOS::wptr<OHOS::IRemoteObject> &remoteObject)
 {
     OBJECT_EDITOR_LOGW(ObjectEditorDomain::CLIENT, "extension remote died");
-    if (proxy_) {
-        // 通知SA清理资源
-        ErrCode ret = ObjectEditorClient::GetInstance().StopObjectEditorExtension(
-            proxy_->objectEditorService, proxy_->isPackageExtension);
-        if (ret != OHOS::ERR_OK) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,
-                "StopObjectEditorExtension failed, ret = %{public}d", ret);
-        }
-        proxy_->onErrorFunc(proxy_, ContentEmbed_ErrorCode::CE_ERR_EXTENSION_ABNORMAL_EXIT);
-    } else {
-        OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "client proxy is already nullptr");
+    if (proxy_ == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "proxy is null");
+        return;
     }
+    proxy_->onErrorFunc(proxy_, ContentEmbed_ErrorCode::CE_ERR_EXTENSION_ABNORMAL_EXIT);
 }
 
 } // namespace ObjectEditor

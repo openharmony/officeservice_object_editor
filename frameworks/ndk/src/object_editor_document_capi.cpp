@@ -52,7 +52,7 @@ bool OH_ContentEmbed_Helper_IsValidName(const char *name)
     }
     size_t len = 0;
     for (const char *p = name; *p != '\0'; ++p, ++len) {
-        if (len >= MAX_NAME_LEN) {
+        if (len > MAX_NAME_LEN) {
             return false;
         }
         const char c = *p;
@@ -131,7 +131,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Helper_RequireStream(ContentEmbed_Stream 
             return CE_ERR_STREAM_OPERATION_FAILED;
         }
         StreamPos desired = handle->pos;
-        const StreamPos size = stream->size();
+        const StreamPos size = stream->Size();
         if (desired > size) {
             desired = size;
         }
@@ -305,7 +305,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_Read(uint8_t *buffer, size_t len
     return CE_ERR_OK;
 }
 
-ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetHmid(ContentEmbed_Document *document,
+ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetHmid(const ContentEmbed_Document *document,
     char *hmid)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
@@ -330,7 +330,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetHmid(ContentEmbed_Document *d
     return CE_ERR_OK;
 }
 
-ContentEmbed_ErrorCode OH_ContentEmbed_Document_IsLinking(ContentEmbed_Document *document,
+ContentEmbed_ErrorCode OH_ContentEmbed_Document_IsLinking(const ContentEmbed_Document *document,
     bool *isLinking)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
@@ -351,8 +351,8 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_IsLinking(ContentEmbed_Document 
     return CE_ERR_OK;
 }
 
-ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetNativeFilePath(ContentEmbed_Document *document,
-    char *nativeFilePath, size_t nativeFilePathSize)
+ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetNativeFilePath(const ContentEmbed_Document *document,
+    char *nativeFilePath)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
@@ -369,12 +369,8 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetNativeFilePath(ContentEmbed_D
         return CE_ERR_PARAM_INVALID;
     }
     std::string filePathStr = document->oeDocumentInner->GetNativeFilePath();
-    if (filePathStr.size() >= nativeFilePathSize) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "file path size is too small");
-        return CE_ERR_PARAM_INVALID;
-    }
-    if (strcpy_s(nativeFilePath, nativeFilePathSize, filePathStr.c_str()) != 0) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "strcpy_s failed");
+    if (strcpy_s(nativeFilePath, MAX_PATH_LENGTH, filePathStr.c_str()) != 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "copy path failed");
         return CE_ERR_PARAM_INVALID;
     }
     return CE_ERR_OK;
@@ -415,7 +411,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetRootStorage(ContentEmbed_Docu
     return CE_ERR_OK;
 }
 
-ContentEmbed_ErrorCode OH_ContentEmbed_Document_Flush(ContentEmbed_Document *document)
+ContentEmbed_ErrorCode OH_ContentEmbed_Document_Flush(const ContentEmbed_Document *document)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();

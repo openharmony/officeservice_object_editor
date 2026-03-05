@@ -16,6 +16,7 @@
 #include "system_utils.h"
 
 #include <algorithm>
+#include <cctype>
 #include <ctime>
 #include <fstream>
 #include <regex>
@@ -70,7 +71,8 @@ std::string ReadFile(const std::string &filePath)
 
     std::ifstream in(canonicalFilePath, std::ios::in | std::ios::binary);
     if (!in.is_open()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Open file failed, path: %{private}s", canonicalPath);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Open file failed, path: %{private}s",
+            canonicalFilePath.c_str());
         return "";
     }
     std::stringstream infile;

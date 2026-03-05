@@ -31,7 +31,7 @@ namespace ObjectEditor {
 class DirEntry {
 public:
     static const uint32_t End;
-    enum EntryType : uint8_t { DIR = 1, FILE = 2, ROOT = 5};
+    enum EntryType : uint8_t { DIR = 1, FILE = 2, ROOT = 5 };
 
 public:
     DirEntry()
@@ -44,7 +44,7 @@ public:
           child_(DIR_ENTRY_END),
           clsid_{},
           index_(0),
-          modif_(false)
+          modify_(false)
     {
     }
     DirEntry(const std::string &name, uint16_t len, uint8_t type, uint64_t size, uint32_t start, uint32_t prev,
@@ -98,7 +98,7 @@ public:
     const std::array<std::uint8_t, CLSID_SIZE> &Clsid() const;
     bool Modified() const
     {
-        return modif_;
+        return modify_;
     }
     size_t Index() const
     {
@@ -107,7 +107,7 @@ public:
 
 public:
     void Set(const std::string &name, uint16_t len, uint8_t type, uint64_t size, uint32_t start, uint32_t prev,
-             uint32_t next, uint32_t child, size_t index, bool modif = false)
+             uint32_t next, uint32_t child, size_t index, bool modify = false)
     {
         name_ = name;
         nameLen_ = len;
@@ -119,53 +119,53 @@ public:
         child_ = child;
         clsid_.fill(0);
         index_ = index;
-        modif_ = modif;
+        modify_ = modify;
     }
     void SetName(const std::string &name)
     {
         name_ = name;
-        SetModif();
+        SetModify();
     }
     void SetNameLen(uint16_t len)
     {
         nameLen_ = len;
-        SetModif();
+        SetModify();
     }
     void SetType(uint8_t type)
     {
         type_ = type;
-        SetModif();
+        SetModify();
     }
     void SetSize(uint64_t size)
     {
         size_ = size;
-        SetModif();
+        SetModify();
     }
     void SetStart(uint32_t start)
     {
         start_ = start;
-        SetModif();
+        SetModify();
     }
     void SetPrev(uint32_t prev)
     {
         prev_ = prev;
-        SetModif();
+        SetModify();
     }
     void SetNext(uint32_t next)
     {
         next_ = next;
-        SetModif();
+        SetModify();
     }
     void SetChild(uint32_t child)
     {
         child_ = child;
-        SetModif();
+        SetModify();
     }
 
     void SetClsid(const std::array<std::uint8_t, CLSID_SIZE> &clsid, uint8_t size);
-    void SetModif(bool modif = true)
+    void SetModify(bool modify = true)
     {
-        modif_ = modif;
+        modify_ = modify;
     }
 
 private:
@@ -179,7 +179,7 @@ private:
     uint32_t child_ = 0;
     std::array<std::uint8_t, CLSID_SIZE> clsid_;
     size_t index_ = 0;
-    bool modif_ = false;
+    bool modify_ = false;
 };
 
 class DirTree {

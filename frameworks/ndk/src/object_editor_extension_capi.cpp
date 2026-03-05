@@ -232,8 +232,8 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetContentEmbedContext(ContentE
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "ceContext is null");
         return CE_ERR_PARAM_INVALID;
     }
-    std::shared_ptr<OHOS::AbilityRuntime::ExtensionInstance> extensionInstance =
-        std::static_pointer_cast<OHOS::AbilityRuntime::ExtensionInstance>(instance->extension.lock());
+    std::shared_ptr<OHOS::AbilityRuntime::ObjectEditorExtension> extensionInstance =
+        std::static_pointer_cast<OHOS::AbilityRuntime::ObjectEditorExtension>(instance->extension.lock());
     if (extensionInstance == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "extensionInstance is null");
         return CE_ERR_NULL_POINTER;
@@ -421,12 +421,13 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnExtensionStopped(
         }
         auto clientCb = object->clientCb;
         if (clientCb == nullptr) {
-            OBJECT_EDITOR_LOGW(ObjectEditorDomain::CLIENT_NDK, "object %{private}s clientCb is null", objectId.c_str());
-            continue;
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "object %{private}s clientCb is null", objectId.c_str());
+            return CE_ERR_CLIENT_CALLBACK_NOT_REGISTERED;
         }
         auto errCode = clientCb->OnExtensionStopped();
         if (errCode != OHOS::ERR_OK) {
-            OBJECT_EDITOR_LOGW(ObjectEditorDomain::CLIENT_NDK, "object %{private}s clientCb is null", objectId.c_str());
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "object %{private}s clientCb is null", objectId.c_str());
+            return CE_ERR_CLIENT_CALLBACK_FAILED;
         }
     }
     return CE_ERR_OK;
@@ -513,7 +514,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextStartSelfUIAbility(
 
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextStartSelfUIAbilityWithStartOptions(
     ContentEmbed_ExtensionContextHandle context, AbilityBase_Want *want,
-    AbilityBase_StartOptions *options)
+    AbilityRuntime_StartOptions *options)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
@@ -541,7 +542,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextStartSelfUIAbilityWithSt
     }
     OHOS::AAFwk::Want innerWant;
     OHOS::AAFwk::CWantManager::TransformToWant(*want, false, innerWant);
-    auto ret = contextPtr->StartAbility(innerWant, options);
+    auto ret = contextPtr->StartAbility(innerWant);
     if (ret != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "start ability failed:%{public}d", ret);
         return CE_ERR_SYSTEM_ABNORMAL;

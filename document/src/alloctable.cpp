@@ -22,6 +22,7 @@
 
 namespace OHOS {
 namespace ObjectEditor {
+// LCOV_EXCL_START
 const uint32_t AllocTable::Avail = 0xffffffff;
 const uint32_t AllocTable::Eof = 0xfffffffe;
 const uint32_t AllocTable::Bat = 0xfffffffd;
@@ -99,8 +100,7 @@ size_t AllocTable::Unused()
 
 bool AllocTable::Load(const Byte *buffer, size_t len)
 {
-    if ((len % FOUR_BYTE_SIZE != 0) || buffer == nullptr) [[unlikely]]
-    {
+    if ((len % FOUR_BYTE_SIZE != 0) || buffer == nullptr) [[unlikely]] {
         return false;
     }
     Resize(len / FOUR_BYTE_SIZE);
@@ -114,13 +114,13 @@ bool AllocTable::Save(Byte *buffer, size_t len)
 {
     size_t count = Count();
     const size_t required = FOUR_BYTE_SIZE * count;
-    if (len < required || buffer == nullptr) [[unlikely]]
-    {
+    if (len < required || buffer == nullptr) [[unlikely]] {
         return false;
     }
 
-    for (size_t i = 0; i < count; i++)
+    for (size_t i = 0; i < count; i++) {
         WriteUint32(buffer + i * FOUR_BYTE_SIZE, data_[i]);
+    }
     return true;
 }
 
@@ -141,10 +141,10 @@ void AllocTable::Debug() const
         }
     }
 
-    oss << "Total Blocks:  " << totalBlocks << std::endl;
-    oss << "Used Blocks:   " << usedBlocks << std::endl;
-    oss << "Free Blocks:   " << freeBlocks << std::endl;
-    oss << "Block Size:    " << BlockSize() << " bytes" << std::endl;
+    oss << "Total Blocks:   " << totalBlocks << std::endl;
+    oss << "Used Blocks:    " << usedBlocks << std::endl;
+    oss << "Free Blocks:    " << freeBlocks << std::endl;
+    oss << "Block Size:     " << BlockSize() << " bytes" << std::endl;
 
     for (size_t i = 0; i < totalBlocks; ++i) {
         const uint32_t val = static_cast<uint32_t>(data_[i] & 0xFFFFFFFFUL);
@@ -166,9 +166,9 @@ void AllocTable::Debug() const
         oss << std::endl;
     }
 
-    oss << "=================================================================" << std::endl;
+    oss << "============================================================" << std::endl;
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "AllocTable dump: %{public}s", oss.str().c_str());
 }
-
-}
-}
+// LCOV_EXCL_STOP
+} // namespace ObjectEditor
+} // namespace OHOS

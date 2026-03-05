@@ -20,7 +20,7 @@
 #ifdef WITH_DLP
 #include "dlp_permission_kit.h"
 #include "dlp_permission.h"
-#endif
+#endif // WITH_DLP
 
 namespace OHOS {
 namespace ObjectEditor {

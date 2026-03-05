@@ -22,15 +22,15 @@
 #include "iremote_object.h"
 #include "native_extension/context_impl.h"
 #include "native_extension/extension_ability_impl.h"
-#include "piexlmap_native_impl.h"
+#include "pixelmap_native_impl.h"
 #include "pixel_map.h"
 
 #include "content_embed_common.h"
 #include "content_embed_extension.h"
 #include "content_embed_proxy.h"
-#include "iobject_editor_client_callback.h"
 #include "object_editor_document.h"
 #include "object_editor_format.h"
+#include "iobject_editor_service.h"
 
 static constexpr uint32_t MAX_FILENAME_EXTENSIONS_NUM = 100;
 struct ContentEmbed_Format {
@@ -58,6 +58,7 @@ struct ContentEmbed_ExtensionProxy {
     OH_ContentEmbed_ClientCallbackOnEditingFinishedFunc onEditingFinishedFunc = nullptr;
     OH_ContentEmbed_ClientCallbackOnExtensionStoppedFunc onExtensionStoppedFunc = nullptr;
     ContentEmbed_Document *ceDocument = nullptr;
+    void *contextPtr = { nullptr };
     bool isPackageExtension = false;
 };
 

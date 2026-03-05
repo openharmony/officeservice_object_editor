@@ -13,9 +13,16 @@
  * limitations under the License.
  */
 
+#include <filesystem>
+#include <fstream>
+
+#include "want.h"
+#include "ability_manager_client.h"
+
+#include "hilog_object_editor.h"
 #include "object_editor_config.h"
 #include "object_editor_package.h"
-#include "hilog_object_editor.h"
+#include "user_mgr.h"
 
 namespace OHOS {
 namespace ObjectEditor {
@@ -24,15 +31,16 @@ const std::string PACKAGE_STREAM_NATIVE_NAME = "\x01Ole10Native";
 const std::string PACKAGE_STREAM_NAME = "\x01Ole";
 const std::string WANT_ACTION = "ohos.want.action.viewData";
 const std::string SHOW_DEFAULT_PICKER = "ability.params.showDefaultPicker";
-constexpr int32_t FILE_SIZE_OFFSET = 4;
+constexpr int32_t U32_BUF_LEN = 4;
 constexpr int32_t FILE_SIZE_MIN = 10;
-constexpr int32_t FILE_MARKER_SIZE = 2;
+constexpr int32_t U16_BUF_LEN = 2;
 constexpr int32_t FILE_READ_BUFFER_SIZE = 4096;
 constexpr int32_t FILE_WRITE_BUFFER_SIZE = 2048;
 constexpr uint16_t PACKAGE_TYPE = 0x0001;
 constexpr int32_t FILE_NAME_MAX_SIZE = 259;
 }
 // LCOV_EXCL_START
+namespace fs = std::filesystem;
 ObjectEditorPackage::ObjectEditorPackage()
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "constructor");
@@ -43,7 +51,7 @@ ObjectEditorPackage::~ObjectEditorPackage()
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "destructor");
 }
 
-ErrCode ObjectEditorPackage::GetSnapshot(std::string &documentId)
+ErrCode ObjectEditorPackage::GetSnapshot(const std::string &documentId)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "package");
     if (document_ == nullptr) {
@@ -64,7 +72,7 @@ ErrCode ObjectEditorPackage::GetSnapshot(std::string &documentId)
     } else if (document_->GetOperateType() == OperateType::EDIT) {
         document = ObjectEditorDocument::CreateByHmid(PACKAGE_HMID);
         if (document == nullptr) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "create document by memory failed");
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "create document by hmid failed");
             return ERR_INVALID_VALUE;
         }
         document->SetOperateType(OperateType::EDIT);
@@ -80,7 +88,7 @@ ErrCode ObjectEditorPackage::GetSnapshot(std::string &documentId)
     return ERR_OK;
 }
 
-ErrCode ObjectEditorPackage::DoEdit(std::string &documentId)
+ErrCode ObjectEditorPackage::DoEdit(const std::string &documentId)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "package");
     if (document_ == nullptr) {
@@ -102,13 +110,13 @@ ErrCode ObjectEditorPackage::DoEdit(std::string &documentId)
     want.SetAction(WANT_ACTION);
     want.SetUri(SystemUtils::GetUriFromPath(result.outputPath));
     int32_t flags = AAFwk::Want::FLAG_AUTH_READ_URI_PERMISSION | AAFwk::Want::FLAG_AUTH_WRITE_URI_PERMISSION;
-    want.setFlags(flags);
-    want.setParam(SHOW_DEFAULT_PICKER, true);
+    want.SetFlags(flags);
+    want.SetParam(SHOW_DEFAULT_PICKER, true);
     auto callerToken = GetRemoteObject();
     if (callerToken == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "callerToken is null");
     }
-    auto abilityManagerClient = AppExecFwk::AbilityManagerClient::GetInstance();
+    auto abilityManagerClient = AAFwk::AbilityManagerClient::GetInstance();
     if (abilityManagerClient == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "abilityManagerClient is null");
         return ObjectEditorManagerErrCode::SA_DISCONNECT_ABILITY_FAILED;
@@ -132,16 +140,16 @@ ExtractionResult ObjectEditorPackage::ParseOle10NativeStream(Stream *stream)
         return result;
     }
     StreamPos offset = 0;
-    if (offset + FILE_SIZE_OFFSET > streamSize) {
+    if (offset + U32_BUF_LEN > streamSize) {
         result.error = "Insufficient data for file size";
         return result;
     }
     stream->Seek(offset);
-    Byte fileSizeBuf[FILE_SIZE_OFFSET];
-    stream->Read(fileSizeBuf, FILE_SIZE_OFFSET);
-    result.fileSize = ReadUInt32(fileSizeBuf);
-    offset += FILE_SIZE_OFFSET;
-    offset += FILE_MARKER_SIZE;
+    Byte fileSizeBuf[U32_BUF_LEN];
+    stream->Read(fileSizeBuf, U32_BUF_LEN);
+    result.fileSize = ReadUint32(fileSizeBuf);
+    offset += U32_BUF_LEN;
+    offset += U16_BUF_LEN;
     stream->Seek(offset);
 
     std::vector<Byte> filenameBuf;
@@ -154,18 +162,18 @@ ExtractionResult ObjectEditorPackage::ParseOle10NativeStream(Stream *stream)
     auto filepathSize = stream->ReadBufferUntilNull(filepathBuf);
     result.filepath = std::string(filepathBuf.begin(), filepathBuf.begin() + filepathSize);
     offset += filepathSize + 1;
-    offset += FILE_SIZE_OFFSET;
+    offset += U32_BUF_LEN;
 
-    if (offset + FILE_SIZE_OFFSET > streamSize) {
+    if (offset + U32_BUF_LEN > streamSize) {
         result.error = "Insufficient data for file size";
         return result;
     }
     stream->Seek(offset);
 
-    Byte fileLinkSizeBuf[FILE_SIZE_OFFSET];
-    stream->Read(fileLinkSizeBuf, FILE_SIZE_OFFSET);
-    auto fileLinkSize = ReadUInt32(fileLinkSizeBuf);
-    offset += FILE_SIZE_OFFSET;
+    Byte fileLinkSizeBuf[U32_BUF_LEN];
+    stream->Read(fileLinkSizeBuf, U32_BUF_LEN);
+    auto fileLinkSize = ReadUint32(fileLinkSizeBuf);
+    offset += U32_BUF_LEN;
     stream->Seek(offset);
 
     // read file link
@@ -176,15 +184,15 @@ ExtractionResult ObjectEditorPackage::ParseOle10NativeStream(Stream *stream)
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "fileLink: %{private}s", fileLink.c_str());
 
     // dataSize 4 byte little endian
-    if (offset + FILE_SIZE_OFFSET > streamSize) {
+    if (offset + U32_BUF_LEN > streamSize) {
         result.error = "Insufficient data for data size";
         return result;
     }
     stream->Seek(offset);
-    Byte dataSizeBuf[FILE_SIZE_OFFSET];
-    stream->Read(dataSizeBuf, FILE_SIZE_OFFSET);
-    auto dataSize = ReadUInt32(dataSizeBuf);
-    offset += FILE_SIZE_OFFSET;
+    Byte dataSizeBuf[U32_BUF_LEN];
+    stream->Read(dataSizeBuf, U32_BUF_LEN);
+    auto dataSize = ReadUint32(dataSizeBuf);
+    offset += U32_BUF_LEN;
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "dataSize: %{public}d", dataSize);
 
     // write data to sandbox
@@ -251,7 +259,7 @@ ErrCode ObjectEditorPackage::CreatePackageObject()
         return ERR_INVALID_VALUE;
     }
     Ole10NativeHeader nativeHeader = {0};
-    nativeHeader.totalSize = sizeof(Ole10NativeHeader) + fileSize - FILE_SIZE_OFFSET;
+    nativeHeader.totalSize = sizeof(Ole10NativeHeader) + fileSize - U32_BUF_LEN;
     nativeHeader.dataSize = fileSize;
     nativeHeader.type = PACKAGE_TYPE;
     for (size_t i = 0; i < filename.size() && i < FILE_NAME_MAX_SIZE; ++i) {
@@ -261,22 +269,22 @@ ErrCode ObjectEditorPackage::CreatePackageObject()
     ole10NativeStream->Write(reinterpret_cast<const Byte*>(&nativeHeader), sizeof(Ole10NativeHeader));
     std::ifstream inputFile(filePath, std::ios::binary | std::ios::ate);
     if (!inputFile.is_open()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "cannot open file: %{private}s errno: %{public}d", filePath.c_str(), errno);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "cannot open file: %{private}s errno: %{public}d",
+            filePath.c_str(), errno);
         return errno;
     }
-    Byte readBuf[FILE_READ_BUFFER_SIZE];
     
     // write data to stream
-    std::streamsize totalSize = file.tellg();
+    std::streamsize totalSize = inputFile.tellg();
     inputFile.seekg(0, std::ios::beg);
     std::vector<uint8_t> buffer(FILE_READ_BUFFER_SIZE);
     size_t totalWritten = 0;
     size_t chunkCount = 0;
     while (true) {
-        file.read(reinterpret_cast<char*>(buffer.data()), FILE_READ_BUFFER_SIZE);
-        std::streamsize bytesRead = file.gcount();
+        inputFile.read(reinterpret_cast<char*>(buffer.data()), FILE_READ_BUFFER_SIZE);
+        std::streamsize bytesRead = inputFile.gcount();
         if (bytesRead == 0) {
-            if (file.eof()) {
+            if (inputFile.eof()) {
                 break;
             }
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "read file data failed errno: %{public}d", errno);
@@ -290,14 +298,14 @@ ErrCode ObjectEditorPackage::CreatePackageObject()
         }
     }
     if (totalWritten != static_cast<size_t>(totalSize)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "write file data not match, %{public}d:%{public}d",
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "write file data not match, %{public}zu:%{public}ld",
             totalWritten, totalSize);
         return ERR_INVALID_VALUE;
     }
     return document_->Flush() ? ERR_OK : ERR_INVALID_VALUE;
 }
 
-ErrCode ObjectEditorPackage::GetEditStatus(std::string &documentId, bool *isEditing, bool *isModified)
+ErrCode ObjectEditorPackage::GetEditStatus(const std::string &documentId, bool *isEditing, bool *isModified)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "package");
     return ERR_OK;
@@ -309,13 +317,13 @@ ErrCode ObjectEditorPackage::GetExtensionEditStatus(bool &isEditing)
     return ERR_OK;
 }
 
-ErrCode ObjectEditorPackage::GetCapability(std::string &documentId, uint32_t *bitmask)
+ErrCode ObjectEditorPackage::GetCapability(const std::string &documentId, uint32_t *bitmask)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "package");
     return ERR_OK;
 }
 
-ErrCode ObjectEditorPackage::Close(std::string &documentId, bool &isAllObjectsRemoved)
+ErrCode ObjectEditorPackage::Close(const std::string &documentId, bool &isAllObjectsRemoved)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "package");
     return ERR_OK;

@@ -86,6 +86,9 @@ public:
     void Seek(StreamPos pos);
     int Getch();
     std::streamsize Read(Byte *data, std::streamsize maxlen);
+
+    std::streamsize ReadBufferUntilNull(std::vector<Byte> &buffer);
+
     Stream &Write(const Byte *data, uint32_t len);
     Stream(StreamImpl *i)
     {
@@ -102,4 +105,4 @@ private:
 } // namespace ObjectEditor
 } // namespace OHOS
 
-#endif
+#endif // POLE_H

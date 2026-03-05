@@ -36,7 +36,7 @@ using namespace OHOS::ObjectEditor;
 ObjectEditorExtension *ObjectEditorExtension::Create(
     const std::unique_ptr<Runtime> &runtime)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "in");
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "in");
     if (runtime == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "runtime is null");
     }
@@ -47,7 +47,7 @@ void ObjectEditorExtension::Init(const std::shared_ptr<AbilityLocalRecord> &reco
                                  const std::shared_ptr<OHOSApplication> &application,
                                  std::shared_ptr<AbilityHandler> &handler, const sptr<IRemoteObject> &token)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "in");
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "in");
     ExtensionBase<ObjectEditorExtensionContext>::Init(record, application, handler, token);
 
     ceInstance_ = std::make_shared<struct ContentEmbed_ExtensionInstance>();
@@ -95,7 +95,7 @@ std::shared_ptr<ObjectEditorExtensionContext> ObjectEditorExtension::CreateAndIn
     const std::shared_ptr<AbilityLocalRecord> &record, const std::shared_ptr<OHOSApplication> &application,
     std::shared_ptr<AbilityHandler> &handler, const sptr<IRemoteObject> &token)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "in");
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "in");
     std::shared_ptr<ObjectEditorExtensionContext> context =
         ExtensionBase<ObjectEditorExtensionContext>::CreateAndInitContext(record, application, handler, token);
     if (context == nullptr) {
@@ -208,7 +208,7 @@ void ObjectEditorExtension::OnStart(const AAFwk::Want &want)
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "in");
     if (ceInstance_ != nullptr && ceInstance_->onCreateFunc != nullptr) {
         AbilityBase_Want cWant;
-        auto errCode = AAFwk::CWantManager::TransformToCWantWithoutElement(want, false, cwant);
+        auto errCode = AAFwk::CWantManager::TransformToCWantWithoutElement(want, false, cWant);
         if (errCode != ABILITY_BASE_ERROR_CODE_NO_ERROR) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION,
                 "failed to transform want to c want!, errCode: %{public}d", errCode);
@@ -522,7 +522,7 @@ ErrCode ObjectEditorExtension::CreateObject(std::unique_ptr<ObjectEditorDocument
     object->document->oeDocumentInner = std::move(document);
     object->clientCb = clientCb;
     std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
-    ceInstance_->objects.insert(documentId, std::move(object));
+    ceInstance_->objects.insert({documentId, std::move(object)});
     auto iter = ceInstance_->objects.find(documentId);
     ceInstance_->onObjectAttachFunc(ceInstance_.get(), iter->second.get());
     if (iter->second->document->oeDocumentInner->GetOperateType() == OperateType::CREATE_BY_FILE) {

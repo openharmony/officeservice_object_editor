@@ -123,8 +123,6 @@ public:
 
     std::shared_ptr<struct ContentEmbed_ExtensionContext> GetCEContext() const;
 
-    ErrCode RegisterClientCB(const sptr<IObjectEditorClientCallback> &clientCb) override;
-
     ErrCode GetSnapshot(const std::string &documentId) override;
 
     ErrCode DoEdit(const std::string &documentId) override;

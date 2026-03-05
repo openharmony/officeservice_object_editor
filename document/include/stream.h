@@ -89,6 +89,8 @@ public:
     int Getch();
     std::streamsize Read(Byte *data, std::streamsize maxlen);
 
+    std::streamsize ReadBufferUntilNull(std::vector<Byte> &buffer);
+
     uint32_t Write(const Byte *data, uint32_t maxlen);
 
 private:

@@ -47,10 +47,11 @@ class ObjectEditorClient {
 public:
     ErrCode StartObjectEditorExtension(
         std::unique_ptr<ObjectEditorDocument> &document,
-        const sptr<IObjectEditorClientCallback> &callback,
+        const sptr<IObjectEditorClientCallback> &clientCallback,
         sptr<IObjectEditorService> &oeExtensionRemoteObject,
         bool &isPackageExtension);
     ErrCode StopObjectEditorExtension(
+        std::unique_ptr<ObjectEditorDocument> &document,
         const sptr<IObjectEditorService> &oeExtensionRemoteObject,
         const bool &isPackageExtension);
     ErrCode GetIcon(const std::string &hmid, std::string &resourceId);
@@ -59,14 +60,15 @@ public:
         std::unique_ptr<ObjectEditorFormat> &format);
     ErrCode GetObjectEditorFormatsByLocale(const std::string &locale,
         std::vector<std::unique_ptr<ObjectEditorFormat>> &formats);
+
     void LoadSystemAbilitySuccess(const sptr<IRemoteObject> &object);
     void LoadSystemAbilityFail();
     void SARegCleanUp();
 private:
     class ObjectEditorSADeathRecipient : public IRemoteObject::DeathRecipient {
     public:
-        ObjectEditorSADeathRecipient()=default;
-        ~ObjectEditorSADeathRecipient() override=default;
+        ObjectEditorSADeathRecipient() = default;
+        ~ObjectEditorSADeathRecipient() override = default;
         void OnRemoteDied(const wptr<IRemoteObject> &remote) override
         {
             ObjectEditorClient::GetInstance().OnRemoteDied(remote);
@@ -76,21 +78,24 @@ private:
     void SubscribeSystemAbility();
     void UnsubscribeSystemAbility();
     ~ObjectEditorClient();
-    ObjectEditorClient()=default;
+    ObjectEditorClient() = default;
     sptr<IObjectEditorManager> GetIObjectEditorManager();
     sptr<IObjectEditorManager> GetObjectEditorProxy(const sptr<IRemoteObject> &object);
     void InitLoadState();
     bool WaitLoadStateChange();
     ErrCode PrepareFiles(const std::unique_ptr<ObjectEditorDocument> &document);
+    ErrCode HandlePackage(const std::unique_ptr<ObjectEditorDocument> &document,
+        const sptr<IObjectEditorClientCallback> &clientCallback,
+        sptr<IObjectEditorService> &oeExtensionRemoteObject);
     std::string GenRandomUuid();
 
     std::mutex proxyMutex_;
     sptr<IObjectEditorManager> oeSAProxy_ { nullptr };
-    sptr<IRemoteObject::DeathRecipient> deathRecipient_ { nullptr };
+    sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;
     std::condition_variable loadCond_;
     std::mutex loadMutex_;
-    bool loadState_ { false };
-    sptr<ISystemAbilityStatusChange> saStatusListener_ { nullptr };
+    bool loadState_ = false;
+    sptr<ISystemAbilityStatusChange> saStatusListener_ = nullptr;
 };
 } // namespace ObjectEditor
 } // namespace OHOS

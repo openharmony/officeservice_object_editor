@@ -13,9 +13,24 @@
  * limitations under the License.
  */
 
-option_stub_hooks on;
-import ../client/IObjectEditorClientCallback;
-sequenceable document..OHOS.ObjectEditorDocument;
-interface OHOS.ObjectEditor.IObjectEditorExtension {
-    void GetSnapshot([in] uniqueptr<ObjectEditorDocument> document);
+#include "object_editor_event_manager.h"
+
+namespace OHOS {
+namespace ObjectEditor {
+IMPLEMENT_SINGLE_INSTANCE(ObjectEditorEventManager);
+
+void ObjectEditorEventManager::OnScreenLocked()
+{
+    isScreenLocked_.store(true);
 }
+void ObjectEditorEventManager::OnScreenUnlocked()
+{
+    isScreenLocked_.store(false);
+}
+bool ObjectEditorEventManager::CheckIsScreenLocked()
+{
+    return isScreenLocked_.load();
+}
+
+} // namespace ObjectEditor
+} // namespace OHOS

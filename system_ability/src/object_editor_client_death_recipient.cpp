@@ -13,9 +13,20 @@
  * limitations under the License.
  */
 
-option_stub_hooks on;
-import ../client/IObjectEditorClientCallback;
-sequenceable document..OHOS.ObjectEditorDocument;
-interface OHOS.ObjectEditor.IObjectEditorExtension {
-    void GetSnapshot([in] uniqueptr<ObjectEditorDocument> document);
+#include "object_editor_client_death_recipient.h"
+#include "object_editor_manager_system_ability.h"
+
+#include "object_editor_connection.h"
+
+namespace OHOS {
+namespace ObjectEditor {
+
+void ObjectEditorClientDeathRecipient::OnRemoteDied(const OHOS::wptr<OHOS::IRemoteObject> &remoteObject)
+{
+    OBJECT_EDITOR_LOGW(ObjectEditorDomain::SA, "documentId:%{public}s", documentId_.c_str());
+    ObjectEditorManagerSystemAbility::GetInstance().StopObjectEditorExtension(documentId_,
+        oeExtensionRemoteObject_, false);
 }
+
+} // namespace ObjectEditor
+} // namespace OHOS
