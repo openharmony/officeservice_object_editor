@@ -29,7 +29,7 @@
 #include "object_editor_connection.h"
 #include "object_editor_client_death_recipient.h"
 #include "iobject_editor_connection_status_callback.h"
-
+#include "object_editor_screen_change_receiver.h"
 namespace OHOS {
 namespace ObjectEditor {
 
@@ -116,7 +116,11 @@ private:
     ObjectEditorManagerErrCode StartObjectEditorExtensionByFile(const ObjectEditorDocument &document,
         const sptr<IObjectEditorClientCallback> &clientCallback,
         sptr<IRemoteObject> &oeExtensionRemoteObject, bool &isPackageExtension);
-    bool CheckConnectionLimit(const std::string &clientBundleName, std::unique_ptr<ObjectEditorFormat> &format);
+    void InitScreenChangedCommonEventSubscriber();
+    void ResetScreenChangedCommonEventSubscriber();
+    bool CheckConnectionLimit(const std::string &clientBundleName, std::unique_ptr<ObjectEditorFormat> &format,
+        sptr<IRemoteObject> &remoteObject);
+    std::string GetCallerBundleName();
 
     ServiceRunningState state_ = ServiceRunningState::STATE_NOT_START;
     std::shared_mutex diversionMapMutex_;
@@ -129,6 +133,8 @@ private:
     static std::condition_variable cvTimer_;
     static std::atomic<bool> timerRunning_;
     static std::atomic<bool> timerNotify_;
+
+    std::shared_ptr<ObjectEditorScreenChangeReceiver> screenChangeReceiver_;
 };
 
 } // namespace ObjectEditor

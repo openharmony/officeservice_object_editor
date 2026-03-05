@@ -38,19 +38,19 @@ std::shared_ptr<Global::Resource::ResourceManager> ObjectEditorManagerResmgr::Cr
         return nullptr;
     }
     if (!locale.empty()) {
-        auto state = resConfig->SetLocaleInfo(locale.c_str());
+        Global::Resource::RState state = resConfig->SetLocaleInfo(locale.c_str());
         if (state != Global::Resource::RState::SUCCESS) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "SetLocaleInfo failed");
             return nullptr;
         }
     }
-    auto resMgr = Global::Resource::ResourceManager::CreateResourceManager(bundleName,
-        moduleName, hapPath, {}, *resConfig);
+    auto resMgr = Global::Resource::CreateResourceManager(bundleName, moduleName, hapPath, {}, *resConfig);
     if (!resMgr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "CreateResourceManager failed");
         return nullptr;
     }
     resMgr->UpdateResConfig(*resConfig);
+
     const std::string &loadPath = hapPath.empty() ? resourcePath : hapPath;
     if (loadPath.empty()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "invalid app resource");
@@ -64,11 +64,25 @@ std::shared_ptr<Global::Resource::ResourceManager> ObjectEditorManagerResmgr::Cr
     return resMgr;
 }
 
+std::shared_ptr<Global::Resource::ResourceManager> ObjectEditorManagerResmgr::CreateResourceManager(
+    const AppExecFwk::ExtensionAbilityInfo &extensionInfo, const std::string &locale)
+{
+    return CreateResourceManager(extensionInfo.bundleName, extensionInfo.moduleName, locale,
+        extensionInfo.resourcePath, extensionInfo.hapPath);
+}
+
+void ObjectEditorManagerResmgr::RemoveBundle(const std::string &bundleName)
+{
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "bundleName:%{public}s", bundleName.c_str());
+    std::lock_guard<std::mutex> lock(resMgrMutex_);
+    resMgrs_.erase(bundleName);
+}
+
 void ObjectEditorManagerResmgr::AddResourceManager(const std::string &bundleName, const std::string &moduleName,
     const std::string &locale, std::shared_ptr<Global::Resource::ResourceManager> resMgr)
 {
-    auto bundleResMgr = resMgrMap_.find(bundleName);
-    if (bundleResMgr == resMgrMap_.end()) {
+    auto bundleResMgr = resMgrs_.find(bundleName);
+    if (bundleResMgr == resMgrs_.end()) {
         resMgrs_.emplace(bundleName, BundleResMgr{{std::make_tuple(moduleName, locale), resMgr}});
         return;
     }
@@ -82,8 +96,8 @@ void ObjectEditorManagerResmgr::AddResourceManager(const std::string &bundleName
 std::shared_ptr<Global::Resource::ResourceManager> ObjectEditorManagerResmgr::GetResourceManager(
     const std::string &bundleName, const std::string &moduleName, const std::string &locale)
 {
-    auto bundleResMgr = resMgrMap_.find(bundleName);
-    if (bundleResMgr == resMgrMap_.end()) {
+    auto bundleResMgr = resMgrs_.find(bundleName);
+    if (bundleResMgr == resMgrs_.end()) {
         return nullptr;
     }
     BundleResMgr &bundleResMgr = bundleResMgr->second;

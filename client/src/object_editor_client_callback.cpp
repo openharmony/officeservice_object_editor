@@ -18,7 +18,7 @@
 namespace OHOS {
 namespace ObjectEditor {
 // LCOV_EXCL_START
-ObjectEditorClientCallback::ObjectEditorClientCallback(struct ContentEmbed_ExtensionProxy *proxy): proxy_(proxy)
+ObjectEditorClientCallback::ObjectEditorClientCallback(struct ContentEmbed_ExtensionProxy *proxy) : proxy_(proxy)
 {
 }
 
@@ -37,11 +37,11 @@ ErrCode ObjectEditorClientCallback::OnUpdate(std::unique_ptr<ObjectEditorDocumen
     if (proxy_ == nullptr ||
         proxy_->ceDocument == nullptr ||
         proxy_->onUpdateFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "OnUpdateEditResult, proxy_ or document is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "proxy invalid");
         return ERR_INVALID_VALUE;
     }
     if (document == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "OnUpdateEditResult, document is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, ",document is null");
         return ERR_INVALID_VALUE;
     }
     document->RestoreStorage();
@@ -53,8 +53,9 @@ ErrCode ObjectEditorClientCallback::OnUpdate(std::unique_ptr<ObjectEditorDocumen
 
 ErrCode ObjectEditorClientCallback::OnError(ContentEmbed_ErrorCode error)
 {
-    if (proxy_ == nullptr || proxy_->onErrorFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "OnError, proxy_ or onErrorFunc is null");
+    if (proxy_ == nullptr ||
+        proxy_->onErrorFunc == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "proxy invalid");
         return ERR_INVALID_VALUE;
     }
     proxy_->onErrorFunc(proxy_, error);
@@ -62,23 +63,26 @@ ErrCode ObjectEditorClientCallback::OnError(ContentEmbed_ErrorCode error)
 }
 
 
-ErrCode ObjectEditorClientCallback::OnStopEdit(bool isModified)
+ErrCode ObjectEditorClientCallback::OnStopEdit(bool dataModified)
 {
-    if (proxy_ == nullptr || proxy_->onEditingFinishedFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "OnStopEdit, proxy_ or onStopEditFunc is null");
+    if (proxy_ == nullptr ||
+        proxy_->onEditingFinishedFunc == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "proxy invalid");
         return ERR_INVALID_VALUE;
     }
     if (proxy_->ceDocument != nullptr && proxy_->ceDocument->oeDocumentInner != nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "restore storage");
         proxy_->ceDocument->oeDocumentInner->RestoreStorage();
     }
-    proxy_->onEditingFinishedFunc(proxy_, isModified);
+    proxy_->onEditingFinishedFunc(proxy_, dataModified);
     return ERR_OK;
 }
 
 ErrCode ObjectEditorClientCallback::OnExtensionStopped()
 {
-    if (proxy_ == nullptr || proxy_->onExtensionStoppedFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "OnExtensionStopped, proxy_ or onExtensionStoppedFunc is null");
+    if (proxy_ == nullptr ||
+        proxy_->onExtensionStoppedFunc == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "proxy invalid");
         return ERR_INVALID_VALUE;
     }
     proxy_->onExtensionStoppedFunc(proxy_);

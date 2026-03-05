@@ -15,11 +15,11 @@ import("//build/ohos.gni")
 import("//foundation/officeservice/object_editor/object_editor.gni")
 
 ohos_shared_library("content_embed_ndk") {
-    sanitize = [ 
-        cfi = true,
-        cfi_cross_dso = true,
-        debug = false,
-    ]
+    sanitize = {
+        cfi = true
+        cfi_cross_dso = true
+        debug = false
+    }
     output_name = "content_embed_ndk"
     output_extension = "so"
     include_dirs = [
@@ -37,17 +37,21 @@ ohos_shared_library("content_embed_ndk") {
         "src/object_editor_document_capi.cpp",
         "src/object_editor_extension_capi.cpp",
         "src/object_editor_proxy_capi.cpp",
+        "${object_editor_path}/common/src/object_editor_config.cpp",
+        "${object_editor_path}/common/src/system_utils.cpp",
+        "${object_editor_path}/document/src/object_editor_document.cpp",
+        "${object_editor_path}/client/src/object_editor_extension_death_recipient.cpp",
     ]
 
     deps = [
         "${object_editor_path}/client:content_embed_client",
         "${object_editor_path}/document:content_embed_document",
-        "${object_editor_path}/frameworks/kits/extension:content_embed_extension",
+        "${object_editor_path}/frameworks/kits/extension:content_embed_extension"
     ]
-    configs += [
+    configs = [
         "${object_editor_path}/resources/config/build:coverage_flags",
     ]
-    export_deps = [
+    external_deps = [
         "ability_base:ability_base_want",
         "ability_runtime:ability_context_native",
         "ability_runtime:ability_runtime",
@@ -58,6 +62,7 @@ ohos_shared_library("content_embed_ndk") {
         "ability_runtime:extensionkit_native",
         "ability_runtime:napi_common",
         "app_file_service:fileuri_native",
+        "bundle_framework:appexecfwk_base",
         "c_utils:utils",
         "hilog:libhilog",
         "image_framework:image_native",
@@ -66,10 +71,9 @@ ohos_shared_library("content_embed_ndk") {
         "napi:ace_napi",
         "safwk:system_ability_fwk",
     ]
+    defines = []
     if (object_editor_dlp_part_enabled) {
-        export_deps += [
-            "dlp_permission_service:libdlp_permission_ndk",
-        ]
+        external_deps += [ "dlp_permission_service:libdlp_permission_sdk" ]
         defines += [ "WITH_DLP" ]
     }
     relative_install_dir = "ndk/"

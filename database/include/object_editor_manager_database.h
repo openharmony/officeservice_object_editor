@@ -38,7 +38,7 @@ class ObjectEditorManagerDatabase {
 
 public:
     void Init();
-    bool Inited() const { return store_ != nullptr; };
+    bool Initted() const { return store_ != nullptr; }
     void AddBundle(const std::string &bundleName);
     void RemoveBundle(const std::string &bundleName);
     void UpdateBundle(const std::string &bundleName);
@@ -64,17 +64,17 @@ private:
     bool ExecuteTransactionSql(const std::vector<std::string> &sqlList);
 
     ObjectEditorManagerErrCode GetBundleInfoValuesBuckets(const std::string &bundleName,
-        std::vector<NativeRdb::ValueBucket> &buckets) const;
-    bool DoInsert(const std::vector<NativeRdb::ValueBucket> &buckets);
+        std::vector<NativeRdb::ValuesBucket> &buckets) const;
+    bool DoInsert(const std::vector<NativeRdb::ValuesBucket> &buckets);
     bool DoDeleteBundle(const std::string &bundleName);
     ObjectEditorManagerErrCode QueryBySql(const std::string &sql,
-        std::shared_ptr<NativeRdb::AbsSharedResultSet> &resultSet,
+        std::shared_ptr<NativeRdb::AbsSharedResultSet> &pResultSet,
         const std::vector<NativeRdb::ValueObject> &whereArgs = {}) const;
     std::map<std::string, int64_t> GetBundleNameAndCreateTime() const;
     void ParseExtensionInfos(const std::map<std::string, int64_t> &dbBundles,
         std::vector<AppExecFwk::ExtensionAbilityInfo> &extensionInfos,
         std::vector<NativeRdb::ValuesBucket> &buckets, std::set<std::string> &oldBundles) const;
-    ObjectEditorManagerErrCode PrepareRefreshDb(std::vector<NativeRdb::ValueBucket> &buckets,
+    ObjectEditorManagerErrCode PrepareRefreshDb(std::vector<NativeRdb::ValuesBucket> &buckets,
         std::set<std::string> &oldBundles) const;
     ObjectEditorManagerErrCode RefreshDb();
 

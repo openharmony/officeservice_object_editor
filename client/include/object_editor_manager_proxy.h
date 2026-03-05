@@ -27,8 +27,10 @@ public:
     explicit ObjectEditorManagerProxy(const sptr<IRemoteObject> &remote)
         : IRemoteProxy<IObjectEditorManager>(remote)
     {}
+
     virtual ~ObjectEditorManagerProxy()
     {}
+
     ErrCode StartObjectEditorExtension(
         std::unique_ptr<ObjectEditorDocument> &document,
         const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
@@ -36,6 +38,7 @@ public:
         bool &isPackageExtension) override;
 
     ErrCode StopObjectEditorExtension(
+        const std::string &documentId,
         const sptr<IRemoteObject> &oeExtensionRemoteObject,
         const bool &isPackageExtension) override;
 

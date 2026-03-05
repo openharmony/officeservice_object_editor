@@ -30,7 +30,7 @@ enum class IObjectEditorServiceIpcCode {
     COMMAND_GET_SNAPSHOT = MIN_TRANSACTION_ID,
     COMMAND_DO_EDIT,
     COMMAND_GET_EDITING_STATE,
-    COMMAND_GET_EXTENSION_EDITING_STATE,
+    COMMAND_GET_EXTENSION_EDITING_STATUS,
     COMMAND_GET_CAPABILITY,
     COMMAND_CLOSE,
     COMMAND_INITIAL,
@@ -43,6 +43,8 @@ public:
     virtual ErrCode DoEdit(const std::string &documentId) = 0;
 
     virtual ErrCode GetEditStatus(const std::string &documentId, bool *isEditing, bool *isModified) = 0;
+
+    virtual ErrCode GetExtensionEditStatus(bool &isEditing) = 0;
 
     virtual ErrCode GetCapability(const std::string &documentId, uint32_t *bitmask) = 0;
 

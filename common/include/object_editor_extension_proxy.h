@@ -29,14 +29,14 @@ public:
     {}
     virtual ~ObjectEditorExtensionProxy()
     {}
-    ErrCode RegisterClientCB(
-        const sptr<IObjectEditorClientCallback> &callback) override;
-    ErrCode GetSnapshot() override;
-    ErrCode DoEdit() override;
-    ErrCode GetEditStatus(bool *isEditing, bool *isModified) override;
-    ErrCode GetCapability(uint32_t *capability) override;
-    ErrCode Close() override;
-    ErrCode Initial(std::unique_ptr<ObjectEditorDocument> document) override;
+    ErrCode GetSnapshot(const std::string &documentId) override;
+    ErrCode DoEdit(const std::string &documentId) override;
+    ErrCode GetEditStatus(const std::string &documentId, bool *isEditing, bool *isModified) override;
+    ErrCode GetExtensionEditStatus(bool &isEditing) override;
+    ErrCode GetCapability(const std::string &documentId, uint32_t *bitmask) override;
+    ErrCode Close(const std::string &documentId, bool &isAllObjectsRemoved) override;
+    ErrCode Initial(std::unique_ptr<ObjectEditorDocument> document,
+        const sptr<IObjectEditorClientCallback> &clientCallback) override;
 private:
     static inline BrokerDelegator<ObjectEditorExtensionProxy> delegator_;
 };

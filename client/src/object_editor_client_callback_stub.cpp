@@ -24,14 +24,14 @@ int32_t ObjectEditorClientCallbackStub::OnRemoteRequest(
     int32_t ret = CallbackEnter(code);
     if (ret != ERR_NONE) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,
-            "OnRemoteRequest, CallbackEnter failed, code = %{public}u, ret = %{public}d", code, ret);
+            "CallbackEnter failed, code = %{public}u, ret = %{public}d", code, ret);
         return ret;
     }
     ret = OnRemoteRequestInner(code, data, reply, option);
     ret = CallbackExit(code, ret);
     if (ret != ERR_NONE) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,
-            "OnRemoteRequest, CallbackExit failed, code = %{public}u, ret = %{public}d", code, ret);
+            "CallbackExit failed, code = %{public}u, ret = %{public}d", code, ret);
         return ret;
     }
     return ret;
@@ -42,8 +42,8 @@ int32_t ObjectEditorClientCallbackStub::OnRemoteRequestInner(
 {
     std::u16string localDescriptor = GetDescriptor();
     std::u16string remoteDescriptor = data.ReadInterfaceToken();
-    if (remoteDescriptor != localDescriptor) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "OnRemoteRequestInner, invalid descriptor");
+    if (localDescriptor != remoteDescriptor) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "descriptor invalid");
         return ERR_TRANSACTION_FAILED;
     }
     switch (static_cast<IObjectEditorClientCallbackIpcCode>(code)) {
@@ -64,15 +64,15 @@ int32_t ObjectEditorClientCallbackStub::OnRemoteRequestInner(
 int32_t ObjectEditorClientCallbackStub::HandleOnUpdate(MessageParcel &data, MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "call");
-    std::unique_ptr<ObjectEditorDocument> document = data.ReadParcelable<ObjectEditorDocument>();
+    std::unique_ptr<ObjectEditorDocument> document = std::unique_ptr<ObjectEditorDocument>(
+        data.ReadParcelable<ObjectEditorDocument>());
     if (document == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "HandleOnUpdate, document is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "document is null");
         return ERR_INVALID_DATA;
     }
-    ErrCode ret = OnUpdate(document);
-    if (!reply.WriteInt32(ret)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,
-            "HandleOnUpdate, OnUpdate failed, ret = %{public}d", ret);
+    ErrCode errCode = OnUpdate(document);
+    if (!reply.WriteInt32(errCode)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write errCode failed");
         return ERR_INVALID_VALUE;
     }
     return ERR_NONE;
@@ -81,16 +81,15 @@ int32_t ObjectEditorClientCallbackStub::HandleOnUpdate(MessageParcel &data, Mess
 int32_t ObjectEditorClientCallbackStub::HandleOnError(MessageParcel &data, MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "call");
-    ContentEmbed_ErrorCode errorCode = static_cast<ContentEmbed_ErrorCode>(data.ReadInt32());
-    ErrCode ret = OnError(errorCode);
-    if (!reply.WriteInt32(ret)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "HandleOnError, OnError failed, ret = %{public}d", ret);
+    ContentEmbed_ErrorCode error = static_cast<ContentEmbed_ErrorCode>(data.ReadInt32());
+    ErrCode errCode = OnError(error);
+    if (!reply.WriteInt32(errCode)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write errCode failed");
         return ERR_INVALID_VALUE;
     }
-    if (SUCCEEDED(ret)) {
-        if (!reply.WriteInt32(static_cast<int32_t>(errorCode))) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,
-                "HandleOnError, OnError failed, ret = %{public}d, errorCode = %{public}d", ret, errorCode);
+    if (SUCCEEDED(errCode)) {
+        if (!reply.WriteInt32(static_cast<int32_t>(error))) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write error failed");
             return ERR_INVALID_DATA;
         }
     }
@@ -100,11 +99,10 @@ int32_t ObjectEditorClientCallbackStub::HandleOnError(MessageParcel &data, Messa
 int32_t ObjectEditorClientCallbackStub::HandleOnStopEdit(MessageParcel &data, MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "call");
-    bool isModified = data.ReadBool();
-    ErrCode ret = OnStopEdit(isModified);
-    if (!reply.WriteInt32(ret)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,
-            "HandleOnStopEdit, OnStopEdit failed, ret = %{public}d", ret);
+    bool dataModified = data.ReadBool();
+    ErrCode errCode = OnStopEdit(dataModified);
+    if (!reply.WriteInt32(errCode)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write errCode failed");
         return ERR_INVALID_VALUE;
     }
     return ERR_NONE;
@@ -113,10 +111,9 @@ int32_t ObjectEditorClientCallbackStub::HandleOnStopEdit(MessageParcel &data, Me
 int32_t ObjectEditorClientCallbackStub::HandleOnExtensionStopped(MessageParcel &data, MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "call");
-    ErrCode ret = OnExtensionStopped();
-    if (!reply.WriteInt32(ret)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,
-            "HandleOnExtensionStopped, OnExtensionStopped failed, ret = %{public}d", ret);
+    ErrCode errCode = OnExtensionStopped();
+    if (!reply.WriteInt32(errCode)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write errCode failed");
         return ERR_INVALID_VALUE;
     }
     return ERR_NONE;

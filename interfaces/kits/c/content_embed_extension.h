@@ -523,7 +523,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnEditingFinished(
 /**
  * @brief Invoke the OnExtensionStoped callback registered by the client.
  *
- * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
+ * @param handle Represents a pointer to an {@link ContentEmbed_ExtensionInstance} instance.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
@@ -536,7 +536,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnEditingFinished(
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnExtensionStopped(
-    ContentEmbed_ObjectHandle object);
+    ContentEmbed_ExtensionInstanceHandle handle);
 
 /**
  * @brief Send the document snapshot to the client application.

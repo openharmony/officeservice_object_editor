@@ -50,7 +50,6 @@ ohos_shared_library("content_embed_service") {
         "${object_editor_path}/database/src/object_editor_manager_utils.cpp",
         "${object_editor_path}/document/src/object_editor_document.cpp",
         "${object_editor_path}/extension_ability/src/object_editor_client_callback_proxy.cpp",
-
         "${object_editor_path}/system_ability/src/object_editor_connection.cpp",
         "${object_editor_path}/system_ability/src/object_editor_manager_stub.cpp",
         "${object_editor_path}/system_ability/src/object_editor_manager_system_ability.cpp",
@@ -58,8 +57,6 @@ ohos_shared_library("content_embed_service") {
     ]
     configs = [
         ":libobject_editor_service_private_config",
-    ]
-    public_configs = [
         "${object_editor_path}/resources/config/build:coverage_flags",
     ]
 
@@ -78,6 +75,7 @@ ohos_shared_library("content_embed_service") {
         "access_token:libaccesstoken_sdk",
         "bundle_framework:bundle_napi_common",
         "c_utils:utils",
+        "common_event_service:cesfwk_innerkits",
         "cJSON:cjson",
         "hilog:libhilog",
         "image_framework:image_native",

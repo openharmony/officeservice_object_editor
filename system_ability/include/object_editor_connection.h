@@ -42,8 +42,7 @@ public:
     std::string& GetExtensionBundleName();
     void SetClientBundleName(const std::string &bundleName);
     std::string& GetClientBundleName();
-    bool IsElementMatch(const std::string &bundleName, const std::string &abilityName,
-        const std::string &moduleName);
+    bool IsExtensionAbilityMatch(const std::string &moduleName, const std::string &abilityName);
 
 protected:
     const int8_t CONNECT_TIME_OUT = 3;
@@ -62,6 +61,7 @@ private:
     bool isConnectReady_ = false;
     std::mutex connectionStatusCallbackMutex_;
     std::shared_ptr<IObjectEditorConnectionStatusCallback> connectionStatusCallback_ = nullptr;
+    int32_t curCheckEditStatusTimes = 0;
 
     void TimerThreadStopExtension();
     void ResetStopExtensionTimer();

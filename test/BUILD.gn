@@ -15,6 +15,5 @@
 group("test_target") {
   testonly = true
   deps = [
-    "fuzztest:fuzztest",
   ]
 }

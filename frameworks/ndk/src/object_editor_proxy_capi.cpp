@@ -24,6 +24,7 @@
 #include "object_editor_client.h"
 #include "object_editor_client_callback.h"
 #include "object_editor_config.h"
+#include "object_editor_extension_death_recipient.h"
 #include "system_utils.h"
 
 using namespace OHOS::ObjectEditor;
@@ -62,7 +63,7 @@ char *CopyToCString(const std::string &str)
 {
     size_t size = str.size();
     if (size == 0 || size > MAX_STRING_LENGTH) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "size:%{public}u invalid", size);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "size:%{public}zu invalid", size);
         return nullptr;
     }
     char *cstr = new (std::nothrow) char[size + 1];
@@ -99,8 +100,8 @@ char **SplitToCStrings(const std::string &str, char pattern, uint32_t &count)
     std::vector<std::string> substrs = SystemUtils::SplitString(str, pattern);
     size_t size = substrs.size();
     count = static_cast<uint32_t>(size);
-    if (size == 0) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "size:%{public}u invalid", size);
+    if (size == 0 || size > MAX_STRING_LENGTH) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "size:%{public}zu invalid", size);
         return nullptr;
     }
     char **result = new (std::nothrow) char *[size];
@@ -111,7 +112,7 @@ char **SplitToCStrings(const std::string &str, char pattern, uint32_t &count)
     for (size_t i = 0; i < size; ++i) {
         char *subCstr = CopyToCString(substrs[i]);
         if (subCstr == nullptr) {
-            FreeCString(result, i);
+            FreeCStrings(result, i);
             return nullptr;
         }
         result[i] = subCstr;
@@ -151,7 +152,7 @@ void ContentEmbed_Format::Build(std::unique_ptr<ObjectEditorFormat> &format)
     fileNameExtensions = SplitToCStrings(format->fileExts, ',', fileNameExtensionsCount);
 }
 
-vpid ContentEmbed_Info::Build(std::vector<std::unique_ptr<ObjectEditorFormat>> &oeFormats)
+void ContentEmbed_Info::Build(std::vector<std::unique_ptr<ObjectEditorFormat>> &oeFormats)
 {
     for (auto &format : oeFormats) {
         std::unique_ptr<ContentEmbed_Format> embedFormat = std::make_unique<ContentEmbed_Format>();
@@ -229,7 +230,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedInfo(const char *locale, C
 }
 
 // LCOV_EXCL_START
-ContentEmbed_ErrorCode OH_ContentEmbed_GetFormatCountFromInfo(ContentEmbed_Info *info, uint32_t *count)
+ContentEmbed_ErrorCode OH_ContentEmbed_GetFormatCountFromInfo(const ContentEmbed_Info *info, uint32_t *count)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
@@ -336,8 +337,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedFormatByHmidAndLocale(cons
 }
 
 // LCOV_EXCL_START
-ContentEmbed_ErrorCode OH_ContentEmbed_GetHmidFromFormat(const ContentEmbed_Format *format, char *hmid,
-    const int32_t hmidSize)
+ContentEmbed_ErrorCode OH_ContentEmbed_GetHmidFromFormat(const ContentEmbed_Format *format, char *hmid)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
@@ -346,11 +346,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetHmidFromFormat(const ContentEmbed_Form
     }
     if (format == nullptr || hmid == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
-        return CE_ERR_PARAM_INVALID;
-    }
-    if (format->hmid.size() >= hmidSize) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "hmid size:%{public}zu exceed hmidSize:%{public}d",
-            format->hmid.size(), hmidSize);
         return CE_ERR_PARAM_INVALID;
     }
     if (strcpy_s(hmid, MAX_HMID_LENGTH, format->hmid.c_str()) != 0) {
@@ -448,16 +443,16 @@ ContentEmbed_ErrorCode OH_ContentEmbed_CreateExtensionProxy(ContentEmbed_Documen
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (ceDocument == nullptr) {    
+    if (ceDocument == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
         return CE_ERR_PARAM_INVALID;
     }
-    if (proxy == nullptr) {    
+    if (proxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is null");
         return CE_ERR_PARAM_INVALID;
     }
     *proxy = new (std::nothrow) ContentEmbed_ExtensionProxy();
-    if (*proxy == nullptr) {    
+    if (*proxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "extensionProxy alloc failed");
         return CE_ERR_NULL_POINTER;
     }
@@ -596,7 +591,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StartWork(ContentEmbed_ExtensionPro
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "alloc failed");
         return CE_ERR_NULL_POINTER;
     }
-    auto errCode = ObjectEditorClient::GetInstance().StartObjectEditorExtension(proxy->ceDocument->oeDocumentInner
+    auto errCode = ObjectEditorClient::GetInstance().StartObjectEditorExtension(proxy->ceDocument->oeDocumentInner,
         oeCallbackInner, proxy->objectEditorService, proxy->isPackageExtension);
     if (errCode != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "StartWork failed, errCode: %{public}d", errCode);
@@ -607,7 +602,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StartWork(ContentEmbed_ExtensionPro
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT_NDK, "is package");
         return CE_ERR_OK;
     }
-    auto extensionDeathRecipient = sptr<OHOS::IRemoteObject::DeathRecipient>(
+    auto extensionDeathRecipient = OHOS::sptr<OHOS::IRemoteObject::DeathRecipient>(
         new (std::nothrow) ObjectEditorExtensionDeathRecipient(proxy));
     if (extensionDeathRecipient == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "alloc failed");
@@ -620,7 +615,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StartWork(ContentEmbed_ExtensionPro
         return CE_ERR_PARAM_INVALID;
     }
     auto oeExtensionRemoteObject = proxy->objectEditorService->GetRemoteObject();
-    if (oeExtensionRemoteObject != nullptr && 
+    if (oeExtensionRemoteObject != nullptr &&
         oeExtensionRemoteObject->IsProxyObject() &&
         !oeExtensionRemoteObject->AddDeathRecipient(extensionDeathRecipient)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "service is null");

@@ -13,17 +13,22 @@
  * limitations under the License.
  */
 
-#ifndef  OHOS_OBJECT_EDITOR_IOBJECT_EDITOR_PACKAGE_H
-#define  OHOS_OBJECT_EDITOR_IOBJECT_EDITOR_PACKAGE_H
+#ifndef OHOS_OBJECT_EDITOR_SCREEN_CHANGE_RECEIVER_H
+#define OHOS_OBJECT_EDITOR_SCREEN_CHANGE_RECEIVER_H
 
-#include "iobject_editor_service.h"
+#include "common_event_subscriber.h"
 
 namespace OHOS {
 namespace ObjectEditor {
 
-class IObjectEditorPackage : public IObjectEditorService {
+class ObjectEditorScreenChangeReceiver : public EventFwk::CommonEventSubscriber {
+public:
+    explicit ObjectEditorScreenChangeReceiver(const EventFwk::CommonEventSubscribeInfo &subscribeInfo)
+        : EventFwk::CommonEventSubscriber(subscribeInfo) {}
+    ~ObjectEditorScreenChangeReceiver() override = default;
+    void OnReceiveEvent(const EventFwk::CommonEventData &eventData) override;
 };
-
 } // namespace ObjectEditor
 } // namespace OHOS
-#endif // OHOS_OBJECT_EDITOR_IOBJECT_EDITOR_PACKAGE_H
+
+#endif // OHOS_OBJECT_EDITOR_SCREEN_CHANGE_RECEIVER_H

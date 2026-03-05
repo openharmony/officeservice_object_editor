@@ -65,11 +65,34 @@ ObjectEditorManagerSystemAbility::ObjectEditorManagerSystemAbility()
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "constructor");
     ReadDiversionsJsonFile();
     ObjectEditorManagerDatabase::GetInstance().Init();
+    InitScreenChangedCommonEventSubscriber();
 }
 
 ObjectEditorManagerSystemAbility::~ObjectEditorManagerSystemAbility()
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "deconstructor");
+}
+
+void ObjectEditorManagerSystemAbility::InitScreenChangedCommonEventSubscriber()
+{
+    EventFwk::MatchingSkills matchingSkills;
+    matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_LOCKED);
+    matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED);
+    EventFwk::CommonEventSubscribeInfo subscribeInfo(matchingSkills);
+    screenChangeReceiver_ = std::make_shared<ObjectEditorScreenChangeReceiver>(subscribeInfo);
+    auto ret = EventFwk::CommonEventManager::SubscribeCommonEvent(screenChangeReceiver_);
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "subscribe common event ret:%{public}d", ret);
+}
+
+void ObjectEditorManagerSystemAbility::ResetScreenChangedCommonEventSubscriber()
+{
+    if (screenChangeReceiver_ == nullptr) {
+        OBJECT_EDITOR_LOGW(ObjectEditorDomain::SA, "screenChangeReceiver_ is null");
+        return;
+    }
+    auto ret = EventFwk::CommonEventManager::UnsubscribeCommonEvent(screenChangeReceiver_);
+    screenChangeReceiver_ = nullptr;
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "unsubscribe common event ret:%{public}d", ret);
 }
 
 void ObjectEditorManagerSystemAbility::OnStart()
@@ -91,6 +114,7 @@ void ObjectEditorManagerSystemAbility::OnStart()
 void ObjectEditorManagerSystemAbility::OnStop()
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "in");
+    ResetScreenChangedCommonEventSubscriber();
     if (state_ != ServiceRunningState::STATE_RUNNING) {
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "not running");
         return;
@@ -435,7 +459,6 @@ ErrCode ObjectEditorManagerSystemAbility::StopObjectEditorExtension(
     objectEditorExtensionProxy->Close(documentId, isAllObjectsRemoved);
     if (!isAllObjectsRemoved) {
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "not all objects removed");
-        connectionMap_.erase(oeExtensionRemoteObject);
         return ObjectEditorManagerErrCode::SA_OK;
     }
     std::lock_guard<std::mutex> lock(connectionMapMutex_);
@@ -577,7 +600,7 @@ void ObjectEditorManagerSystemAbilityConnectionStatusCallback::OnConnectionStatu
 }
 
 bool ObjectEditorManagerSystemAbility::CheckConnectionLimit(const std::string &clientBundleName,
-    std::unique_ptr<ObjectEditorFormat> &format)
+    std::unique_ptr<ObjectEditorFormat> &format, sptr<IRemoteObject> &remoteObject)
 {
     if (format == nullptr) {
         return false;
@@ -591,17 +614,17 @@ bool ObjectEditorManagerSystemAbility::CheckConnectionLimit(const std::string &c
         }
         if (pair.second->GetExtensionBundleName() != format->bundleName) {
             count++;
-        }
-        if (count >= MAX_CONNECTION_COUNT) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "max connection count reached");
-            return false;
-        }
-        if (pair.second->IsElementMatch(format->bundleName, format->abilityName, format->moduleName)) {
+            if (count >= MAX_CONNECTION_COUNT) {
+                OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "max connection count reached");
+                return false;
+            }
+        } else if (pair.second->IsExtensionAbilityMatch(format->moduleName, format->abilityName)) {
             if (pair.second->GetClientBundleName() != clientBundleName) {
                 OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "extension client bundle name %{public}s not match",
                     pair.second->GetClientBundleName().c_str());
                 return false;
             }
+            remoteObject = pair.first;
             return true;
         }
     }
@@ -612,7 +635,7 @@ std::string ObjectEditorManagerSystemAbility::GetCallerBundleName()
 {
     uint32_t callerToken = IPCSkeleton::GetCallingTokenID();
     Security::AccessToken::HapTokenInfo hapTokenInfo;
-    Errcode ret = Security::AccessToken::AccessTokenKit::GetHapTokenInfo(callerToken, hapTokenInfo)
+    ErrCode ret = Security::AccessToken::AccessTokenKit::GetHapTokenInfo(callerToken, hapTokenInfo)
     if (ret != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "GetHapTokenInfo failed");
         return "";
@@ -628,12 +651,18 @@ bool ObjectEditorManagerSystemAbility::ConnectObjectEditorExtAbility(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "format is null");
         return false;
     }
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "%{public}s/%{public}s/%{public}s",
+        format->bundleName.c_str(), format->moduleName.c_str(), format->abilityName.c_str());
     std::string clientBundleName = GetCallerBundleName();
     if (clientBundleName.empty()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "client bundle name is empty");
         return false;
     }
-    if (!CheckConnectionLimit(clientBundleName, format)) {
+    if (!CheckConnectionLimit(clientBundleName, format, remoteObject)) {
+        return false;
+    }
+    if (remoteObject == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "ability object connect");
         return false;
     }
     sptr<ObjectEditorConnection> connection = sptr<ObjectEditorConnection>::MakeSptr();

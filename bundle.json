@@ -23,6 +23,7 @@
                 "access_token",
                 "app_file_service",
                 "bundle_framework",
+                "common_event_service",
                 "cJSON",
                 "c_utils",
                 "dlp_permission_service",
@@ -33,8 +34,8 @@
                 "napi",
                 "relational_store",
                 "resource_management",
-                "samgr",
                 "safwk",
+                "samgr",
                 "os_account",
                 "udmf"
             ],

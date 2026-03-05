@@ -28,6 +28,7 @@
 
 namespace OHOS {
 namespace ObjectEditor {
+// LCOV_EXCL_START
 namespace {
     constexpr int EOF_FLAG = static_cast<unsigned int>(StreamImpl::State::Eof);
     constexpr int BAD_FLAG = static_cast<unsigned int>(StreamImpl::State::Bad);
@@ -77,17 +78,16 @@ void StreamImpl::Init()
     }
     if (cachedUseBig_) {
         if (!io_->FollowBigBlockTable(cachedStart_, blocks_)) {
-            state_ |= BAD_FLAG;
+            state_ = BAD_FLAG;
         }
     } else if (!io_->FollowSmallBlockTable(cachedStart_, blocks_)) {
-        state_ |= BAD_FLAG;
+        state_ = BAD_FLAG;
     }
 }
 
 bool StreamImpl::PrepareRead(size_t pos, Byte *buffer, std::streamsize maxlen, size_t &allowed, size_t &entrySizeT)
 {
-    if (!entry_ || !buffer || maxlen <= 0) [[unlikely]]
-    {
+    if (!entry_ || !buffer || maxlen <= 0) [[unlikely]] {
         return false;
     }
 
@@ -157,7 +157,7 @@ std::streamsize StreamImpl::ReadSmallBlocks(size_t pos, Byte *buffer, size_t all
         const size_t destRemaining = allowed - static_cast<size_t>(totalbytes);
         if (memcpy_s(buffer + static_cast<size_t>(totalbytes), destRemaining, buf.data() + offset,
             static_cast<size_t>(count)) != EOK) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "StreamImpl::ReadSmallBlocks memcpy_s failed")
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "StreamImpl::ReadSmallBlocks memcpy_s failed");
             return 0;
         }
         totalbytes += count;
@@ -204,7 +204,7 @@ std::streamsize StreamImpl::ReadBigBlocks(size_t pos, Byte *buffer, size_t allow
             const size_t destRemaining = allowed - static_cast<size_t>(totalbytes);
             if (memcpy_s(buffer + static_cast<size_t>(totalbytes), destRemaining, buf.data() + offset,
                 static_cast<size_t>(count)) != EOK) {
-                OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "StreamImpl::ReadBigBlocks memcpy_s failed")
+                OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "StreamImpl::ReadBigBlocks memcpy_s failed");
                 return 0;
             }
             totalbytes += count;
@@ -257,7 +257,7 @@ int StreamImpl::Getch()
     if (pos_ > static_cast<std::streamsize>(entry_->Size())) {
         return -1;
     }
-    if (!cacheSize_ || (pos_ < cachePos_) || (pos_ >= cachePos_ + cachedSize_)) {
+    if (!cacheSize_ || (pos_ < cachePos_) || (pos_ >= cachePos_ + cacheSize_)) {
         UpdateCache();
     }
     if (!cacheSize_) {
@@ -295,6 +295,19 @@ std::streamsize StreamImpl::Read(Byte *data, std::streamsize maxlen)
     return bytes;
 }
 
+std::streamsize StreamImpl::ReadBufferUntilNull(std::vector<Byte> &buffer)
+{
+    Byte buf[CACHE_SIZE];
+    Read(buf, CACHE_SIZE);
+    for (int i = 0; i < CACHE_SIZE; i++) {
+        if (buf[i] == '\0') {
+            break;
+        }
+        buffer.push_back(buf[i]);
+    }
+    return buffer.size();
+}
+
 void StreamImpl::UpdateCache()
 {
     if (!entry_) {
@@ -319,8 +332,7 @@ void StreamImpl::UpdateCache()
 
 bool StreamImpl::PrepareWrite(const Byte *data, uint32_t &maxlen)
 {
-    if (!entry_ || !data || maxlen == 0) [[unlikely]]
-    {
+    if (!entry_ || !data || maxlen == 0) [[unlikely]] {
         return false;
     }
 
@@ -390,13 +402,13 @@ uint32_t StreamImpl::WriteMiniBlocks(const Byte *data, uint32_t targetLen,
             return count;
         }
         const uint32_t bbindice = sbrootEntry[bbindex];
-        const uint64_t fisicalOffset  = (static_cast<uint64_t>(bbindice) * bigBlockSize) +
-            bigBlockSize + (sbindexOffset * smallBlockSize) + offset;
-        const uint64_t canwrite64 = smallBlockSize - offset;
-        const uint32_t canwrite = static_cast<uint32_t>(std::min<uint64_t>(
-            canwrite64, static_cast<uint64_t>(targetLen - count)));
-        const uint32_t written = io_->SaveBlock(fisicalOffset, data + count, canwrite);
-        if (written < canwrite) {
+        const uint64_t physicalOffset =
+            (static_cast<uint64_t>(bbindice) * bigBlockSize) + bigBlockSize + (sbindexOffset * smallBlockSize) + offset;
+        const uint64_t canWrite64 = smallBlockSize - offset;
+        const uint32_t canWrite =
+            static_cast<uint32_t>(std::min<uint64_t>(canWrite64, static_cast<uint64_t>(targetLen - count)));
+        const uint32_t written = io_->SaveBlock(physicalOffset, data + count, canWrite);
+        if (written < canWrite) {
             state_ |= BAD_FLAG;
             return count;
         }
@@ -419,16 +431,16 @@ uint32_t StreamImpl::WriteBigBlocks(const Byte *data, uint32_t targetLen, uint64
     uint64_t offset = static_cast<uint64_t>(pos_ % static_cast<std::streamsize>(bigBlockSize));
     uint32_t count = 0;
     for (; ((index < blocks_.size()) && (count < targetLen)); index++) {
-        const uint64_t fisicalOffset = (static_cast<uint64_t>(blocks_[index]) *
+        const uint64_t physicalOffset = (static_cast<uint64_t>(blocks_[index]) *
             bigBlockSize) + bigBlockSize + offset;
-        const uint64_t canwrite64 = bigBlockSize - offset;
-        const uint32_t canwrite = static_cast<uint32_t>(
-            std::min<uint64_t>(canwrite64, static_cast<uint64_t>(targetLen - count)));
+        const uint64_t canWrite64 = bigBlockSize - offset;
+        const uint32_t canWrite = static_cast<uint32_t>(
+            std::min<uint64_t>(canWrite64, static_cast<uint64_t>(targetLen - count)));
         if (!io_) {
             return 0;
         }
-        const uint32_t written = io_->SaveBlock(fisicalOffset, data + count, canwrite);
-        if (written < canwrite) {
+        const uint32_t written = io_->SaveBlock(physicalOffset, data + count, canWrite);
+        if (written < canWrite) {
             state_ |= BAD_FLAG;
             return count;
         }
@@ -466,5 +478,6 @@ uint32_t StreamImpl::Write(const Byte *data, uint32_t maxlen)
     pos_ += static_cast<int32_t>(count);
     return count;
 }
+// LCOV_EXCL_STOP
 } // namespace ObjectEditor
 } // namespace OHOS

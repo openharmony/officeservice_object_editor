@@ -37,29 +37,30 @@ struct Ole10NativeHeader {
     wchar_t filename[260] = {0};
 };
 
-class ObjectEditorPackage : public ObjectEditorPackageStub {
+class ObjectEditorPackage : public IObjectEditorPackage {
 public:
     ObjectEditorPackage();
     ~ObjectEditorPackage();
-    ErrCode GetSnapshot(std::string &documentId) override;
+    ErrCode GetSnapshot(const std::string &documentId) override;
 
-    ErrCode DoEdit(std::string &documentId) override;
+    ErrCode DoEdit(const std::string &documentId) override;
 
-    ErrCode GetEditStatus(std::string &documentId, bool isEditing, bool *isModified) override;
+    ErrCode GetEditStatus(const std::string &documentId, bool *isEditing, bool *isModified) override;
 
     ErrCode GetExtensionEditStatus(bool &isEditing) override;
 
-    ErrCode GetCapability(std::string &documentId, uint32_t &bitmask) override;
+    ErrCode GetCapability(const std::string &documentId, uint32_t *bitmask) override;
 
     ErrCode Close(const std::string &documentId, bool &isAllObjectsRemoved) override;
 
-    ErrCode Initial(std::unique_ptr<IObjectEditorDocument> document,
+    ErrCode Initial(std::unique_ptr<ObjectEditorDocument> document,
         const sptr<IObjectEditorClientCallback> &clientCb) override;
+
 private:
     ExtractionResult ParseOle10NativeStream(Stream *stream);
     ErrCode CreatePackageObject();
 
-    std::shared_ptr<IObjectEditorDocument> document_ = nullptr;
+    std::shared_ptr<ObjectEditorDocument> document_ = nullptr;
     sptr<IObjectEditorClientCallback> clientCb_ = nullptr;
 };
 
