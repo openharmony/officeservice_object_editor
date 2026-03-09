@@ -44,16 +44,18 @@ private:
 
 class ObjectEditorClient {
     DECLARE_SINGLE_INSTANCE_BASE(ObjectEditorClient);
+
 public:
     ErrCode StartObjectEditorExtension(
         std::unique_ptr<ObjectEditorDocument> &document,
-        const sptr<IObjectEditorClientCallback> &clientCallback,
+        const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
         sptr<IObjectEditorService> &oeExtensionRemoteObject,
         bool &isPackageExtension);
     ErrCode StopObjectEditorExtension(
         std::unique_ptr<ObjectEditorDocument> &document,
         const sptr<IObjectEditorService> &oeExtensionRemoteObject,
         const bool &isPackageExtension);
+
     ErrCode GetIcon(const std::string &hmid, std::string &resourceId);
     ErrCode GetFormatName(const std::string &hmid, const std::string &locale, std::string &formatName);
     ErrCode GetObjectEditorFormatByHmidAndLocale(const std::string &hmid, const std::string &locale,
@@ -64,6 +66,7 @@ public:
     void LoadSystemAbilitySuccess(const sptr<IRemoteObject> &object);
     void LoadSystemAbilityFail();
     void SARegCleanUp();
+
 private:
     class ObjectEditorSADeathRecipient : public IRemoteObject::DeathRecipient {
     public:
@@ -85,7 +88,7 @@ private:
     bool WaitLoadStateChange();
     ErrCode PrepareFiles(const std::unique_ptr<ObjectEditorDocument> &document);
     ErrCode HandlePackage(const std::unique_ptr<ObjectEditorDocument> &document,
-        const sptr<IObjectEditorClientCallback> &clientCallback,
+        const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
         sptr<IObjectEditorService> &oeExtensionRemoteObject);
     std::string GenRandomUuid();
 

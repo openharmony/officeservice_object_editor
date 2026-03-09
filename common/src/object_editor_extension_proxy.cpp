@@ -65,12 +65,12 @@ ErrCode ObjectEditorExtensionProxy::DoEdit(const std::string &documentId)
         return ERR_INVALID_VALUE;
     }
 
-    sptr<IRemoteObject> remoteObject = Remote();
-    if (remoteObject == nullptr) {
+    sptr<IRemoteObject> remote = Remote();
+    if (remote == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "remote is nullptr");
         return ERR_INVALID_DATA;
     }
-    int32_t result = remoteObject->SendRequest(
+    int32_t result = remote->SendRequest(
         static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_DO_EDIT), data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "send request failed");
@@ -95,19 +95,19 @@ ErrCode ObjectEditorExtensionProxy::GetEditStatus(const std::string &documentId,
     }
     if (isEditing == nullptr || isModified == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "isEditing or isModified is null");
-        return ERR_INVALID_VALUE;
+        return ERR_INVALID_DATA;
     }
     if (!data.WriteString(documentId)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write documentId fail");
         return ERR_INVALID_VALUE;
     }
 
-    sptr<IRemoteObject> remoteObject = Remote();
-    if (remoteObject == nullptr) {
+    sptr<IRemoteObject> remote = Remote();
+    if (remote == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "remote is nullptr");
         return ERR_INVALID_DATA;
     }
-    int32_t result = remoteObject->SendRequest(
+    int32_t result = remote->SendRequest(
         static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_EDITING_STATE), data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "send request failed");
@@ -133,12 +133,12 @@ ErrCode ObjectEditorExtensionProxy::GetExtensionEditStatus(bool &isEditing)
         return ERR_INVALID_VALUE;
     }
 
-    sptr<IRemoteObject> remoteObject = Remote();
-    if (remoteObject == nullptr) {
+    sptr<IRemoteObject> remote = Remote();
+    if (remote == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "remote is nullptr");
         return ERR_INVALID_DATA;
     }
-    int32_t result = remoteObject->SendRequest(
+    int32_t result = remote->SendRequest(
         static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_EXTENSION_EDITING_STATUS), data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "send request failed");
@@ -171,12 +171,12 @@ ErrCode ObjectEditorExtensionProxy::GetCapability(const std::string &documentId,
         return ERR_INVALID_VALUE;
     }
 
-    sptr<IRemoteObject> remoteObject = Remote();
-    if (remoteObject == nullptr) {
+    sptr<IRemoteObject> remote = Remote();
+    if (remote == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "remote is nullptr");
         return ERR_INVALID_DATA;
     }
-    int32_t result = remoteObject->SendRequest(
+    int32_t result = remote->SendRequest(
         static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_GET_CAPABILITY), data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "send request failed");
@@ -205,12 +205,12 @@ ErrCode ObjectEditorExtensionProxy::Close(const std::string &documentId, bool &i
         return ERR_INVALID_VALUE;
     }
 
-    sptr<IRemoteObject> remoteObject = Remote();
-    if (remoteObject == nullptr) {
+    sptr<IRemoteObject> remote = Remote();
+    if (remote == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "remote is nullptr");
         return ERR_INVALID_DATA;
     }
-    int32_t result = remoteObject->SendRequest(
+    int32_t result = remote->SendRequest(
         static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_CLOSE), data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "send request failed");
@@ -248,12 +248,12 @@ ErrCode ObjectEditorExtensionProxy::Initial(std::unique_ptr<ObjectEditorDocument
         return ERR_INVALID_DATA;
     }
 
-    sptr<IRemoteObject> remoteObject = Remote();
-    if (remoteObject == nullptr) {
+    sptr<IRemoteObject> remote = Remote();
+    if (remote == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "remote is nullptr");
         return ERR_INVALID_DATA;
     }
-    int32_t result = remoteObject->SendRequest(
+    int32_t result = remote->SendRequest(
         static_cast<uint32_t>(IObjectEditorServiceIpcCode::COMMAND_INITIAL), data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "send request failed");

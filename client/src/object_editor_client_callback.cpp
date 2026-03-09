@@ -41,7 +41,7 @@ ErrCode ObjectEditorClientCallback::OnUpdate(std::unique_ptr<ObjectEditorDocumen
         return ERR_INVALID_VALUE;
     }
     if (document == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, ",document is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "document is null");
         return ERR_INVALID_VALUE;
     }
     document->RestoreStorage();
@@ -62,7 +62,6 @@ ErrCode ObjectEditorClientCallback::OnError(ContentEmbed_ErrorCode error)
     return ERR_OK;
 }
 
-
 ErrCode ObjectEditorClientCallback::OnStopEdit(bool dataModified)
 {
     if (proxy_ == nullptr ||
@@ -71,7 +70,7 @@ ErrCode ObjectEditorClientCallback::OnStopEdit(bool dataModified)
         return ERR_INVALID_VALUE;
     }
     if (proxy_->ceDocument != nullptr && proxy_->ceDocument->oeDocumentInner != nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "restore storage");
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "restore storage");
         proxy_->ceDocument->oeDocumentInner->RestoreStorage();
     }
     proxy_->onEditingFinishedFunc(proxy_, dataModified);

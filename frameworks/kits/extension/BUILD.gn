@@ -61,12 +61,6 @@ ohos_shared_library("content_embed_extension") {
     ]
 
     sources = [
-        "${object_editor_path}/frameworks/kits/extension/src/object_editor_extension.cpp",
-        "${object_editor_path}/frameworks/kits/extension/src/object_editor_extension_context.cpp",
-        "${object_editor_path}/extension_ability/src/object_editor_extension_stub.cpp",
-        "${object_editor_path}/extension_ability/src/object_editor_client_callback_proxy.cpp",
-        "${object_editor_path}/client/src/object_editor_manager_proxy.cpp",
-        "${object_editor_path}/common/src/object_editor_format.cpp",
     ]
     configs = [ 
         ":ability_config",
@@ -129,7 +123,7 @@ ohos_shared_library("content_embed_extension_module") {
         "${innerkits_path}/include",
     ]
 
-    sources = [ "${object_editor_path}/frameworks/kits/extension/src/object_editor_extension_module_loader.cpp" ]
+    sources = [ ]
 
     configs = [ 
         ":ability_config",

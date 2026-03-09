@@ -299,7 +299,7 @@ bool StorageIO::IsValidReadParams(size_t offset, uint8_t *buf, size_t len, size_
     }
 
     const uint64_t maxStreamOff = static_cast<uint64_t>(std::numeric_limits<std::streamoff>::max());
-    if (offset > maxStreamOff) {
+    if (static_cast<uint64_t>(offset) > maxStreamOff) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Offset overflow");
         return false;
     }
@@ -1247,8 +1247,12 @@ bool StorageIO::CopyDataToBigBlocks(const std::vector<uint32_t> &blocks, const s
         uint32_t batchWriteLen = 0;
         size_t lastWrittenIdx = batchStartIdx;
 
-        batchBuffer = BuildBatchBuffer(batchStartIdx, batchEndIdx, newSize, blockSize, smallBuffer,
-            copied, batchWriteLen, lastWrittenIdx, exhausted);
+        uint64_t batchStartIdx64 = batchStartIdx;
+        uint64_t batchEndIdx64 = batchEndIdx;
+        uint64_t lastWrittenIdx64 = lastWrittenIdx;
+        batchBuffer = BuildBatchBuffer(batchStartIdx64, batchEndIdx64, newSize, blockSize, smallBuffer,
+            copied, batchWriteLen, lastWrittenIdx64, exhausted);
+        lastWrittenIdx = static_cast<size_t>(lastWrittenIdx64);
         if (batchBuffer.empty()) {
             return false;
         }

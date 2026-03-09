@@ -23,15 +23,15 @@ namespace ObjectEditor {
 // LCOV_EXCL_START
 ErrCode ObjectEditorManagerProxy::StartObjectEditorExtension(
     std::unique_ptr<ObjectEditorDocument> &document,
-    const sptr<IObjectEditorClientCallback> &callback,
+    const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
     sptr<IRemoteObject> &oeExtensionRemoteObject,
     bool &isPackageExtension)
 {
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
-    if (document == nullptr || callback == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "document or callback is null");
+    if (document == nullptr || objectEditorClientCallback == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "document or objectEditorClientCallback is null");
         return ERR_INVALID_VALUE;
     }
     if (!data.WriteInterfaceToken(GetDescriptor())) {
@@ -42,17 +42,18 @@ ErrCode ObjectEditorManagerProxy::StartObjectEditorExtension(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write document fail");
         return ERR_INVALID_DATA;
     }
-    if (!data.WriteRemoteObject(callback->AsObject())) {
+    if (!data.WriteRemoteObject(objectEditorClientCallback->AsObject())) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write remote object fail");
         return ERR_INVALID_DATA;
     }
-    sptr<IRemoteObject> remoteObject = Remote();
-    if (remoteObject == nullptr) {
+    sptr<IRemoteObject> remote = Remote();
+    if (remote == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "null remote");
         return ERR_INVALID_DATA;
     }
-    int32_t result = remoteObject->SendRequest(
-        static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_START_OBJECT_EDITOR_EXTENSION), data, reply, option);
+    int32_t result = remote->SendRequest(
+        static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_START_OBJECT_EDITOR_EXTENSION),
+        data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
         return result;
@@ -84,7 +85,7 @@ ErrCode ObjectEditorManagerProxy::StopObjectEditorExtension(
     }
     if (!data.WriteString(documentId)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write documentId failed");
-        return ERR_INVALID_DATA;
+        return ERR_INVALID_VALUE;
     }
     if (oeExtensionRemoteObject == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "oeExtensionRemoteObject is null");
@@ -98,13 +99,14 @@ ErrCode ObjectEditorManagerProxy::StopObjectEditorExtension(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write isPackageExtension failed");
         return ERR_INVALID_DATA;
     }
-    sptr<IRemoteObject> remoteObject = Remote();
-    if (remoteObject == nullptr) {
+    sptr<IRemoteObject> remote = Remote();
+    if (remote == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "null remote");
         return ERR_INVALID_DATA;
     }
-    int32_t result = remoteObject->SendRequest(
-        static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_STOP_OBJECT_EDITOR_EXTENSION), data, reply, option);
+    int32_t result = remote->SendRequest(
+        static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_STOP_OBJECT_EDITOR_EXTENSION),
+        data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
         return result;
@@ -133,13 +135,14 @@ ErrCode ObjectEditorManagerProxy::GetHmidByFileExtension(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write hmid failed");
         return ERR_INVALID_DATA;
     }
-    sptr<IRemoteObject> remoteObject = Remote();
-    if (remoteObject == nullptr) {
+    sptr<IRemoteObject> remote = Remote();
+    if (remote == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "null remote");
         return ERR_INVALID_DATA;
     }
-    int32_t result = remoteObject->SendRequest(
-        static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_GET_HMID_BY_FILE_EXTENSION), data, reply, option);
+    int32_t result = remote->SendRequest(
+        static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_GET_HMID_BY_FILE_EXTENSION),
+        data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
         return result;
@@ -169,13 +172,14 @@ ErrCode ObjectEditorManagerProxy::GetIconByHmid(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write hmid failed");
         return ERR_INVALID_DATA;
     }
-    sptr<IRemoteObject> remoteObject = Remote();
-    if (remoteObject == nullptr) {
+    sptr<IRemoteObject> remote = Remote();
+    if (remote == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "null remote");
         return ERR_INVALID_DATA;
     }
-    int32_t result = remoteObject->SendRequest(
-        static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_GET_ICON_BY_HMID), data, reply, option);
+    int32_t result = remote->SendRequest(
+        static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_GET_ICON_BY_HMID),
+        data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
         return result;
@@ -202,7 +206,7 @@ ErrCode ObjectEditorManagerProxy::GetFormatName(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write descriptor fail");
         return ERR_INVALID_VALUE;
     }
-    if (!data.WriteString16(Str8ToStr16(hmid))) {
+    if (!data.WriteString(hmid)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write hmid failed");
         return ERR_INVALID_DATA;
     }
@@ -210,13 +214,14 @@ ErrCode ObjectEditorManagerProxy::GetFormatName(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write locale failed");
         return ERR_INVALID_DATA;
     }
-    sptr<IRemoteObject> remoteObject = Remote();
-    if (remoteObject == nullptr) {
+    sptr<IRemoteObject> remote = Remote();
+    if (remote == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "null remote");
         return ERR_INVALID_DATA;
     }
-    int32_t result = remoteObject->SendRequest(
-        static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_GET_FORMAT_NAME), data, reply, option);
+    int32_t result = remote->SendRequest(
+        static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_GET_FORMAT_NAME),
+        data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
         return result;
@@ -249,17 +254,17 @@ ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatByHmidAndLocale(const std
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write locale failed");
         return ERR_INVALID_DATA;
     }
-    sptr<IRemoteObject> remoteObject = Remote();
-    if (remoteObject == nullptr) {
+    sptr<IRemoteObject> remote = Remote();
+    if (remote == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "null remote");
         return ERR_INVALID_DATA;
     }
-    int32_t ret = remoteObject->SendRequest(
+    int32_t result = remote->SendRequest(
         static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_GET_FORMAT_BY_HMID_AND_LOCALE),
         data, reply, option);
-    if (FAILED(ret)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", ret);
-        return ret;
+    if (FAILED(result)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
+        return result;
     }
     ErrCode errCode = reply.ReadInt32();
     if (FAILED(errCode)) {
@@ -283,18 +288,18 @@ ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatsByLocale(const std::stri
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(GetDescriptor())) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write descriptor fail");
-        return ERR_INVALID_VALUE;
+        return ERR_INVALID_DATA;
     }
     if (!data.WriteString16(Str8ToStr16(locale))) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write locale failed");
         return ERR_INVALID_DATA;
     }
-    sptr<IRemoteObject> remoteObject = Remote();
-    if (remoteObject == nullptr) {
+    sptr<IRemoteObject> remote = Remote();
+    if (remote == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "Remote is null");
         return ERR_INVALID_DATA;
     }
-    int32_t result = remoteObject->SendRequest(
+    int32_t result = remote->SendRequest(
         static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_GET_FORMATS_BY_LOCALE), data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
@@ -337,12 +342,12 @@ ErrCode ObjectEditorManagerProxy::StartUIAbility(const std::unique_ptr<AAFwk::Wa
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write want failed");
         return ERR_INVALID_DATA;
     }
-    sptr<IRemoteObject> remoteObject = Remote();
-    if (remoteObject == nullptr) {
+    sptr<IRemoteObject> remote = Remote();
+    if (remote == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "null remote");
         return ERR_INVALID_DATA;
     }
-    int32_t result = remoteObject->SendRequest(
+    int32_t result = remote->SendRequest(
         static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_START_UI_ABILITY), data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
@@ -353,7 +358,7 @@ ErrCode ObjectEditorManagerProxy::StartUIAbility(const std::unique_ptr<AAFwk::Wa
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "ReadInt32 failed");
         return errCode;
     }
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "succeed");
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "succeed");
     return ERR_OK;
 }
 // LCOV_EXCL_STOP
