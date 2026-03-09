@@ -38,15 +38,6 @@ ohos_shared_library("content_embed_document") {
     ]
 
     sources = [
-        "src/object_editor_document.cpp",
-        "src/pole.cpp",
-        "src/alloctable.cpp",
-        "src/dirtree.cpp",
-        "src/header.cpp",
-        "src/storage.cpp",
-        "src/stream.cpp",
-        "src/utils.cpp",
-        "${object_editor_path}/common/src/system_utils.cpp",
     ]
 
     external_deps = [

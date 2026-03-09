@@ -45,9 +45,9 @@ bool ObjectEditorConfig::CheckIsInDlp()
 {
 #ifdef WITH_DLP
     bool isInDlpSandbox = false;
-    int32_t ret = OHOS::Security::DlpPermission::DlpPermissionKit::IsInDlpSandbox(isInDlpSandbox);
-    if (ret != OHOS::Security::DlpPermission::DLP_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "CheckIsInDlpSandbox failed, ret: %{public}d", ret);
+    int32_t result = OHOS::Security::DlpPermission::DlpPermissionKit::IsInDlpSandbox(isInDlpSandbox);
+    if (result != OHOS::Security::DlpPermission::DLP_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "failed, result: %{public}d", result);
         return false;
     }
     if (isInDlpSandbox) {

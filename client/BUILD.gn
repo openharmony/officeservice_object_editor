@@ -48,15 +48,6 @@ ohos_shared_library("content_embed_client") {
     ]
 
     sources = [
-        "${object_editor_path}/common/src/object_editor_format.cpp",
-        "${object_editor_path}/common/src/object_editor_extension_proxy.cpp",
-        "${object_editor_path}/common/src/user_mgr.cpp",
-        "${object_editor_path}/client/src/object_editor_client_callback_stub.cpp",
-        "${object_editor_path}/client/src/object_editor_client_callback.cpp",
-        "${object_editor_path}/client/src/object_editor_manager_proxy.cpp",
-        "${object_editor_path}/client/src/object_editor_client.cpp",
-        "${object_editor_path}/document/src/object_editor_document.cpp",
-        "${object_editor_path}/package/src/object_editor_package.cpp",
     ]
 
     deps = [

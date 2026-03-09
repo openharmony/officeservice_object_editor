@@ -66,7 +66,7 @@ void ObjectEditorClient::SubscribeSystemAbility()
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
     if (saStatusListener_ != nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "No duplicate subscribe");
+        OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "No duplicate subscribe");
         return;
     }
     saStatusListener_ = sptr<ObjectEditorAbilityListener>(new ObjectEditorAbilityListener());
@@ -162,17 +162,17 @@ sptr<IObjectEditorManager> ObjectEditorClient::GetIObjectEditorManager()
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "get samgrProxy fail");
         return oeSAProxy_;
     }
-    auto remoteObject = samgrProxy->CheckSystemAbility(OBJECT_EDITOR_SERVICE_SA_ID);
-    if (remoteObject != nullptr) {
-        return GetObjectEditorProxy(remoteObject);
+    sptr<IRemoteObject> object = samgrProxy->CheckSystemAbility(OBJECT_EDITOR_SERVICE_SA_ID);
+    if (object != nullptr) {
+        return GetObjectEditorProxy(object);
     }
-    sptr<ObjectEditorLoadCallback> loadCallback = new (std::nothrow) ObjectEditorLoadCallback();
-    if (loadCallback == nullptr) {
+    sptr<ObjectEditorLoadCallback> oeLoadCallback = sptr<ObjectEditorLoadCallback>::MakeSptr();
+    if (oeLoadCallback == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "loadCallback is null");
         return nullptr;
     }
     InitLoadState();
-    int32_t result = samgrProxy->LoadSystemAbility(OBJECT_EDITOR_SERVICE_SA_ID, loadCallback);
+    int32_t result = samgrProxy->LoadSystemAbility(OBJECT_EDITOR_SERVICE_SA_ID, oeLoadCallback);
     if (result != ERR_NONE) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "failed to sa error:%{public}d", result);
         return nullptr;
@@ -205,20 +205,20 @@ bool ObjectEditorClient::WaitLoadStateChange()
 }
 
 void ObjectEditorLoadCallback::OnLoadSystemAbilitySuccess(
-    int32_t systemAbilityId, const sptr<IRemoteObject> &remoteObject)
+    int32_t systemAbilityId, const sptr<IRemoteObject> &object)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
     if (systemAbilityId != OBJECT_EDITOR_SERVICE_SA_ID) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "sa id invalid");
         return;
     }
-    if (remoteObject == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "remoteObject is null");
+    if (object == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "object is null");
         ObjectEditorClient::GetInstance().LoadSystemAbilityFail();
         return;
     }
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "load sa success");
-    ObjectEditorClient::GetInstance().LoadSystemAbilitySuccess(remoteObject);
+    ObjectEditorClient::GetInstance().LoadSystemAbilitySuccess(object);
 }
 
 void ObjectEditorLoadCallback::OnLoadSystemAbilityFail(int32_t systemAbilityId)
@@ -231,12 +231,12 @@ void ObjectEditorLoadCallback::OnLoadSystemAbilityFail(int32_t systemAbilityId)
     ObjectEditorClient::GetInstance().LoadSystemAbilityFail();
 }
 
-void ObjectEditorClient::LoadSystemAbilitySuccess(const sptr<IRemoteObject> &remoteObject)
+void ObjectEditorClient::LoadSystemAbilitySuccess(const sptr<IRemoteObject> &object)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
     std::unique_lock<std::mutex> lock(loadMutex_);
     loadState_ = true;
-    GetObjectEditorProxy(remoteObject);
+    GetObjectEditorProxy(object);
     loadCond_.notify_one();
 }
 
@@ -270,12 +270,12 @@ void ObjectEditorClient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 
 ErrCode ObjectEditorClient::StartObjectEditorExtension(
     std::unique_ptr<ObjectEditorDocument> &document,
-    const sptr<IObjectEditorClientCallback> &clientCallback,
+    const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
     sptr<IObjectEditorService> &oeExtensionRemoteObject,
     bool &isPackageExtension)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
-    if (document == nullptr || clientCallback == nullptr) {
+    if (document == nullptr || objectEditorClientCallback == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "document or callback is null");
         return ObjectEditorClientErrCode::CLIENT_INVALID_PARAMETER;
     }
@@ -286,7 +286,7 @@ ErrCode ObjectEditorClient::StartObjectEditorExtension(
     document->SetDocumentId(GenRandomUuid());
     ErrCode ret = PrepareFiles(document);
     if (ret != ObjectEditorClientErrCode::CLIENT_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "PrepareFiles failed, ret: %{public}d", ret);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "prepare files failed");
         return ret;
     }
     sptr<IObjectEditorManager> objectEditorManagerProxy = GetIObjectEditorManager();
@@ -294,29 +294,29 @@ ErrCode ObjectEditorClient::StartObjectEditorExtension(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "get proxy fail");
         return ERR_INVALID_VALUE;
     }
-    sptr<IRemoteObject> oeExtensionRemote = nullptr;
+    sptr<IRemoteObject> remoteObject = nullptr;
     ret = objectEditorManagerProxy->StartObjectEditorExtension(document,
-        clientCallback, oeExtensionRemote, isPackageExtension);
-    if (ret != ERR_OK || (!isPackageExtension && oeExtensionRemote == nullptr)) {
+        objectEditorClientCallback, remoteObject, isPackageExtension);
+    if (ret != ERR_OK || (!isPackageExtension && remoteObject == nullptr)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "failed:%{public}d", ret);
         return ret;
     }
     if (isPackageExtension) {
-        HandlePackage(document, clientCallback, oeExtensionRemoteObject);
+        HandlePackage(document, objectEditorClientCallback, oeExtensionRemoteObject);
     } else {
-        oeExtensionRemoteObject = iface_cast<IObjectEditorExtension>(oeExtensionRemote);
+        oeExtensionRemoteObject = iface_cast<IObjectEditorExtension>(remoteObject);
         if (oeExtensionRemoteObject == nullptr) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "oeExtensionRemoteObject is null");
             return ERR_INVALID_OPERATION;
         }
-        oeExtensionRemoteObject->SetRemoteObject(oeExtensionRemote);
+        oeExtensionRemoteObject->SetRemoteObject(remoteObject);
     }
     return ERR_OK;
 }
 
 ErrCode ObjectEditorClient::HandlePackage(
     const std::unique_ptr<ObjectEditorDocument> &document,
-    const sptr<IObjectEditorClientCallback> &clientCallback,
+    const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
     sptr<IObjectEditorService> &oeExtensionRemoteObject)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "in");
@@ -348,7 +348,7 @@ ErrCode ObjectEditorClient::HandlePackage(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "create package proxy failed");
         return ERR_INVALID_VALUE;
     }
-    packageProxy->Initial(std::move(newDocument), clientCallback);
+    packageProxy->Initial(std::move(newDocument), objectEditorClientCallback);
     oeExtensionRemoteObject = packageProxy;
     return ERR_OK;
 }

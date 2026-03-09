@@ -34,13 +34,6 @@ ohos_shared_library("content_embed_ndk") {
         "${object_editor_path}/utils/include/dfx",
     ]
     sources = [
-        "src/object_editor_document_capi.cpp",
-        "src/object_editor_extension_capi.cpp",
-        "src/object_editor_proxy_capi.cpp",
-        "${object_editor_path}/common/src/object_editor_config.cpp",
-        "${object_editor_path}/common/src/system_utils.cpp",
-        "${object_editor_path}/document/src/object_editor_document.cpp",
-        "${object_editor_path}/client/src/object_editor_extension_death_recipient.cpp",
     ]
 
     deps = [
