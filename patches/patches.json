@@ -14,11 +14,6 @@
             "project":"build",
             "path":"build",
             "pr_url":"https://gitcode.com/openharmony/build/pull/6525"
-        },
-        {
-            "project":"third_party_libnl",
-            "path":"third_party/libnl",
-            "pr_url":"https://gitcode.com/openharmony/third_party_libnl/pull/86"
         }
     ]
 }
