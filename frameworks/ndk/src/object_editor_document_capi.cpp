@@ -750,7 +750,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_Seek(ContentEmbed_Stream *stream, 
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "stream is null");
         return CE_ERR_PARAM_INVALID;
     }
-    if (position > std::numeric_limits<uint64_t>::max()) {
+    if (static_cast<uint64_t>(position) > std::numeric_limits<uint64_t>::max()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "position exceeds limit");
         return CE_ERR_PARAM_INVALID;
     }
@@ -762,7 +762,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_Seek(ContentEmbed_Stream *stream, 
     }
     const uint64_t size = innerStream->Size();
     if (position > size) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "position exceeds size:%{public}zu", size);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "position exceeds size:%{public}llu", size);
         return CE_ERR_STREAM_OPERATION_FAILED;
     }
     innerStream->Seek(static_cast<uint64_t>(position));

@@ -264,7 +264,7 @@ void ObjectEditorManagerDatabase::AddBundle(const std::string &bundleName)
         OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "store is null");
         return;
     }
-    std::vector<NativeRdb::ValueBucket> buckets;
+    std::vector<NativeRdb::ValuesBucket> buckets;
     ObjectEditorManagerErrCode errCode = GetBundleInfoValuesBuckets(bundleName, buckets);
     if (errCode != ObjectEditorManagerErrCode::SA_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "GetBundleInfoValuesBuckets failed");
@@ -318,7 +318,7 @@ void ObjectEditorManagerDatabase::UpdateBundle(const std::string &bundleName)
         OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "store is null");
         return;
     }
-    std::vector<NativeRdb::ValueBucket> buckets;
+    std::vector<NativeRdb::ValuesBucket> buckets;
     ObjectEditorManagerErrCode errCode = GetBundleInfoValuesBuckets(bundleName, buckets);
     if (errCode != ObjectEditorManagerErrCode::SA_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "GetBundleInfoValuesBuckets failed");
@@ -402,7 +402,7 @@ bool ObjectEditorManagerDatabase::DoInsert(const std::vector<NativeRdb::ValuesBu
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "failed: %{public}d", result.first);
         return false;
     }
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "inserted: %{public}ld", result.second);
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "inserted: %{public}lld", result.second);
     return true;
 }
 
@@ -485,9 +485,9 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByH
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "hmid: %{public}s, locale: %{public}s",
         hmid.c_str(), locale.c_str());
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
-    std::string sql = "SELECT hmid, bundle_name, module_name, resource_path," +
-        " hap_path, file_exts, name_id, description_id, icon_id from " + TABLE_NAME + " WHERE hmid = ?";
-    ObjectEditorManagerErrCode errCode = QueryBySql(sql, resultSet, { hmid });
+    ObjectEditorManagerErrCode errCode = QueryBySql("SELECT hmid, bundle_name, module_name, resource_path,"
+        " hap_path, file_exts, name_id, description_id, icon_id from object_editor_info WHERE hmid = ?",
+        resultSet, { hmid });
     if (errCode != ObjectEditorManagerErrCode::SA_OK || resultSet == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "query failed");
         return errCode;
@@ -511,9 +511,8 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatsBy
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "locale: %{public}s", locale.c_str());
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
-    std::string sql = "SELECT hmid, bundle_name, module_name, resource_path, hap_path, file_exts," +
-        " name_id, description_id, icon_id from " + TABLE_NAME;
-    ObjectEditorManagerErrCode errCode = QueryBySql(sql, resultSet);
+    ObjectEditorManagerErrCode errCode = QueryBySql("SELECT hmid, bundle_name, module_name, resource_path,"
+        " hap_path, file_exts, name_id, description_id, icon_id from object_editor_info", resultSet);
     if (errCode != ObjectEditorManagerErrCode::SA_OK || resultSet == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "query failed");
         return errCode;
@@ -545,9 +544,9 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatsBy
         return ObjectEditorManagerErrCode::SA_INVALID_PARAMETER;
     }
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
-    std::string sql = "SELECT hmid, bundle_name, module_name, ability_name, file_exts from "
-        + TABLE_NAME + " WHERE file_exts like ? ORDER BY create_time DESC";
-    ObjectEditorManagerErrCode errCode = QueryBySql(sql, resultSet, { "%" + fileExt + "%" });
+    ObjectEditorManagerErrCode errCode = QueryBySql("SELECT hmid, bundle_name, module_name, ability_name,"
+        " file_exts from object_editor_info WHERE file_exts like ? ORDER BY create_time DESC",
+        resultSet, { "%" + fileExt + "%" });
     if (errCode != ObjectEditorManagerErrCode::SA_OK || resultSet == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "query failed");
         return errCode;

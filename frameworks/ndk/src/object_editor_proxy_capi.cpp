@@ -15,7 +15,6 @@
 
 #include <cstring>
 #include <filesystem>
-
 #include "image_source.h"
 
 #include "iobject_editor_extension.h"

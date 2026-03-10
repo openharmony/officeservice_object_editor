@@ -15,6 +15,7 @@
 
 #include "object_editor_connection.h"
 #include "object_editor_extension_proxy.h"
+#include "object_editor_event_manager.h"
 
 namespace OHOS {
 namespace ObjectEditor {
@@ -22,7 +23,6 @@ namespace ObjectEditor {
 namespace {
 constexpr int32_t DEFAULT_USER_ID = -1;
 constexpr int32_t RETRY_TIMES = 1;
-constexpr int32_t EXTENSION_STOP_TIME_S = 20;
 constexpr int32_t MAX_CHECK_REMOTE_EDIT_STATUS_TIMES = 1;
 constexpr int32_t CONNECT_TIMEOUT = 3;
 }
@@ -195,7 +195,7 @@ bool ObjectEditorConnection::CheckRemoteEditStatus()
 
 ObjectEditorManagerErrCode ObjectEditorConnection::StopConnect()
 {
-    auto abilityManagerClient = AppFwk::AbilityManagerClient::GetInstance();
+    auto abilityManagerClient = AAFwk::AbilityManagerClient::GetInstance();
     if (abilityManagerClient == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "abilityManagerClient is null");
         return ObjectEditorManagerErrCode::SA_DISCONNECT_ABILITY_FAILED;
@@ -217,7 +217,7 @@ ObjectEditorManagerErrCode ObjectEditorConnection::DoConnect(
         remoteObject = extensionProxy_;
         return ObjectEditorManagerErrCode::SA_CONNECT_ABILITY_SUCCEED;
     }
-    auto abilityManagerClient = AppFwk::AbilityManagerClient::GetInstance();
+    auto abilityManagerClient = AAFwk::AbilityManagerClient::GetInstance();
     if (abilityManagerClient == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "abilityManagerClient is null");
         return ObjectEditorManagerErrCode::SA_CONNECT_ABILITY_FAILED;

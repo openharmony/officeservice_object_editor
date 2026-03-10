@@ -163,7 +163,7 @@ bool GetConfigFileExts(const nlohmann::json &json, std::string &fileExts)
     return true;
 }
 
-bool GetConfigIcon(const nlohmann::json &json, int &iconId)
+bool GetConfigIconId(const nlohmann::json &json, int &iconId)
 {
     auto it = json.find("icon");
     if (it == json.end() || !it->is_string()) {
@@ -408,9 +408,7 @@ bool BuildObjectEditorFormat(ObjectEditorFormat &format, NativeRdb::RowEntity &r
 bool BuildValuesBuckets(std::vector<NativeRdb::ValuesBucket> &buckets, const AppExecFwk::BundleInfo &bundleInfo,
     const AppExecFwk::ExtensionAbilityInfo &extensionInfo)
 {
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DATABASE, "bundleName: %{public}s, moduleName: %{public}s,"
-        "abilityName: %{public}s",
-        bundleInfo.bundleName.c_str(), extensionInfo.moduleName.c_str(), extensionInfo.name.c_str());
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DATABASE, "enter");
     auto resMgr = ObjectEditorManagerResmgr::GetInstance().CreateResourceManager(extensionInfo);
     if (resMgr == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "resMgr is null");
