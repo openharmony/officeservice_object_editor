@@ -298,7 +298,7 @@ ErrCode ObjectEditorPackage::CreatePackageObject()
         }
     }
     if (totalWritten != static_cast<size_t>(totalSize)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "write file data not match, %{public}zu:%{public}ld",
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "write file data not match, %{public}zu:%{public}d",
             totalWritten, totalSize);
         return ERR_INVALID_VALUE;
     }

@@ -14,14 +14,14 @@
  */
 
 #include <memory>
-
-#include "image_packer.h"
-#include "want_manager.h"
-
-#include "content_embed_extension.h"
 #include "native_object_editor_types.h"
-#include "object_editor_config.h"
+#include "content_embed_extension.h"
 #include "object_editor_extension.h"
+#include "object_editor_config.h"
+
+#include "want_manager.h"
+#include "image_packer.h"
+
 
 // LCOV_EXCL_START
 using namespace OHOS::ObjectEditor;
