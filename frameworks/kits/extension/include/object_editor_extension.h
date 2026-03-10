@@ -49,7 +49,7 @@ public:
     virtual std::shared_ptr<ObjectEditorExtensionContext> CreateAndInitContext(
         const std::shared_ptr<AbilityLocalRecord> &record, const std::shared_ptr<OHOSApplication> &application,
         std::shared_ptr<AbilityHandler> &handler, const sptr<IRemoteObject> &token) override;
-    
+
     /**
      * @brief Init the extension.
      *
@@ -123,28 +123,25 @@ public:
 
     std::shared_ptr<struct ContentEmbed_ExtensionContext> GetCEContext() const;
 
-    std::shared_ptr<struct ContentEmbed_Document> GetDocument() const;
+    ErrCode GetSnapshot(const std::string &documentId) override;
 
-    sptr<IObjectEditorClientCallback> GetClientCb() const;
+    ErrCode DoEdit(const std::string &documentId) override;
 
-    ErrCode RegisterClientCB(const sptr<IObjectEditorClientCallback> &clientCb) override;
+    ErrCode GetEditStatus(const std::string &documentId, bool *isEditing, bool *isModified) override;
 
-    ErrCode GetSnapshot() override;
+    ErrCode GetCapability(const std::string &documentId, uint32_t *bitmask) override;
 
-    ErrCode DoEdit() override;
+    ErrCode Close(const std::string &documentId, bool &isAllObjectsRemoved) override;
 
-    ErrCode GetEditStatus(bool *isEditing, bool *isModified) override;
+    ErrCode GetExtensionEditStatus(bool &isEditing) override;
 
-    ErrCode GetCapability(uint32_t *bitmask) override;
-
-    ErrCode Close() override;
-
-    ErrCode Initial(std::unique_ptr<ObjectEditorDocument> document) override;
+    ErrCode Initial(std::unique_ptr<ObjectEditorDocument> document,
+        const sptr<IObjectEditorClientCallback> &clientCb) override;
 
     int32_t CallbackEnter([[maybe_unused]] uint32_t code) override;
     int32_t CallbackExit([[maybe_unused]] uint32_t code, [[maybe_unused]] int32_t result) override;
 protected:
-    class ObjectEditorExtensionDisplayListener : public Rosen::DisplayListener::IDisplayListener {
+    class ObjectEditorExtensionDisplayListener : public Rosen::DisplayManager::IDisplayListener {
     public:
         explicit ObjectEditorExtensionDisplayListener(const std::weak_ptr<ObjectEditorExtension> &extension)
         {
@@ -198,13 +195,13 @@ private:
 
     void GetSrcPath(std::string &srcPath);
     void ListenWindowManager();
+    ErrCode CreateObject(std::unique_ptr<ObjectEditorDocument> document,
+        const sptr<IObjectEditorClientCallback> &clientCb);
 
     std::shared_ptr<AbilityHandler> handler_ = nullptr;
     std::shared_ptr<struct ContentEmbed_ExtensionInstance> ceInstance_ = nullptr;
     std::shared_ptr<struct ContentEmbed_ExtensionContext> ceContext_ = nullptr;
     sptr<ObjectEditorExtensionDisplayListener> displayListener_ = nullptr;
-    std::shared_ptr<struct ContentEmbed_Document> document_ = nullptr;
-    sptr<IObjectEditorClientCallback> clientCb_ = nullptr;
 };
 
 } // namespace AbilityRuntime

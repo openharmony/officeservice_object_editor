@@ -34,4 +34,4 @@ public:
 } // namespace ObjectEditor
 } // namespace OHOS
 
-#endif // OHOS_OBJECT_EDITOR_OBJECT_EDITOR_CONNECTION_H
+#endif // OHOS_OBJECT_EDITOR_OBJECT_EDITOR_CONNECTION_STATUS_CALLBACK_H

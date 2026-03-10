@@ -17,7 +17,7 @@
 
 namespace OHOS {
 namespace ObjectEditor {
-
+// LCOV_EXCL_START
 std::optional<CLSID> ParseHmidToClsid(const std::string &uuid)
 {
     std::array<char, LENGTH> hex{};
@@ -96,6 +96,6 @@ std::string FormatClsidToHmid(const CLSID &clsid)
     }
     return out;
 }
-
-} // namespace ObjectEditor
-} // namespace OHOS
+// LCOV_EXCL_STOP
+}  // namespace ObjectEditor
+}  // namespace OHOS

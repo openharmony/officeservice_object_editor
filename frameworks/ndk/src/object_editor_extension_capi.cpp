@@ -30,8 +30,8 @@ using namespace OHOS::ObjectEditor;
 extern "C" {
 #endif
 
-ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnCreateFunc(ContentEmbed_ExtensionInstance *instance,
-    OH_ContentEmbed_Extension_OnCreateFunc onCreateFunc)
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnCreateFunc(
+    ContentEmbed_ExtensionInstanceHandle instance, OH_ContentEmbed_Extension_OnCreateFunc onCreateFunc)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
@@ -39,16 +39,20 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnCreateFunc(ContentEmb
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (instance == nullptr || onCreateFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (instance == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "instance is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (onCreateFunc == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "onCreateFunc is null");
         return CE_ERR_PARAM_INVALID;
     }
     instance->onCreateFunc = onCreateFunc;
     return CE_ERR_OK;
 }
 
-ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnDestroyFunc(ContentEmbed_ExtensionInstance *instance,
-    OH_ContentEmbed_Extension_OnDestroyFunc onDestroyFunc)
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnDestroyFunc(
+    ContentEmbed_ExtensionInstanceHandle instance, OH_ContentEmbed_Extension_OnDestroyFunc onDestroyFunc)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
@@ -56,16 +60,20 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnDestroyFunc(ContentEm
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (instance == nullptr || onDestroyFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (instance == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "instance is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (onDestroyFunc == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "onDestroyFunc is null");
         return CE_ERR_PARAM_INVALID;
     }
     instance->onDestroyFunc = onDestroyFunc;
     return CE_ERR_OK;
 }
 
-ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnObjectAttachFunc(ContentEmbed_ExtensionInstance *instance,
-    OH_ContentEmbed_Extension_OnObjectAttachFunc onObjectAttachFunc)
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnObjectAttachFunc(
+    ContentEmbed_ExtensionInstanceHandle instance, OH_ContentEmbed_Extension_OnObjectAttachFunc onObjectAttachFunc)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
@@ -73,16 +81,20 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnObjectAttachFunc(Cont
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (instance == nullptr || onObjectAttachFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (instance == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "instance is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (onObjectAttachFunc == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "onObjectAttachFunc is null");
         return CE_ERR_PARAM_INVALID;
     }
     instance->onObjectAttachFunc = onObjectAttachFunc;
     return CE_ERR_OK;
 }
 
-ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnObjectDetachFunc(ContentEmbed_ExtensionInstance *instance,
-    OH_ContentEmbed_Extension_OnObjectDetachFunc onObjectDetachFunc)
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnObjectDetachFunc(
+    ContentEmbed_ExtensionInstanceHandle instance, OH_ContentEmbed_Extension_OnObjectDetachFunc onObjectDetachFunc)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
@@ -90,15 +102,19 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnObjectDetachFunc(Cont
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (instance == nullptr || onObjectDetachFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (instance == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "instance is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (onObjectDetachFunc == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "onObjectDetachFunc is null");
         return CE_ERR_PARAM_INVALID;
     }
     instance->onObjectDetachFunc = onObjectDetachFunc;
     return CE_ERR_OK;
 }
 
-ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnWriteToDataStreamFunc(ContentEmbed_Object *object,
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnWriteToDataStreamFunc(ContentEmbed_ObjectHandle object,
     OH_ContentEmbed_Extension_OnWriteToDataStreamFunc onWriteToDataStreamFunc)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
@@ -107,15 +123,19 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnWriteToDataStreamFunc
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (object == nullptr || onWriteToDataStreamFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (object == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "object is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (onWriteToDataStreamFunc == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "onWriteToDataStreamFunc is null");
         return CE_ERR_PARAM_INVALID;
     }
     object->onWriteToDataStreamFunc = onWriteToDataStreamFunc;
     return CE_ERR_OK;
 }
 
-ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetSnapshotFunc(ContentEmbed_Object *object,
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetSnapshotFunc(ContentEmbed_ObjectHandle object,
     OH_ContentEmbed_Extension_OnGetSnapshotFunc onGetSnapshotFunc)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
@@ -124,15 +144,19 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetSnapshotFunc(Conte
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (object == nullptr || onGetSnapshotFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (object == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "object is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (onGetSnapshotFunc == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "onGetSnapshotFunc is null");
         return CE_ERR_PARAM_INVALID;
     }
     object->onGetSnapshotFunc = onGetSnapshotFunc;
     return CE_ERR_OK;
 }
 
-ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnDoEditFunc(ContentEmbed_Object *object,
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnDoEditFunc(ContentEmbed_ObjectHandle object,
     OH_ContentEmbed_Extension_OnDoEditFunc onDoEditFunc)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
@@ -141,15 +165,19 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnDoEditFunc(ContentEmb
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (object == nullptr || onDoEditFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (object == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "object is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (onDoEditFunc == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "onDoEditFunc is null");
         return CE_ERR_PARAM_INVALID;
     }
     object->onDoEditFunc = onDoEditFunc;
     return CE_ERR_OK;
 }
 
-ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetEditStatusFunc(ContentEmbed_Object *object,
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetEditStatusFunc(ContentEmbed_ObjectHandle object,
     OH_ContentEmbed_Extension_OnGetEditStatusFunc onGetEditStatusFunc)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
@@ -158,8 +186,12 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetEditStatusFunc(Con
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (object == nullptr || onGetEditStatusFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (object == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "object is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (onGetEditStatusFunc == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "onGetEditStatusFunc is null");
         return CE_ERR_PARAM_INVALID;
     }
     object->onGetEditStatusFunc = onGetEditStatusFunc;
@@ -183,6 +215,33 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetCapabilityFunc(Con
     return CE_ERR_OK;
 }
 
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetContentEmbedContext(ContentEmbed_ExtensionInstanceHandle instance,
+    ContentEmbed_ExtensionContextHandle *ceContext)
+{
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
+    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
+    if (supported != CE_ERR_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
+        return supported;
+    }
+    if (instance == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (ceContext == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "ceContext is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    std::shared_ptr<OHOS::AbilityRuntime::ObjectEditorExtension> extensionInstance =
+        std::static_pointer_cast<OHOS::AbilityRuntime::ObjectEditorExtension>(instance->extension.lock());
+    if (extensionInstance == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "extensionInstance is null");
+        return CE_ERR_NULL_POINTER;
+    }
+    *ceContext = (extensionInstance->GetCEContext()).get();
+    return CE_ERR_OK;
+}
+
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetContext(ContentEmbed_ExtensionContextHandle ceContext,
     AbilityRuntime_ContextHandle *context)
 {
@@ -192,11 +251,15 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetContext(ContentEmbed_Extensi
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (ceContext == nullptr || context == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (ceContext == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "ceContext is null");
         return CE_ERR_PARAM_INVALID;
     }
-    *context = static_cast<AbilityRuntime_ContextHandle *>(ceContext);
+    if (context == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "context is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    *context = static_cast<AbilityRuntime_ContextHandle>(ceContext);
     if (*context == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "context is null");
         return CE_ERR_NULL_POINTER;
@@ -214,8 +277,12 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetExtensionInstance(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (baseInstance == nullptr || ceInstance == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (baseInstance == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "baseInstance is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (ceInstance == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "ceInstance is null");
         return CE_ERR_PARAM_INVALID;
     }
     *ceInstance = static_cast<ContentEmbed_ExtensionInstanceHandle>(baseInstance);
@@ -227,7 +294,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetExtensionInstance(
 }
 
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetContentEmbedDocument(
-    ContentEmbed_Object object, ContentEmbed_Document **ceDocument)
+    ContentEmbed_ObjectHandle object, ContentEmbed_Document **ceDocument)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
@@ -235,8 +302,12 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetContentEmbedDocument(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (object == nullptr || ceDocument == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (object == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "object is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (ceDocument == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "ceDocument is null");
         return CE_ERR_PARAM_INVALID;
     }
     *ceDocument = (object->document).get();
@@ -247,7 +318,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetContentEmbedDocument(
     return CE_ERR_OK;
 }
 
-ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnUpdate(ContentEmbed_Object object)
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnUpdate(ContentEmbed_ObjectHandle object)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
@@ -256,7 +327,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnUpdate(ContentEmbed
         return supported;
     }
     if (object == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "object is null");
         return CE_ERR_PARAM_INVALID;
     }
     auto clientCb = object->clientCb;
@@ -269,7 +340,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnUpdate(ContentEmbed
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
         return CE_ERR_NULL_POINTER;
     }
-    auto errCode = clientCb->onUpdate(ceDocument->oeDocumentInner);
+    auto errCode = clientCb->OnUpdate(ceDocument->oeDocumentInner);
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed: %{public}d", errCode);
         return CE_ERR_CLIENT_CALLBACK_FAILED;
@@ -277,7 +348,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnUpdate(ContentEmbed
     return CE_ERR_OK;
 }
 
-ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnError(ContentEmbed_Object object,
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnError(ContentEmbed_ObjectHandle object,
     ContentEmbed_ErrorCode code)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
@@ -287,7 +358,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnError(ContentEmbed_
         return supported;
     }
     if (object == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "object is null");
         return CE_ERR_PARAM_INVALID;
     }
     auto clientCb = object->clientCb;
@@ -295,12 +366,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnError(ContentEmbed_
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "clientCb is null");
         return CE_ERR_CLIENT_CALLBACK_NOT_REGISTERED;
     }
-    auto ceDocument = (object->document).get();
-    if (ceDocument == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
-        return CE_ERR_NULL_POINTER;
-    }
-    auto errCode = clientCb->onError(code);
+    auto errCode = clientCb->OnError(code);
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed: %{public}d", errCode);
         return CE_ERR_CLIENT_CALLBACK_FAILED;
@@ -308,8 +374,8 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnError(ContentEmbed_
     return CE_ERR_OK;
 }
 
-ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnEditingFinished(ContentEmbed_Object object,
-    bool isModified)
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnEditingFinished(ContentEmbed_ObjectHandle object,
+    bool dataModified)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
@@ -318,7 +384,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnEditingFinished(Con
         return supported;
     }
     if (object == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "object is null");
         return CE_ERR_PARAM_INVALID;
     }
     auto clientCb = object->clientCb;
@@ -327,7 +393,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnEditingFinished(Con
         return CE_ERR_CLIENT_CALLBACK_NOT_REGISTERED;
     }
 
-    auto errCode = clientCb->onStopEdit(isModified);
+    auto errCode = clientCb->OnStopEdit(dataModified);
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed: %{public}d", errCode);
         return CE_ERR_CLIENT_CALLBACK_FAILED;
@@ -335,7 +401,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnEditingFinished(Con
     return CE_ERR_OK;
 }
 
-ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnExtensionStoped(
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnExtensionStopped(
     ContentEmbed_ExtensionInstanceHandle instance)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
@@ -345,7 +411,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnExtensionStoped(
         return supported;
     }
     if (instance == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "instance is null");
         return CE_ERR_PARAM_INVALID;
     }
     std::lock_guard<std::mutex> lock(instance->objectsMutex);
@@ -355,19 +421,20 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnExtensionStoped(
         }
         auto clientCb = object->clientCb;
         if (clientCb == nullptr) {
-            OBJECT_EDITOR_LOGW(ObjectEditorDomain::CLIENT_NDK, "object %{public}s clientCb is null", objectId.c_str());
-            continue;
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "object %{private}s clientCb is null", objectId.c_str());
+            return CE_ERR_CLIENT_CALLBACK_NOT_REGISTERED;
         }
-        auto errCode = clientCb->OnExtensionStoped(false);
+        auto errCode = clientCb->OnExtensionStopped();
         if (errCode != OHOS::ERR_OK) {
-            OBJECT_EDITOR_LOGW(ObjectEditorDomain::CLIENT_NDK, "object %{public}s clientCb is null", objectId.c_str());
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "object %{private}s clientCb is null", objectId.c_str());
+            return CE_ERR_CLIENT_CALLBACK_FAILED;
         }
     }
     return CE_ERR_OK;
 }
 
-ContentEmbed_ErrorCode OH_ContentEmbed_Extension_SetSnapshot(ContentEmbed_Object object,
-    OH_PixelMapNative *pixelMap)
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_SetSnapshot(ContentEmbed_ObjectHandle object,
+    OH_PixelmapNative *pixelmap)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
@@ -375,8 +442,12 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_SetSnapshot(ContentEmbed_Object
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (object == nullptr || pixelMap == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (pixelmap == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "pixelmap is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (object == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "object is null");
         return CE_ERR_PARAM_INVALID;
     }
     if (object->document == nullptr || object->document->oeDocumentInner == nullptr) {
@@ -385,23 +456,23 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_SetSnapshot(ContentEmbed_Object
     }
     std::string snapshotPath = object->document->oeDocumentInner->GetSnapshotPath();
     OHOS::Media::ImagePacker imagePacker;
-    OHOS::Media::PackOption packOption;
-    packOption.format = "image/png";
-    std::shared_ptr<OHOS::Media::PixelMap> pixelMapPtr = pixelMap->GetInnerPixelMap();
-    if (pixelMapPtr == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "pixelMap is null");
+    OHOS::Media::PackOption option;
+    option.format = "image/png";
+    std::shared_ptr<OHOS::Media::PixelMap> pixelmapPtr = pixelmap->GetInnerPixelmap();
+    if (pixelmapPtr == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "pixelmap ptr is null");
         return CE_ERR_NULL_POINTER;
     }
-    if (imagePacker.StartPacking(snapshotPath, packOption)) {
+    if (imagePacker.StartPacking(snapshotPath, option)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "packing failed");
         return CE_ERR_IMAGE_PACKER_OPERATION_FAILED;
     }
-    if (imagePacker.AddImage(*pixelMapPtr)) {
+    if (imagePacker.AddImage(*pixelmapPtr)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "add image failed");
         return CE_ERR_IMAGE_PACKER_OPERATION_FAILED;
     }
     int64_t packedSize = 0;
-    if (imagePacker.FinishPacking(packedSize)) {
+    if (imagePacker.FinalizePacking(packedSize)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "finish packing failed");
         return CE_ERR_IMAGE_PACKER_OPERATION_FAILED;
     }
@@ -417,21 +488,25 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextStartSelfUIAbility(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (context == nullptr || want == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (context == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "context is null");
         return CE_ERR_PARAM_INVALID;
     }
-    std::shared_ptr<OHOS::AbilityRuntime::ObjectEditorContextContext> contextPtr =
-        std::static_pointer_cast<OHOS::AbilityRuntime::ObjectEditorContextContext>(context->context.lock());
+    if (want == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "want is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    std::shared_ptr<OHOS::AbilityRuntime::ObjectEditorExtensionContext> contextPtr =
+        std::static_pointer_cast<OHOS::AbilityRuntime::ObjectEditorExtensionContext>(context->context.lock());
     if (contextPtr == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "context is null");
         return CE_ERR_NULL_POINTER;
     }
     OHOS::AAFwk::Want innerWant;
-    OHOS::AAFwk::CWantManager::TransformWant(*want, false, innerWant);
+    OHOS::AAFwk::CWantManager::TransformToWant(*want, false, innerWant);
     auto ret = contextPtr->StartAbility(innerWant);
     if (ret != OHOS::ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "start ability failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "start ability failed:%{public}d", ret);
         return CE_ERR_SYSTEM_ABNORMAL;
     }
     return CE_ERR_OK;
@@ -439,7 +514,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextStartSelfUIAbility(
 
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextStartSelfUIAbilityWithStartOptions(
     ContentEmbed_ExtensionContextHandle context, AbilityBase_Want *want,
-    AbilityBase_StartOptions *options)
+    AbilityRuntime_StartOptions *options)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
@@ -447,21 +522,29 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextStartSelfUIAbilityWithSt
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (context == nullptr || want == nullptr || startOptions == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (context == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "context is null");
         return CE_ERR_PARAM_INVALID;
     }
-    std::shared_ptr<OHOS::AbilityRuntime::ObjectEditorContextContext> contextPtr =
-        std::static_pointer_cast<OHOS::AbilityRuntime::ObjectEditorContextContext>(context->context.lock());
+    if (want == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "want is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (options == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "options is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    std::shared_ptr<OHOS::AbilityRuntime::ObjectEditorExtensionContext> contextPtr =
+        std::static_pointer_cast<OHOS::AbilityRuntime::ObjectEditorExtensionContext>(context->context.lock());
     if (contextPtr == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "context is null");
         return CE_ERR_NULL_POINTER;
     }
     OHOS::AAFwk::Want innerWant;
-    OHOS::AAFwk::CWantManager::TransformWant(*want, false, innerWant);
-    auto ret = contextPtr->StartAbility(innerWant, options);
+    OHOS::AAFwk::CWantManager::TransformToWant(*want, false, innerWant);
+    auto ret = contextPtr->StartAbility(innerWant);
     if (ret != OHOS::ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "start ability failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "start ability failed:%{public}d", ret);
         return CE_ERR_SYSTEM_ABNORMAL;
     }
     return CE_ERR_OK;
@@ -478,17 +561,17 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextTerminateAbility(
     }
     if (context == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "context is null");
-        return CE_ERR_NULL_POINTER;
+        return CE_ERR_PARAM_INVALID;
     }
-    std::shared_ptr<OHOS::AbilityRuntime::ObjectEditorContextContext> contextPtr =
-        std::static_pointer_cast<OHOS::AbilityRuntime::ObjectEditorContextContext>(context->context.lock());
+    std::shared_ptr<OHOS::AbilityRuntime::ObjectEditorExtensionContext> contextPtr =
+        std::static_pointer_cast<OHOS::AbilityRuntime::ObjectEditorExtensionContext>(context->context.lock());
     if (contextPtr == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "context is null");
         return CE_ERR_NULL_POINTER;
     }
     auto ret = contextPtr->TerminateAbility();
     if (ret != OHOS::ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "terminate ability failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "terminate ability failed:%{public}d", ret);
         return CE_ERR_SYSTEM_ABNORMAL;
     }
     return CE_ERR_OK;

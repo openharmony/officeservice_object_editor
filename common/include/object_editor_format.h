@@ -27,12 +27,13 @@ struct ObjectEditorFormat : public Parcelable {
     std::string moduleName;
     std::string abilityName;
     std::string version;
-    std::string formatName;
+
     std::string locale;
+    std::string formatName;
     std::string description;
     std::string fileExts;
-    std::string icon;
-    std::shared_ptr<Media::PixelMap> pIconPiexMap;
+
+    std::shared_ptr<Media::PixelMap> pIconPixelMap;
     int64_t createTime;
 
     virtual bool Marshalling(Parcel &parcel) const override;

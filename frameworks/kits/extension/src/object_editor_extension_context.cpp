@@ -20,7 +20,7 @@
 #include "iservice_registry.h"
 
 namespace OHOS {
-namespace ObjectEditor {
+namespace AbilityRuntime {
 // LCOV_EXCL_START
 const size_t ObjectEditorExtensionContext::CONTEXT_TYPE_ID(std::hash<const char *>{}("ObjectEditorExtensionContext"));
 int ObjectEditorExtensionContext::ILLEGAL_REQUEST_CODE(-1);
@@ -32,7 +32,7 @@ ErrCode ObjectEditorExtensionContext::StartAbility(const AAFwk::Want &want) cons
     sptr<IObjectEditorManager> objectEditorManagerProxy = GetIObjectEditorManager();
     if (objectEditorManagerProxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "get proxy failed");
-        return ERR_INVALID_STATE;
+        return ERR_INVALID_VALUE;
     }
     std::unique_ptr<AAFwk::Want> innerWant = std::make_unique<AAFwk::Want>(want);
     ErrCode err = objectEditorManagerProxy->StartUIAbility(innerWant);
@@ -61,15 +61,13 @@ ErrCode ObjectEditorExtensionContext::StartAbility(
     return err;
 }
 
-ErrCode ObjectEditorExtensionContext::ConnectAbility(
+bool ObjectEditorExtensionContext::ConnectAbility(
     const AAFwk::Want &want, const sptr<AbilityConnectCallback> &connectCallback) const
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "in");
     ErrCode ret = ConnectionManager::GetInstance().ConnectAbility(token_, want, connectCallback);
-    if (ret != ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ConnectAbility failed, err: %{public}d", ret);
-    }
-    return ret;
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "ret: %{public}d", ret);
+    return ret == ERR_OK;
 }
 
 ErrCode ObjectEditorExtensionContext::StartAbilityWithAccount(const AAFwk::Want &want, int accountId) const
@@ -124,7 +122,7 @@ ErrCode ObjectEditorExtensionContext::DisconnectAbility(
     return ret;
 }
 
-ErrCode ObjectEditorExtensionContext::TerminateAbility() const
+ErrCode ObjectEditorExtensionContext::TerminateAbility()
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "in");
     auto abilityManagerClient = AAFwk::AbilityManagerClient::GetInstance();

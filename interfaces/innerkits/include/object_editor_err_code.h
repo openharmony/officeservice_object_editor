@@ -20,15 +20,16 @@
 
 namespace OHOS {
 namespace ObjectEditor {
-enum class ObjectEditorClientErrCode : int32_t {
+enum ObjectEditorClientErrCode : int32_t {
     CLIENT_OK = 0,
     CLIENT_INVALID_PARAMETER,
     CLIENT_UNKNOWN_OPERATE,
     CLIENT_GET_PATH_ERROR,
     CLIENT_PREPARE_FILES_ERROR,
+    CLIENT_MEMORY_ALLOCATION_FAILED,
 };
 
-enum class ObjectEditorManagerErrCode : int32_t {
+enum ObjectEditorManagerErrCode : int32_t {
     SA_OK = 0,
     SA_PERMISSION_DENIED,
     SA_UNKNOWN_OPERATE,
@@ -56,6 +57,7 @@ enum class ObjectEditorManagerErrCode : int32_t {
     SA_MEMORY_ALLOCATION_FAILED,
     SA_EXTENSION_PARAM_INVALID,
     SA_NOT_FOUND_ABILITY_BY_REMOTE_OBJECT,
+    SA_NOT_FOUND_CLIENT_REMOTE_OBJECT_BY_SERVER_REMOTE_OBJECT,
     SA_ABILITY_CONNECTION_IS_NULL,
     SA_DISCONNECT_ABILITY_FAILED,
     SA_UNLOAD_FAILED,
@@ -69,11 +71,11 @@ enum class ObjectEditorManagerErrCode : int32_t {
     SA_START_UIABILITY_FAILED,
 };
 
-enum class ObjectorEditorExtensionErrCode : int32_t {
+enum ObjectorEditorExtensionErrCode : int32_t {
     EXTENSION_OK = 0,
 };
 
-enum class ObjectEditorDocumentErrCode : int32_t {
+enum ObjectEditorDocumentErrCode : int32_t {
     DOCUMENT_OK = 0,
     DOCUMENT_FLUSH_ERROR,
 };

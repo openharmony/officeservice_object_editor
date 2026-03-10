@@ -28,7 +28,7 @@ int32_t ObjectEditorExtensionStub::OnRemoteRequest(
         return ret;
     }
     ret = OnRemoteRequestInner(code, data, reply, option);
-    ret = CallbackExit(ret, code);
+    ret = CallbackExit(code, ret);
     if (ret != ERR_NONE) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "CallbackExit ret: %{public}d, code: %{public}u",
             ret, code);
@@ -39,15 +39,13 @@ int32_t ObjectEditorExtensionStub::OnRemoteRequest(
 int32_t ObjectEditorExtensionStub::OnRemoteRequestInner(
     uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option)
 {
-    std::u16string localDescriptor = data.ReadInterfaceToken();
-    std::u16string remoteDescriptor = GetDescriptor();
+    std::u16string localDescriptor = GetDescriptor();
+    std::u16string remoteDescriptor = data.ReadInterfaceToken();
     if (localDescriptor != remoteDescriptor) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "descriptor invalid");
         return ERR_TRANSACTION_FAILED;
     }
     switch (static_cast<IObjectEditorServiceIpcCode>(code)) {
-        case IObjectEditorServiceIpcCode::COMMAND_REGISTER_CLIENT_CB:
-            return HandleExtensionRegisterClientCB(data, reply);
         case IObjectEditorServiceIpcCode::COMMAND_GET_SNAPSHOT:
             return HandleExtensionGetSnapshot(data, reply);
         case IObjectEditorServiceIpcCode::COMMAND_DO_EDIT:
@@ -56,29 +54,14 @@ int32_t ObjectEditorExtensionStub::OnRemoteRequestInner(
             return HandleExtensionInitial(data, reply);
         case IObjectEditorServiceIpcCode::COMMAND_GET_CAPABILITY:
             return HandleExtensionGetCapability(data, reply);
-        case IObjectEditorServiceIpcCode::COMMAND_GET_EDITING_STATUS:
+        case IObjectEditorServiceIpcCode::COMMAND_GET_EDITING_STATE:
             return HandleExtensionGetEditStatus(data, reply);
         case IObjectEditorServiceIpcCode::COMMAND_CLOSE:
             return HandleExtensionClose(data, reply);
+        case IObjectEditorServiceIpcCode::COMMAND_GET_EXTENSION_EDITING_STATUS:
+            return HandleExtensionGetEditStatus(data, reply);
         default:
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
-    }
-    return ERR_NONE;
-}
-
-int32_t ObjectEditorExtensionStub::HandleExtensionRegisterClientCB(MessageParcel &data, MessageParcel &reply)
-{
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "call");
-    sptr<IObjectEditorClientCallback> clientCb = iface_cast<IObjectEditorClientCallback>(
-        data.ReadRemoteObject());
-    if (clientCb == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "clientCb is nullptr");
-        return ERR_INVALID_DATA;
-    }
-    ErrCode errCode = RegisterClientCB(clientCb);
-    if (!reply.WriteInt32(errCode)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write errCode failed");
-        return ERR_INVALID_VALUE;
     }
     return ERR_NONE;
 }
@@ -95,6 +78,69 @@ int32_t ObjectEditorExtensionStub::HandleExtensionGetSnapshot(MessageParcel &dat
     if (!reply.WriteInt32(errCode)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write errCode failed");
         return ERR_INVALID_VALUE;
+    }
+    return ERR_NONE;
+}
+
+int32_t ObjectEditorExtensionStub::HandleExtensionGetCapability(MessageParcel &data, MessageParcel &reply)
+{
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "call");
+    std::string documentId = data.ReadString();
+    if (documentId.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "read documentId failed");
+        return ERR_INVALID_VALUE;
+    }
+    uint32_t bitmask = 0;
+    ErrCode errCode = GetCapability(documentId, &bitmask);
+    if (!reply.WriteInt32(errCode)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write errCode failed");
+        return ERR_INVALID_VALUE;
+    }
+    if (!reply.WriteUint32(bitmask)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write bitmask failed");
+        return ERR_INVALID_VALUE;
+    }
+    return ERR_NONE;
+}
+
+int32_t ObjectEditorExtensionStub::HandleExtensionGetEditStatus(MessageParcel &data, MessageParcel &reply)
+{
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "call");
+    std::string documentId = data.ReadString();
+    if (documentId.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "read documentId failed");
+        return ERR_INVALID_VALUE;
+    }
+    bool isEditing = false;
+    bool isModified = false;
+    ErrCode errCode = GetEditStatus(documentId, &isEditing, &isModified);
+    if (!reply.WriteInt32(errCode)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write errCode failed");
+        return ERR_INVALID_VALUE;
+    }
+    if (!reply.WriteBool(isEditing)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write isEditing failed");
+        return ERR_INVALID_DATA;
+    }
+    if (!reply.WriteBool(isModified)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write isModified failed");
+        return ERR_INVALID_DATA;
+    }
+    return ERR_NONE;
+}
+
+int32_t ObjectEditorExtensionStub::HandleExtensionGetExtensionEditStatus(MessageParcel &data, MessageParcel &reply)
+{
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "call");
+    bool isEditing = false;
+    ErrCode errCode = GetExtensionEditStatus(isEditing);
+    if (!reply.WriteInt32(errCode)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write errCode failed");
+        return ERR_INVALID_VALUE;
+    }
+    if (!reply.WriteBool(isEditing)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write isEditing failed");
+        return ERR_INVALID_DATA;
     }
     return ERR_NONE;
 }
@@ -138,70 +184,22 @@ int32_t ObjectEditorExtensionStub::HandleExtensionInitial(MessageParcel &data, M
     return ERR_NONE;
 }
 
-int32_t ObjectEditorExtensionStub::HandleExtensionGetCapability(MessageParcel &data, MessageParcel &reply)
-{
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "call");
-    std::string documentId = data.ReadString();
-    if (documentId.empty()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "read documentId failed");
-        return ERR_INVALID_VALUE;
-    }
-    uint32_t bitmask = 0;
-    ErrCode errCode = GetCapability(documentId, bitmask);
-    if (!reply.WriteInt32(errCode)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write errCode failed");
-        return ERR_INVALID_VALUE;
-    }
-    if (!reply.WriteUint32(bitmask)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write bitmask failed");
-        return ERR_INVALID_VALUE;
-    }
-    return ERR_NONE;
-}
-
-int32_t ObjectEditorExtensionStub::HandleExtensionGetEditStatus(MessageParcel &data, MessageParcel &reply)
-{
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "call");
-    std::string documentId = data.ReadString();
-    if (documentId.empty()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "read documentId failed");
-        return ERR_INVALID_VALUE;
-    }
-    bool isEditing = false;
-    bool isModified = false;
-    ErrCode errCode = GetEditStatus(documentId, isEditing, isModified);
-    if (!reply.WriteInt32(errCode)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write errCode failed");
-        return ERR_INVALID_VALUE;
-    }
-    if (!reply.WriteBool(isEditing)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write isEditing failed");
-        return ERR_INVALID_VALUE;
-    }
-    if (!reply.WriteBool(isModified)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write isModified failed");
-        return ERR_INVALID_VALUE;
-    }
-    return ERR_NONE;
-}
-
 int32_t ObjectEditorExtensionStub::HandleExtensionClose(MessageParcel &data, MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "call");
-    std::unique_ptr<ObjectEditorDocument> document =
-        std::unique_ptr<ObjectEditorDocument>(data.ReadParcelable<ObjectEditorDocument>());
-    if (document == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "document is nullptr");
-        return ERR_INVALID_DATA;
-    }
-    bool isAllObjectsRemoved = false;
-    ErrCode errCode = Close(std::move(document), isAllObjectsRemoved);
-    if (!reply.WriteBool(isAllObjectsRemoved)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write isAllObjectsRemoved failed");
+    std::string documentId = data.ReadString();
+    if (documentId.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "read documentId failed");
         return ERR_INVALID_VALUE;
     }
+    bool isAllObjectsRemoved = false;
+    ErrCode errCode = Close(documentId, isAllObjectsRemoved);
     if (!reply.WriteInt32(errCode)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write errCode failed");
+        return ERR_INVALID_VALUE;
+    }
+    if (!reply.WriteBool(isAllObjectsRemoved)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write isAllObjectsRemoved failed");
         return ERR_INVALID_VALUE;
     }
     return ERR_NONE;

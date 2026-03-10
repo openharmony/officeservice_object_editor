@@ -30,13 +30,13 @@
 namespace OHOS {
 namespace AbilityRuntime {
 // LCOV_EXCL_START
-using namespace OHOS::AAExecFwk;
+using namespace OHOS::AppExecFwk;
 using namespace OHOS::ObjectEditor;
 
 ObjectEditorExtension *ObjectEditorExtension::Create(
     const std::unique_ptr<Runtime> &runtime)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "in");
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "in");
     if (runtime == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "runtime is null");
     }
@@ -47,7 +47,7 @@ void ObjectEditorExtension::Init(const std::shared_ptr<AbilityLocalRecord> &reco
                                  const std::shared_ptr<OHOSApplication> &application,
                                  std::shared_ptr<AbilityHandler> &handler, const sptr<IRemoteObject> &token)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "in");
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "in");
     ExtensionBase<ObjectEditorExtensionContext>::Init(record, application, handler, token);
 
     ceInstance_ = std::make_shared<struct ContentEmbed_ExtensionInstance>();
@@ -57,7 +57,7 @@ void ObjectEditorExtension::Init(const std::shared_ptr<AbilityLocalRecord> &reco
     }
     ceInstance_->extension = weak_from_this(); // 基类extension
 
-    ceContext_ = std::make_shared<ContentEmbed_ExtensionContext>();
+    ceContext_ = std::make_shared<struct ContentEmbed_ExtensionContext>();
     if (ceContext_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "fail to create ceContext");
         return;
@@ -65,11 +65,6 @@ void ObjectEditorExtension::Init(const std::shared_ptr<AbilityLocalRecord> &reco
     auto context = GetContext();
     if (context) {
         ceContext_->context = context->weak_from_this();
-    }
-    document_ = std::make_shared<struct ContentEmbed_Document>();
-    if (document_ == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "fail to create document");
-        return;
     }
 
     std::string srcPath;
@@ -92,7 +87,7 @@ void ObjectEditorExtension::Init(const std::shared_ptr<AbilityLocalRecord> &reco
                        "LoadModule, bundleModuleName: %{public}s, srcPath: %{public}s, "
                        "ret: %{public}d",
                        bundleModuleName.c_str(), srcPath.c_str(), ret);
-    handle_ = handler;
+    handler_ = handler;
     ListenWindowManager();
 }
 
@@ -100,12 +95,12 @@ std::shared_ptr<ObjectEditorExtensionContext> ObjectEditorExtension::CreateAndIn
     const std::shared_ptr<AbilityLocalRecord> &record, const std::shared_ptr<OHOSApplication> &application,
     std::shared_ptr<AbilityHandler> &handler, const sptr<IRemoteObject> &token)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "in");
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "in");
     std::shared_ptr<ObjectEditorExtensionContext> context =
         ExtensionBase<ObjectEditorExtensionContext>::CreateAndInitContext(record, application, handler, token);
     if (context == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "fail to create context");
-        return nullptr;
+        return context;
     }
     return context;
 }
@@ -128,19 +123,19 @@ void ObjectEditorExtension::ListenWindowManager()
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "in");
     auto abilityManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (abilityManager == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "failed to get SaMgr!");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "failed to get SaMgr");
         return;
     }
-    
+
     auto objectEditorExtension = std::static_pointer_cast<ObjectEditorExtension>(shared_from_this());
     displayListener_ = sptr<ObjectEditorExtensionDisplayListener>::MakeSptr(objectEditorExtension);
     if (displayListener_ == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "failed to create display listener!");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "failed to create display listener");
         return;
     }
     auto listener = sptr<SystemAbilityStatusChangeListener>::MakeSptr(displayListener_);
     if (listener == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "failed to create status change listener!");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "failed to create status change listener");
         return;
     }
 
@@ -213,7 +208,7 @@ void ObjectEditorExtension::OnStart(const AAFwk::Want &want)
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "in");
     if (ceInstance_ != nullptr && ceInstance_->onCreateFunc != nullptr) {
         AbilityBase_Want cWant;
-        auto errCode = AAFwk::CWantManager::TransformToCWantWithoutElement(want, false, cwant);
+        auto errCode = AAFwk::CWantManager::TransformToCWantWithoutElement(want, false, cWant);
         if (errCode != ABILITY_BASE_ERROR_CODE_NO_ERROR) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION,
                 "failed to transform want to c want!, errCode: %{public}d", errCode);
@@ -224,8 +219,8 @@ void ObjectEditorExtension::OnStart(const AAFwk::Want &want)
         element.abilityName = nullptr;
         element.bundleName = nullptr;
         TransformToCWantElement(element, want);
-        cwant.element = element;
-        ceInstance_->onCreateFunc(ceInstance_.get(), &cwant);
+        cWant.element = element;
+        ceInstance_->onCreateFunc(ceInstance_.get(), &cWant);
         DestroyCWantElement(element);
     } else {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance_ is null or onCreateFunc is null!");
@@ -247,6 +242,7 @@ void ObjectEditorExtension::OnStop()
                            "the object editor extension connection is not disconnected.");
     }
     if (ceInstance_ != nullptr && ceInstance_->onDestroyFunc != nullptr) {
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "call onDestroyFunc");
         ceInstance_->onDestroyFunc(ceInstance_.get());
     }
 }
@@ -271,7 +267,6 @@ void ObjectEditorExtension::OnDisconnect(const AAFwk::Want &want)
 
 void ObjectEditorExtension::OnCommand(const AAFwk::Want &want, bool restart, int startId)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "in");
     Extension::OnCommand(want, restart, startId);
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION,
         "start restart: %{public}d, startId: %{public}d", restart, startId);
@@ -291,12 +286,12 @@ void ObjectEditorExtension::OnChange(Rosen::DisplayId displayId)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "displayId: %{public}" PRIu64 "", displayId);
     auto context = GetContext();
-    if (!context) {
+    if (context == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "failed to get context!");
         return;
     }
     auto contextConfig = context->GetConfiguration();
-    if (!contextConfig) {
+    if (contextConfig == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "failed to get context config!");
         return;
     }
@@ -307,96 +302,165 @@ std::shared_ptr<struct ContentEmbed_ExtensionContext> ObjectEditorExtension::Get
     return ceContext_;
 }
 
-std::shared_ptr<struct ContentEmbed_Document> ObjectEditorExtension::GetDocument() const
+ErrCode ObjectEditorExtension::GetSnapshot(const std::string &documentId)
 {
-    return document_;
-}
-
-sptr<IObjectEditorClientCallback> ObjectEditorExtension::GetClientCb() const
-{
-    return clientCb_;
-}
-
-ErrCode ObjectEditorExtension::RegisterClientCB(const sptr<IObjectEditorClientCallback> &clientCb)
-{
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "in");
-    clientCb_ = clientCb;
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "documentId: %{private}s", documentId.c_str());
+    if (ceInstance_ == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is null");
+        return ERR_INVALID_VALUE;
+    }
+    std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
+    auto iter = ceInstance_->objects.find(documentId);
+    if (iter == ceInstance_->objects.end()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId not found");
+        return ERR_INVALID_VALUE;
+    }
+    if (iter->second == nullptr || iter->second->onGetSnapshotFunc == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onGetSnapshotFunc is nullptr");
+        return ERR_INVALID_VALUE;
+    }
+    iter->second->onGetSnapshotFunc(iter->second.get());
     return ERR_OK;
 }
 
-ErrCode ObjectEditorExtension::GetSnapshot()
+ErrCode ObjectEditorExtension::DoEdit(const std::string &documentId)
+{
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "documentId: %{private}s", documentId.c_str());
+    if (ceInstance_ == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is null");
+        return ERR_INVALID_VALUE;
+    }
+    std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
+    auto iter = ceInstance_->objects.find(documentId);
+    if (iter == ceInstance_->objects.end()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId not found");
+        return ERR_INVALID_VALUE;
+    }
+    if (iter->second == nullptr || iter->second->onDoEditFunc == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onDoEditFunc is nullptr");
+        return ERR_INVALID_VALUE;
+    }
+    iter->second->onDoEditFunc(iter->second.get());
+    return ERR_OK;
+}
+
+ErrCode ObjectEditorExtension::GetEditStatus(const std::string &documentId, bool *isEditing, bool *isModified)
+{
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "documentId: %{private}s", documentId.c_str());
+    if (ceInstance_ == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is null");
+        return ERR_INVALID_VALUE;
+    }
+    if (isEditing == nullptr || isModified == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "isEditing or isModified is null");
+        return ERR_INVALID_VALUE;
+    }
+    {
+        std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
+        auto iter = ceInstance_->objects.find(documentId);
+        if (iter == ceInstance_->objects.end()) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId not found");
+            return ERR_INVALID_VALUE;
+        }
+        if (iter->second == nullptr || iter->second->onGetEditStatusFunc == nullptr) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onGetEditStatusFunc is nullptr");
+            return ERR_INVALID_VALUE;
+        }
+        iter->second->onGetEditStatusFunc(iter->second.get(), isEditing, isModified);
+    }
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "isEditing:%{public}d, isModified:%{public}d",
+        *isEditing, *isModified);
+    return ERR_OK;
+}
+
+ErrCode ObjectEditorExtension::GetExtensionEditStatus(bool &isEditing)
+{
+    isEditing = false;
+    if (ceInstance_ == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is null");
+        return ERR_INVALID_VALUE;
+    }
+    std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
+    for (const auto &iter : ceInstance_->objects) {
+        if (iter.second == nullptr || iter.second->onGetEditStatusFunc == nullptr) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onGetEditStatusFunc is nullptr");
+            continue;
+        }
+        bool objectIsEditing = false;
+        bool objectIsModified = false;
+        iter.second->onGetEditStatusFunc(iter.second.get(), &objectIsEditing, &objectIsModified);
+        if (objectIsEditing) {
+            isEditing = true;
+            break;
+        }
+    }
+    return ERR_OK;
+}
+
+ErrCode ObjectEditorExtension::GetCapability(const std::string &documentId, uint32_t *bitmask)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "in");
     if (ceInstance_ == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is null!");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is null");
         return ERR_INVALID_VALUE;
     }
-    if (ceInstance_->onGetSnapShotFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onGetSnapShotFunc is nullptr!");
+    if (bitmask == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "bitmask is null");
         return ERR_INVALID_VALUE;
     }
-    ceInstance_->onGetSnapShotFunc(ceInstance_.get());
+    {
+        std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
+        auto iter = ceInstance_->objects.find(documentId);
+        if (iter == ceInstance_->objects.end()) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId not found");
+            return ERR_INVALID_VALUE;
+        }
+        if (iter->second == nullptr || iter->second->onGetCapabilityFunc == nullptr) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onGetCapabilityFunc is nullptr");
+            return ERR_INVALID_VALUE;
+        }
+        iter->second->onGetCapabilityFunc(iter->second.get(), bitmask);
+    }
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "bitmask: %{public}u", *bitmask);
     return ERR_OK;
 }
 
-ErrCode ObjectEditorExtension::DoEdit()
+ErrCode ObjectEditorExtension::Close(const std::string &documentId, bool &isAllObjectsRemoved)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "in");
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "documentId: %{private}s", documentId.c_str());
     if (ceInstance_ == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is null!");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is null");
         return ERR_INVALID_VALUE;
     }
-    if (ceInstance_->onDoEditFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onDoEditFunc is nullptr!");
+    std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
+    isAllObjectsRemoved = ceInstance_->objects.size() == 0;
+    auto iter = ceInstance_->objects.find(documentId);
+    if (iter == ceInstance_->objects.end()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId not found");
         return ERR_INVALID_VALUE;
     }
-    ceInstance_->onDoEditFunc(ceInstance_.get());
-    return ERR_OK;
+    if (iter->second == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "object is nullptr");
+        return ERR_INVALID_VALUE;
+    }
+    ErrCode ret = ERR_INVALID_VALUE;
+    if (ceInstance_->onObjectDetachFunc != nullptr) {
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "call onObjectDetachFunc");
+        ceInstance_->onObjectDetachFunc(ceInstance_.get(), iter->second.get());
+        ret = ERR_OK;
+    }
+    ceInstance_->objects.erase(iter);
+    isAllObjectsRemoved = ceInstance_->objects.size() == 0;
+    return ret;
 }
 
-ErrCode ObjectEditorExtension::GetEditStatus(bool *isEditing, bool *isModified)
+bool CheckFilePermission(std::string filename)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "in");
-    if (ceInstance_ == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is null!");
-        return ERR_INVALID_VALUE;
-    }
-    if (ceInstance_->onGetEditStatusFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onGetEditStatusFunc is nullptr!");
-        return ERR_INVALID_VALUE;
-    }
-    ceInstance_->onGetEditStatusFunc(ceInstance_.get(), isEditing, isModified);
-    return ERR_OK;
-}
-
-ErrCode ObjectEditorExtension::GetCapability(uint32_t *bitmask)
-{
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "in");
-    if (ceInstance_ == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is null!");
-        return ERR_INVALID_VALUE;
-    }
-    if (ceInstance_->onGetCapabilityFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onGetCapabilityFunc is nullptr!");
-        return ERR_INVALID_VALUE;
-    }
-    ceInstance_->onGetCapabilityFunc(ceInstance_.get(), bitmask);
-    return ERR_OK;
-}
-
-ErrCode ObjectEditorExtension::Close()
-{
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "in");
-    return ERR_OK;
-}
-
-bool CheckFilePermission(std::string fileName)
-{
-    if (fileName.empty()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "fileName is empty!");
+    if (filename.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "filename is empty");
         return false;
     }
-    return access(fileName.c_str(), R_OK | W_OK) == 0;
+    return access(filename.c_str(), R_OK | W_OK) == 0;
 }
 
 bool CheckFileValid(const std::unique_ptr<ObjectEditorDocument> &document)
@@ -428,45 +492,90 @@ bool CheckFileValid(const std::unique_ptr<ObjectEditorDocument> &document)
     return true;
 }
 
-ErrCode ObjectEditorExtension::Initial(std::unique_ptr<ObjectEditorDocument> document)
+ErrCode ObjectEditorExtension::CreateObject(std::unique_ptr<ObjectEditorDocument> document,
+    const sptr<IObjectEditorClientCallback> &clientCb)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "in");
-    if (document == nullptr || document_ == nullptr) {
+    if (document == nullptr || ceInstance_ == nullptr) {
+        return ERR_INVALID_VALUE;
+    }
+    std::string documentId = document->GetDocumentId();
+    {
+        std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
+        auto iter = ceInstance_->objects.find(documentId);
+        if (iter != ceInstance_->objects.end()) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId already initial");
+            return ERR_INVALID_VALUE;
+        }
+    }
+    std::unique_ptr<ContentEmbed_Object> object = std::make_unique<struct ContentEmbed_Object>();
+    if (object == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "create object failed");
+        return ERR_INVALID_VALUE;
+    }
+    object->document = std::make_unique<struct ContentEmbed_Document>();
+    if (object->document == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "create document failed");
+        return ERR_INVALID_VALUE;
+    }
+    object->ceInstance = ceInstance_;
+    object->document->hmid = document->GetHmid();
+    object->document->oeDocumentInner = std::move(document);
+    object->clientCb = clientCb;
+    std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
+    ceInstance_->objects.insert({documentId, std::move(object)});
+    auto iter = ceInstance_->objects.find(documentId);
+    ceInstance_->onObjectAttachFunc(ceInstance_.get(), iter->second.get());
+    if (iter->second->document->oeDocumentInner->GetOperateType() == OperateType::CREATE_BY_FILE) {
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "create document by file");
+        if (iter->second->onWriteToDataStreamFunc == nullptr) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onWriteToDataStreamFunc is nullptr");
+            ceInstance_->objects.erase(iter);
+            return ERR_INVALID_VALUE;
+        }
+        iter->second->onWriteToDataStreamFunc(iter->second.get());
+        return ERR_OK;
+    }
+    return ERR_OK;
+}
+
+ErrCode ObjectEditorExtension::Initial(std::unique_ptr<ObjectEditorDocument> document,
+    const sptr<IObjectEditorClientCallback> &clientCb)
+{
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "extension");
+    if (document == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "document is nullptr");
+        return ERR_INVALID_VALUE;
+    }
+    if (clientCb == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "clientCb is nullptr");
         return ERR_INVALID_VALUE;
     }
     if (!CheckFileValid(document)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "extension file invalid");
         return ERR_INVALID_VALUE;
     }
-    document->RestoreStorage();
-    document_->hmid = document->GetHmid();
-    document->FlushHmid();
-    document_->oeDocumentInner = std::move(document);
-    if (document_->oeDocumentInner->GetOperateType() == OperateType::CREATE_BY_FILE) {
-        if (ceInstance_ == nullptr) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is nullptr!");
-            return ERR_INVALID_VALUE;
-        }
-        if (ceInstance_->onWriteToDataStreamFunc == nullptr) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onWriteToDataStreamFunc is nullptr!");
-            return ERR_INVALID_VALUE;
-        }
-        ceInstance_->onWriteToDataStreamFunc(ceInstance_.get());
-        return ERR_OK;
+    if (ceInstance_ == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is nullptr");
+        return ERR_INVALID_VALUE;
     }
-    return ERR_OK;
+    if (ceInstance_->onObjectAttachFunc == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onObjectAttachFunc is nullptr");
+        return ERR_INVALID_VALUE;
+    }
+    document->RestoreStorage();
+    document->FlushHmid();
+    return CreateObject(std::move(document), clientCb);
 }
 
 int32_t ObjectEditorExtension::CallbackEnter([[maybe_unused]] uint32_t code)
 {
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "in");
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "extension");
     return ERR_OK;
 }
 
 int32_t ObjectEditorExtension::CallbackExit([[maybe_unused]] uint32_t code, [[maybe_unused]] int32_t result)
 {
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "in");
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "extension");
     return result;
 }
 // LCOV_EXCL_STOP

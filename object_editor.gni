@@ -13,7 +13,7 @@
 
 object_editor_path = "//foundation/officeservice/object_editor"
 
-kits_path = "${object_editor_path}/interfaces/kits/"
+kits_path = "${object_editor_path}/interfaces/kits"
 
 innerkits_path = "${object_editor_path}/interfaces/innerkits"
 

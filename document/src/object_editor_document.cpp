@@ -32,7 +32,11 @@
 
 namespace OHOS {
 namespace ObjectEditor {
-using namespace OHOS::ObjectEditor;
+namespace {
+    constexpr std::size_t MAX_DEPTH = 256;
+    constexpr std::size_t MAX_VISITS = 10000;
+}
+// LCOV_EXCL_START
 
 ObjectEditorDocument::ObjectEditorDocument(std::unique_ptr<Storage> storage,
     std::string tmpFilePath) noexcept
@@ -63,7 +67,7 @@ std::unique_ptr<ObjectEditorDocument> ObjectEditorDocument::CreateByHmid(const s
 std::unique_ptr<ObjectEditorDocument> ObjectEditorDocument::CreateByFile(
     const std::string &path, [[maybe_unused]] bool isLinking)
 {
-    static constexpr char kDefaultHmid[] = "000000000000000000000000";
+    static constexpr char kDefaultHmid[] = "00000000000000000000000000000000";
     auto documentPtr = CreateByHmid(kDefaultHmid);
     if (!documentPtr) {
         return nullptr;
@@ -109,7 +113,7 @@ bool ObjectEditorDocument::FlushHmid()
 
     const auto clsidOpt = ParseHmidToClsid(hmid_);
     if (!clsidOpt) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "ObjectEditorDocument::SetHmid - failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "parse hmid failed");
         return false;
     }
 
@@ -120,14 +124,12 @@ bool ObjectEditorDocument::FlushHmid()
 std::string ObjectEditorDocument::GetHmidInternal() const
 {
     if (!storage_) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-            "ObjectEditorDocument::GetHmidInternal - storage_ is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "storage_ is null");
         return std::string{};
     }
     DirEntry *root = storage_->GetRootEntry();
     if (!root) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-            "ObjectEditorDocument::GetHmidInternal - root is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "root entry is null");
         return std::string{};
     }
     return std::string(reinterpret_cast<const char*>(root->Clsid().data()), root->Clsid().size());
@@ -187,50 +189,47 @@ void ObjectEditorDocument::RestoreStorage()
     storage_ = std::make_unique<Storage>(GetTmpFilePath().c_str());
 }
 
-namespace {
-bool HandleUserTempScenario(ObjectEditorDocument *self)
+bool ObjectEditorDocument::HandleUserTempScenario()
 {
-    const bool hasUserTmp = !self->userTmpFilePath_.empty();
-    std::string tmpFilePath = self->GetTmpFilePath();
+    if (!storage_) {
+        return false;
+    }
+    const bool hasUserTmp = userTmpFilePath_.empty();
+    std::string tmpFilePath = GetTmpFilePath();
     const bool hasTmpFilePath = !tmpFilePath.empty();
-    if (hasUserTmp && !hasTmpFilePath)
-        return self->storage_->Flush();
+    if (hasUserTmp && !hasTmpFilePath) {
+        return storage_->Flush();
+    }
 
     if (hasUserTmp && hasTmpFilePath) {
-        if (self->storage_->IsDirty()) {
+        if (storage_->IsDirty()) {
             return false;
         }
-        std::filesystem::path sourcePath(self->userTmpFilePath_);
-        std::filesystem::path targetPath(self->GetTmpFilePath());
+        std::filesystem::path sourcePath(userTmpFilePath_);
+        std::filesystem::path targetPath(GetTmpFilePath());
         std::error_code copyEc;
         std::filesystem::copy_file(sourcePath, targetPath, std::filesystem::copy_options::overwrite_existing, copyEc);
         if (copyEc) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-                "ObjectEditorDocument::Flush - copy file failed");
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "copy file failed");
             return false;
         }
         RestoreStorage();
         userTmpFilePath_.clear();
         return true;
     }
-}
-
-bool HandleTempFilePathScenario(ObjectEditorDocument *self)
-{
-    std::string tmpFilePath = self->GetTmpFilePath();
-    const bool hasTmpFilePath = !tmpFilePath.empty();
-    if (hasTmpFilePath.empty()) {
-        return false;
-    }
     if (hasTmpFilePath) {
         if (std::filesystem::exists(std::filesystem::path(tmpFilePath)))
-            return self->storage_->Flush();
-        return self->storage_->SaveToFile(tmpFilePath.c_str());
+            return storage_->Flush();
+        return storage_->SaveToFile(tmpFilePath.c_str());
     }
+    return true;
 }
 
-bool GenerateAndSaveUniqueFile(ObjectEditorDocument *self)
+bool ObjectEditorDocument::GenerateAndSaveUniqueFile()
 {
+    if (!storage_) {
+        return false;
+    }
     const auto base = std::filesystem::current_path();
     std::random_device rd;
     std::mt19937_64 generator(rd());
@@ -255,39 +254,37 @@ bool GenerateAndSaveUniqueFile(ObjectEditorDocument *self)
             continue;
         }
 
-        if (!self->storage_->SaveToFile(candidate.string().c_str())) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-                "ObjectEditorDocument::Flush - save to file failed");
+        if (!storage_->SaveToFile(candidate.string().c_str())) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "save to file failed");
             return false;
         }
-        self->tmpFileUri_ = SystemUtils::GetUriFromPath(candidate.string());
+        tmpFileUri_ = SystemUtils::GetUriFromPath(candidate.string());
         return true;
     }
     return false;
 }
-}
 
 bool ObjectEditorDocument::Flush()
 {
-    if (!storage_)
+    if (!storage_) {
         return false;
-    if (ShouldRebuild())
-        return RebuildAndFlush();
-    if (HandleUserTempScenario(this))
-        return true;
-    if (HandleTempFilePathScenario(this))
-        return true;
-    return GenerateAndSaveUniqueFile(this);
-}
-
-namespace {
-    bool AtomicReplaceFile(const std::string &tempPath, const std::string &targetPath)
-    {
-        return std::rename(tempPath.c_str(), targetPath.c_str()) == 0;
     }
+    if (ShouldRebuild()) {
+        return RebuildAndFlush();
+    }
+    if (HandleUserTempScenario()) {
+        return true;
+    }
+    return GenerateAndSaveUniqueFile();
 }
 
-std::string ObjectEditorDocument::GenerateTempPath(const std::string &targetPath) const
+
+bool AtomicReplaceFile(const std::string &tempPath, const std::string &targetPath)
+{
+    return std::rename(tempPath.c_str(), targetPath.c_str()) == 0;
+}
+
+std::string GenerateTempPath(const std::string &targetPath)
 {
     thread_local std::random_device rd;
     thread_local std::mt19937 gen(rd());
@@ -303,15 +300,12 @@ std::string ObjectEditorDocument::GenerateTempPath(const std::string &targetPath
     return ss.str();
 }
 
-namespace {
-    constexpr std::size_t MAX_DEPTH = 256;
-    constexpr std::size_t MAX_VISITS = 10000;
-}
-
-namespace {
-void TraverseDirectory(Storage *storage, const std::string &path, std::size_t depth,
-    uint64_t &total, std::size_t &visitCount)
+void ObjectEditorDocument::TraverseDirectory(const std::string &path, std::size_t depth,
+    uint64_t &total, std::size_t &visitCount) const
 {
+    if (!storage_) {
+        return;
+    }
     if (total == std::numeric_limits<uint64_t>::max()) {
         return;
     }
@@ -349,20 +343,16 @@ void TraverseDirectory(Storage *storage, const std::string &path, std::size_t de
             }
             total += size;
         } else if (e->IsDir()) {
-            TraverseDirectory(storage, fullPath, depth + 1, total, visitCount);
+            TraverseDirectory(fullPath, depth + 1, total, visitCount);
         }
     }
-}
 }
 
 uint64_t ObjectEditorDocument::ComputeLiveDataSize() const
 {
-    if (!storage_) {
-        return 0;
-    }
     uint64_t total = 0;
     std::size_t visitCount = 0;
-    TraverseDirectory(storage_, "/", 0, total, visitCount);
+    TraverseDirectory("/", 0, total, visitCount);
     return total;
 }
 
@@ -409,8 +399,7 @@ bool ObjectEditorDocument::ShouldRebuild() const
     return fileSize > MIN_FILE_SIZE && wasteBytes >= MIN_WASTE_BYTES && ratioCheck;
 }
 
-bool ObjectEditorDocument::CopyStreamData(Storage *src, Storage *dst,
-    const std::string &path, uint64_t size)
+bool ObjectEditorDocument::CopyStreamData(Storage *src, Storage *dst, const std::string &path, uint64_t size)
 {
     if (!src || !dst) {
         return false;
@@ -439,8 +428,7 @@ bool ObjectEditorDocument::CopyStreamData(Storage *src, Storage *dst,
 
         auto bytesRead = srcStream->Read(buffer.data(), static_cast<std::streamsize>(toRead));
         if (bytesRead <= 0 || bytesRead > static_cast<std::streamsize>(toRead)) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-                "ObjectEditorDocument::CopyStreamData - Read out of range");
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Read out of range");
             return false;
         }
         dstStream->Write(buffer.data(), static_cast<std::uint32_t>(bytesRead));
@@ -453,10 +441,12 @@ bool ObjectEditorDocument::CopyStreamData(Storage *src, Storage *dst,
     return true;
 }
 
-namespace {
-bool CopyAllStreamRecursivelyImpl(Storage *src, Storage *dst,
+bool ObjectEditorDocument::CopyAllStreamRecursivelyImpl(Storage *src, Storage *dst,
     const std::string& path, std::size_t depth, std::size_t &visitCount)
 {
+    if (!src || !dst) {
+        return false;
+    }
     if (depth > MAX_DEPTH) {
         return false;
     }
@@ -467,30 +457,34 @@ bool CopyAllStreamRecursivelyImpl(Storage *src, Storage *dst,
     src->Path(savedPath);
     std::vector<const DirEntry *> entries;
     if (!src->EnterDirectory(path)) {
-        if (!savedPath.empty())
+        if (!savedPath.empty()) {
             (void)src->EnterDirectory(savedPath);
+        }
         return false;
     }
     src->ListEntries(entries);
-    if (!savedPath.empty())
+    if (!savedPath.empty()) {
         (void)src->EnterDirectory(savedPath);
+    }
     for (const DirEntry *entry : entries) {
         if (!entry) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-                "ObjectEditorDocument::CopyAllStreamRecursively - entry is null");
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry is null");
             return false;
         }
-        if (!entry->IsFile() && !entry->IsDir())
+        if (!entry->IsFile() && !entry->IsDir()) {
             return false;
+        }
         std::string fullPath = path;
-        if (path != "/")
+        if (path != "/") {
             fullPath += "/";
+        }
         fullPath += entry->Name();
 
         if (entry->IsDir()) {
             DirEntry *newDir = dst->GetStorage(fullPath, true);
-            if (!newDir)
+            if (!newDir) {
                 return false;
+            }
             newDir->SetClsid(entry->Clsid(), std::size(entry->Clsid()));
             if (!CopyAllStreamRecursivelyImpl(src, dst, fullPath, depth + 1, visitCount))
                 return false;
@@ -502,7 +496,6 @@ bool CopyAllStreamRecursivelyImpl(Storage *src, Storage *dst,
     }
     return true;
 }
-}
 
 bool ObjectEditorDocument::CopyAllStreamsRecursively(Storage *src, Storage *dst, const std::string &basePath)
 {
@@ -512,7 +505,6 @@ bool ObjectEditorDocument::CopyAllStreamsRecursively(Storage *src, Storage *dst,
     return CopyAllStreamRecursivelyImpl(src, dst, basePath, 0, visitCount);
 }
 
-namespace {
 std::string GenerateSafeTempPath(const std::string &targetPath)
 {
     constexpr uint32_t ATTEMPT_COUNT = 64;
@@ -541,13 +533,13 @@ struct TempGuard {
         }
     }
 };
-}
 
 bool ObjectEditorDocument::RebuildAndFlush()
 {
     std::string targetPath = GetTmpFilePath();
-    if (targetPath.empty())
-        return false;
+    if (targetPath.empty()) {
+        return storage_ && storage_->Flush();
+    }
     
     std::string tempPath = GenerateSafeTempPath(targetPath);
     if (tempPath.empty())
@@ -563,10 +555,12 @@ bool ObjectEditorDocument::RebuildAndFlush()
         return false;
     if (!newStorage->SaveToFile(tempPath.c_str()))
         return false;
-    if (!CopyAllStreamRecursively(storage_.get(), newStorage, "/"))
+    if (!CopyAllStreamsRecursively(storage_.get(), newStorage, "/")) {
         return false;
-    if (!newStorage->Flush())
+    }
+    if (!newStorage->Flush()) {
         return false;
+    }
 
     {
         auto verify = std::make_unique<ObjectEditor::Storage>(tempPath.c_str());
@@ -621,6 +615,10 @@ bool ObjectEditorDocument::Marshalling(Parcel &parcel) const
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Write operateType failed");
         return false;
     }
+    if (!parcel.WriteString(documentId_)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Write documentId failed");
+        return false;
+    }
     return true;
 }
 
@@ -638,8 +636,19 @@ ObjectEditorDocument *ObjectEditorDocument::Unmarshalling(Parcel &parcel)
     doc->snapshotUri_ = parcel.ReadString();
     doc->nativeFileUri_ = parcel.ReadString();
     doc->operateType_ = static_cast<OperateType>(parcel.ReadInt32());
+    doc->documentId_ = parcel.ReadString();
     return doc;
 }
 
+std::string ObjectEditorDocument::GetDocumentId() const
+{
+    return documentId_;
+}
+
+void ObjectEditorDocument::SetDocumentId(const std::string &documentId)
+{
+    documentId_ = documentId;
+}
+// LCOV_EXCL_STOP
 } // namespace ObjectEditor
 } // namespace OHOS

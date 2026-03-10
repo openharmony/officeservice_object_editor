@@ -16,7 +16,7 @@ import("//build/ohos.gni")
 import("//foundation/officeservice/object_editor/object_editor.gni")
 
 config("ability_config") {
-    visivility = [ ":*" ]
+    visibility = [ ":*" ]
 
     cflags = []
     if (target_cpu == "arm") {
@@ -29,20 +29,20 @@ config("ability_config") {
 }
 
 config("ability_public_config") {
-    visivility = [ ":*" ]
+    visibility = [ ":*" ]
     include_dirs = ["${object_editor_path}/frameworks/kits/extension/include"]
 }
 
 ohos_shared_library("content_embed_extension") {
     branch_protector_ret = "pac_ret"
-    sanitize = [
+    sanitize = {
         boundary_sanitize = true
         cfi = true
         cfi_cross_dso = true
         debug = false
         integer_overflow = true
         ubsan = true
-    ]
+    }
     cflags_cc = [
         "-fdata-sections",
         "-ffunction-sections",
@@ -56,30 +56,26 @@ ohos_shared_library("content_embed_extension") {
         "${object_editor_path}/interfaces/innerkits/include",
         "${object_editor_path}/document/include",
         "${object_editor_path}/extension_ability/include",
-        "${kits_path}/c"
+        "${kits_path}/c",
         "${innerkits_path}/include",
     ]
 
     sources = [
-        "${object_editor_path}/frameworks/kits/extension/src/object_editor_extension.cpp",
-        "${object_editor_path}/frameworks/kits/extension/src/object_editor_extension_context.cpp",
-        "${object_editor_path}/extension_ability/src/object_editor_extension_stub.cpp",
-        "${object_editor_path}/extension_ability/src/object_editor_client_callback_proxy.cpp",
-        "${object_editor_path}/client/src/object_editor_manager_proxy.cpp",
-        "${object_editor_path}/common/src/object_editor_format.cpp",
     ]
-    configs = [ ":ability_config" ]
+    configs = [ 
+        ":ability_config",
+        "${object_editor_path}/resources/config/build:coverage_flags",
+    ]
     public_configs = [
         ":ability_public_config",
-        "${object_editor_path}/resources/config/build:coverage_flags",
     ]
 
     deps = [
-        "${object_editor_path}/utils:object_editor_utils",
+        "${object_editor_path}/utils:content_embed_utils",
         "${object_editor_path}/document:content_embed_document",
     ]
 
-    export_deps = [
+    external_deps = [
         "ability_base:configuration",
         "ability_base:ability_base_want",
         "ability_runtime:ability_context_native",
@@ -108,14 +104,14 @@ ohos_shared_library("content_embed_extension") {
 
 ohos_shared_library("content_embed_extension_module") {
     branch_protector_ret = "pac_ret"
-    sanitize = [
+    sanitize = {
         boundary_sanitize = true
         cfi = true
         cfi_cross_dso = true
         debug = false
         integer_overflow = true
         ubsan = true
-    ]
+    }
     include_dirs = [
         "${object_editor_path}/common/include",
         "${object_editor_path}/frameworks/ndk/include",
@@ -123,24 +119,26 @@ ohos_shared_library("content_embed_extension_module") {
         "${object_editor_path}/interfaces/innerkits/include",
         "${object_editor_path}/document/include",
         "${object_editor_path}/extension_ability/include",
-        "${kits_path}/c"
+        "${kits_path}/c",
         "${innerkits_path}/include",
     ]
 
-    sources = [ "${object_editor_path}/frameworks/kits/extension/src/object_editor_extension_module.cpp" ]
+    sources = [ ]
 
-    configs = [ ":ability_config" ]
+    configs = [ 
+        ":ability_config",
+        "${object_editor_path}/resources/config/build:coverage_flags",
+    ]
     public_configs = [
         ":ability_public_config",
-        "${object_editor_path}/resources/config/build:coverage_flags",
     ]
 
     deps = [
-        ":ability_public_config",
-        "${object_editor_path}/utils:object_editor_utils",
+        ":content_embed_extension",
+        "${object_editor_path}/utils:content_embed_utils",
     ]
 
-    export_deps = [
+    external_deps = [
         "ability_base:base",
         "ability_base:ability_base_want",
         "ability_base:zuri",

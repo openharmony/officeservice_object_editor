@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
- option_stub_hooks on;
- sequenceable OHOS.IRemoteObject;
- sequenceable document..OHOS.ObjectEditorDocument;
- [callback] interface OHOS.ObjectEditor.IObjectEditorClientCallback {
-    void update([in] uniqueptr<ObjectEditorDocument> document);
- }
+option_stub_hooks on;
+sequenceable OHOS.IRemoteObject;
+sequenceable document..OHOS.ObjectEditorDocument;
+[callback] interface OHOS.ObjectEditor.IObjectEditorClientCallback {
+   void update([in] uniqueptr<ObjectEditorDocument> document);
+}

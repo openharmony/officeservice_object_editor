@@ -17,17 +17,23 @@
 #define OHOS_OBJECT_EDITOR_USER_MGR_H
 
 #include <shared_mutex>
+#include "single_instance.h"
 
 namespace OHOS {
 namespace ObjectEditor {
 class UserMgr {
+    DECLARE_SINGLE_INSTANCE_BASE(UserMgr);
+
 public:
-    static UserMgr &GetInstance();
-    void SetNewUserId(int32_t userId);
+    void SetNewUserId(int32_t newUserId);
     int32_t GetUserId();
 private:
     UserMgr();
     ~UserMgr() = default;
+
+private:
+    int32_t userId_ = 100;
+    std::shared_mutex mtx_;
 };
 
 } // namespace ObjectEditor

@@ -1,0 +1,80 @@
+# Copyright (c) Huawei Device Co., Ltd. 2026-2026. All rights reserved.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+
+import("//foundation/officeservice/object_editor/object_editor.gni")
+
+config("libobject_editor_client_private_config") {
+    include_dirs = [
+        "${kits_path}/c",
+        "${ndk_path}/include",
+        "${object_editor_path}/client/include",
+        "${object_editor_path}/common/include",
+        "${object_editor_path}/document/include",
+        "${object_editor_path}/interfaces/innerkits/include",
+        "${object_editor_path}/package/include",
+        "${object_editor_path}/utils/include/dfx",
+    ]
+}
+
+config("libobject_editor_client_public_config") {
+    include_dirs = [
+        "include",
+        "include/dfx"
+    ]
+}
+
+# Build objecteditorclient.so
+ohos_shared_library("content_embed_client") {
+    sanitize = {
+        cfi = true
+        cfi_cross_dso = true
+        debug = false
+    }
+    configs = [
+        ":libobject_editor_client_private_config",
+        "${object_editor_path}/resources/config/build:coverage_flags",
+    ]
+
+    sources = [
+    ]
+
+    deps = [
+        "${object_editor_path}/document:content_embed_document"
+    ]
+
+    external_deps = [
+        "c_utils:utils",
+        "ipc:ipc_core",
+        "safwk:system_ability_fwk",
+        "samgr:samgr_proxy",
+        "hilog:libhilog",
+        "ability_runtime:abilitykit_native",
+        "ability_runtime:app_context",
+        "ability_runtime:data_ability_helper",
+        "relational_store:native_rdb",
+        "ability_runtime:uri_permission_mgr",
+        "ability_base:ability_base_want",
+        "os_account:os_account_innerkits",
+        "ability_runtime:ability_manager",
+        "image_framework:pixelmap_ndk",
+        "image_framework:image_native",
+        "app_file_service:fileuri_native",
+        "ability_runtime:ability_runtime",
+    ]
+    defines = []
+
+    part_name = "object_editor"
+    subsystem_name = "officeservice"
+}

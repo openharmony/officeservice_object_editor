@@ -381,6 +381,12 @@ private:
     [[nodiscard]] bool ExtendSameTypeChain(DirEntry *entry, uint64_t oldSize, uint64_t newSize, bool useBig);
     [[nodiscard]] bool AllocateFreshChain(DirEntry *entry, uint64_t newSize, bool useBig);
     [[nodiscard]] bool EnsureRootForMiniGrowth(uint32_t requiredMiniBlocks, const std::string &logContext);
+    [[nodiscard]] bool AdvertiseFATSectorInDIFAT(uint32_t fatSector, uint32_t current, uint32_t difatEntries);
+    bool IsValidReadParams(size_t offset, uint8_t *buf, size_t len, size_t *outRead);
+    bool ExtendChainWithZeros(std::vector<uint32_t> &chain, uint32_t &neededBigBlocks, uint32_t &bigBlocks);
+    void AddBlocksFromChain(uint32_t start);
+    bool ExtendAndFetchSbatChain(std::vector<uint32_t> &chain, uint32_t &neededBlocks);
+    bool WriteBufferToFile(const std::string &filename);
 
     // 所有权模型：
     // - stream_：非拥有型观察指针，指向当前活跃的文件流；内存模式下为空

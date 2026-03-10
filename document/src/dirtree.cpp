@@ -25,7 +25,7 @@
 namespace OHOS {
 namespace ObjectEditor {
 namespace {
-constexpr size_t KINVALID_INDEX = static_cast<size_t>(-1);
+constexpr size_t INVALID_INDEX = static_cast<size_t>(-1);
 }
 
 bool DirEntry::Valid() const
@@ -50,7 +50,7 @@ void DirEntry::SetClsid(const std::array<std::uint8_t, CLSID_SIZE> &clsid, uint8
         return;
     }
     clsid_ = clsid;
-    SetModif();
+    SetModify();
 }
 
 void DirTree::Clear()
@@ -85,7 +85,7 @@ size_t DirTree::IndexOf(const DirEntry *e) const
             return i;
         }
     }
-    return KINVALID_INDEX;
+    return INVALID_INDEX;
 }
 
 size_t DirTree::Parent(size_t index) const
@@ -97,7 +97,7 @@ size_t DirTree::Parent(size_t index) const
             if (chi[i] == index)
                 return j;
     }
-    return KINVALID_INDEX;
+    return INVALID_INDEX;
 }
 
 void DirTree::FullName(size_t index, std::string &result) const
@@ -113,7 +113,7 @@ void DirTree::FullName(size_t index, std::string &result) const
     result = Entry(index)->Name();
     result.insert(0, "/");
     size_t p = Parent(index);
-    if (p == KINVALID_INDEX)
+    if (p == INVALID_INDEX)
         return;
     const DirEntry *entryPtr = nullptr;
     while (p > 0) {
@@ -123,7 +123,7 @@ void DirTree::FullName(size_t index, std::string &result) const
             result.insert(0, "/");
         }
         p = Parent(p);
-        if (p == KINVALID_INDEX)
+        if (p == INVALID_INDEX)
             break;
     }
 }
@@ -267,7 +267,7 @@ bool DirTree::EnterDirectory(const std::string &dir)
     }
 
     size_t index = e->Index();
-    if (index == KINVALID_INDEX)
+    if (index == INVALID_INDEX)
         return false;
     current_ = index;
     return true;
@@ -278,7 +278,7 @@ void DirTree::LeaveDirectory()
     if (current_ == 0)
         return;
     size_t p = Parent(current_);
-    if (p != KINVALID_INDEX)
+    if (p != INVALID_INDEX)
         current_ = p;
 }
 
@@ -295,8 +295,8 @@ bool DirTree::Load(Byte *buffer, size_t size)
         size_t p = i * 128;
         std::string name;
         uint16_t nameLen = ReadUint16(buffer + 0x40 + p);
-        if (nameLen > MAX_NAME_LENGTH)
-            nameLen = MAX_NAME_LENGTH;
+        if (nameLen > DIR_MAX_NAME_LENGTH)
+            nameLen = DIR_MAX_NAME_LENGTH;
         const uint16_t step = 2;
         for (uint16_t j = 0; (buffer[j + p]) && (j < nameLen); j += step)
             name.append(1, static_cast<char>(buffer[j + p]));
@@ -346,7 +346,7 @@ bool DirTree::Save(Byte *buffer, size_t len)
         WriteUint32(buffer + i * BUFFER_OFFSET + 0x7C, static_cast<uint32_t>((e->Size() >> BIT_SHIFT) & 0xFFFFFFFFULL));
         WriteUint32(buffer + i * BUFFER_OFFSET + 0x44, e->Prev());
         WriteUint32(buffer + i * BUFFER_OFFSET + 0x48, e->Next());
-        WriteUint32(buffer + i * BUFFER_OFFSET + 0x4C, e->Child());
+        WriteUint32(buffer + i * BUFFER_OFFSET + 0x4c, e->Child());
 
         const auto &clsid = e->Clsid();
         for (size_t j = 0; j < CLSID_SIZE; j++)
@@ -377,7 +377,7 @@ void DirTree::Debug()
         oss << std::endl;
         oss << "       " << "Size: " << e->Size() << " bytes, " << "Start: 0x" << std::uppercase
             << std::hex << std::setw(FOUR_WIDTH) << std::setfill('0') << e->Start() << std::dec << std::endl;
-        oss << "              CLSID: ";
+        oss << "            CLSID: ";
         {
             const auto &clsid = e->Clsid();
             oss << std::uppercase << std::hex << std::setfill('0');
@@ -412,7 +412,7 @@ void DirTree::Debug()
         }
         oss << std::endl << std::endl;
     }
-    oss << "=====================================================================" << std::endl;
+    oss << "========================================================" << std::endl;
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "dirtree dump: %{public}s", oss.str().c_str());
 }
 
@@ -492,15 +492,15 @@ void DirTree::CollectSiblingChain(uint32_t index, std::vector<bool> &visited,
 size_t DirTree::SearchPrevLink(size_t entryIndex)
 {
     size_t parIndex = Parent(entryIndex);
-    if (parIndex == KINVALID_INDEX)
-        return KINVALID_INDEX;
+    if (parIndex == INVALID_INDEX)
+        return INVALID_INDEX;
     if (entries_[parIndex].Child() == entryIndex)
         return parIndex;
     else {
         std::vector<size_t> brothers;
         Children(parIndex, brothers);
         if (brothers.size() == 0)
-            return KINVALID_INDEX;
+            return INVALID_INDEX;
         for (size_t ndx = 0; ndx < brothers.size(); ++ndx) {
             if (entries_[brothers[ndx]].Next() == entryIndex ||
                 entries_[brothers[ndx]].Prev() == entryIndex) {
@@ -508,7 +508,7 @@ size_t DirTree::SearchPrevLink(size_t entryIndex)
             }
         }
     }
-    return KINVALID_INDEX;
+    return INVALID_INDEX;
 }
 
 bool DirTree::SetPrevLink(size_t prevLink, size_t entry, uint32_t value)
@@ -527,23 +527,23 @@ bool DirTree::SetPrevLink(size_t prevLink, size_t entry, uint32_t value)
 
 size_t DirTree::FindRightmostSibling(size_t sib)
 {
-    if (sib == KINVALID_INDEX || sib == 0 || sib >= EntryCount())
-        return KINVALID_INDEX;
+    if (sib == INVALID_INDEX || sib == 0 || sib >= EntryCount())
+        return INVALID_INDEX;
     size_t current = sib;
     size_t loopControl = 0;
     while (loopControl++ < EntryCount()) {
         DirEntry *entryPtr = Entry(current);
         if (!entryPtr || !entryPtr->Valid())
-            return KINVALID_INDEX;
+            return INVALID_INDEX;
 
         const uint32_t prev = entryPtr->Prev();
         if (prev == DIR_ENTRY_END)
             return entryPtr->Index();
         if (prev == 0 || prev >= EntryCount())
-            return KINVALID_INDEX;
+            return INVALID_INDEX;
         current = static_cast<size_t>(prev);
     }
-    return KINVALID_INDEX;
+    return INVALID_INDEX;
 }
 
 namespace {
@@ -588,7 +588,7 @@ bool DirTree::DeleteChildrenRecursive(const std::string &path, DirEntry *e,
     return true;
 }
 
-bool DirTree::DeleteSiblingChain(const std:;string &path, DirEntry *e,
+bool DirTree::DeleteSiblingChain(const std::string &path, DirEntry *e,
     int level, std::vector<bool> *visited)
 {
     if (level == 0 || !e)
@@ -633,7 +633,7 @@ bool DirTree::FixParentLinks(DirEntry *e, size_t prevLink)
         return SetPrevLink(prevLink, e->Index(), prevIdx);
 
     size_t rightMost = FindRightmostSibling(nextIdx);
-    if (rightMost == KINVALID_INDEX)
+    if (rightMost == INVALID_INDEX)
         return false;
     DirEntry *rightMostEntry = Entry(rightMost);
     DirEntry *nextEntry = Entry(nextIdx);
@@ -672,7 +672,7 @@ bool DirTree::DeleteEntry(const std::string &path, int level, std::vector<bool> 
         return false;
     if (level == 0) {
         size_t prevLink = SearchPrevLink(e->Index());
-        if (prevLink == KINVALID_INDEX)
+        if (prevLink == INVALID_INDEX)
             return false;
         if (!FixParentLinks(e, prevLink))
             return false;
@@ -680,5 +680,6 @@ bool DirTree::DeleteEntry(const std::string &path, int level, std::vector<bool> 
     ClearDirEntry(e);
     return true;
 }
-}
-}
+// LCOV_EXCL_STOP
+} // namespace ObjectEditor
+} // namespace OHOS

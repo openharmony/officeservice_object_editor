@@ -24,10 +24,9 @@ namespace ObjectEditor {
 class ObjectEditorClientCallbackStub : public IRemoteStub<IObjectEditorClientCallback> {
 public:
     ObjectEditorClientCallbackStub(bool serialInvokeFlag = false) : IRemoteStub(serialInvokeFlag){};
-    ~ObjectEditorClientCallbackStub() = default;
     int32_t OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
-    virtual int32_t CallbackEnter([[maybe_unused]] uint32_t code);
-    virtual int32_t CallbackExit([[maybe_unused]] uint32_t code, [[maybe_unused]] uint32_t result);
+    virtual int32_t CallbackEnter([[maybe_unused]] uint32_t code) = 0;
+    virtual int32_t CallbackExit([[maybe_unused]] uint32_t code, [[maybe_unused]] int32_t result) = 0;
     int32_t OnRemoteRequestInner(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);
 private:
     int32_t HandleOnUpdate(MessageParcel &data, MessageParcel &reply);

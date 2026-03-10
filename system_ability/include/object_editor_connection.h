@@ -27,9 +27,9 @@
 
 namespace OHOS {
 namespace ObjectEditor {
-class ObjectEditorConnection : public AAFwk::AbilityConnectCallbackStub {
+class ObjectEditorConnection : public AAFwk::AbilityConnectionStub {
 public:
-    ObjectEditorConnection();
+    ObjectEditorConnection(){};
     ~ObjectEditorConnection();
 
     void OnAbilityConnectDone(const AppExecFwk::ElementName &element,
@@ -39,6 +39,10 @@ public:
         const std::string &moduleName, sptr<IRemoteObject> &remoteObject);
     ObjectEditorManagerErrCode StopConnect();
     void RegisterConnectionStatusCallback(const std::shared_ptr<IObjectEditorConnectionStatusCallback> callback);
+    std::string& GetExtensionBundleName();
+    void SetClientBundleName(const std::string &bundleName);
+    std::string& GetClientBundleName();
+    bool IsExtensionAbilityMatch(const std::string &moduleName, const std::string &abilityName);
 
 protected:
     const int8_t CONNECT_TIME_OUT = 3;
@@ -47,24 +51,30 @@ private:
     ObjectEditorManagerErrCode DoConnect(const std::string &bundleName, const std::string &abilityName,
         const std::string &moduleName, sptr<IRemoteObject> &remoteObject);
 
+    std::string extensionBundleName_;
+    std::string extensionAbilityName_;
+    std::string extensionModuleName_;
+    std::string clientBundleName_;
     std::mutex extensionProxyMutex_;
     sptr<IRemoteObject> extensionProxy_ = nullptr;
     std::condition_variable connectCondition_;
     bool isConnectReady_ = false;
     std::mutex connectionStatusCallbackMutex_;
     std::shared_ptr<IObjectEditorConnectionStatusCallback> connectionStatusCallback_ = nullptr;
+    int32_t curCheckEditStatusTimes = 0;
 
     void TimerThreadStopExtension();
     void ResetStopExtensionTimer();
-    void CheckRemoteEditStatus(bool *isEditing, bool *isModified);
+    bool CheckRemoteEditStatus();
 
     std::mutex mutexTimer_;
     std::mutex mutexTimerRunning_;
     std::condition_variable cvTimer_;
     std::atomic<bool> timerRunning_{false};
-    std::atomic<bool> timerNotify__{false};
+    std::atomic<bool> timerNotify_{false};
     std::thread timerThread_;
     std::atomic<bool> timerStopFlag_{false};
+    static const int32_t EXTENSION_STOP_TIME_S = 20;
 };
 
 } // namespace ObjectEditor
