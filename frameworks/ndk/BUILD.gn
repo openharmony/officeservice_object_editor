@@ -34,6 +34,13 @@ ohos_shared_library("content_embed_ndk") {
         "${object_editor_path}/utils/include/dfx",
     ]
     sources = [
+        "src/object_editor_document_capi.cpp",
+        "src/object_editor_extension_capi.cpp",
+        "src/object_editor_proxy_capi.cpp",
+        "${object_editor_path}/common/src/object_editor_config.cpp",
+        "${object_editor_path}/common/src/system_utils.cpp",
+        "${object_editor_path}/document/src/object_editor_document.cpp",
+        "${object_editor_path}/client/src/object_editor_extension_death_recipient.cpp",
     ]
 
     deps = [
@@ -45,6 +52,7 @@ ohos_shared_library("content_embed_ndk") {
         "${object_editor_path}/resources/config/build:coverage_flags",
     ]
     external_deps = [
+        "ability_base:want",
         "ability_base:ability_base_want",
         "ability_runtime:ability_context_native",
         "ability_runtime:ability_runtime",
@@ -61,6 +69,7 @@ ohos_shared_library("content_embed_ndk") {
         "image_framework:image_native",
         "image_framework:pixelmap",
         "ipc:ipc_core",
+        "ipc:ipc_napi",
         "napi:ace_napi",
         "safwk:system_ability_fwk",
     ]

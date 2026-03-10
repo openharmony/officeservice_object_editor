@@ -20,7 +20,8 @@
 
 namespace OHOS {
 namespace ObjectEditor {
-static constexpr uint32_t OBJECT_EDITOR_HILOG_DOMAIN = 0xD003901;
+
+static constexpr unsigned int OBJECT_EDITOR_HILOG_DOMAIN = 0xD003901;
 
 // 设置Domain ID，新加模块，加到UNDEFINED前
 enum class ObjectEditorDomain {
@@ -55,21 +56,21 @@ static constexpr const char* logTags[] = {
 };
 
 static_assert(sizeof(logTags) / sizeof(logTags[0]) ==
-    static_cast<size_t>(ObjectEditorDomain::UNDEFINED) -
-    static_cast<size_t>(ObjectEditorDomain::COMMON) + 1,
+    static_cast<size_t>(OHOS::ObjectEditor::ObjectEditorDomain::UNDEFINED) -
+    static_cast<size_t>(OHOS::ObjectEditor::ObjectEditorDomain::COMMON) + 1,
     "logTags size not match ObjectEditorDomain size");
 
-static inline const char* GetHiLogTag(ObjectEditorDomain domain)
+static inline const char* GetHiLogTag(OHOS::ObjectEditor::ObjectEditorDomain domain)
 {
     size_t index = static_cast<size_t>(domain) -
-        static_cast<size_t>(ObjectEditorDomain::COMMON);
+        static_cast<size_t>(OHOS::ObjectEditor::ObjectEditorDomain::COMMON);
     if (index >= sizeof(logTags) / sizeof(logTags[0])) {
-        return "UNDEFINED";
+        return "UNDEFINED"; // 返回默认tag
     }
     return logTags[index];
 }
 
-static inline unsigned int GetHiLogDomain(ObjectEditorDomain domain)
+static inline unsigned int GetHiLogDomain(OHOS::ObjectEditor::ObjectEditorDomain domain)
 {
     return static_cast<unsigned int>(domain);
 }

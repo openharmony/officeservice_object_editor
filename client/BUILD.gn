@@ -48,6 +48,16 @@ ohos_shared_library("content_embed_client") {
     ]
 
     sources = [
+        "${object_editor_path}/client/src/object_editor_client_callback_stub.cpp",
+        "${object_editor_path}/client/src/object_editor_client_callback.cpp",
+        "${object_editor_path}/client/src/object_editor_manager_proxy.cpp",
+        "${object_editor_path}/client/src/object_editor_client.cpp",
+        "${object_editor_path}/document/src/object_editor_document.cpp",
+        "${object_editor_path}/common/src/object_editor_config.cpp",
+        "${object_editor_path}/common/src/object_editor_format.cpp",
+        "${object_editor_path}/common/src/object_editor_extension_proxy.cpp",
+        "${object_editor_path}/package/src/object_editor_package.cpp",
+        "${object_editor_path}/common/src/user_mgr.cpp",
     ]
 
     deps = [
@@ -57,6 +67,7 @@ ohos_shared_library("content_embed_client") {
     external_deps = [
         "c_utils:utils",
         "ipc:ipc_core",
+        "ipc:ipc_napi",
         "safwk:system_ability_fwk",
         "samgr:samgr_proxy",
         "hilog:libhilog",
@@ -65,6 +76,7 @@ ohos_shared_library("content_embed_client") {
         "ability_runtime:data_ability_helper",
         "relational_store:native_rdb",
         "ability_runtime:uri_permission_mgr",
+        "ability_base:want",
         "ability_base:ability_base_want",
         "os_account:os_account_innerkits",
         "ability_runtime:ability_manager",
