@@ -18,12 +18,12 @@
 
 #include <iremote_stub.h>
 
-#include "i_object_editor_manager.h"
+#include "iobject_editor_manager.h"
 
 namespace OHOS {
 namespace ObjectEditor {
 
-class ObjectEditorManagerStub : public IRemoteObject<IObjectEditorManager> {
+class ObjectEditorManagerStub : public IRemoteStub<IObjectEditorManager> {
 public:
     explicit ObjectEditorManagerStub(bool serialInvokeFlag = false) : IRemoteStub(serialInvokeFlag) {}
     int32_t OnRemoteRequest(uint32_t code, MessageParcel &data,

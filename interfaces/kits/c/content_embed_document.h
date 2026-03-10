@@ -191,7 +191,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_IsLinking(
  *
  * @param document Represents a pointer to an {@link ContentEmbed_Document} instance.
  * @param nativeFilePath Output parameter represents the path of the source file within
-                         the {@link ContentEmbed_Document} on disk.
+ *                       the {@link ContentEmbed_Document} on disk.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
@@ -205,7 +205,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetNativeFilePath(
 
 /**
  * @brief Get the {@link ContentEmbed_Storage} from a {@link ContentEmbed_Document} instance.
- * The caller is responsible for destroying the instance by calling
+ * The caller is responsible for destroying the storage by calling
  * {@link OH_ContentEmbed_DestroyStorage} to avoid memory leaks.
  *
  * @param document Represents a pointer to an {@link ContentEmbed_Document} instance.
@@ -220,7 +220,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetNativeFilePath(
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetRootStorage(
-    const ContentEmbed_Document *document, ContentEmbed_Storage **storage);
+    ContentEmbed_Document *document, ContentEmbed_Storage **storage);
 
 /**
  * @brief Flushes the content of the {@link ContentEmbed_Document} instance.
@@ -239,7 +239,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_Flush(const ContentEmbed_Documen
 
 /**
  * @brief Creates a new {@link ContentEmbed_Storage} instance.
- * The caller is responsible for destroying the instance by calling
+ * The caller is responsible for destroying the storage by calling
  * {@link OH_ContentEmbed_DestroyStorage} to avoid memory leaks.
  *
  * @param parentStorage Represents a pointer to an {@link ContentEmbed_Storage} instance.
@@ -260,7 +260,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_CreateStorage(
 
 /**
  * @brief Obtain the child {@link ContentEmbed_Storage} instance from its parent instance.
- * The caller is responsible for destroying the instance by calling
+ * The caller is responsible for destroying the storage by calling
  * {@link OH_ContentEmbed_DestroyStorage} to avoid memory leaks.
  *
  * @param parentStorage Represents a pointer to an {@link ContentEmbed_Storage} instance.
@@ -281,7 +281,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetStorage(
 
 /**
  * @brief Create a new {@link ContentEmbed_Stream} instance.
- * The caller is responsible for destroying the instance by calling
+ * The caller is responsible for destroying the stream by calling
  * {@link OH_ContentEmbed_DestroyStream} to avoid memory leaks.
  *
  * @param parentStorage Represents a pointer to an {@link ContentEmbed_Storage} instance.
@@ -299,11 +299,11 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetStorage(
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Storage_CreateStream(
-    const ContentEmbed_Storage *parentStorage, const char *name, ContentEmbed_Stream **childStream);
+    ContentEmbed_Storage *parentStorage, const char *name, ContentEmbed_Stream **childStream);
 
 /**
  * @brief Obtain the child {@link ContentEmbed_Stream} instance from the parent storage instance.
- * The caller is responsible for destroying the instance by calling
+ * The caller is responsible for destroying the stream by calling
  * {@link OH_ContentEmbed_DestroyStream} to avoid memory leaks.
  *
  * @param parentStorage Represents a pointer to an {@link ContentEmbed_Storage} instance.
@@ -321,13 +321,13 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_CreateStream(
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetStream(
-    const ContentEmbed_Storage *parentStorage, const char *name, ContentEmbed_Stream **childStream);
+    ContentEmbed_Storage *parentStorage, const char *name, ContentEmbed_Stream **childStream);
 
 /**
  * @brief Delete a specific Storage or Stream directory entry in a directory tree.
  *
  * @param parentStorage Represents a pointer to an {@link ContentEmbed_Storage} instance.
- * @param name Represents the name of an entry which will be deleted.
+ * @param name Represents the name of an storage or stream which will be deleted.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.

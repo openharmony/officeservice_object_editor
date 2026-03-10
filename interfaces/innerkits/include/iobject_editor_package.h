@@ -16,15 +16,12 @@
 #ifndef  OHOS_OBJECT_EDITOR_IOBJECT_EDITOR_PACKAGE_H
 #define  OHOS_OBJECT_EDITOR_IOBJECT_EDITOR_PACKAGE_H
 
-#include <iremote_broker.h>
 #include "iobject_editor_service.h"
 
 namespace OHOS {
 namespace ObjectEditor {
 
-class IObjectEditorPackage : public IRemoteBroker, public IObjectEditorService {
-public:
-    DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.ObjectEditor.IObjectEditorPackage");
+class IObjectEditorPackage : public IObjectEditorService {
 };
 
 } // namespace ObjectEditor

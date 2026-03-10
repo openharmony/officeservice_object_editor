@@ -21,9 +21,9 @@
 namespace OHOS {
 namespace ObjectEditor {
 namespace SystemUtils {
-uint64_t GetFileSize(const std::string &filepath);
-std::string GetFileSuffix(const std::string &filepath);
-std::string GetFileStream(const std::string &filepath);
+uint64_t GetFileSize(const std::string &filePath);
+std::string GetFileSuffix(const std::string &filePath);
+std::string ReadFile(const std::string &filePath);
 std::vector<std::string> SplitString(const std::string &str, char pattern);
 void TrimString(std::string &inputStr);
 bool StringToULong(const char *input, unsigned long &num);
@@ -31,10 +31,16 @@ bool StringToLong(const char *input, long &num);
 bool StringToInt(const char *input, int &num);
 bool StringToFloat(const char *input, float &num);
 bool HasSQLWildcard(const std::string &str);
+/* fileExt仅允许包含字母、数字或'.' */
+bool IsValidFileExt(const std::string &fileExt);
 bool FileExtsHasFileExt(const std::string &fileExts, const std::string &fileExt);
-std::string UTCToBeijingTime(int64_t utcTime);
-std::string GetUriFromPath(const std::string &filepath);
+std::string UTCToBeijingTime(int64_t timestamp);
+std::string GetUriFromPath(const std::string &path);
 std::string GetPathFromUri(const std::string &uri);
+/* str形如 "prefixabcdef"，返回"abcdef"*/
+std::string GetSubstrByPrefix(const std::string &str, const std::string &prefix);
+/* str形如 "prefix123456"，num返回"123456"*/
+bool GetIntByPrefix(const std::string &str, const std::string &prefix, int &num);
 } // namespace SystemUtils
 } // namespace ObjectEditor
 } // namespace OHOS

@@ -33,8 +33,8 @@ namespace ObjectEditor {
 // LCOV_EXCL_START
 namespace {
 const std::string CONFIG_FILE_KEY = "content_embed_config";
-const std::string MEDIA_PRIFIX = "$media:";
-const std::string STRING_PRIFIX = "$string:";
+const std::string MEDIA_PREFIX = "$media:";
+const std::string STRING_PREFIX = "$string:";
 const std::string HMID = "hmid";
 const std::string FILE_EXTS = "file_exts";
 const std::string ICON_ID = "icon_id";
@@ -49,8 +49,12 @@ const std::string HAP_PATH = "hap_path";
 const std::string VERSION = "version";
 
 std::shared_ptr<Media::PixelMap> GetIconPixelMap(Global::Resource::ResourceManager &resMgr,
-    uint32_t iconId, const std::string &hapPath)
+    int iconId, const std::string &hapPath)
 {
+    if (iconId < 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "failed, invalid iconId: %{private}d", iconId);
+        return nullptr;
+    }
     Media::SourceOptions options;
     uint32_t errCode = 0;
     std::unique_ptr<Media::ImageSource> imageSource = nullptr;
@@ -61,7 +65,7 @@ std::shared_ptr<Media::PixelMap> GetIconPixelMap(Global::Resource::ResourceManag
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get icon failed, iconId: %{private}u", iconId);
             return nullptr;
         }
-        imageSource = Media::ImageSource::Create(iconOut.get(), len, options, errCode);
+        imageSource = Media::ImageSource::CreateImageSource(iconOut.get(), len, options, errCode);
     } else { // hap decompressed
         std::string iconPath;
         if (resMgr.GetMediaById(iconId, iconPath) != Global::Resource::RState::SUCCESS) {
@@ -86,9 +90,9 @@ std::shared_ptr<Media::PixelMap> GetIconPixelMap(Global::Resource::ResourceManag
 std::string GetConfigFileName(const AppExecFwk::ExtensionAbilityInfo &extensionInfo)
 {
     std::string resName;
-    for (const auto &config : extensionInfo.GetMetaData()) {
-        if (config.first == CONFIG_FILE_KEY) {
-            resName = config.second;
+    for (const auto &config : extensionInfo.metadata) {
+        if (config.name == CONFIG_FILE_KEY) {
+            resName = config.resource;
             break;
         }
     }
@@ -99,7 +103,7 @@ std::string GetConfigFileName(const AppExecFwk::ExtensionAbilityInfo &extensionI
     return SystemUtils::GetSubstrByPrefix(resName, "$profile:");
 }
 
-bool ReadConfigFile(const std::string &fileContent, Global::Resource::ResourceManager &resMgr,
+bool ReadConfigFile(std::string &fileContent, Global::Resource::ResourceManager &resMgr,
     const AppExecFwk::ExtensionAbilityInfo &extensionInfo)
 {
     std::string configFileName = GetConfigFileName(extensionInfo);
@@ -112,30 +116,32 @@ bool ReadConfigFile(const std::string &fileContent, Global::Resource::ResourceMa
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get config file path failed");
         return false;
     }
-    if (extensionInfo.GetResourceName().empty()) {
+    if (!extensionInfo.hapPath.empty()) { // hap compressed
+        std::unique_ptr<uint8_t[]> fileContentPtr = nullptr;
+        size_t len = 0;
+        if (resMgr.GetProfileDataByName(configFileName.c_str(), len, fileContentPtr) !=
+            Global::Resource::RState::SUCCESS) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "fail: get profile data failed");
+            return false;
+        }
+        if (fileContentPtr == nullptr || len == 0) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "invalid config file data");
+            return false;
+        }
+        fileContent = std::string(fileContentPtr.get(), fileContentPtr.get() + len);
+    } else { // hap decompressed
         std::string configFilePath;
-        if (resMgr.GetProfilePath(configFileName.c_str(), configFilePath) != Global::Resource::RState::SUCCESS) {
+        if (resMgr.GetProfileByName(configFileName.c_str(), configFilePath) !=
+            Global::Resource::RState::SUCCESS) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get config file path failed");
             return false;
         }
         fileContent = SystemUtils::ReadFile(configFilePath);
-    } else {
-        std::unique_ptr<uint8_t[]> configOut;
-        size_t len = 0;
-        if (resMgr.GetProfileDataByName(configFileName.c_str(), len, configOut) != Global::Resource::RState::SUCCESS) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get config file data failed");
-            return false;
-        }
-        if (configOut == nullptr || len == 0) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "invalid config file data");
-            return false;
-        }
-        fileContent = std::string(configOut.get(), configOut.get() + len);
     }
     return true;
 }
 
-bool GetConfigHMID(const nlohmann::json &json, std::string &hmid)
+bool GetConfigHmid(const nlohmann::json &json, std::string &hmid)
 {
     auto it = json.find(HMID);
     if (it == json.end() || !it->is_string()) {
@@ -149,7 +155,7 @@ bool GetConfigHMID(const nlohmann::json &json, std::string &hmid)
 bool GetConfigFileExts(const nlohmann::json &json, std::string &fileExts)
 {
     auto it = json.find(FILE_EXTS);
-    if (it == json.end() || !it->is_array()) {
+    if (it == json.end() || !it->is_string()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "invalid config file, no file_exts");
         return false;
     }
@@ -157,89 +163,88 @@ bool GetConfigFileExts(const nlohmann::json &json, std::string &fileExts)
     return true;
 }
 
-bool GetConfigIcon(const nlohmann::json &json, uint32_t &iconId)
+bool GetConfigIcon(const nlohmann::json &json, int &iconId)
 {
-    auto it = json.find(ICON);
+    auto it = json.find("icon");
     if (it == json.end() || !it->is_string()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "invalid config file, no icon");
         return false;
     }
-    if (!SystemUtils::GetIntByPrefix(it.value(), MEDIA_PRIFIX, iconId)) {
+    if (!SystemUtils::GetIntByPrefix(it.value(), MEDIA_PREFIX, iconId)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "invalid config file, icon is invalid");
         return false;
     }
-    icon = it.value();
     return true;
 }
 
-bool GetConfigName(const nlohmann::json &json, uint32_t &nameId)
+bool GetConfigNameId(const nlohmann::json &json, int &nameId)
 {
-    auto it = json.find(NAME);
+    auto it = json.find("name");
     if (it == json.end() || !it->is_string()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "invalid config file, no name");
         return false;
     }
-    if (!SystemUtils::GetIntByPrefix(it.value(), STRING_PRIFIX, nameId)) {
+    if (!SystemUtils::GetIntByPrefix(it.value(), STRING_PREFIX, nameId)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "invalid config file, name is invalid");
         return false;
     }
     return true;
 }
 
-bool GetConfigDescription(const nlohmann::json &json, uint32_t &descriptionId)
+bool GetConfigDescriptionId(const nlohmann::json &json, int &descriptionId)
 {
-    auto it = json.find(DESCRIPTION);
+    auto it = json.find("description");
     if (it == json.end() || !it->is_string()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "invalid config file, no description");
         return false;
     }
-    if (!SystemUtils::GetIntByPrefix(it.value(), STRING_PRIFIX, descriptionId)) {
+    if (!SystemUtils::GetIntByPrefix(it.value(), STRING_PREFIX, descriptionId)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "invalid config file, description is invalid");
         return false;
     }
     return true;
 }
 
-bool ParseConfigEntry(Nativedb::ValueBucket &bucket, const nlohmann::json &configEntry,
+bool ParseConfigEntry(NativeRdb::ValuesBucket &bucket, const nlohmann::json &configEntry,
     Global::Resource::ResourceManager &resMgr, const AppExecFwk::BundleInfo &bundleInfo,
     const AppExecFwk::ExtensionAbilityInfo &extensionInfo)
 {
     std::string hmid;
-    if (!GetConfigHMID(configEntry, hmid)) {
+    if (!GetConfigHmid(configEntry, hmid)) {
         return false;
     }
     std::string fileExts;
     if (!GetConfigFileExts(configEntry, fileExts)) {
         return false;
     }
-    uint32_t iconId = 0;
-    if (!GetConfigIcon(configEntry, iconId)) {
+    int nameId = -1;
+    if (!GetConfigNameId(configEntry, nameId)) {
         return false;
     }
-    uint32_t nameId = 0;
-    if (!GetConfigName(configEntry, nameId)) {
+    int iconId = -1;
+    if (!GetConfigIconId(configEntry, iconId)) {
         return false;
     }
-    uint32_t descriptionId = 0;
-    if (!GetConfigDescription(configEntry, descriptionId)) {
-        return false;
+    int descriptionId = 0;
+    if (!GetConfigDescriptionId(configEntry, descriptionId)) {
+        descriptionId = -1;
     }
-    bucket.PutStringValue(HMID, hmid);
-    bucket.PutStringValue(FILE_EXTS, fileExts);
-    bucket.PutLongValue(ICON_ID, iconId);
-    bucket.PutLongValue(NAME_ID, nameId);
-    bucket.PutLongValue(DESCRIPTION_ID, descriptionId);
-    bucket.PutStringValue(BUNDLE_NAME, extensionInfo.bundleName);
-    bucket.PutStringValue(MODULE_NAME, extensionInfo.moduleName);
-    bucket.PutStringValue(ABILITY_NAME, extensionInfo.name);
-    bucket.PutLongValue(CREATE_TIME, extensionInfo.updateTime);
-    bucket.PutStringValue(RESOURCE_PATH, extensionInfo.resourcePath);
-    bucket.PutStringValue(HAP_PATH, extensionInfo.hapPath);
-    bucket.PutStringValue(VERSION, bundleInfo.versionName);
+    bucket.PutString(HMID, hmid);
+    bucket.PutString(BUNDLE_NAME, extensionInfo.bundleName);
+    bucket.PutString(MODULE_NAME, extensionInfo.moduleName);
+    bucket.PutString(ABILITY_NAME, extensionInfo.name);
+    bucket.PutString(RESOURCE_PATH, extensionInfo.resourcePath);
+    bucket.PutString(HAP_PATH, extensionInfo.hapPath);
+    bucket.PutString(VERSION, bundleInfo.versionName);
+    bucket.PutInt(NAME_ID, nameId);
+    bucket.PutInt(DESCRIPTION_ID, descriptionId);
+    bucket.PutString(FILE_EXTS, fileExts);
+    bucket.PutInt(ICON_ID, iconId);
+    bucket.PutLong(CREATE_TIME, bundleInfo.updateTime);
     return true;
 }
 
-void ParseConfigFile(const std::string &fileContent, std::vector<Nativedb::ValueBucket> &buckets,
+void ParseConfigFile(const std::string &fileContent, std::vector<NativeRdb::ValuesBucket> &buckets,
     Global::Resource::ResourceManager &resMgr, const AppExecFwk::BundleInfo &bundleInfo,
     const AppExecFwk::ExtensionAbilityInfo &extensionInfo)
 {
@@ -253,15 +258,17 @@ void ParseConfigFile(const std::string &fileContent, std::vector<Nativedb::Value
         return;
     }
     auto it = profileJson.find(CONFIG_FILE_KEY);
-    if (it == profileJson.end() || it->is_discarded() || !it->is_array() || it.empty()) {
+    if (it == profileJson.end() || it->is_discarded() || !it->is_array() || it->empty()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "invalid config file");
         return;
     }
-    for (const auto &configEntry : it.value()) {
+    size_t size = it->size();
+    for (size_t i = 0; i < size; ++i) {
+        const nlohmann::json &configEntry = it->at(i);
         if (!configEntry.is_object()) {
             continue;
         }
-        Nativedb::ValueBucket bucket;
+        NativeRdb::ValuesBucket bucket;
         if (ParseConfigEntry(bucket, configEntry, resMgr, bundleInfo, extensionInfo)) {
             buckets.emplace_back(std::move(bucket));
         }
@@ -292,9 +299,9 @@ sptr<AppExecFwk::IBundleMgr> GetBundleMgr()
 
 bool GetAppIdentifier(std::string &appIdentifier)
 {
-    uint32_t callerToken = 0;
+    uint32_t callerToken = IPCSkeleton::GetCallingTokenID();
     Security::AccessToken::HapTokenInfo hapTokenInfo;
-    Errcode ret = Security::AccessToken::AccessTokenKit::GetHapTokenInfo(callerToken, hapTokenInfo)
+    ErrCode ret = Security::AccessToken::AccessTokenKit::GetHapTokenInfo(callerToken, hapTokenInfo);
     if (ret != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "GetHapTokenInfo failed");
         return false;
@@ -305,6 +312,7 @@ bool GetAppIdentifier(std::string &appIdentifier)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "bundleMgr is null");
         return false;
     }
+    AppExecFwk::BundleInfo bundleInfo;
     ret = bundleMgr->GetBundleInfoV9(bundleName,
         static_cast<int32_t>(AppExecFwk::GetBundleInfoFlag::GET_BUNDLE_INFO_WITH_SIGNATURE_INFO),
         bundleInfo, UserMgr::GetInstance().GetUserId());
@@ -322,7 +330,7 @@ bool GetAppIdentifier(std::string &appIdentifier)
     return true;
 }
 
-static bool IsLegalCalling()
+bool IsLegalCalling()
 {
     return true;
 }
@@ -340,7 +348,7 @@ void GetBundleInfos(const sptr<AppExecFwk::IBundleMgr> &bundleMgr,
             continue;
         }
         AppExecFwk::BundleInfo bundleInfo;
-        Errcode ret = bundleMgr->GetBundleInfoV9(extensionInfo.bundleName,
+        ErrCode ret = bundleMgr->GetBundleInfoV9(extensionInfo.bundleName,
             static_cast<int32_t>(AppExecFwk::GetBundleInfoFlag::GET_BUNDLE_INFO_DEFAULT),
             bundleInfo, UserMgr::GetInstance().GetUserId());
         if (ret != ERR_OK) {
@@ -357,9 +365,10 @@ bool BuildObjectEditorFormat(ObjectEditorFormat &format, NativeRdb::RowEntity &r
 {
     std::string resourcePath;
     std::string hapPath;
-    int64_t nameId = 0;
-    int64_t iconId = 0;
-    int64_t descriptionId = 0;
+    int nameId = -1;
+    int descriptionId = -1;
+    int iconId = -1;
+
     rowEntity.Get(HMID).GetString(format.hmid);
     rowEntity.Get(BUNDLE_NAME).GetString(format.bundleName);
     rowEntity.Get(MODULE_NAME).GetString(format.moduleName);
@@ -367,53 +376,52 @@ bool BuildObjectEditorFormat(ObjectEditorFormat &format, NativeRdb::RowEntity &r
     rowEntity.Get(RESOURCE_PATH).GetString(resourcePath);
     rowEntity.Get(HAP_PATH).GetString(hapPath);
     rowEntity.Get(VERSION).GetString(format.version);
-    rowEntity.Get(FILE_EXTS).GetString(format.fileExts);
-    rowEntity.Get(NAME_ID).getLongValue(nameId);
-    rowEntity.Get(ICON_ID).getLongValue(iconId);
-    rowEntity.Get(DESCRIPTION_ID).getLongValue(descriptionId);
-    rowEntity.Get(CREATE_TIME).getLongValue(format.createTime);
     format.locale = locale;
-    auto resMgr = ObjectEditorManagerResmgr.GetInstance().GetResourceManager(format.bundleName,
-        format.moduleName, locale, resourcePath, hapPath);
+    rowEntity.Get(NAME_ID).GetInt(nameId);
+    rowEntity.Get(DESCRIPTION_ID).GetInt(descriptionId);
+    rowEntity.Get(FILE_EXTS).GetString(format.fileExts);
+    rowEntity.Get(ICON_ID).GetInt(iconId);
+    rowEntity.Get(CREATE_TIME).GetLong(format.createTime);
+    auto resMgr = ObjectEditorManagerResmgr::GetInstance().CreateResourceManager(
+        format.bundleName, format.moduleName, locale, resourcePath, hapPath);
     if (resMgr == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "resMgr is null");
         return false;
     }
-    if (resMgr->GetStringById(static_cast<uint32_t>(nameId), format.formatName) !=
-        GlobalResource::GlobalResource::SUCCESS) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get nameId: %{private}ld failed", nameId);
+    if (nameId < 0 || resMgr->GetStringById(nameId, format.formatName) != Global::Resource::RState::SUCCESS) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get nameId: %{private}d failed", nameId);
         return false;
     }
-    if (resMgr->GetStringById(static_cast<uint32_t>(descriptionId), format.formatDescription) !=
-        GlobalResource::GlobalResource::SUCCESS) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get descriptionId: %{private}ld failed", descriptionId);
+    if (descriptionId < 0 ||
+        resMgr->GetStringById(descriptionId, format.description) != Global::Resource::RState::SUCCESS) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get descriptionId: %{private}d failed", descriptionId);
         return false;
     }
-    format.pIconPiexlMap = GetIconPixelMap(*resMgr, iconId, hapPath);
-    if (format.pIconPiexlMap == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "GetIconPixelMap failed, iconId: %{private}ld", iconId);
+    format.pIconPixelMap = GetIconPixelMap(*resMgr, iconId, hapPath);
+    if (format.pIconPixelMap == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "GetIconPixelMap failed, iconId: %{private}d", iconId);
         return false;
     }
     return true;
 }
 
-bool BuildValueBuckets(std::vector<NativeRdb::ValueBucket> &buckets, const AppExecFwk::BundleInfo &bundleInfo,
+bool BuildValuesBuckets(std::vector<NativeRdb::ValuesBucket> &buckets, const AppExecFwk::BundleInfo &bundleInfo,
     const AppExecFwk::ExtensionAbilityInfo &extensionInfo)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DATABASE, "bundleName: %{public}s, moduleName: %{public}s,"
         "abilityName: %{public}s",
         bundleInfo.bundleName.c_str(), extensionInfo.moduleName.c_str(), extensionInfo.name.c_str());
-    auto resMgr = ObjectEditorManagerResmgr.GetInstance().CreateResourceManager(extensionInfo);
+    auto resMgr = ObjectEditorManagerResmgr::GetInstance().CreateResourceManager(extensionInfo);
     if (resMgr == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "resMgr is null");
         return false;
     }
     std::string configFileContent;
-    if (!ReadFileContent(configFileContent, *resMgr, extensionInfo)) {
+    if (!ReadConfigFile(configFileContent, *resMgr, extensionInfo)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "read configFile failed");
         return false;
     }
-    parseConfigFile(configFileContent, buckets, *resMgr, bundleInfo, extensionInfo);
+    ParseConfigFile(configFileContent, buckets, *resMgr, bundleInfo, extensionInfo);
     return true;
 }
 // LCOV_EXCL_STOP

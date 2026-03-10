@@ -45,14 +45,17 @@ public:
 
 private:
     void AddResourceManager(const std::string &bundleName, const std::string &moduleName,
-        const std::string &locale, std::shared_ptr<Global::Resource::ResourceManager> &resMgr);
+        const std::string &locale, std::shared_ptr<Global::Resource::ResourceManager> resMgr);
     std::shared_ptr<Global::Resource::ResourceManager> GetResourceManager(
         const std::string &bundleName, const std::string &moduleName, const std::string &locale) const;
 
-    using BundleResMgr = std::map<std::tuple<std::string, std::string, std::string>,
+private:
+    /* <<moduleName, locale>, ResourceManager> */
+    using BundleResMgr = std::map<std::tuple<std::string, std::string>,
         std::shared_ptr<Global::Resource::ResourceManager>>;
+    /* <bundleName, BundleResMgr> */
     std::mutex resMgrMutex_;
-    BundleResMgr resMgrs_;
+    std::map<std::string, BundleResMgr> resMgrs_;
 };
 
 } // namespace ObjectEditor

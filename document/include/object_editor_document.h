@@ -35,14 +35,14 @@ namespace OHOS {
 namespace ObjectEditor {
 using namespace OHOS::ObjectEditor;
 
-enum class OperateType : uint32_t {UNKNOWN, CREATE_BY_FILE, CREATE_BY_HMID, EDIT};
+enum class OperateType : uint32_t { UNKNOWN, CREATE_BY_FILE, CREATE_BY_HMID, EDIT };
 
-static const inline std::string PACKAGE_HMID = "0C000300-0000-0000-C000-000000000046";
+static const inline std::string PACKAGE_HMID = "0003000C-0000-0000-C000-000000000046";
 
 class ObjectEditorDocument final : public Parcelable {
 public:
     ObjectEditorDocument() : storage_{nullptr}, oriFileUri_{}, tmpFileUri_{}, nativeFileUri_{}, snapshotUri_{},
-        hmid_{}, isLinking_{false}, operateType_{OperateType::UNKNOWN} {}
+        hmid_{}, isLinking_{false}, operateType_{OperateType::UNKNOWN}, documentId_{} {}
     ObjectEditorDocument(const ObjectEditorDocument &) = delete;
     ObjectEditorDocument &operator=(const ObjectEditorDocument &) = delete;
     ObjectEditorDocument(ObjectEditorDocument &&) noexcept = default;
@@ -54,7 +54,7 @@ public:
 
     [[nodiscard]] static std::unique_ptr<ObjectEditorDocument> CreateByHmid(const std::string &hmid);
     [[nodiscard]] static std::unique_ptr<ObjectEditorDocument> CreateByFile(const std::string &path,
-                                                                           bool isLinking = false);
+                                                                            bool isLinking = false);
     [[nodiscard]] static std::unique_ptr<ObjectEditorDocument> LoadFromFile(const std::string &path);
     [[nodiscard]] static std::unique_ptr<ObjectEditorDocument> LoadFromBytes(const std::vector<std::uint8_t> &data);
     [[nodiscard]] static std::unique_ptr<ObjectEditorDocument> LoadFromStream(std::istream &stream);
@@ -119,14 +119,23 @@ public:
     }
     [[nodiscard]] bool Flush();
     void RestoreStorage();
+
+    std::string GetDocumentId() const;
+    void SetDocumentId(const std::string &documentId);
 private:
     ObjectEditorDocument(std::unique_ptr<Storage> storage, std::string tmpFileUri) noexcept;
     bool RebuildAndFlush();
     bool ShouldRebuild() const;
     uint64_t ComputeLiveDataSize() const;
     bool CopyAllStreamsRecursively(Storage* src, Storage* dst, const std::string& basePath);
+    bool CopyAllStreamRecursivelyImpl(Storage *src, Storage *dst, const std::string& path,
+        std::size_t depth, std::size_t &visitCount);
     bool CopyStreamData(Storage* src, Storage* dst, const std::string& path, uint64_t size);
-    std::string GenerateTempPath(const std::string& targetPath) const;
+    bool HandleUserTempScenario();
+    bool HandleTempFilePathScenario();
+    void TraverseDirectory(const std::string &path, std::size_t depth,
+        uint64_t &total, std::size_t &visitCount) const;
+    bool GenerateAndSaveUniqueFile();
 
     std::unique_ptr<Storage> storage_;
     std::string oriFileUri_;
@@ -137,8 +146,9 @@ private:
     bool isLinking_{false};
     OperateType operateType_{OperateType::UNKNOWN};
     std::string userTmpFilePath_;
+    std::string documentId_;
 };
 } // namespace ObjectEditor
 } // namespace OHOS
 
-#endif
+#endif // OHOS_OBJECT_EDITOR_OBJECT_EDITOR_DOCUMENT_H

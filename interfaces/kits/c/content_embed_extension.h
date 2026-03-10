@@ -61,7 +61,7 @@ typedef struct ContentEmbed_Document ContentEmbed_Document;
 typedef struct ContentEmbed_ExtensionContext ContentEmbed_ExtensionContext;
 
 /**
- * @brief Define the ContentEmbed_ExtensionContextHandle structure type.
+ * @brief Define the ContentEmbed_ExtensionContextHandle type.
  *
  * Provides methods for Content Embed Kit.
  *
@@ -79,13 +79,31 @@ typedef struct ContentEmbed_ExtensionContext* ContentEmbed_ExtensionContextHandl
 typedef struct ContentEmbed_ExtensionInstance ContentEmbed_ExtensionInstance;
 
 /**
- * @brief Define the ContentEmbed_ExtensionInstanceHandle structure type.
+ * @brief Define the ContentEmbed_ExtensionInstanceHandle type.
  *
  * Provides methods for Content Embed Kit.
  *
  * @since 24
  */
 typedef struct ContentEmbed_ExtensionInstance* ContentEmbed_ExtensionInstanceHandle;
+
+/**
+ * @brief Define the ContentEmbed_Object structure type.
+ *
+ * Provides methods for Content Embed Kit.
+ *
+ * @since 24
+ */
+typedef struct ContentEmbed_Object ContentEmbed_Object;
+
+/**
+ * @brief Define the ContentEmbed_ObjectHandle type.
+ *
+ * Provides methods for Content Embed Kit.
+ *
+ * @since 24
+ */
+typedef struct ContentEmbed_Object* ContentEmbed_ObjectHandle;
 
 /**
  * @brief Get the extension context from the content embed extension instance.
@@ -102,7 +120,7 @@ typedef struct ContentEmbed_ExtensionInstance* ContentEmbed_ExtensionInstanceHan
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetContentEmbedContext(ContentEmbed_ExtensionInstanceHandle ceInstance,
-                                                                        ContentEmbed_ExtensionContextHandle* ceContext);
+                                                                        ContentEmbed_ExtensionContextHandle *ceContext);
 
 /**
  * @brief Get the ability runtime context from the content embed extension context.
@@ -118,8 +136,8 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetContentEmbedContext(ContentE
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
-ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetContent(ContentEmbed_ExtensionContextHandle ceContext,
-                                                            AbilityRuntime_ContextHandle* context);
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetContext(ContentEmbed_ExtensionContextHandle ceContext,
+                                                            AbilityRuntime_ContextHandle *context);
 
 /**
  * @brief Get the content embed extension instance from base extension instance.
@@ -138,7 +156,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetContent(ContentEmbed_Extensi
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetExtensionInstance(
     AbilityRuntime_ExtensionInstanceHandle baseExtensionInstance,
-    ContentEmbed_ExtensionInstanceHandle* ceExtensionInstance);
+    ContentEmbed_ExtensionInstanceHandle *ceExtensionInstance);
 
 /**
  * @brief Called when the content embed extension instance is created.
@@ -152,7 +170,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetExtensionInstance(
  * @since 24
  */
 typedef void (*OH_ContentEmbed_Extension_OnCreateFunc)(
-    ContentEmbed_ExtensionInstanceHandle instance, AbilityBase_Want* want);
+    ContentEmbed_ExtensionInstanceHandle instance, AbilityBase_Want *want);
 
 /**
  * @brief Called when the content embed extension instance is destroyed.
@@ -168,72 +186,95 @@ typedef void (*OH_ContentEmbed_Extension_OnDestroyFunc)(
     ContentEmbed_ExtensionInstanceHandle instance);
 
 /**
- * @brief Called when the content embed extension instance is written to data stream.
+ * @brief Called when the content embed extension instance is attached to a content embed object.
  *
  * You need to implement this function, set it to {@link ContentEmbed_ExtensionInstance} through {@link
- * OH_ContentEmbed_Extension_RegisterOnWriteToDataStreamFunc} to complete the registration.
+ * OH_ContentEmbed_Extension_RegisterOnObjectAttachFunc} to complete the registration.
  *
  * @param instance Represents a pointer to an
  *                 {@link ContentEmbed_ExtensionInstance} instance which will be set in.
+ * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
+ * @since 24
+ */
+typedef void (*OH_ContentEmbed_Extension_OnObjectAttachFunc)(
+    ContentEmbed_ExtensionInstanceHandle instance, ContentEmbed_ObjectHandle object);
+
+/**
+ * @brief Called when the content embed extension instance is detached from a content embed object.
+ *
+ * You need to implement this function, set it to {@link ContentEmbed_ExtensionInstance} through {@link
+ * OH_ContentEmbed_Extension_RegisterOnObjectDetachFunc} to complete the registration.
+ *
+ * @param instance Represents a pointer to an
+ *                 {@link ContentEmbed_ExtensionInstance} instance which will be set in.
+ * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
+ * @since 24
+ */
+typedef void (*OH_ContentEmbed_Extension_OnObjectDetachFunc)(
+    ContentEmbed_ExtensionInstanceHandle instance, ContentEmbed_ObjectHandle object);
+
+/**
+ * @brief Called when the content embed object instance is written to data stream.
+ *
+ * You need to implement this function, set it to {@link ContentEmbed_ObjectHandle} through {@link
+ * OH_ContentEmbed_Extension_RegisterOnWriteToDataStreamFunc} to complete the registration.
+ *
+ * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
  * @since 24
  */
 typedef void (*OH_ContentEmbed_Extension_OnWriteToDataStreamFunc)(
-    ContentEmbed_ExtensionInstanceHandle instance);
+    ContentEmbed_ObjectHandle object);
 
 /**
- * @brief Called when the content embed extension instance gets a snapshot.
+ * @brief Called when the content embed object instance gets a snapshot.
  *
- * You need to implement this function, set it to {@link ContentEmbed_ExtensionInstance} through {@link
+ * You need to implement this function, set it to {@link ContentEmbed_ObjectHandle} through {@link
  * OH_ContentEmbed_Extension_RegisterOnGetSnapShotFunc} to complete the registration.
  *
- * @param instance Represents a pointer to an
- *                 {@link ContentEmbed_ExtensionInstance} instance which will be set in.
+ * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
  * @since 24
  */
-typedef void (*OH_ContentEmbed_Extension_OnGetSnapShotFunc)(
-    ContentEmbed_ExtensionInstanceHandle instance);
+typedef void (*OH_ContentEmbed_Extension_OnGetSnapshotFunc)(
+    ContentEmbed_ObjectHandle object);
 
 /**
- * @brief Called when the content embed extension instance edits.
+ * @brief Called when the content embed object instance edits.
  *
- * You need to implement this function, set it to {@link ContentEmbed_ExtensionInstance} through {@link
+ * You need to implement this function, set it to {@link ContentEmbed_ObjectHandle} through {@link
  * OH_ContentEmbed_Extension_RegisterOnDoEditFunc} to complete the registration.
  *
- * @param instance Represents a pointer to an
- *                 {@link ContentEmbed_ExtensionInstance} instance which will be set in.
+ * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
  * @since 24
  */
 typedef void (*OH_ContentEmbed_Extension_OnDoEditFunc)(
-    ContentEmbed_ExtensionInstanceHandle instance);
+    ContentEmbed_ObjectHandle object);
 
 /**
- * @brief Called when the content embed extension instance gets the edit status.
+ * @brief Called when the content embed object instance gets the edit status.
  *
- * You need to implement this function, set it to {@link ContentEmbed_ExtensionInstance} through {@link
+ * You need to implement this function, set it to {@link ContentEmbed_ObjectHandle} through {@link
  * OH_ContentEmbed_Extension_RegisterOnGetEditStatusFunc} to complete the registration.
  *
- * @param instance Represents a pointer to an
- *                 {@link ContentEmbed_ExtensionInstance} instance which will be set in.
+ * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
  * @param isEditing Indicates that the content embed document is being edited.
  * @param isModified Indicates that the content embed document has been modified.
  * @since 24
  */
 typedef void (*OH_ContentEmbed_Extension_OnGetEditStatusFunc)(
-    ContentEmbed_ExtensionInstanceHandle instance, bool *isEditing, bool *isModified);
+    ContentEmbed_ObjectHandle object, bool *isEditing, bool *isModified);
 
 /**
- * @brief Called when the content embed extension instance gets a capability.
+ * @brief Called when the content embed object instance gets a capability.
  *
- * You need to implement this function, set it to {@link ContentEmbed_ExtensionInstance} through {@link
- * OH_ContentEmbed_Extension_RegisterOnGetCapAbilityFunc} to complete the registration.
+ * You need to implement this function, set it to {@link ContentEmbed_ObjectHandle} through {@link
+ * OH_ContentEmbed_Extension_RegisterOnGetCapabilityFunc} to complete the registration.
  *
- * @param instance Represents a pointer to an
- *                 {@link ContentEmbed_ExtensionInstance} instance which will be set in.
- * @param bitmask Indicates the capabilities possessed by a content embed extension instance.
+ * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
+ * @param bitmask Indicates the capabilities possessed by a content embed object instance.
  * @since 24
  */
-typedef void (*OH_ContentEmbed_Extension_OnGetCapAbilityFunc)(
-    ContentEmbed_ExtensionInstanceHandle instance, uint32_t *bitmask);
+typedef void (*OH_ContentEmbed_Extension_OnGetCapabilityFunc)(
+    ContentEmbed_ObjectHandle object, uint32_t *bitmask);
 
 /**
  * @brief Register function {@link OH_ContentEmbed_Extension_OnCreateFunc} into
@@ -272,10 +313,50 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnDestroyFunc(
     ContentEmbed_ExtensionInstanceHandle instance, OH_ContentEmbed_Extension_OnDestroyFunc onDestroyFunc);
 
 /**
- * @brief Register function {@link OH_ContentEmbed_Extension_OnWriteToDataStreamFunc} into
+ * @brief Register function {@link OH_ContentEmbed_Extension_OnObjectAttachFunc} into
  *        {@link ContentEmbed_ExtensionInstance}.
  *
  * @param instance Represents a pointer to an {@link ContentEmbed_ExtensionInstance} instance
+ *                 which will be set function in.
+ * @param onObjectAttachFunc Represents function {@link OH_ContentEmbed_Extension_OnObjectAttachFunc}
+ *                           which will be set in.
+ * @return Returns a specific error code.
+ *     {@link CE_ERR_OK} - success.
+ *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
+ *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
+ * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
+ * @since 24
+ */
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnObjectAttachFunc(
+    ContentEmbed_ExtensionInstanceHandle instance,
+    OH_ContentEmbed_Extension_OnObjectAttachFunc onObjectAttachFunc);
+
+/**
+ * @brief Register function {@link OH_ContentEmbed_Extension_OnObjectDetachFunc} into
+ *        {@link ContentEmbed_ExtensionInstance}.
+ *
+ * @param instance Represents a pointer to an {@link ContentEmbed_ExtensionInstance} instance
+ *                 which will be set function in.
+ * @param onObjectDetachFunc Represents function {@link OH_ContentEmbed_Extension_OnObjectDetachFunc}
+ *                           which will be set in.
+ * @return Returns a specific error code.
+ *     {@link CE_ERR_OK} - success.
+ *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
+ *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
+ * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
+ * @since 24
+ */
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnObjectDetachFunc(
+    ContentEmbed_ExtensionInstanceHandle instance,
+    OH_ContentEmbed_Extension_OnObjectDetachFunc onObjectDetachFunc);
+
+/**
+ * @brief Register function {@link OH_ContentEmbed_Extension_OnWriteToDataStreamFunc} into
+ *        {@link ContentEmbed_Object}.
+ *
+ * @param object Represents a pointer to an {@link ContentEmbed_Object} instance
  *                 which will be set function in.
  * @param onWriteToDataStreamFunc Represents function {@link OH_ContentEmbed_Extension_OnWriteToDataStreamFunc}
  *                                which will be set in.
@@ -288,16 +369,16 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnDestroyFunc(
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnWriteToDataStreamFunc(
-    ContentEmbed_ExtensionInstanceHandle instance,
+    ContentEmbed_ObjectHandle object,
     OH_ContentEmbed_Extension_OnWriteToDataStreamFunc onWriteToDataStreamFunc);
 
 /**
- * @brief Register function {@link OH_ContentEmbed_Extension_OnGetSnapShotFunc} into
- *        {@link ContentEmbed_ExtensionInstance}.
+ * @brief Register function {@link OH_ContentEmbed_Extension_OnGetSnapshotFunc} into
+ *        {@link ContentEmbed_Object}.
  *
- * @param instance Represents a pointer to an {@link ContentEmbed_ExtensionInstance} instance
+ * @param object Represents a pointer to an {@link ContentEmbed_Object} instance
  *                 which will be set function in.
- * @param onGetSnapShotFunc Represents function {@link OH_ContentEmbed_Extension_OnGetSnapShotFunc}
+ * @param onGetSnapshotFunc Represents function {@link OH_ContentEmbed_Extension_OnGetSnapshotFunc}
  *                          which will be set in.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
@@ -307,14 +388,14 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnWriteToDataStreamFunc
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
-ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetSnapShotFunc(
-    ContentEmbed_ExtensionInstanceHandle instance, OH_ContentEmbed_Extension_OnGetSnapShotFunc onGetSnapShotFunc);
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetSnapshotFunc(
+    ContentEmbed_ObjectHandle object, OH_ContentEmbed_Extension_OnGetSnapshotFunc onGetSnapShotFunc);
 
 /**
  * @brief Register function {@link OH_ContentEmbed_Extension_OnDoEditFunc} into
- *        {@link ContentEmbed_ExtensionInstance}.
+ *        {@link ContentEmbed_Object}.
  *
- * @param instance Represents a pointer to an {@link ContentEmbed_ExtensionInstance} instance
+ * @param object Represents a pointer to an {@link ContentEmbed_Object} instance
  *                 which will be set function in.
  * @param onDoEditFunc Represents function {@link OH_ContentEmbed_Extension_OnDoEditFunc} which will be set in.
  * @return Returns a specific error code.
@@ -326,13 +407,13 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetSnapShotFunc(
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnDoEditFunc(
-    ContentEmbed_ExtensionInstanceHandle instance, OH_ContentEmbed_Extension_OnDoEditFunc onDoEditFunc);
+    ContentEmbed_ObjectHandle object, OH_ContentEmbed_Extension_OnDoEditFunc onDoEditFunc);
 
 /**
  * @brief Register function {@link OH_ContentEmbed_Extension_OnGetEditStatusFunc} into
- *        {@link ContentEmbed_ExtensionInstance}.
+ *        {@link ContentEmbed_Object}.
  *
- * @param instance Represents a pointer to an {@link ContentEmbed_ExtensionInstance} instance
+ * @param object Represents a pointer to an {@link ContentEmbed_Object} instance
  *                 which will be set function in.
  * @param onGetEditStatusFunc Represents function {@link OH_ContentEmbed_Extension_OnGetEditStatusFunc}
  *                            which will be set in.
@@ -345,15 +426,15 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnDoEditFunc(
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetEditStatusFunc(
-    ContentEmbed_ExtensionInstanceHandle instance, OH_ContentEmbed_Extension_OnGetEditStatusFunc onGetEditStatusFunc);
+    ContentEmbed_ObjectHandle object, OH_ContentEmbed_Extension_OnGetEditStatusFunc onGetEditStatusFunc);
 
 /**
- * @brief Register function {@link OH_ContentEmbed_Extension_OnGetCapAbilityFunc} into
- *        {@link ContentEmbed_ExtensionInstance}.
+ * @brief Register function {@link OH_ContentEmbed_Extension_OnGetCapabilityFunc} into
+ *        {@link ContentEmbed_Object}.
  *
- * @param instance Represents a pointer to an {@link ContentEmbed_ExtensionInstance} instance
+ * @param object Represents a pointer to an {@link ContentEmbed_Object} instance
  *                 which will be set function in.
- * @param onGetCapAbilityFunc Represents function {@link OH_ContentEmbed_Extension_OnGetCapAbilityFunc}
+ * @param onGetCapabilityFunc Represents function {@link OH_ContentEmbed_Extension_OnGetCapabilityFunc}
  *                            which will be set in.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
@@ -363,13 +444,13 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetEditStatusFunc(
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
-ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetCapAbilityFunc(
-    ContentEmbed_ExtensionInstanceHandle instance, OH_ContentEmbed_Extension_OnGetCapAbilityFunc onGetCapAbilityFunc);
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetCapabilityFunc(
+    ContentEmbed_ObjectHandle object, OH_ContentEmbed_Extension_OnGetCapabilityFunc onGetCapabilityFunc);
 
 /**
- * @brief Get {@link ContentEmbed_Document} instance from {@link ContentEmbed_ExtensionInstance}.
+ * @brief Get {@link ContentEmbed_Document} instance from {@link ContentEmbed_Object}.
  *
- * @param instance Represents a pointer to an {@link ContentEmbed_ExtensionInstance} instance.
+ * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
  * @param document Represents a pointer to an {@link ContentEmbed_Document} instance that is a output param.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
@@ -381,30 +462,30 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetCapAbilityFunc(
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetContentEmbedDocument(
-    ContentEmbed_ExtensionInstanceHandle instance, ContentEmbed_Document **document);
+    ContentEmbed_ObjectHandle object, ContentEmbed_Document **document);
 
 /**
  * @brief Invoke the OnUpdate callback registered by the client.
  *
- * @param instance Represents a pointer to an {@link ContentEmbed_ExtensionInstance} instance.
+ * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
  *     {@link CE_ERR_CLIENT_CALLBACK_NOT_REGISTERED} - client callback not registered.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
- *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
  *     {@link CE_ERR_CLIENT_CALLBACK_FAILED} - the client callback fails.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnUpdate(
-    ContentEmbed_ExtensionInstanceHandle instance);
+    ContentEmbed_ObjectHandle object);
 
 /**
  * @brief Invoke the OnError callback registered by the client.
  *
- * @param instance Represents a pointer to an {@link ContentEmbed_ExtensionInstance} instance.
+ * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
  * @param code Indicates the error code.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
@@ -412,18 +493,18 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnUpdate(
  *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
  *     {@link CE_ERR_CLIENT_CALLBACK_NOT_REGISTERED} - client callback not registered.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
- *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
  *     {@link CE_ERR_CLIENT_CALLBACK_FAILED} - the client callback fails.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnError(
-    ContentEmbed_ExtensionInstanceHandle instance, ContentEmbed_ErrorCode code);
+    ContentEmbed_ObjectHandle object, ContentEmbed_ErrorCode code);
 
 /**
  * @brief Invoke the OnEditingFinished callback registered by the client.
  *
- * @param instance Represents a pointer to an {@link ContentEmbed_ExtensionInstance} instance.
+ * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
  * @param dataModified Indicates whether the document data has been modified.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
@@ -431,49 +512,49 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnError(
  *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
  *     {@link CE_ERR_CLIENT_CALLBACK_NOT_REGISTERED} - client callback not registered.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
- *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
  *     {@link CE_ERR_CLIENT_CALLBACK_FAILED} - the client callback fails.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnEditingFinished(
-    ContentEmbed_ExtensionInstanceHandle instance, bool dataModified);
+    ContentEmbed_ObjectHandle object, bool dataModified);
 
 /**
  * @brief Invoke the OnExtensionStoped callback registered by the client.
  *
- * @param instance Represents a pointer to an {@link ContentEmbed_ExtensionInstance} instance.
+ * @param handle Represents a pointer to an {@link ContentEmbed_ExtensionInstance} instance.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
  *     {@link CE_ERR_CLIENT_CALLBACK_NOT_REGISTERED} - client callback not registered.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
- *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
  *     {@link CE_ERR_CLIENT_CALLBACK_FAILED} - the client callback fails.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
-ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnExtensionStoped(
-    ContentEmbed_ExtensionInstanceHandle instance);
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnExtensionStopped(
+    ContentEmbed_ExtensionInstanceHandle handle);
 
 /**
  * @brief Send the document snapshot to the client application.
  *
- * @param instance Represents a pointer to an {@link ContentEmbed_ExtensionInstance} instance.
+ * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
  * @param pixelMap Document snapshot.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
- *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
  *     {@link CE_ERR_IMAGE_PACKER_OPERATION_FAILED} - the image packer operation failed.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
-ContentEmbed_ErrorCode OH_ContentEmbed_Extension_SetSnapShot(
-    ContentEmbed_ExtensionInstanceHandle instance, OH_PixelmapNative *pixelMap);
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_SetSnapshot(
+    ContentEmbed_ObjectHandle object, OH_PixelmapNative *pixelMap);
 
 /**
  * @brief Starts self UIAbility.

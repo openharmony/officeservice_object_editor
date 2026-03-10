@@ -29,4 +29,3 @@ public:
 } // namespace ObjectEditor
 } // namespace OHOS
 #endif // OHOS_OBJECT_EDITOR_I_OBJECT_EDITOR_EXTENSION_ABILITY_H
-

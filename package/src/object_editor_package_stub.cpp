@@ -45,8 +45,6 @@ int32_t ObjectEditorPackageStub::OnRemoteRequestInner(uint32_t code, MessageParc
         return ERR_TRANSACTION_FAILED;
     }
     switch (static_cast<IObjectEditorServiceIpcCode>(code)) {
-        case IObjectEditorServiceIpcCode::COMMAND_REGISTER_CLIENT_CB:
-            return HandlePackageRegisterClientCallback(data, reply);
         case IObjectEditorServiceIpcCode::COMMAND_GET_SNAPSHOT:
             return HandlePackageGetSnapshot(data, reply);
         case IObjectEditorServiceIpcCode::COMMAND_DO_EDIT:
@@ -57,26 +55,15 @@ int32_t ObjectEditorPackageStub::OnRemoteRequestInner(uint32_t code, MessageParc
     return ERR_TRANSACTION_FAILED;
 }
 
-int32_t ObjectEditorPackageStub::HandlePackageRegisterClientCallback(MessageParcel &data, MessageParcel &reply)
-{
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::PACKAGE, "call");
-    sptr<IObjectEditorClientCallback> clientCb = iface_cast<IObjectEditorClientCallback>(data.ReadRemoteObject());
-    if (clientCb == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "clientCb is nullptr");
-        return ERR_INVALID_DATA;
-    }
-    ErrCode errCode = RegisterClientCB(clientCb);
-    if (!reply.WriteInt32(errCode)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "write errCode failed");
-        return ERR_INVALID_VALUE;
-    }
-    return ERR_NONE;
-}
-
 int32_t ObjectEditorPackageStub::HandlePackageGetSnapshot(MessageParcel &data, MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::PACKAGE, "call");
-    ErrCode errCode = GetSnapshot();
+    std::string documentId = data.ReadString();
+    if (documentId.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "documentId is empty");
+        return ERR_INVALID_DATA;
+    }
+    ErrCode errCode = GetSnapshot(documentId);
     if (!reply.WriteInt32(errCode)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "write errCode failed");
         return ERR_INVALID_VALUE;
@@ -87,7 +74,12 @@ int32_t ObjectEditorPackageStub::HandlePackageGetSnapshot(MessageParcel &data, M
 int32_t ObjectEditorPackageStub::HandlePackageDoEdit(MessageParcel &data, MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::PACKAGE, "call");
-    ErrCode errCode = DoEdit();
+    std::string documentId = data.ReadString();
+    if (documentId.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "documentId is empty");
+        return ERR_INVALID_DATA;
+    }
+    ErrCode errCode = DoEdit(documentId);
     if (!reply.WriteInt32(errCode)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "write errCode failed");
         return ERR_INVALID_VALUE;

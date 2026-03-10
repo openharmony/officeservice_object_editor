@@ -24,6 +24,7 @@
 #include "object_editor_client.h"
 #include "object_editor_client_callback.h"
 #include "object_editor_config.h"
+#include "object_editor_extension_death_recipient.h"
 #include "system_utils.h"
 
 using namespace OHOS::ObjectEditor;
@@ -46,7 +47,7 @@ std::unique_ptr<OHOS::Media::PixelMap> CreatePixelMap(const std::string &filePat
     return imageSource->CreatePixelMap(decodeOptions, errCode);
 }
 
-std::unique_ptr<OH_PixelMapNative> CreatePixelMapNative(const std::string &filePath,
+std::unique_ptr<OH_PixelmapNative> CreatePixelMapNative(const std::string &filePath,
     const std::string &formatHint, uint32_t &errCode)
 {
     std::unique_ptr<OHOS::Media::PixelMap> pixelMap = CreatePixelMap(filePath, formatHint, errCode);
@@ -55,14 +56,14 @@ std::unique_ptr<OH_PixelMapNative> CreatePixelMapNative(const std::string &fileP
         return nullptr;
     }
     std::shared_ptr<OHOS::Media::PixelMap> pixelMapShared = std::move(pixelMap);
-    return std::make_unique<OH_PixelMapNative>(pixelMapShared);
+    return std::make_unique<OH_PixelmapNative>(pixelMapShared);
 }
 
 char *CopyToCString(const std::string &str)
 {
     size_t size = str.size();
     if (size == 0 || size > MAX_STRING_LENGTH) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "size:%{public}u invalid", size);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "size:%{public}zu invalid", size);
         return nullptr;
     }
     char *cstr = new (std::nothrow) char[size + 1];
@@ -79,12 +80,12 @@ char *CopyToCString(const std::string &str)
     return cstr;
 }
 
-void FreeCString(char **cstrs, size_t len)
+void FreeCStrings(char **cstrs, size_t len)
 {
     if (cstrs == nullptr) {
         return;
     }
-    for (size_t i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; ++i) {
         if (cstrs[i] != nullptr) {
             delete[] cstrs[i];
             cstrs[i] = nullptr;
@@ -100,23 +101,23 @@ char **SplitToCStrings(const std::string &str, char pattern, uint32_t &count)
     size_t size = substrs.size();
     count = static_cast<uint32_t>(size);
     if (size == 0 || size > MAX_STRING_LENGTH) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "size:%{public}u invalid", size);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "size:%{public}zu invalid", size);
         return nullptr;
     }
-    char **cstrs = new (std::nothrow) char *[size];
-    if (cstrs == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "alloc failed");
+    char **result = new (std::nothrow) char *[size];
+    if (result == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "alloc result failed");
         return nullptr;
     }
-    for (size_t i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; ++i) {
         char *subCstr = CopyToCString(substrs[i]);
         if (subCstr == nullptr) {
-            FreeCString(cstrs, i);
+            FreeCStrings(result, i);
             return nullptr;
         }
-        cstrs[i] = subCstr;
+        result[i] = subCstr;
     }
-    return cstrs;
+    return result;
 }
 } // namespace
 
@@ -126,7 +127,7 @@ ContentEmbed_Format::~ContentEmbed_Format()
     if (fileNameExtensions == nullptr) {
         return;
     }
-    for (uint32_t i = 0; i < fileNameExtensionsCount; i++) {
+    for (uint32_t i = 0; i < fileNameExtensionsCount; ++i) {
         if (fileNameExtensions[i] != nullptr) {
             delete[] fileNameExtensions[i];
             fileNameExtensions[i] = nullptr;
@@ -139,15 +140,19 @@ ContentEmbed_Format::~ContentEmbed_Format()
 
 void ContentEmbed_Format::Build(std::unique_ptr<ObjectEditorFormat> &format)
 {
+    if (format == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "format is nullptr");
+        return;
+    }
     hmid = std::move(format->hmid);
     locale = std::move(format->locale);
-    name = std::move(format->name);
+    name = std::move(format->formatName);
     description = std::move(format->description);
-    icon = std::move(format->icon);
+    icon = std::move(format->pIconPixelMap);
     fileNameExtensions = SplitToCStrings(format->fileExts, ',', fileNameExtensionsCount);
 }
 
-vpid ContentEmbed_Info::Build(std::vector<std::unique_ptr<ObjectEditorFormat>> &oeFormats)
+void ContentEmbed_Info::Build(std::vector<std::unique_ptr<ObjectEditorFormat>> &oeFormats)
 {
     for (auto &format : oeFormats) {
         std::unique_ptr<ContentEmbed_Format> embedFormat = std::make_unique<ContentEmbed_Format>();
@@ -208,7 +213,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedInfo(const char *locale, C
         return CE_ERR_PARAM_INVALID;
     }
     if (!info->formats.empty()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "info is not empty");
+        OBJECT_EDITOR_LOGW(ObjectEditorDomain::CLIENT_NDK, "info is not empty");
         return CE_ERR_OK;
     }
     std::string strLocale = locale == nullptr ? "" : std::string(locale);
@@ -225,15 +230,19 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedInfo(const char *locale, C
 }
 
 // LCOV_EXCL_START
-ContentEmbed_ErrorCode OH_ContentEmbed_GetFormatCountFromInfo(ContentEmbed_Info *info, uint32_t *count)
+ContentEmbed_ErrorCode OH_ContentEmbed_GetFormatCountFromInfo(const ContentEmbed_Info *info, uint32_t *count)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
         return CE_ERR_DEVICE_NOT_SUPPORTED;
     }
-    if (info == nullptr || count == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (info == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "info is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (count == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "count is null");
         return CE_ERR_PARAM_INVALID;
     }
     *count = info->formats.size();
@@ -248,11 +257,15 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetFormatFromInfo(const ContentEmbed_Info
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
         return CE_ERR_DEVICE_NOT_SUPPORTED;
     }
-    if (info == nullptr || format == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "info or format is null");
+    if (info == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "info is null");
         return CE_ERR_PARAM_INVALID;
     }
-    if (index >= info->formats.size()) {
+    if (format == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "format is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (static_cast<size_t>(index) >= info->formats.size()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "index:%{public}u exceed count:%{public}zu",
             index, info->formats.size());
         return CE_ERR_PARAM_INVALID;
@@ -324,8 +337,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedFormatByHmidAndLocale(cons
 }
 
 // LCOV_EXCL_START
-ContentEmbed_ErrorCode OH_ContentEmbed_GetHmidFromFormat(const ContentEmbed_Format *format, char *hmid,
-    const int32_t hmidSize)
+ContentEmbed_ErrorCode OH_ContentEmbed_GetHmidFromFormat(const ContentEmbed_Format *format, char *hmid)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
@@ -336,11 +348,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetHmidFromFormat(const ContentEmbed_Form
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
         return CE_ERR_PARAM_INVALID;
     }
-    if (format->hmid.size() >= hmidSize) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "hmid size:%{public}zu exceed hmidSize:%{public}d",
-            format->hmid.size(), hmidSize);
-        return CE_ERR_PARAM_INVALID;
-    }
     if (strcpy_s(hmid, MAX_HMID_LENGTH, format->hmid.c_str()) != 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "strcpy_s failed");
         return CE_ERR_PARAM_INVALID;
@@ -348,26 +355,24 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetHmidFromFormat(const ContentEmbed_Form
     return CE_ERR_OK;
 }
 
-ContentEmbed_ErrorCode OH_ContentEmbed_GetNameAndDescriptionFromFormat(const ContentEmbed_Format *format, char *name,
-    const int32_t nameSize, char *description, const int32_t descriptionSize)
+ContentEmbed_ErrorCode OH_ContentEmbed_GetNameAndDescriptionFromFormat(const ContentEmbed_Format *format,
+    char *name, char *description)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
         return CE_ERR_DEVICE_NOT_SUPPORTED;
     }
-    if (format == nullptr || name == nullptr || description == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (format == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "format is null");
         return CE_ERR_PARAM_INVALID;
     }
-    if (format->name.size() >= nameSize) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "name size:%{public}zu exceed nameSize:%{public}d",
-            format->name.size(), nameSize);
+    if (name == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "name is null");
         return CE_ERR_PARAM_INVALID;
     }
-    if (format->description.size() >= descriptionSize) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "description size:%{public}zu exceed descriptionSize:%{public}d",
-            format->description.size(), descriptionSize);
+    if (description == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "description is null");
         return CE_ERR_PARAM_INVALID;
     }
     if (strcpy_s(name, MAX_NAME_LENGTH, format->name.c_str()) != 0) {
@@ -382,22 +387,26 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetNameAndDescriptionFromFormat(const Con
 }
 
 ContentEmbed_ErrorCode OH_ContentEmbed_GetIconFromFormat(const ContentEmbed_Format *format,
-    OHOS::Media::PixelMap **icon)
+    OH_PixelmapNative **icon)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
         return CE_ERR_DEVICE_NOT_SUPPORTED;
     }
-    if (format == nullptr || icon == nullptr || format->icon == nullptr) {
+    if (format == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
         return CE_ERR_PARAM_INVALID;
     }
-    if (*icon != nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "icon is not null");
+    if (icon == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "icon is null");
         return CE_ERR_PARAM_INVALID;
     }
-    *icon = new OH_PixelMapNative(format->icon);
+    if (format->icon == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "format icon is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    *icon = new OH_PixelmapNative(format->icon);
     if (*icon == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "icon alloc failed");
         return CE_ERR_NULL_POINTER;
@@ -406,22 +415,22 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetIconFromFormat(const ContentEmbed_Form
 }
 
 char **OH_ContentEmbed_GetFileNameExtensionsFromFormat(const ContentEmbed_Format *format,
-    uint32_t *fileNameExtensionsCount)
+    unsigned int *count)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
         return nullptr;
     }
-    if (format == nullptr || fileNameExtensionsCount == nullptr) {
+    if (format == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
         return nullptr;
     }
-    if (format->fileNameExtensionsCount == 0 || format->fileNameExtensions == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "fileNameExtensions is null");
+    if (count == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "count is null");
         return nullptr;
     }
-    *fileNameExtensionsCount = format->fileNameExtensionsCount;
+    *count = format->fileNameExtensionsCount;
     return format->fileNameExtensions;
 }
 
@@ -434,12 +443,16 @@ ContentEmbed_ErrorCode OH_ContentEmbed_CreateExtensionProxy(ContentEmbed_Documen
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (ceDocument == nullptr || proxy == nullptr) {    
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (ceDocument == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (proxy == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is null");
         return CE_ERR_PARAM_INVALID;
     }
     *proxy = new (std::nothrow) ContentEmbed_ExtensionProxy();
-    if (*proxy == nullptr) {    
+    if (*proxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "extensionProxy alloc failed");
         return CE_ERR_NULL_POINTER;
     }
@@ -477,8 +490,12 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_RegisterOnUpdateFunc(ContentEmbed_E
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (proxy == nullptr || onUpdateFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (proxy == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (onUpdateFunc == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "onUpdateFunc is null");
         return CE_ERR_PARAM_INVALID;
     }
     proxy->onUpdateFunc = onUpdateFunc;
@@ -494,8 +511,12 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_RegisterOnErrorFunc(ContentEmbed_Ex
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (proxy == nullptr || onErrorFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (proxy == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (onErrorFunc == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "onErrorFunc is null");
         return CE_ERR_PARAM_INVALID;
     }
     proxy->onErrorFunc = onErrorFunc;
@@ -511,8 +532,12 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_RegisterOnEditingFinishedFunc(Conte
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (proxy == nullptr || onEditingFinishedFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (proxy == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (onEditingFinishedFunc == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "onEditingFinishedFunc is null");
         return CE_ERR_PARAM_INVALID;
     }
     proxy->onEditingFinishedFunc = onEditingFinishedFunc;
@@ -528,8 +553,12 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_RegisterOnExtensionStoppedFunc(Cont
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (proxy == nullptr || onExtensionStoppedFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (proxy == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (onExtensionStoppedFunc == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "onExtensionStoppedFunc is null");
         return CE_ERR_PARAM_INVALID;
     }
     proxy->onExtensionStoppedFunc = onExtensionStoppedFunc;
@@ -544,13 +573,17 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StartWork(ContentEmbed_ExtensionPro
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (proxy == nullptr || proxy->ceDocument == nullptr) {
+    if (proxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is null");
         return CE_ERR_PARAM_INVALID;
     }
     if (proxy->onUpdateFunc == nullptr || proxy->onErrorFunc == nullptr ||
         proxy->onEditingFinishedFunc == nullptr || proxy->onExtensionStoppedFunc == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "callback is null");
+        return CE_ERR_CLIENT_CALLBACK_NOT_REGISTERED;
+    }
+    if (proxy->ceDocument == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "inner document is null");
         return CE_ERR_PARAM_INVALID;
     }
     auto oeCallbackInner = new (std::nothrow) ObjectEditorClientCallback(proxy);
@@ -558,10 +591,34 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StartWork(ContentEmbed_ExtensionPro
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "alloc failed");
         return CE_ERR_NULL_POINTER;
     }
-    auto errCode = ObjectEditorClient::GetInstance().StartObjectEditorExtension(proxy->ceDocument->oeDocumentInner
-        oeCallbackInner, proxy->oeExtensionRemoteObject, proxy->isPackageExtension);
+    auto errCode = ObjectEditorClient::GetInstance().StartObjectEditorExtension(proxy->ceDocument->oeDocumentInner,
+        oeCallbackInner, proxy->objectEditorService, proxy->isPackageExtension);
     if (errCode != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "StartWork failed, errCode: %{public}d", errCode);
+        delete oeCallbackInner;
+        return CE_ERR_SYSTEM_ABNORMAL;
+    }
+    if (proxy->isPackageExtension) {
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT_NDK, "is package");
+        return CE_ERR_OK;
+    }
+    auto extensionDeathRecipient = OHOS::sptr<OHOS::IRemoteObject::DeathRecipient>(
+        new (std::nothrow) ObjectEditorExtensionDeathRecipient(proxy));
+    if (extensionDeathRecipient == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "alloc failed");
+        delete oeCallbackInner;
+        return CE_ERR_NULL_POINTER;
+    }
+    if (proxy->objectEditorService == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "service is null");
+        delete oeCallbackInner;
+        return CE_ERR_PARAM_INVALID;
+    }
+    auto oeExtensionRemoteObject = proxy->objectEditorService->GetRemoteObject();
+    if (oeExtensionRemoteObject != nullptr &&
+        oeExtensionRemoteObject->IsProxyObject() &&
+        !oeExtensionRemoteObject->AddDeathRecipient(extensionDeathRecipient)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "service is null");
         delete oeCallbackInner;
         return CE_ERR_SYSTEM_ABNORMAL;
     }
@@ -576,12 +633,19 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_DoEdit(ContentEmbed_ExtensionProxy 
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (proxy == nullptr || proxy->oeExtensionRemoteObject == nullptr ||
-        proxy->ceDocument == nullptr || proxy->ceDocument->oeDocumentInner == nullptr) {
+    if (proxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is invalid");
         return CE_ERR_PARAM_INVALID;
     }
-    auto errCode = proxy->oeExtensionRemoteObject->DoEdit(proxy->ceDocument->oeDocumentInner->GetDocumentId());
+    if (proxy->objectEditorService == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "service is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (proxy->ceDocument == nullptr || proxy->ceDocument->oeDocumentInner == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    auto errCode = proxy->objectEditorService->DoEdit(proxy->ceDocument->oeDocumentInner->GetDocumentId());
     if (errCode != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed: %{public}d", errCode);
         return CE_ERR_EXTENSION_ERROR;
@@ -598,13 +662,27 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetEditStatus(ContentEmbed_Extensio
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (proxy == nullptr || proxy->oeExtensionRemoteObject == nullptr ||
-        proxy->ceDocument == nullptr || proxy->ceDocument->oeDocumentInner == nullptr ||
-        isEditing == nullptr || isModified == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (proxy == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is invalid");
         return CE_ERR_PARAM_INVALID;
     }
-    auto errCode = proxy->oeExtensionRemoteObject->GetEditStatus(
+    if (isEditing == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "isEditing is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (isModified == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "isModified is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (proxy->objectEditorService == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "service is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (proxy->ceDocument == nullptr || proxy->ceDocument->oeDocumentInner == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    auto errCode = proxy->objectEditorService->GetEditStatus(
         proxy->ceDocument->oeDocumentInner->GetDocumentId(),
         isEditing, isModified);
     if (errCode != CE_ERR_OK) {
@@ -623,13 +701,23 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetCapability(ContentEmbed_Extensio
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (proxy == nullptr || proxy->oeExtensionRemoteObject == nullptr ||
-        proxy->ceDocument == nullptr || proxy->ceDocument->oeDocumentInner == nullptr ||
-        capability == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (proxy == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is invalid");
         return CE_ERR_PARAM_INVALID;
     }
-    auto errCode = proxy->oeExtensionRemoteObject->GetCapability(
+    if (bitmask == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "bitmask is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (proxy->objectEditorService == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "service is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (proxy->ceDocument == nullptr || proxy->ceDocument->oeDocumentInner == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    auto errCode = proxy->objectEditorService->GetCapability(
         proxy->ceDocument->oeDocumentInner->GetDocumentId(),
         bitmask);
     if (errCode != CE_ERR_OK) {
@@ -639,8 +727,8 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetCapability(ContentEmbed_Extensio
     return CE_ERR_OK;
 }
 
-ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetSnapShot(ContentEmbed_ExtensionProxy *proxy,
-    OH_PixelMapNative **snapshot)
+ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetSnapshot(ContentEmbed_ExtensionProxy *proxy,
+    OH_PixelmapNative **snapshot)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
@@ -648,13 +736,27 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetSnapShot(ContentEmbed_ExtensionP
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (proxy == nullptr || proxy->oeExtensionRemoteObject == nullptr ||
-        proxy->ceDocument == nullptr || proxy->ceDocument->oeDocumentInner == nullptr ||
-        snapshot == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (supported != CE_ERR_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
+        return supported;
+    }
+    if (proxy == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is invalid");
         return CE_ERR_PARAM_INVALID;
     }
-    auto errCode = proxy->oeExtensionRemoteObject->GetSnapShot(
+    if (snapshot == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "snapshot is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (proxy->objectEditorService == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "service is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (proxy->ceDocument == nullptr || proxy->ceDocument->oeDocumentInner == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    auto errCode = proxy->objectEditorService->GetSnapshot(
         proxy->ceDocument->oeDocumentInner->GetDocumentId());
     if (errCode != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed: %{public}d", errCode);
@@ -684,12 +786,16 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StopWork(ContentEmbed_ExtensionProx
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (proxy == nullptr || proxy->ceDocument == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is invalid");
+    if (proxy == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (proxy->ceDocument == nullptr || proxy->ceDocument->oeDocumentInner == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
         return CE_ERR_PARAM_INVALID;
     }
     auto errCode = ObjectEditorClient::GetInstance().StopObjectEditorExtension(proxy->ceDocument->oeDocumentInner,
-        proxy->oeExtensionRemoteObject, proxy->isPackageExtension);
+        proxy->objectEditorService, proxy->isPackageExtension);
     if (errCode != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed: %{public}d", errCode);
         return CE_ERR_SYSTEM_ABNORMAL;
@@ -706,8 +812,16 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetDocument(ContentEmbed_ExtensionP
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (proxy == nullptr || proxy->ceDocument == nullptr || ceDocument == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is invalid");
+    if (proxy == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (proxy->ceDocument == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (ceDocument == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "ceDocument is null");
         return CE_ERR_PARAM_INVALID;
     }
     *ceDocument = proxy->ceDocument;

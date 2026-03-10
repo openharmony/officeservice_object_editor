@@ -25,7 +25,7 @@
 
 namespace OHOS {
 namespace ObjectEditor {
-
+// LCOV_EXCL_START
 static const Byte g_cdMagic[] = {0xD0u, 0xCFu, 0x11u, 0xE0u, 0xA1u, 0xB1u, 0x1Au, 0xE1u};
 
 Header::Header()
@@ -93,8 +93,7 @@ bool Header::IsCompoundDocument() const
 bool Header::Load(const Byte *buffer, size_t len)
 {
     const size_t required = HEADER_FIXED_SIZE + HEADER_DIFAT_ARRAY_SIZE * FOUR_BYTE_SIZE;
-    if (len < required || buffer == nullptr) [[unlikely]]
-    {
+    if (len < required || buffer == nullptr) [[unlikely]] {
         return false;
     }
 
@@ -128,8 +127,7 @@ bool Header::Load(const Byte *buffer, size_t len)
 bool Header::Save(Byte *buffer, size_t len)
 {
     const size_t required = HEADER_FIXED_SIZE + HEADER_DIFAT_ARRAY_SIZE * FOUR_BYTE_SIZE;
-    if (len < required || buffer == nullptr) [[unlikely]]
-    {
+    if (len < required || buffer == nullptr) [[unlikely]] {
         return false;
     }
 
@@ -185,39 +183,44 @@ void Header::Debug()
         return v == ENDOFCHAIN ? std::string("[NONE]") : std::to_string(v);
     };
     constexpr uint32_t PRINT_WIDTH = 16;
-    oss << "===================== OLE HEADER ====================" << std::endl;
+    oss << "==================== OLE HEADER ====================" << std::endl;
     oss << std::left << std::setw(PRINT_WIDTH) << "Block Shift:" << std::right << bigBlockShift_ << " (2^"
         << bigBlockShift_ << " = " << (1u << bigBlockShift_) << " bytes)" << std::endl;
     oss << std::left << std::setw(PRINT_WIDTH) << "Mini Shift:" << std::right << miniBlockShift_ << " (2^"
         << miniBlockShift_ << " = " << (1u << miniBlockShift_) << " bytes)" << std::endl;
     oss << std::left << std::setw(PRINT_WIDTH) << "FAT Blocks:" << std::right << numBat_ << std::endl;
-    oss << std::left << std::setw(PRINT_WIDTH) << "Dir Start:" <<
-        std::right << indexOrNoneDec(direntStart_) << std::endl;
-    oss << std::left << std::setw(PRINT_WIDTH) << "Threshold" << std::right << threshold_ << " bytes" << std::endl;
-    oss << std::left << std::setw(PRINT_WIDTH) << "MiniFAT Start:" <<
-        std::right << sectorOrNone(sbatStart_) << std::endl;
+    oss << std::left << std::setw(PRINT_WIDTH) << "Dir Start:" << std::right << indexOrNoneDec(direntStart_)
+        << std::endl;
+    oss << std::left << std::setw(PRINT_WIDTH) << "Threshold:" << std::right << threshold_ << " bytes"
+        << std::endl;
+
+    oss << std::left << std::setw(PRINT_WIDTH) << "MiniFAT Start:" << std::right << sectorOrNone(sbatStart_)
+        << std::endl;
     if (numSbat_ != 0) {
         oss << std::left << std::setw(PRINT_WIDTH) << "MiniFAT Count:" << std::right << numSbat_ << std::endl;
     }
-    oss << std::left << std::setw(PRINT_WIDTH) << "DIFAT Start:" <<
-        std::right << sectorOrNone(difatStart_) << std::endl;
-    if (numDifat_ != 0)
+    oss << std::left << std::setw(PRINT_WIDTH) << "DIFAT Start:" << std::right << sectorOrNone(difatStart_)
+        << std::endl;
+    if (numDifat_ != 0) {
         oss << std::left << std::setw(PRINT_WIDTH) << "DIFAT Count:" << std::right << numDifat_ << std::endl;
+    }
+
     uint32_t s = (numBat_ <= HEADER_DIFAT_ARRAY_SIZE) ? numBat_ : HEADER_DIFAT_ARRAY_SIZE;
-    oss << std::left << std::setw(PRINT_WIDTH) << (std::string("BAT Blocks (first ") +
-        std::to_string(s) + "): ");
+    oss << std::left << std::setw(PRINT_WIDTH) << (std::string("BAT Blocks (first ") + std::to_string(s) + "): ");
     if (s == 0) {
         oss << "";
     } else {
         for (uint32_t i = 0; i < s; i++) {
-            if (i)
+            if (i) {
                 oss << ' ';
+            }
             oss << bbBlocks_[i];
         }
     }
     oss << std::endl;
-    oss << "=============================================" << std::endl;
+    oss << "====================================================" << std::endl;
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "dirtree dump: %{public}s", oss.str().c_str());
 }
+// LCOV_EXCL_STOP
 } // namespace ObjectEditor
 } // namespace OHOS

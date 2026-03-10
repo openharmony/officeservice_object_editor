@@ -19,7 +19,7 @@ namespace OHOS {
 namespace ObjectEditor {
 // LCOV_EXCL_START
 
-ErrCode ObjectEditorClientCallbackProxy::onUpdate(std::unique_ptr<ObjectEditorDocument> &document)
+ErrCode ObjectEditorClientCallbackProxy::OnUpdate(std::unique_ptr<ObjectEditorDocument> &document)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -32,12 +32,13 @@ ErrCode ObjectEditorClientCallbackProxy::onUpdate(std::unique_ptr<ObjectEditorDo
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write document failed");
         return ERR_INVALID_DATA;
     }
-    sptr<IObjectEditorClientCallback> remote = Remote();
+    sptr<IRemoteObject> remote = Remote();
     if (remote == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "remote is nullptr");
         return ERR_INVALID_DATA;
     }
-    int32_t result = remote->SendRequest(static_cast<uint32_t>(IObjectEditorClientCallback::COMMAND_ON_UPDATE),
+    int32_t result = remote->SendRequest(
+        static_cast<uint32_t>(IObjectEditorClientCallbackIpcCode::COMMAND_ON_UPDATE),
         data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "send request failed");
@@ -51,7 +52,7 @@ ErrCode ObjectEditorClientCallbackProxy::onUpdate(std::unique_ptr<ObjectEditorDo
     return ERR_OK;
 }
 
-ErrCode ObjectEditorClientCallbackProxy::onError(ContentEmbed_ErrorCode error)
+ErrCode ObjectEditorClientCallbackProxy::OnError(ContentEmbed_ErrorCode error)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -64,12 +65,13 @@ ErrCode ObjectEditorClientCallbackProxy::onError(ContentEmbed_ErrorCode error)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write error failed");
         return ERR_INVALID_VALUE;
     }
-    sptr<IObjectEditorClientCallback> remote = Remote();
+    sptr<IRemoteObject> remote = Remote();
     if (remote == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "remote is nullptr");
         return ERR_INVALID_DATA;
     }
-    int32_t result = remote->SendRequest(static_cast<uint32_t>(IObjectEditorClientCallback::COMMAND_ON_ERROR),
+    int32_t result = remote->SendRequest(
+        static_cast<uint32_t>(IObjectEditorClientCallbackIpcCode::COMMAND_ON_ERROR),
         data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "send request failed");
@@ -85,10 +87,11 @@ ErrCode ObjectEditorClientCallbackProxy::onError(ContentEmbed_ErrorCode error)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read enum failed");
         return ERR_INVALID_DATA;
     }
+    error = static_cast<ContentEmbed_ErrorCode>(enumTmp);
     return ERR_OK;
 }
 
-ErrCode ObjectEditorClientCallbackProxy::onStopEdit(bool dataModified)
+ErrCode ObjectEditorClientCallbackProxy::OnStopEdit(bool dataModified)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -101,13 +104,13 @@ ErrCode ObjectEditorClientCallbackProxy::onStopEdit(bool dataModified)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write dataModified failed");
         return ERR_INVALID_VALUE;
     }
-    sptr<IObjectEditorClientCallback> remote = Remote();
+    sptr<IRemoteObject> remote = Remote();
     if (remote == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "remote is nullptr");
         return ERR_INVALID_DATA;
     }
     int32_t result = remote->SendRequest(
-        static_cast<uint32_t>(IObjectEditorClientCallback::COMMAND_ON_STOP_EDIT),
+        static_cast<uint32_t>(IObjectEditorClientCallbackIpcCode::COMMAND_ON_STOP_EDIT),
         data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "send request failed");
@@ -121,7 +124,7 @@ ErrCode ObjectEditorClientCallbackProxy::onStopEdit(bool dataModified)
     return ERR_OK;
 }
 
-ErrCode ObjectEditorClientCallbackProxy::OnExtensionStoped()
+ErrCode ObjectEditorClientCallbackProxy::OnExtensionStopped()
 {
     MessageParcel data;
     MessageParcel reply;
@@ -130,13 +133,13 @@ ErrCode ObjectEditorClientCallbackProxy::OnExtensionStoped()
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write descriptor failed");
         return ERR_INVALID_VALUE;
     }
-    sptr<IObjectEditorClientCallback> remote = Remote();
+    sptr<IRemoteObject> remote = Remote();
     if (remote == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "remote is nullptr");
         return ERR_INVALID_DATA;
     }
     int32_t result = remote->SendRequest(
-        static_cast<uint32_t>(IObjectEditorClientCallback::COMMAND_ON_EXTENSION_STOPED),
+        static_cast<uint32_t>(IObjectEditorClientCallbackIpcCode::COMMAND_ON_EXTENSION_STOPPED),
         data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "send request failed");

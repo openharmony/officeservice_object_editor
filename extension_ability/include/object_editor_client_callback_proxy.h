@@ -27,10 +27,10 @@ public:
     explicit ObjectEditorClientCallbackProxy(const sptr<IRemoteObject>& remote)
         : IRemoteProxy<IObjectEditorClientCallback>(remote) {}
     virtual ~ObjectEditorClientCallbackProxy() {}
-    ErrCode onUpdate(std::unique_ptr<ObjectEditorDocument> &document) override;
-    ErrCode onError(ContentEmbed_ErrorCode error) override;
-    ErrCode onStopEdit(bool dataModified) override;
-    ErrCode OnExtensionStoped() override;
+    ErrCode OnUpdate(std::unique_ptr<ObjectEditorDocument> &document) override;
+    ErrCode OnError(ContentEmbed_ErrorCode error) override;
+    ErrCode OnStopEdit(bool dataModified) override;
+    ErrCode OnExtensionStopped() override;
 
 private:
     static inline BrokerDelegator<ObjectEditorClientCallbackProxy> delegator_;

@@ -20,7 +20,7 @@
 #ifdef WITH_DLP
 #include "dlp_permission_kit.h"
 #include "dlp_permission.h"
-#endif
+#endif // WITH_DLP
 
 namespace OHOS {
 namespace ObjectEditor {
@@ -45,9 +45,9 @@ bool ObjectEditorConfig::CheckIsInDlp()
 {
 #ifdef WITH_DLP
     bool isInDlpSandbox = false;
-    int32_t ret = OHOS::Security::DlpPermission::DlpPermissionKit::IsInDlpSandbox(isInDlpSandbox);
-    if (ret != OHOS::Security::DlpPermission::DLP_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "CheckIsInDlpSandbox failed, ret: %{public}d", ret);
+    int32_t result = OHOS::Security::DlpPermission::DlpPermissionKit::IsInDlpSandbox(isInDlpSandbox);
+    if (result != OHOS::Security::DlpPermission::DLP_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "failed, result: %{public}d", result);
         return false;
     }
     if (isInDlpSandbox) {
@@ -62,6 +62,7 @@ bool ObjectEditorConfig::CheckIsInDlp()
 ContentEmbed_ErrorCode ObjectEditorConfig::CheckIsSupported()
 {
     if (!IsSupportObjectEditor()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "device not supported");
         return CE_ERR_DEVICE_NOT_SUPPORTED;
     }
     if (CheckIsInDlp()) {

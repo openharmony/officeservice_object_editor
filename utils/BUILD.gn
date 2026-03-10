@@ -23,25 +23,31 @@ config("libobject_editor_utils_private_config") {
 config("libobject_editor_utils_public_config") {
     include_dirs = [
         "include",
-        "include/dfx",
+        "include/dfx"
     ]
 }
 
+# Build ObjectEditorUtils.so
 ohos_shared_library("content_embed_utils") {
-    sanitize = [ 
-        cfi = true,
-        cfi_cross_dso = true,
-        debug = false,
-    ]
+    sanitize = {
+        cfi = true
+        cfi_cross_dso = true
+        debug = false
+    }
     configs = [
         ":libobject_editor_utils_private_config",
+        "${object_editor_path}/resources/config/build:coverage_flags",
     ]
     public_configs = [
         ":libobject_editor_utils_public_config",
     ]
     deps = []
-    export_deps = [
+    sources = [
+    ]
+    external_deps = [
+        "common_event_service:cesfwk_innerkits",
         "hilog:libhilog",
+        "safwk:system_ability_fwk",
     ]
     defines = []
     part_name = "object_editor"

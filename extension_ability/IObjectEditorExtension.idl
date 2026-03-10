@@ -17,6 +17,5 @@ option_stub_hooks on;
 import ../client/IObjectEditorClientCallback;
 sequenceable document..OHOS.ObjectEditorDocument;
 interface OHOS.ObjectEditor.IObjectEditorExtension {
-    void RegisterClientCB([in] IObjectEditorClientCallback clientCb);
-    void GetSnapShot([in] uniqueptr<ObjectEditorDocument> document);
+    void GetSnapshot([in] uniqueptr<ObjectEditorDocument> document);
 }

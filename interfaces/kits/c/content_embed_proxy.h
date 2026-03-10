@@ -121,7 +121,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedInfo(const char *locale, C
  *
  * @param info Represents a pointer to an {@link ContentEmbed_Info} instance.
  * @param count Output parameter indicating the number of {@link ContentEmbed_Format} instances
-                in the {@link ContentEmbed_Info} instance.
+ *              in the {@link ContentEmbed_Info} instance.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
@@ -482,7 +482,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StopWork(ContentEmbed_ExtensionProx
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
-ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetSnapShot(ContentEmbed_ExtensionProxy *proxy,
+ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetSnapshot(ContentEmbed_ExtensionProxy *proxy,
                                                          OH_PixelmapNative **snapshot);
 
 /**
@@ -555,4 +555,4 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetDocument(ContentEmbed_ExtensionP
 }
 #endif /* __cplusplus */
 /** @} */
-#endif // OH_CONTENT_EMBED_PROXY_H
+#endif // OHOS_CONTENT_EMBED_PROXY_H

@@ -26,7 +26,7 @@ namespace OHOS {
 namespace ObjectEditor {
 // LCOV_EXCL_START
 namespace {
-constexpr const char* APP_INDEX = "app_index";
+constexpr const char* APP_INDEX = "appIndex";
 const std::string TABLE_NAME = "object_editor_info";
 
 std::vector<std::string> GetDefaultDbSql()
@@ -48,7 +48,9 @@ std::vector<std::string> GetDefaultDbSql()
         "file_exts TEXT NOT NULL, "
         "icon_id INTEGER NOT NULL, "
         "create_time INTEGER NOT NULL);"
-    defaultSqlList.emplace_back("CREATE INDEX IF NOT EXISTS idx_hmid ON object_editor_info (hmid);");
+    );
+    // 为hmid创建索引
+    defaultSqlList.emplace_back("CREATE INDEX IF NOT EXISTS idx_hmid ON object_editor_info(hmid);");
     return defaultSqlList;
 }
 
@@ -62,7 +64,7 @@ public:
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "in");
         std::vector<std::string> defaultSqlList = GetDefaultDbSql();
         for (const auto &sql : defaultSqlList) {
-            int32_t ret = rdbStore.ExecSql(sql);
+            int ret = rdbStore.ExecuteSql(sql);
             if (ret != 0) {
                 OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "ExecSql sql: %{private}s failed ret: %{public}d",
                     sql.c_str(), ret);
@@ -146,11 +148,6 @@ void ObjectEditorManagerDatabase::Init()
     }
 }
 
-bool ObjectEditorManagerDatabase::Initted() const
-{
-    return store_ != nullptr;
-}
-
 bool ObjectEditorManagerDatabase::OpenDb()
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "in");
@@ -166,7 +163,7 @@ bool ObjectEditorManagerDatabase::OpenDb()
     config.SetTokenizer(NativeRdb::CUSTOM_TOKENIZER);
     ObjectEditorOpenCallBack openCallBack;
     int32_t errCode = NativeRdb::E_OK;
-    store_ = NativeRdb::RdbStore::GetRdbStore(config, version, openCallBack, errCode);
+    store_ = NativeRdb::RdbHelper::GetRdbStore(config, version, openCallBack, errCode);
     if (errCode != NativeRdb::E_OK || store_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get store failed, errCode: %{public}d", errCode);
         store_ = nullptr;
@@ -180,7 +177,7 @@ bool ObjectEditorManagerDatabase::OpenDb()
     return true;
 }
 
-bool ObjectEditorManagerDatabase::OpenDb()
+bool ObjectEditorManagerDatabase::DeleteDb()
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "in");
     store_ = nullptr;
@@ -232,7 +229,7 @@ bool ObjectEditorManagerDatabase::ExecuteTransactionSql(const std::vector<std::s
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DATABASE, "in");
     if (sqlList.empty()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "sqlList is empty");
-        return false;
+        return true;
     }
     if (store_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "store is null");
@@ -247,14 +244,14 @@ bool ObjectEditorManagerDatabase::ExecuteTransactionSql(const std::vector<std::s
         ret = store_->ExecuteSql(sql);
         if (ret != NativeRdb::E_OK) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "ExecuteSql failed, errCode: %{public}d", ret);
-            store_->Rollback();
+            store_->RollBack();
             return false;
         }
     }
     ret = store_->Commit();
     if (ret != NativeRdb::E_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "Commit failed, errCode: %{public}d", ret);
-        store_->Rollback();
+        store_->RollBack();
         return false;
     }
     return true;
@@ -280,13 +277,13 @@ void ObjectEditorManagerDatabase::AddBundle(const std::string &bundleName)
     }
     if (!DoInsert(buckets)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "DoInsert failed");
-        store_->Rollback();
+        store_->RollBack();
         return;
     }
     ret = store_->Commit();
     if (ret != NativeRdb::E_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "Commit failed, errCode: %{public}d", ret);
-        store_->Rollback();
+        store_->RollBack();
     }
 }
 
@@ -304,13 +301,13 @@ void ObjectEditorManagerDatabase::RemoveBundle(const std::string &bundleName)
     }
     if (!DoDeleteBundle(bundleName)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "DoDeleteBundle failed");
-        store_->Rollback();
+        store_->RollBack();
         return;
     }
     ret = store_->Commit();
     if (ret != NativeRdb::E_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "Commit failed, errCode: %{public}d", ret);
-        store_->Rollback();
+        store_->RollBack();
     }
 }
 
@@ -334,61 +331,61 @@ void ObjectEditorManagerDatabase::UpdateBundle(const std::string &bundleName)
     }
     if (!DoDeleteBundle(bundleName)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "DoDeleteBundle failed");
-        store_->Rollback();
+        store_->RollBack();
         return;
     }
     if (!DoInsert(buckets)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "DoInsert failed");
-        store_->Rollback();
+        store_->RollBack();
         return;
     }
     ret = store_->Commit();
     if (ret != NativeRdb::E_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "Commit failed, errCode: %{public}d", ret);
-        store_->Rollback();
+        store_->RollBack();
     }
 }
 
-ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetBundleInfoValuesBuckets(const std::string &bundleName,
-    std::vector<NativeRdb::ValueBucket> &buckets)
+ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetBundleInfoValuesBuckets(
+    const std::string &bundleName, std::vector<NativeRdb::ValuesBucket> &buckets) const
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "bundleName: %{public}s", bundleName.c_str());
     if (bundleName.empty()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "bundleName is empty");
-        return ObjectEditorManagerErrCode::SA_QB_QUERY_FAIL;
+        return ObjectEditorManagerErrCode::SA_DB_QUERY_FAIL;
     }
     if (bundleMgr_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "bundleMgr is null");
-        return ObjectEditorManagerErrCode::SA_QB_QUERY_FAIL;
+        return ObjectEditorManagerErrCode::SA_DB_QUERY_FAIL;
     }
     AppExecFwk::BundleInfo bundleInfo;
     ErrCode ret = bundleMgr_->GetBundleInfoV9(bundleName,
-        static_cast<int32_t>(AppExecFwk::BundleFlag::GET_BUNDLE_WITH_HAP_MODULE) |
-        static_cast<int32_t>(AppExecFwk::BundleFlag::GET_BUNDLE_WITH_EXTENSION_ABILITY) |
-        static_cast<int32_t>(AppExecFwk::BundleFlag::GET_BUNDLE_WITH_METADATE),
+        static_cast<int32_t>(AppExecFwk::GetBundleInfoFlag::GET_BUNDLE_INFO_WITH_HAP_MODULE) |
+        static_cast<int32_t>(AppExecFwk::GetBundleInfoFlag::GET_BUNDLE_INFO_WITH_EXTENSION_ABILITY) |
+        static_cast<int32_t>(AppExecFwk::GetBundleInfoFlag::GET_BUNDLE_INFO_WITH_METADATA),
         bundleInfo, UserMgr::GetInstance().GetUserId());
     if (ret != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "GetBundleInfo failed, errCode: %{public}d", ret);
-        return ObjectEditorManagerErrCode::SA_QB_QUERY_FAIL;
+        return ObjectEditorManagerErrCode::SA_DB_QUERY_FAIL;
     }
     for (auto it = bundleInfo.hapModuleInfos.begin(); it != bundleInfo.hapModuleInfos.end(); it++) {
         for (auto it2 = it->extensionInfos.begin(); it2 != it->extensionInfos.end(); it2++) {
             if (it2->type != AppExecFwk::ExtensionAbilityType::CONTENT_EMBED) {
                 continue;
             }
-            if (!BuildValueBuckets(buckets, bundleInfo, *it2)) {
-                OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "BuildValueBuckets failed");
+            if (!BuildValuesBuckets(buckets, bundleInfo, *it2)) {
+                OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "build buckets failed");
             }
         }
     }
     if (buckets.empty()) {
-        OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "buckets is empty");
-        return ObjectEditorManagerErrCode::SA_QB_QUERY_FAIL;
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "buckets is empty");
+        return ObjectEditorManagerErrCode::SA_DB_QUERY_EMPTY;
     }
     return ObjectEditorManagerErrCode::SA_OK;
 }
 
-bool ObjectEditorManagerDatabase::DoInsert(const std::vector<NativeRdb::ValueBucket> &buckets)
+bool ObjectEditorManagerDatabase::DoInsert(const std::vector<NativeRdb::ValuesBucket> &buckets)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DATABASE, "in");
     if (store_ == nullptr) {
@@ -397,7 +394,7 @@ bool ObjectEditorManagerDatabase::DoInsert(const std::vector<NativeRdb::ValueBuc
     }
     if (buckets.empty()) {
         OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "buckets is empty");
-        return false;
+        return true;
     }
     std::pair<int32_t, int64_t> result = store_->BatchInsert(TABLE_NAME, buckets,
         NativeRdb::ConflictResolution::ON_CONFLICT_IGNORE);
@@ -405,7 +402,7 @@ bool ObjectEditorManagerDatabase::DoInsert(const std::vector<NativeRdb::ValueBuc
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "failed: %{public}d", result.first);
         return false;
     }
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "inserted: %{public}lld", result.second);
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "inserted: %{public}ld", result.second);
     return true;
 }
 
@@ -429,12 +426,12 @@ bool ObjectEditorManagerDatabase::DoDeleteBundle(const std::string &bundleName)
     return true;
 }
 
-ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByHmid(const std::string &hmid,
-    std::unique_ptr<ObjectEditorFormat> &format) const
+ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByHmid(
+    const std::string &hmid, std::unique_ptr<ObjectEditorFormat> &format) const
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "hmid: %{public}s", hmid.c_str());
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
-    std::string sql = "SELECT hmid, bundle_name, module_name, ability_name FROM " + TABLE_NAME + " WHERE hmid = ?";
+    std::string sql = "SELECT hmid, bundle_name, module_name, ability_name from " + TABLE_NAME + " WHERE hmid = ?";
     ObjectEditorManagerErrCode errCode = QueryBySql(sql, resultSet, { hmid });
     if (errCode != ObjectEditorManagerErrCode::SA_OK || resultSet == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "query failed");
@@ -460,13 +457,14 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByH
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "hmid: %{public}s, minVersion: %{public}s",
         hmid.c_str(), minVersion.c_str());
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
-    std::string sql = "SELECT hmid, bundle_name, module_name, ability_name FROM " + TABLE_NAME +
-        " WHERE hmid = ? AND min_version >= ?";
+    std::string sql = "SELECT hmid, bundle_name, module_name, ability_name from " + TABLE_NAME +
+        " WHERE hmid = ? and min_version >= ?";
     ObjectEditorManagerErrCode errCode = QueryBySql(sql, resultSet, { hmid, minVersion });
     if (errCode != ObjectEditorManagerErrCode::SA_OK || resultSet == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "query failed");
         return errCode;
     }
+
     NativeRdb::RowEntity rowEntity;
     resultSet->GetRow(rowEntity);
     format = std::make_unique<ObjectEditorFormat>();
@@ -487,9 +485,9 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByH
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "hmid: %{public}s, locale: %{public}s",
         hmid.c_str(), locale.c_str());
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
-    std::string sql = "SELECT hmid, bundle_name, module_name, resource_path, hap_path, file_exts," +
-        " name_id, description_id, icon_id FROM " + TABLE_NAME + " WHERE hmid = ?";
-    ObjectEditorManagerErrCode errCode = QueryBySql(sql, resultSet, { hmid, locale });
+    std::string sql = "SELECT hmid, bundle_name, module_name, resource_path," +
+        " hap_path, file_exts, name_id, description_id, icon_id from " + TABLE_NAME + " WHERE hmid = ?";
+    ObjectEditorManagerErrCode errCode = QueryBySql(sql, resultSet, { hmid });
     if (errCode != ObjectEditorManagerErrCode::SA_OK || resultSet == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "query failed");
         return errCode;
@@ -498,10 +496,10 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByH
     resultSet->GetRow(rowEntity);
     format = std::make_unique<ObjectEditorFormat>();
     if (format == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "formats is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "format is null");
         return ObjectEditorManagerErrCode::SA_ALLOC_FAIL;
     }
-    if (!BuildObjectEditorFormat(*formats, rowEntity, locale)) {
+    if (!BuildObjectEditorFormat(*format, rowEntity, locale)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "BuildObjectEditorFormat failed");
         return ObjectEditorManagerErrCode::SA_ALLOC_FAIL;
     }
@@ -514,7 +512,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatsBy
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "locale: %{public}s", locale.c_str());
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
     std::string sql = "SELECT hmid, bundle_name, module_name, resource_path, hap_path, file_exts," +
-        " name_id, description_id, icon_id FROM " + TABLE_NAME;
+        " name_id, description_id, icon_id from " + TABLE_NAME;
     ObjectEditorManagerErrCode errCode = QueryBySql(sql, resultSet);
     if (errCode != ObjectEditorManagerErrCode::SA_OK || resultSet == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "query failed");
@@ -533,7 +531,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatsBy
             OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "BuildObjectEditorFormat failed");
             continue;
         }
-        formats.push_back(std::move(format));
+        formats.emplace_back(std::move(format));
     }
     return ObjectEditorManagerErrCode::SA_OK;
 }
@@ -541,14 +539,14 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatsBy
 ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatsByFileExt(
     const std::string &fileExt, std::vector<std::unique_ptr<ObjectEditorFormat>> &formats) const
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "fileExt: %{public}s", fileExt.c_str());
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "fileExt:%{public}s", fileExt.c_str());
     if (!SystemUtils::IsValidFileExt(fileExt)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "invalid fileExt");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "invalid file ext");
         return ObjectEditorManagerErrCode::SA_INVALID_PARAMETER;
     }
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
-    std::string sql = "SELECT hmid, bundle_name, module_name, ability_name, file_exts FROM "
-        + TABLE_NAME + " WHERE file_exts LIKE ? ORDER BY create_time DESC";
+    std::string sql = "SELECT hmid, bundle_name, module_name, ability_name, file_exts from "
+        + TABLE_NAME + " WHERE file_exts like ? ORDER BY create_time DESC";
     ObjectEditorManagerErrCode errCode = QueryBySql(sql, resultSet, { "%" + fileExt + "%" });
     if (errCode != ObjectEditorManagerErrCode::SA_OK || resultSet == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "query failed");
@@ -558,7 +556,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatsBy
         NativeRdb::RowEntity rowEntity;
         resultSet->GetRow(rowEntity);
         std::string fileExts;
-        rowEntity.GetValue("file_exts", fileExts);
+        rowEntity.Get("file_exts").GetString(fileExts);
         if (!SystemUtils::FileExtsHasFileExt(fileExts, fileExt)) {
             continue;
         }
@@ -568,11 +566,11 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatsBy
             formats.clear();
             return ObjectEditorManagerErrCode::SA_ALLOC_FAIL;
         }
-        rowEntity.GetValue("hmid", format->hmid);
-        rowEntity.GetValue("bundle_name", format->bundleName);
-        rowEntity.GetValue("module_name", format->moduleName);
-        rowEntity.GetValue("ability_name", format->abilityName);
-        formats.push_back(std::move(format));
+        rowEntity.Get("hmid").GetString(format->hmid);
+        rowEntity.Get("bundle_name").GetString(format->bundleName);
+        rowEntity.Get("module_name").GetString(format->moduleName);
+        rowEntity.Get("ability_name").GetString(format->abilityName);
+        formats.emplace_back(std::move(format));
     }
     return ObjectEditorManagerErrCode::SA_OK;
 }
@@ -584,9 +582,9 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::QueryBySql(const std::st
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DATABASE, "sql: %{private}s", sql.c_str());
     if (store_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "store is null");
-        return ObjectEditorManagerErrCode::SA_INVALID_PARAMETER;
+        return ObjectEditorManagerErrCode::SA_DB_ERR;
     }
-    resultSet = store_->Query(sql, whereArgs);
+    resultSet = store_->QuerySql(sql, whereArgs);
     if (resultSet == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "null resultSet");
         return ObjectEditorManagerErrCode::SA_DB_QUERY_FAIL;
@@ -603,20 +601,20 @@ std::map<std::string, int64_t> ObjectEditorManagerDatabase::GetBundleNameAndCrea
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DATABASE, "in");
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
-    std::string sql = "SELECT bundle_name, create_time FROM " + TABLE_NAME;
+    std::string sql = "SELECT DISTINCT bundle_name, create_time from " + TABLE_NAME;
     ObjectEditorManagerErrCode errCode = QueryBySql(sql, resultSet);
     if (errCode != ObjectEditorManagerErrCode::SA_OK || resultSet == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "query failed");
-        return bundleNameAndCreateTime;
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "queryBySql failed");
+        return {};
     }
     std::map<std::string, int64_t> map;
     for (int32_t rowResult = NativeRdb::E_OK; rowResult == NativeRdb::E_OK; rowResult = resultSet->GoToNextRow()) {
         NativeRdb::RowEntity rowEntity;
         resultSet->GetRow(rowEntity);
         std::string bundleName;
+        rowEntity.Get("bundle_name").GetString(bundleName);
         int64_t createTime = 0;
-        rowEntity.GetValue("bundle_name", bundleName);
-        rowEntity.GetValue("create_time", createTime);
+        rowEntity.Get("create_time").GetLong(createTime);
         map.emplace(bundleName, createTime);
     }
     return map;
@@ -624,7 +622,7 @@ std::map<std::string, int64_t> ObjectEditorManagerDatabase::GetBundleNameAndCrea
 
 void ObjectEditorManagerDatabase::ParseExtensionInfos(const std::map<std::string, int64_t> &dbBundles,
     std::vector<AppExecFwk::ExtensionAbilityInfo> &extensionInfos,
-    std::vector<NativeRdb::ValueBucket> &buckets, std::set<std::string> &oldBundles) const
+    std::vector<NativeRdb::ValuesBucket> &buckets, std::set<std::string> &oldBundles) const
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DATABASE, "in");
     std::map<std::string, AppExecFwk::BundleInfo> bundleInfos;
@@ -633,14 +631,18 @@ void ObjectEditorManagerDatabase::ParseExtensionInfos(const std::map<std::string
         auto it = bundleInfos.find(extensionInfo.bundleName);
         if (it == bundleInfos.end()) {
             continue;
-        };
-        AppExecFwk::BundleInfo bundleInfo = it->second;
-        auto it2 = dbBundles.find(extensionInfo.bundleName);
-        if (it2 != dbBundles.end() && bundleInfo.updateTime <= it2->second) {
-            oldBundles.emplace(extensionInfo.bundleName);
         }
-        if (!BuildValueBuckets(bucket, bundleInfo, extensionInfo)) {
-            OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "BuildValueBuckets bundle:%{public}s failed",
+        AppExecFwk::BundleInfo &bundleInfo = it->second;
+        auto it2 = dbBundles.find(extensionInfo.bundleName);
+        if (it2 != dbBundles.end()) {
+            if (bundleInfo.updateTime <= it2->second) {
+                continue; // bundle没有更新过，直接skip
+            } else {
+                oldBundles.emplace(extensionInfo.bundleName); // bundle比数据库更新，删除旧数据
+            }
+        }
+        if (!BuildValuesBuckets(buckets, bundleInfo, extensionInfo)) {
+            OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "BuildValuesBuckets bundle:%{public}s failed",
                 extensionInfo.bundleName.c_str());
         }
     }
@@ -651,8 +653,8 @@ void ObjectEditorManagerDatabase::ParseExtensionInfos(const std::map<std::string
     }
 }
 
-ObjectEditorManagerErrCode ObjectEditorManagerDatabase::PrepareRefreshDb(std::vector<NativeRdb::ValueBucket> &buckets,
-    std::set<std::string> &oldBundles) const
+ObjectEditorManagerErrCode ObjectEditorManagerDatabase::PrepareRefreshDb(
+    std::vector<NativeRdb::ValuesBucket> &buckets, std::set<std::string> &oldBundles) const
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DATABASE, "in");
     if (bundleMgr_ == nullptr) {
@@ -677,7 +679,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::RefreshDb()
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "store is null");
         return ObjectEditorManagerErrCode::SA_DB_ERR;
     }
-    std::vector<NativeRdb::ValueBucket> buckets;
+    std::vector<NativeRdb::ValuesBucket> buckets;
     std::set<std::string> oldBundles;
     ObjectEditorManagerErrCode errCode = PrepareRefreshDb(buckets, oldBundles);
     if (errCode != ObjectEditorManagerErrCode::SA_OK) {
@@ -691,24 +693,25 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::RefreshDb()
     }
     for (const auto &bundleName : oldBundles) {
         if (!DoDeleteBundle(bundleName)) {
-            store_->Rollback();
+            store_->RollBack();
             return ObjectEditorManagerErrCode::SA_DB_DELETE_FAIL;
         }
     }
     if (!DoInsert(buckets)) {
-        store_->Rollback();
+        store_->RollBack();
         return ObjectEditorManagerErrCode::SA_DB_INSERT_FAIL;
     }
     ret = store_->Commit();
     if (ret != NativeRdb::E_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "Commit failed");
-        store_->Rollback();
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "commit failed, errCode:%{public}d", ret);
+        store_->RollBack();
         return ObjectEditorManagerErrCode::SA_DB_ERR;
     }
     return ObjectEditorManagerErrCode::SA_OK;
 }
 
-void ObjectEditorManagerDatabase::DbPackageSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventData)
+void ObjectEditorManagerDatabase::DbPackageSubscriber::OnReceiveEvent(
+    const EventFwk::CommonEventData &eventData)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "in");
     const AAFwk::Want &want = eventData.GetWant();
@@ -716,8 +719,8 @@ void ObjectEditorManagerDatabase::DbPackageSubscriber::OnReceiveEvent(const Even
     const std::string &bundleName = want.GetElement().GetBundleName();
     int32_t appIndex = want.GetIntParam(APP_INDEX, 0);
     if (appIndex > 0) {
-        OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "ignore bundle:%{public}s appIndex:%{public}d",
-            bundleName.c_str(), appIndex);
+        OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE,
+            "ignore bundleName:%{public}s, appIndex:%{public}d", bundleName.c_str(), appIndex);
         return;
     }
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_ADDED) {
@@ -725,7 +728,8 @@ void ObjectEditorManagerDatabase::DbPackageSubscriber::OnReceiveEvent(const Even
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_REMOVED ||
         action == EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_FULLY_REMOVED) {
         ObjectEditorManagerDatabase::GetInstance().RemoveBundle(bundleName);
-    } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_CHANGED) {
+    } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_REPLACED ||
+        action == EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_CHANGED) {
         ObjectEditorManagerDatabase::GetInstance().UpdateBundle(bundleName);
     }
 }

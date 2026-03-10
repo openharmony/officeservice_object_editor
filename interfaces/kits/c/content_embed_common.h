@@ -115,6 +115,11 @@ typedef enum ContentEmbed_ErrorCode {
      * @since 24
      */
     CE_ERR_CLIENT_CALLBACK_FAILED = 35300010,
+    /**
+     * @brief The error code when the document operation failed.
+     * @since 24
+     */
+    CE_ERR_EXTENSION_ABNORMAL_EXIT = 35300011,
 } ContentEmbed_ErrorCode;
 
 typedef enum ContentEmbed_CapabilityCode {

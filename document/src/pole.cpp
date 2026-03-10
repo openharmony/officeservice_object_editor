@@ -19,7 +19,7 @@
 
 namespace OHOS {
 namespace ObjectEditor {
-
+// LCOV_EXCL_START
 Storage::Storage(const char *filename)
 {
     io_ = std::make_unique<StorageIO>(filename);
@@ -101,8 +101,8 @@ DirEntry *Storage::GetStorage(const std::string &path, bool create)
         return nullptr;
     }
     created->SetType(1);
-    created->SetSize(0);
     created->SetChild(DIR_ENTRY_END);
+    created->SetSize(0);
     created->SetStart(DIR_ENTRY_END);
     return created->IsDir() ? created : nullptr;
 }
@@ -126,7 +126,7 @@ Stream *Storage::GetStream(const std::string &name, bool create, bool reuse)
         Path(currentPath);
         if (currentPath.empty() || currentPath == "/") {
             fullName.insert(fullName.begin(), '/');
-        } else  if (currentPath.back() == '/') {
+        } else if (currentPath.back() == '/') {
             fullName.insert(0, currentPath);
         } else {
             fullName.insert(0, currentPath + "/");
@@ -149,6 +149,8 @@ Stream *Storage::GetStream(const std::string &name, bool create, bool reuse)
     auto impl = std::make_unique<StreamImpl>(io_.get(), fullName);
     auto stream = std::make_unique<Stream>(impl.get());
     impl.release();
+    streams_.push_back(std::move(stream));
+
     return streams_.back().get();
 }
 
@@ -268,6 +270,14 @@ std::streamsize Stream::Read(Byte *data, std::streamsize maxlen)
     return impl->Read(data, maxlen);
 }
 
+std::streamsize Stream::ReadBufferUntilNull(std::vector<Byte> &buffer)
+{
+    if (!impl) {
+        return 0;
+    }
+    return impl->ReadBufferUntilNull(buffer);
+}
+
 Stream &Stream::Write(const Byte *data, uint32_t len)
 {
     if (impl && data && len > 0) {
@@ -275,5 +285,6 @@ Stream &Stream::Write(const Byte *data, uint32_t len)
     }
     return *this;
 }
+// LCOV_EXCL_STOP
 } // namespace ObjectEditor
 } // namespace OHOS

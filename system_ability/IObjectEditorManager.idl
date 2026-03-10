@@ -13,11 +13,11 @@
  * limitations under the License.
  */
 
-option_stub_hooks on;
+option_stub_hooks on;  // 开启钩子功能
 sequenceable OHOS.IRemoteObject;
 sequenceable document..OHOS.ObjectEditorDocument;
 interface OHOS.ObjectEditor.IObjectEditorManager {
-    void StartObjectEditorExtension([in] uniqueptr<ObjectEditorDocument> document, [out] IRemoteObject remoteObject);
+    void startObjectEditorExtension([in] uniqueptr<ObjectEditorDocument> document, [out] IRemoteObject remoteObject);
     void getHmidByFileExtension([in] String fileExtension, [out] String fileExtension);
     void getIconByHmid([in] String hmid, [out] String resourceId);
 }
