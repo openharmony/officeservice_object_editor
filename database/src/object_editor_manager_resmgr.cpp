@@ -12,9 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#include "hilog_object_editor.h"
 #include "object_editor_manager_resmgr.h"
+#include "hilog_object_editor.h"
 
 namespace OHOS {
 namespace ObjectEditor {
@@ -81,12 +80,12 @@ void ObjectEditorManagerResmgr::RemoveBundle(const std::string &bundleName)
 void ObjectEditorManagerResmgr::AddResourceManager(const std::string &bundleName, const std::string &moduleName,
     const std::string &locale, std::shared_ptr<Global::Resource::ResourceManager> resMgr)
 {
-    auto bundleResMgr = resMgrs_.find(bundleName);
-    if (bundleResMgr == resMgrs_.end()) {
+    auto bundleRes = resMgrs_.find(bundleName);
+    if (bundleRes == resMgrs_.end()) {
         resMgrs_.emplace(bundleName, BundleResMgr{{std::make_tuple(moduleName, locale), resMgr}});
         return;
     }
-    BundleResMgr &bundleResMgr = bundleResMgr->second;
+    BundleResMgr &bundleResMgr = bundleRes->second;
     auto it = bundleResMgr.find(std::make_tuple(moduleName, locale));
     if (it == bundleResMgr.end()) {
         bundleResMgr.emplace(std::make_tuple(moduleName, locale), resMgr);
@@ -94,13 +93,13 @@ void ObjectEditorManagerResmgr::AddResourceManager(const std::string &bundleName
 }
 
 std::shared_ptr<Global::Resource::ResourceManager> ObjectEditorManagerResmgr::GetResourceManager(
-    const std::string &bundleName, const std::string &moduleName, const std::string &locale)
+    const std::string &bundleName, const std::string &moduleName, const std::string &locale) const
 {
-    auto bundleResMgr = resMgrs_.find(bundleName);
-    if (bundleResMgr == resMgrs_.end()) {
+    auto bundleRes = resMgrs_.find(bundleName);
+    if (bundleRes == resMgrs_.end()) {
         return nullptr;
     }
-    BundleResMgr &bundleResMgr = bundleResMgr->second;
+    const BundleResMgr &bundleResMgr = bundleRes->second;
     auto it = bundleResMgr.find(std::make_tuple(moduleName, locale));
     if (it == bundleResMgr.end()) {
         return nullptr;

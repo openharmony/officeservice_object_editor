@@ -113,9 +113,10 @@ private:
     ObjectEditorManagerErrCode CheckIsAllowStartExtension(const ObjectEditorDocument &document);
     ObjectEditorManagerErrCode HandleOperateHasHmid(const ObjectEditorDocument &document,
         std::unique_ptr<ObjectEditorFormat> &objectEditorFormat);
-    ObjectEditorManagerErrCode StartObjectEditorExtensionByFile(const ObjectEditorDocument &document,
-        const sptr<IObjectEditorClientCallback> &clientCallback,
-        sptr<IRemoteObject> &oeExtensionRemoteObject, bool &isPackageExtension);
+    ObjectEditorManagerErrCode StartObjectEditorExtensionByFile(std::unique_ptr<ObjectEditorDocument> &document,
+        const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
+        sptr<IRemoteObject> &oeExtensionRemoteObject, bool &isPackageExtension,
+        std::unique_ptr<ObjectEditorFormat> &objectEditorFormat);
     void InitScreenChangedCommonEventSubscriber();
     void ResetScreenChangedCommonEventSubscriber();
     bool CheckConnectionLimit(const std::string &clientBundleName, std::unique_ptr<ObjectEditorFormat> &format,

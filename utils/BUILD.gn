@@ -16,7 +16,7 @@ import("//foundation/officeservice/object_editor/object_editor.gni")
 
 config("libobject_editor_utils_private_config") {
     include_dirs = [
-        "${object_editor_path}/utils/include",
+        "${object_editor_path}/utils/include"
     ]
 }
 
@@ -38,16 +38,16 @@ ohos_shared_library("content_embed_utils") {
         ":libobject_editor_utils_private_config",
         "${object_editor_path}/resources/config/build:coverage_flags",
     ]
-    public_configs = [
-        ":libobject_editor_utils_public_config",
-    ]
+    public_configs = [ ":libobject_editor_utils_public_config" ]
     deps = []
     sources = [
+        "${object_editor_path}/utils/src/object_editor_event_manager.cpp",
+        "${object_editor_path}/utils/src/object_editor_screen_change_receiver.cpp",
     ]
     external_deps = [
-        "common_event_service:cesfwk_innerkits",
         "hilog:libhilog",
-        "safwk:system_ability_fwk",
+        "common_event_service:cesfwk_innerkits",
+        "safwk:system_ability_fwk"
     ]
     defines = []
     part_name = "object_editor"
