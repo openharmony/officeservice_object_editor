@@ -66,7 +66,7 @@ void ObjectEditorClient::SubscribeSystemAbility()
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
     if (saStatusListener_ != nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "No duplicate subscribe");
+        OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "No duplicate subscribe");
         return;
     }
     saStatusListener_ = sptr<ObjectEditorAbilityListener>(new ObjectEditorAbilityListener());
@@ -270,12 +270,12 @@ void ObjectEditorClient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 
 ErrCode ObjectEditorClient::StartObjectEditorExtension(
     std::unique_ptr<ObjectEditorDocument> &document,
-    const sptr<IObjectEditorClientCallback> &clientCallback,
+    const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
     sptr<IObjectEditorService> &oeExtensionRemoteObject,
     bool &isPackageExtension)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
-    if (document == nullptr || clientCallback == nullptr) {
+    if (document == nullptr || objectEditorClientCallback == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "document or callback is null");
         return ObjectEditorClientErrCode::CLIENT_INVALID_PARAMETER;
     }
@@ -296,13 +296,13 @@ ErrCode ObjectEditorClient::StartObjectEditorExtension(
     }
     sptr<IRemoteObject> remoteObject = nullptr;
     ret = objectEditorManagerProxy->StartObjectEditorExtension(document,
-        clientCallback, remoteObject, isPackageExtension);
+        objectEditorClientCallback, remoteObject, isPackageExtension);
     if (ret != ERR_OK || (!isPackageExtension && remoteObject == nullptr)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "failed:%{public}d", ret);
         return ret;
     }
     if (isPackageExtension) {
-        HandlePackage(document, clientCallback, oeExtensionRemoteObject);
+        HandlePackage(document, objectEditorClientCallback, oeExtensionRemoteObject);
     } else {
         oeExtensionRemoteObject = iface_cast<IObjectEditorExtension>(remoteObject);
         if (oeExtensionRemoteObject == nullptr) {
@@ -316,7 +316,7 @@ ErrCode ObjectEditorClient::StartObjectEditorExtension(
 
 ErrCode ObjectEditorClient::HandlePackage(
     const std::unique_ptr<ObjectEditorDocument> &document,
-    const sptr<IObjectEditorClientCallback> &clientCallback,
+    const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
     sptr<IObjectEditorService> &oeExtensionRemoteObject)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "in");
@@ -346,9 +346,9 @@ ErrCode ObjectEditorClient::HandlePackage(
     sptr<ObjectEditorPackage> packageProxy = sptr<ObjectEditorPackage>::MakeSptr();
     if (packageProxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "create package proxy failed");
-        return ERR_INVALID_VALUE;
+        return CLIENT_MEMORY_ALLOCATION_FAILED;
     }
-    packageProxy->Initial(std::move(newDocument), clientCallback);
+    packageProxy->Initial(std::move(newDocument), objectEditorClientCallback);
     oeExtensionRemoteObject = packageProxy;
     return ERR_OK;
 }
@@ -407,21 +407,35 @@ ErrCode FlushDocument(const std::unique_ptr<ObjectEditorDocument> &document)
     return ObjectEditorClientErrCode::CLIENT_OK;
 }
 
-ErrCode ObjectEditorClient::PrepareFiles(const std::unique_ptr<ObjectEditorDocument> &document)
+std::string ObjectEditorClient::GetTempDir(const std::unique_ptr<ObjectEditorDocument> &document)
 {
+    std::string sandboxPath = "";
+    if (document == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "document is null");
+        return sandboxPath;
+    }
     std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> context =
         AbilityRuntime::Context::GetApplicationContext();
-    if (context == nullptr || document == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "context or document is null");
-        return ObjectEditorClientErrCode::CLIENT_INVALID_PARAMETER;
+    if (context == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "context is null");
+        return sandboxPath;
     }
     std::string fileDirPath = context->GetTempDir();
     if (fileDirPath.empty()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "fileDirPath is empty");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "get sandboxPath failed");
+        return sandboxPath;
+    }
+    sandboxPath = fileDirPath + '/' + document->GetDocumentId();
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "sandboxPath: %{private}s", sandboxPath.c_str());
+    return sandboxPath;
+}
+
+ErrCode ObjectEditorClient::PrepareFiles(const std::unique_ptr<ObjectEditorDocument> &document)
+{
+    std::string sandboxPath = GetTempDir(document);
+    if (sandboxPath.empty()) {
         return ObjectEditorClientErrCode::CLIENT_GET_PATH_ERROR;
     }
-    std::string sandboxPath = fileDirPath + '/' + GenRandomUuid();
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "sandboxPath: %{private}s", sandboxPath.c_str());
     fs::path targetDirPath(sandboxPath);
     bool result = fs::create_directories(targetDirPath);
     if (!result) {
@@ -430,19 +444,23 @@ ErrCode ObjectEditorClient::PrepareFiles(const std::unique_ptr<ObjectEditorDocum
     }
     if (document->GetOperateType() == OperateType::CREATE_BY_FILE) {
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "handle copy file");
-        std::string sourceFilePath = document->GetOriFilePath();
-        if (sourceFilePath.empty()) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "sourceFilePath is empty");
+        std::string source = document->GetOriFilePath();
+        if (source.empty()) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "source is empty");
             return ObjectEditorClientErrCode::CLIENT_GET_PATH_ERROR;
         }
-        fs::path sourceFilePathPath(sourceFilePath);
-        fs::path targetFilePathPath = targetDirPath / sourceFilePathPath.filename().string();
-        result = fs::copy_file(sourceFilePathPath, targetFilePathPath, fs::copy_options::overwrite_existing);
-        if (!result) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "copy sourceFilePath to sandboxPath failed");
-            return ObjectEditorClientErrCode::CLIENT_UNKNOWN_OPERATE;
+        if (document->GetLinking()) {
+            document->SetNativeFileUri(SystemUtils::GetUriFromPath(source));
+        } else {
+            fs::path sourcePath(source);
+            fs::path destPath = targetDirPath / sourcePath.filename().string();
+            result = fs::copy_file(sourcePath, destPath, fs::copy_options::overwrite_existing);
+            if (!result) {
+                OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "copy source to sandboxPath failed");
+                return ObjectEditorClientErrCode::CLIENT_UNKNOWN_OPERATE;
+            }
+            document->SetNativeFileUri(SystemUtils::GetUriFromPath(destPath.string()));
         }
-        document->SetNativeFileUri(SystemUtils::GetUriFromPath(targetFilePathPath.string()));
     }
     std::unique_ptr<char, decltype(&free)> canonicalFilePath(realpath(sandboxPath.c_str(), nullptr), &free);
     if (canonicalFilePath == nullptr) {
@@ -459,8 +477,54 @@ ErrCode ObjectEditorClient::PrepareFiles(const std::unique_ptr<ObjectEditorDocum
     }
     snapshotFile.close();
     document->SetSnapshotUri(SystemUtils::GetUriFromPath(snapshotFilePath));
+    if (document->GetLinking()) {
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "ole.bin not need generate");
+        return ObjectEditorClientErrCode::CLIENT_OK;
+    }
     document->SetTmpFileUri(SystemUtils::GetUriFromPath(sandboxPath + "/ole.bin"));
     return FlushDocument(document);
+}
+
+ErrCode ObjectEditorClient::CleanupTempFiles(const std::unique_ptr<ObjectEditorDocument> &document)
+{
+    std::string sandboxPath = GetTempDir(document);
+    if (sandboxPath.empty()) {
+        return ObjectEditorClientErrCode::CLIENT_GET_PATH_ERROR;
+    }
+    if (!fs::exists(sandboxPath) || !fs::is_directory(sandboxPath)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "sandboxPath not exist or not directory");
+        return ObjectEditorClientErrCode::CLIENT_UNKNOWN_OPERATE;
+    }
+    std::string snapshotPath = sandboxPath + "/snapshot.png";
+    std::error_code ec;
+    if (fs::exists(snapshotPath)) {
+        fs::remove(snapshotPath, ec);
+        OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "remove snapshot result: %{public}d", ec.value());
+    }
+    std::string oleBinPath = sandboxPath + "/ole.bin";
+    if (fs::exists(oleBinPath)) {
+        fs::remove(oleBinPath, ec);
+        OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "remove oleBin result: %{public}d", ec.value());
+    }
+    if (document->GetOperateType() == OperateType::CREATE_BY_FILE && !document->GetLinking()) {
+        std::string source = document->GetOriFilePath();
+        if (source.empty()) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "source is empty");
+            return ObjectEditorClientErrCode::CLIENT_GET_PATH_ERROR;
+        }
+        fs::path sourcePath(source);
+        std::string destPath = sandboxPath + "/" + sourcePath.filename().string();
+        if (fs::exists(destPath)) {
+            fs::remove(destPath, ec);
+            OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "remove destPath result: %{public}d", ec.value());
+        }
+    }
+    if (fs::exists(sandboxPath) && fs::is_empty(sandboxPath)) {
+        fs::remove(sandboxPath, ec);
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "remove sandboxPath:%{private}s result: %{public}d",
+            sandboxPath.c_str(), ec.value());
+    }
+    return ObjectEditorClientErrCode::CLIENT_OK;
 }
 
 ErrCode ObjectEditorClient::StopObjectEditorExtension(
@@ -478,6 +542,7 @@ ErrCode ObjectEditorClient::StopObjectEditorExtension(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "documentId is not initialized");
         return ERR_INVALID_VALUE;
     }
+    CleanupTempFiles(document);
     if (oeExtensionRemoteObject == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "extension is null");
         return ERR_INVALID_VALUE;

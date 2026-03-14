@@ -465,11 +465,12 @@ bool CheckFilePermission(std::string filename)
 
 bool CheckFileValid(const std::unique_ptr<ObjectEditorDocument> &document)
 {
-    if (!document->GetTmpFileUri().has_value() || document->GetSnapshotUri().empty()) {
+    if ((!document->GetTmpFileUri().has_value() && !document->GetLinking()) ||
+        document->GetSnapshotUri().empty()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "tmpFileUri or snapshotUri is empty");
         return false;
     }
-    if (!CheckFilePermission(document->GetTmpFilePath())) {
+    if (!document->GetLinking() && !CheckFilePermission(document->GetTmpFilePath())) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "tmpFilePath permission denied");
         return false;
     }
@@ -519,6 +520,7 @@ ErrCode ObjectEditorExtension::CreateObject(std::unique_ptr<ObjectEditorDocument
     }
     object->ceInstance = ceInstance_;
     object->document->hmid = document->GetHmid();
+    object->document->linking = document->GetLinking();
     object->document->oeDocumentInner = std::move(document);
     object->clientCb = clientCb;
     std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
@@ -527,6 +529,10 @@ ErrCode ObjectEditorExtension::CreateObject(std::unique_ptr<ObjectEditorDocument
     ceInstance_->onObjectAttachFunc(ceInstance_.get(), iter->second.get());
     if (iter->second->document->oeDocumentInner->GetOperateType() == OperateType::CREATE_BY_FILE) {
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "create document by file");
+        if (iter->second->document->linking) {
+            OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "create document by file linking");
+            return ERR_OK;
+        }
         if (iter->second->onWriteToDataStreamFunc == nullptr) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onWriteToDataStreamFunc is nullptr");
             ceInstance_->objects.erase(iter);

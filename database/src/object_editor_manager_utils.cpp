@@ -32,6 +32,7 @@ namespace OHOS {
 namespace ObjectEditor {
 // LCOV_EXCL_START
 namespace {
+constexpr const char* PERMISSION_SERVER = "ohos.permission.REGISTER_OBJECTEDITOR_EXTENSION";
 const std::string CONFIG_FILE_KEY = "content_embed_config";
 const std::string MEDIA_PREFIX = "$media:";
 const std::string STRING_PREFIX = "$string:";
@@ -55,7 +56,7 @@ std::shared_ptr<Media::PixelMap> GetIconPixelMap(Global::Resource::ResourceManag
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "failed, invalid iconId: %{private}d", iconId);
         return nullptr;
     }
-    Media::SourceOptions options;
+    Media::SourceOptions opts;
     uint32_t errCode = 0;
     std::unique_ptr<Media::ImageSource> imageSource = nullptr;
     if (!hapPath.empty()) { // hap compressed
@@ -65,14 +66,14 @@ std::shared_ptr<Media::PixelMap> GetIconPixelMap(Global::Resource::ResourceManag
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get icon failed, iconId: %{private}u", iconId);
             return nullptr;
         }
-        imageSource = Media::ImageSource::CreateImageSource(iconOut.get(), len, options, errCode);
+        imageSource = Media::ImageSource::CreateImageSource(iconOut.get(), len, opts, errCode);
     } else { // hap decompressed
         std::string iconPath;
         if (resMgr.GetMediaById(iconId, iconPath) != Global::Resource::RState::SUCCESS) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get icon failed, iconId: %{private}u", iconId);
             return nullptr;
         }
-        imageSource = Media::ImageSource::CreateImageSource(iconPath, options, errCode);
+        imageSource = Media::ImageSource::CreateImageSource(iconPath, opts, errCode);
     }
     if (errCode != 0 || imageSource == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "create image source failed:%{public}u", errCode);
@@ -279,19 +280,19 @@ void ParseConfigFile(const std::string &fileContent, std::vector<NativeRdb::Valu
 sptr<AppExecFwk::IBundleMgr> GetBundleMgr()
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DATABASE, "in");
-    sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    if (samgr == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "samgr is null");
+    sptr<ISystemAbilityManager> saMgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (saMgr == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get sa fail");
         return nullptr;
     }
-    sptr<IRemoteObject> bundleMgrObj = samgr->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
-    if (bundleMgrObj == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "bundleMgrObj is null");
+    sptr<IRemoteObject> remoteObject = saMgr->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
+    if (remoteObject == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get bundle fail");
         return nullptr;
     }
-    sptr<AppExecFwk::IBundleMgr> bundleMgr = iface_cast<AppExecFwk::IBundleMgr>(bundleMgrObj);
+    sptr<AppExecFwk::IBundleMgr> bundleMgr = iface_cast<AppExecFwk::IBundleMgr>(remoteObject);
     if (bundleMgr == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "bundleMgr is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "null BundleMgr");
         return nullptr;
     }
     return bundleMgr;
@@ -303,13 +304,13 @@ bool GetAppIdentifier(std::string &appIdentifier)
     Security::AccessToken::HapTokenInfo hapTokenInfo;
     ErrCode ret = Security::AccessToken::AccessTokenKit::GetHapTokenInfo(callerToken, hapTokenInfo);
     if (ret != ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "GetHapTokenInfo failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "GetHapTokenInfo failed");
         return false;
     }
     std::string bundleName = hapTokenInfo.bundleName;
     auto bundleMgr = GetBundleMgr();
     if (bundleMgr == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "bundleMgr is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "null BundleMgr");
         return false;
     }
     AppExecFwk::BundleInfo bundleInfo;
@@ -317,21 +318,16 @@ bool GetAppIdentifier(std::string &appIdentifier)
         static_cast<int32_t>(AppExecFwk::GetBundleInfoFlag::GET_BUNDLE_INFO_WITH_SIGNATURE_INFO),
         bundleInfo, UserMgr::GetInstance().GetUserId());
     if (ret != ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "GetBundleInfo failed, bundleName: %{public}s",
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "GetBundleInfo failed, bundleName: %{public}s",
             bundleName.c_str());
         return false;
     }
     if (bundleInfo.signatureInfo.appIdentifier.empty()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "appIdentifier is empty");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "appIdentifier is empty");
         return false;
     }
     appIdentifier = bundleInfo.signatureInfo.appIdentifier;
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DATABASE, "appIdentifier: %{private}s", appIdentifier.c_str());
-    return true;
-}
-
-bool IsLegalCalling()
-{
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::SA, "appIdentifier: %{private}s", appIdentifier.c_str());
     return true;
 }
 
@@ -348,15 +344,20 @@ void GetBundleInfos(const sptr<AppExecFwk::IBundleMgr> &bundleMgr,
             continue;
         }
         AppExecFwk::BundleInfo bundleInfo;
-        ErrCode ret = bundleMgr->GetBundleInfoV9(extensionInfo.bundleName,
-            static_cast<int32_t>(AppExecFwk::GetBundleInfoFlag::GET_BUNDLE_INFO_DEFAULT),
+        ErrCode errCode = bundleMgr->GetBundleInfoV9(extensionInfo.bundleName,
+            static_cast<int32_t>(AppExecFwk::GetBundleInfoFlag::GET_BUNDLE_INFO_WITH_REQUESTED_PERMISSION),
             bundleInfo, UserMgr::GetInstance().GetUserId());
-        if (ret != ERR_OK) {
+        if (errCode != ERR_OK) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "GetBundleInfo failed, bundleName: %{public}s",
                 extensionInfo.bundleName.c_str());
             continue;
         }
-        bundleInfos.emplace(extensionInfo.bundleName, std::move(bundleInfo));
+        std::vector<std::string> permissions = bundleInfo.reqPermissions;
+        if (std::find(permissions.begin(), permissions.end(), PERMISSION_SERVER) != permissions.end()) {
+            OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "add bundleName:%{public}s",
+                extensionInfo.bundleName.c_str());
+            bundleInfos.emplace(extensionInfo.bundleName, std::move(bundleInfo));
+        }
     }
 }
 

@@ -54,10 +54,10 @@ std::vector<std::string> GetDefaultDbSql()
     return defaultSqlList;
 }
 
-class ObjectEditorOpenCallBack : public NativeRdb::RdbOpenCallback {
+class ObjectEditorOpenCallback : public NativeRdb::RdbOpenCallback {
 public:
-    ObjectEditorOpenCallBack() = default;
-    ~ObjectEditorOpenCallBack() = default;
+    ObjectEditorOpenCallback() = default;
+    ~ObjectEditorOpenCallback() = default;
 
     int32_t OnCreate(NativeRdb::RdbStore &rdbStore) override
     {
@@ -91,7 +91,7 @@ ObjectEditorManagerDatabase::ObjectEditorManagerDatabase()
         std::to_string(UserMgr::GetInstance().GetUserId())),
     dbPath_(dbDir_ + "/object_editor.db"),
     bundleMgr_(nullptr),
-    dbPackageSubscriber_(nullptr)
+    subscriber_(nullptr)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "dbPath_: %{private}s", dbPath_.c_str());
 }
@@ -99,9 +99,9 @@ ObjectEditorManagerDatabase::ObjectEditorManagerDatabase()
 ObjectEditorManagerDatabase::~ObjectEditorManagerDatabase()
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "in");
-    if (dbPackageSubscriber_ != nullptr) {
-        EventFwk::CommonEventManager::UnSubscribeCommonEvent(dbPackageSubscriber_);
-        dbPackageSubscriber_ = nullptr;
+    if (subscriber_ != nullptr) {
+        EventFwk::CommonEventManager::UnSubscribeCommonEvent(subscriber_);
+        subscriber_ = nullptr;
     }
 }
 
@@ -161,9 +161,9 @@ bool ObjectEditorManagerDatabase::OpenDb()
     config.SetSecurityLevel(NativeRdb::SecurityLevel::S2);
     config.SetAllowRebuild(true);
     config.SetTokenizer(NativeRdb::CUSTOM_TOKENIZER);
-    ObjectEditorOpenCallBack openCallBack;
+    ObjectEditorOpenCallback helper;
     int32_t errCode = NativeRdb::E_OK;
-    store_ = NativeRdb::RdbHelper::GetRdbStore(config, version, openCallBack, errCode);
+    store_ = NativeRdb::RdbHelper::GetRdbStore(config, version, helper, errCode);
     if (errCode != NativeRdb::E_OK || store_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get store failed, errCode: %{public}d", errCode);
         store_ = nullptr;
@@ -202,7 +202,6 @@ bool ObjectEditorManagerDatabase::CreateDefaultTable()
 
 bool ObjectEditorManagerDatabase::InitSubscriber()
 {
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DATABASE, "in");
     EventFwk::MatchingSkills matchingSkills;
     matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_ADDED);
     matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_REPLACED);
@@ -210,15 +209,15 @@ bool ObjectEditorManagerDatabase::InitSubscriber()
     matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_REMOVED);
     matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_FULLY_REMOVED);
     EventFwk::CommonEventSubscribeInfo subscribeInfo(matchingSkills);
-    dbPackageSubscriber_ = std::make_shared<DbPackageSubscriber>(subscribeInfo);
-    if (dbPackageSubscriber_ == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "dbPackageSubscriber_ create failed");
+    subscriber_ = std::make_shared<DbPackageSubscriber>(subscribeInfo);
+    if (subscriber_ == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "subscriber_ create failed");
         return false;
     }
-    auto ret = EventFwk::CommonEventManager::SubscribeCommonEvent(dbPackageSubscriber_);
-    if (!ret) {
+    auto ret = EventFwk::CommonEventManager::SubscribeCommonEvent(subscriber_);
+    if (ret == false) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "SubscribeCommonEvent failed");
-        dbPackageSubscriber_ = nullptr;
+        subscriber_ = nullptr;
         return false;
     }
     return true;
@@ -350,10 +349,6 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetBundleInfoValuesBucke
     const std::string &bundleName, std::vector<NativeRdb::ValuesBucket> &buckets) const
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "bundleName: %{public}s", bundleName.c_str());
-    if (bundleName.empty()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "bundleName is empty");
-        return ObjectEditorManagerErrCode::SA_DB_QUERY_FAIL;
-    }
     if (bundleMgr_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "bundleMgr is null");
         return ObjectEditorManagerErrCode::SA_DB_QUERY_FAIL;
@@ -368,8 +363,8 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetBundleInfoValuesBucke
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "GetBundleInfo failed, errCode: %{public}d", ret);
         return ObjectEditorManagerErrCode::SA_DB_QUERY_FAIL;
     }
-    for (auto it = bundleInfo.hapModuleInfos.begin(); it != bundleInfo.hapModuleInfos.end(); it++) {
-        for (auto it2 = it->extensionInfos.begin(); it2 != it->extensionInfos.end(); it2++) {
+    for (auto it = bundleInfo.hapModuleInfos.begin(); it != bundleInfo.hapModuleInfos.end(); ++it) {
+        for (auto it2 = it->extensionInfos.begin(); it2 != it->extensionInfos.end(); ++it2) {
             if (it2->type != AppExecFwk::ExtensionAbilityType::CONTENT_EMBED) {
                 continue;
             }

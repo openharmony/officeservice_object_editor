@@ -91,7 +91,7 @@ private:
     const std::string dbDir_;
     const std::string dbPath_;
     sptr<AppExecFwk::IBundleMgr> bundleMgr_;
-    std::shared_ptr<DbPackageSubscriber> dbPackageSubscriber_;
+    std::shared_ptr<DbPackageSubscriber> subscriber_;
 };
 
 } // namespace ObjectEditor

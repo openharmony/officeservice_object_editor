@@ -77,6 +77,16 @@ struct ContentEmbed_Storage {
     std::string name;
 };
 
+struct ContentEmbed_StorageElement {
+    std::string name;
+    bool isStorage = false;
+    size_t size = 0;
+};
+
+struct ContentEmbed_StorageElements {
+    std::vector<std::unique_ptr<ContentEmbed_StorageElement>> elements;
+};
+
 struct ContentEmbed_Stream {
     ContentEmbed_Document *owner = nullptr;
     std::string path;
