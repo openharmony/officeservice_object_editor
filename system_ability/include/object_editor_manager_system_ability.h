@@ -58,13 +58,15 @@ class ObjectEditorManagerSystemAbility : public SystemAbility, public ObjectEdit
 public:
     ObjectEditorManagerSystemAbility();
     ~ObjectEditorManagerSystemAbility();
-    ErrCode StartObjectEditorExtension(std::unique_ptr<ObjectEditorDocument> &document,
-                                       const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
-                                       sptr<IRemoteObject> &oeExtensionRemoteObject,
-                                       bool &isPackageExtension) override;
-    ErrCode StopObjectEditorExtension(const std::string &documentId,
-                                      const sptr<IRemoteObject> &oeExtensionRemoteObject,
-                                      const bool &isPackageExtension) override;
+    ErrCode StartObjectEditorExtension(
+        std::unique_ptr<ObjectEditorDocument> &document,
+        const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
+        sptr<IRemoteObject> &oeExtensionRemoteObject,
+        bool &isPackageExtension) override;
+    ErrCode StopObjectEditorExtension(
+        const std::string &documentId,
+        const sptr<IRemoteObject> &oeExtensionRemoteObject,
+        const bool &isPackageExtension) override;
     ErrCode GetHmidByFileExtension(
         const std::string &hmid,
         std::string &fileExtension) override;
@@ -103,20 +105,20 @@ private:
     bool GrantClientFileUriPermissionToServerExtension(const ObjectEditorDocument &document,
         const std::string &targetBundleName);
     void ReadDiversionsJsonFile();
-    ObjectEditorManagerErrCode GetTargetHmid(const std::string &sourceHmid, std::string &targetHmid,
-        std::string &minVersion);
-    ObjectEditorManagerErrCode HandleDefaultAppFormatPolicy(const std::string &fileExt,
+    ObjectEditorManagerErrCode GetTargetHmid(const std::string &sourceHmid,
+        std::string &targetHmid, std::string &minVersion);
+    ObjectEditorManagerErrCode HandleDefaultAppFormatPolicy(
+        const std::string &fileExt,
         std::vector<std::unique_ptr<ObjectEditorFormat>> &formats,
         std::unique_ptr<ObjectEditorFormat> &objectEditorFormat);
-    ObjectEditorManagerErrCode GetDefaultAppBundleNameByFileExt(const std::string &fileExt,
-        std::string &bundleName);
+    ObjectEditorManagerErrCode GetDefaultAppBundleNameByFileExt(
+        const std::string &fileExt, std::string &bundleName);
     ObjectEditorManagerErrCode CheckIsAllowStartExtension(const ObjectEditorDocument &document);
     ObjectEditorManagerErrCode HandleOperateHasHmid(const ObjectEditorDocument &document,
         std::unique_ptr<ObjectEditorFormat> &objectEditorFormat);
-    ObjectEditorManagerErrCode StartObjectEditorExtensionByFile(std::unique_ptr<ObjectEditorDocument> &document,
-        const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
-        sptr<IRemoteObject> &oeExtensionRemoteObject, bool &isPackageExtension,
-        std::unique_ptr<ObjectEditorFormat> &objectEditorFormat);
+    ObjectEditorManagerErrCode GetObjectEditorFormat(const ObjectEditorDocument &document,
+        std::unique_ptr<ObjectEditorFormat> &objectEditorFormat, bool &isPackageExtension);
+    bool CheckCallingPermission(uint32_t code);
     void InitScreenChangedCommonEventSubscriber();
     void ResetScreenChangedCommonEventSubscriber();
     bool CheckConnectionLimit(const std::string &clientBundleName, std::unique_ptr<ObjectEditorFormat> &format,
@@ -134,8 +136,9 @@ private:
     static std::condition_variable cvTimer_;
     static std::atomic<bool> timerRunning_;
     static std::atomic<bool> timerNotify_;
+    static std::string permissionClient_;
 
-    std::shared_ptr<ObjectEditorScreenChangeReceiver> screenChangeReceiver_;
+    std::shared_ptr<ObjectEditorScreenChangeReceiver> screenChangedReceiver_;
 };
 
 } // namespace ObjectEditor

@@ -55,13 +55,15 @@ private:
     std::string extensionAbilityName_;
     std::string extensionModuleName_;
     std::string clientBundleName_;
-    std::mutex extensionProxyMutex_;
+
     sptr<IRemoteObject> extensionProxy_ = nullptr;
+    std::mutex extensionProxyMutex_;
     std::condition_variable connectCondition_;
+
     bool isConnectReady_ = false;
-    std::mutex connectionStatusCallbackMutex_;
-    std::shared_ptr<IObjectEditorConnectionStatusCallback> connectionStatusCallback_ = nullptr;
-    int32_t curCheckEditStatusTimes = 0;
+    std::mutex callbackMutex_;
+    std::shared_ptr<IObjectEditorConnectionStatusCallback> callback_ = nullptr;
+    int32_t curCheckEditStatusTimes_ = 0;
 
     void TimerThreadStopExtension();
     void ResetStopExtensionTimer();

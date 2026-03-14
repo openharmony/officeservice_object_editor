@@ -39,10 +39,11 @@
 #include "object_editor_extension_proxy.h"
 #include "object_editor_manager_database.h"
 #include "object_editor_manager_system_ability.h"
+#include "object_editor_manager_utils.h"
+#include "object_editor_permission_utils.h"
 
 #include "system_utils.h"
 #include "user_mgr.h"
-#include "object_editor_manager_utils.h"
 
 using namespace OHOS::AAFwk;
 
@@ -64,6 +65,7 @@ std::mutex ObjectEditorManagerSystemAbility::mutexTimer_;
 std::condition_variable ObjectEditorManagerSystemAbility::cvTimer_;
 std::mutex ObjectEditorManagerSystemAbility::connectionMapMutex_;
 std::map<sptr<IRemoteObject>, sptr<ObjectEditorConnection>> ObjectEditorManagerSystemAbility::connectionMap_;
+std::string ObjectEditorManagerSystemAbility::permissionClient_("ohos.permission.CONNECT_OBJECTEDITOR_EXTENSION");
 
 ObjectEditorManagerSystemAbility::ObjectEditorManagerSystemAbility()
     : SystemAbility(OBJECT_EDITOR_SERVICE_SA_ID, true)
@@ -85,19 +87,19 @@ void ObjectEditorManagerSystemAbility::InitScreenChangedCommonEventSubscriber()
     matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_LOCKED);
     matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED);
     EventFwk::CommonEventSubscribeInfo subscribeInfo(matchingSkills);
-    screenChangeReceiver_ = std::make_shared<ObjectEditorScreenChangeReceiver>(subscribeInfo);
-    auto ret = OHOS::EventFwk::CommonEventManager::SubscribeCommonEvent(screenChangeReceiver_);
+    screenChangedReceiver_ = std::make_shared<ObjectEditorScreenChangeReceiver>(subscribeInfo);
+    auto ret = OHOS::EventFwk::CommonEventManager::SubscribeCommonEvent(screenChangedReceiver_);
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "subscribe common event ret:%{public}d", ret);
 }
 
 void ObjectEditorManagerSystemAbility::ResetScreenChangedCommonEventSubscriber()
 {
-    if (screenChangeReceiver_ == nullptr) {
-        OBJECT_EDITOR_LOGW(ObjectEditorDomain::SA, "screenChangeReceiver_ is null");
+    if (screenChangedReceiver_ == nullptr) {
+        OBJECT_EDITOR_LOGW(ObjectEditorDomain::SA, "screenChangedReceiver_ is null");
         return;
     }
-    auto ret = OHOS::EventFwk::CommonEventManager::UnSubscribeCommonEvent(screenChangeReceiver_);
-    screenChangeReceiver_ = nullptr;
+    auto ret = OHOS::EventFwk::CommonEventManager::UnSubscribeCommonEvent(screenChangedReceiver_);
+    screenChangedReceiver_ = nullptr;
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "unsubscribe common event ret:%{public}d", ret);
 }
 
@@ -105,7 +107,7 @@ void ObjectEditorManagerSystemAbility::OnStart()
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "in");
     if (state_ == ServiceRunningState::STATE_RUNNING) {
-        OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "already running");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "already running");
         return;
     }
     bool res = Publish(this);
@@ -122,7 +124,7 @@ void ObjectEditorManagerSystemAbility::OnStop()
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "in");
     ResetScreenChangedCommonEventSubscriber();
     if (state_ != ServiceRunningState::STATE_RUNNING) {
-        OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "not running");
+        OBJECT_EDITOR_LOGW(ObjectEditorDomain::SA, "not running");
         return;
     }
     state_ = ServiceRunningState::STATE_NOT_START;
@@ -190,7 +192,7 @@ void ObjectEditorManagerSystemAbility::TimerThreadStopSA()
         std::unique_lock<std::mutex> lock(mutexTimer_);
         auto waitResult = cvTimer_.wait_for(lock, std::chrono::seconds(SA_EXIT_TIME_S),
             [this]() { return timerNotify_.load(); });
-        std::unique_lock<std::mutex> connectionMapLock(connectionMapMutex_);
+        std::unique_lock<std::mutex> lockExtension(connectionMapMutex_);
         if (!waitResult && connectionMap_.empty()) {
             auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
             if (sam == nullptr) {
@@ -213,11 +215,33 @@ int32_t ObjectEditorManagerSystemAbility::CallbackEnter([[maybe_unused]] uint32_
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "not supported");
         return ObjectEditorManagerErrCode::SA_ERR_DEVICE_NOT_SUPPORT;
     }
-    if (!IsLegalCalling()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "illegal calling");
+    if (!CheckCallingPermission(code)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "permission:%{public}s denied", permissionClient_.c_str());
         return ObjectEditorManagerErrCode::SA_PERMISSION_DENIED;
     }
     return ERR_NONE;
+}
+
+bool ObjectEditorManagerSystemAbility::CheckCallingPermission(uint32_t code)
+{
+    switch (static_cast<IObjectEditorManagerIpcCode>(code)) {
+        case IObjectEditorManagerIpcCode::COMMAND_START_OBJECT_EDITOR_EXTENSION:
+        case IObjectEditorManagerIpcCode::COMMAND_GET_HMID_BY_FILE_EXTENSION:
+        case IObjectEditorManagerIpcCode::COMMAND_GET_ICON_BY_HMID:
+        case IObjectEditorManagerIpcCode::COMMAND_GET_FORMAT_NAME:
+        case IObjectEditorManagerIpcCode::COMMAND_GET_FORMAT_BY_HMID_AND_LOCALE:
+        case IObjectEditorManagerIpcCode::COMMAND_GET_FORMATS_BY_LOCALE:
+        case IObjectEditorManagerIpcCode::COMMAND_STOP_OBJECT_EDITOR_EXTENSION: {
+            return ObjectEditorPermissionUtils::CheckCallingPermission(permissionClient_);
+        }
+        case IObjectEditorManagerIpcCode::COMMAND_START_UI_ABILITY: {
+            return true;
+        }
+        default: {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "unknown code:%{public}d", code);
+            return false;
+        }
+    }
 }
 
 void ObjectEditorManagerSystemAbility::ResetStopSATimer()
@@ -238,30 +262,37 @@ int32_t ObjectEditorManagerSystemAbility::CallbackExit([[maybe_unused]] uint32_t
     return result;
 }
 
-ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::StartObjectEditorExtensionByFile(
-    std::unique_ptr<ObjectEditorDocument> &document,
-    const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
-    sptr<IRemoteObject> &oeExtensionRemoteObject, bool &isPackageExtension,
-    std::unique_ptr<ObjectEditorFormat> &objectEditorFormat)
+ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::GetObjectEditorFormat(
+    const ObjectEditorDocument &document,
+    std::unique_ptr<ObjectEditorFormat> &objectEditorFormat,
+    bool &isPackageExtension)
 {
-    if (document == nullptr || !document->GetOriFileUri().has_value()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "ori file uri is empty");
-        return ObjectEditorManagerErrCode::SA_INVALID_PARAMETER;
-    }
-    std::vector<std::unique_ptr<ObjectEditorFormat>> objectEditorFormats;
-    std::string fileExt = SystemUtils::GetFileSuffix(document->GetOriFileUri().value());
-    auto errCode = ObjectEditorManagerDatabase::GetInstance().GetObjectEditorFormatsByFileExt(
-        fileExt, objectEditorFormats);
-    if (errCode == ObjectEditorManagerErrCode::SA_DB_QUERY_EMPTY) {
-        OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "use package extension");
+    if (document.GetHmid() == PACKAGE_HMID &&
+        (document.GetOperateType() == OperateType::CREATE_BY_HMID ||
+         document.GetOperateType() == OperateType::EDIT)) {
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "hmid is package");
         isPackageExtension = true;
         return ObjectEditorManagerErrCode::SA_OK;
     }
-    if (errCode == ObjectEditorManagerErrCode::SA_OK && !objectEditorFormats.empty()) {
-        OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "use default app");
-        errCode = HandleDefaultAppFormatPolicy(fileExt, objectEditorFormats, objectEditorFormat);
+    auto errCode = ObjectEditorManagerErrCode::SA_DB_QUERY_EMPTY;
+    if (document.GetOperateType() == OperateType::CREATE_BY_FILE && document.GetOriFileUri().has_value()) {
+        std::vector<std::unique_ptr<ObjectEditorFormat>> objectEditorFormats;
+        std::string fileExt = SystemUtils::GetFileSuffix(document.GetOriFileUri().value());
+        errCode = ObjectEditorManagerDatabase::GetInstance().GetObjectEditorFormatsByFileExt(
+            fileExt, objectEditorFormats);
+        if (errCode == ObjectEditorManagerErrCode::SA_DB_QUERY_EMPTY) {
+            OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "use package extension");
+            isPackageExtension = true;
+            return ObjectEditorManagerErrCode::SA_OK;
+        }
+        if (errCode == ObjectEditorManagerErrCode::SA_OK && !objectEditorFormats.empty()) {
+            OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "use default app");
+            errCode = HandleDefaultAppFormatPolicy(fileExt, objectEditorFormats, objectEditorFormat);
+        }
+    } else {
+        errCode = HandleOperateHasHmid(document, objectEditorFormat);
     }
-    return ObjectEditorManagerErrCode::SA_OK;
+    return errCode;
 }
 
 ErrCode ObjectEditorManagerSystemAbility::StartObjectEditorExtension(
@@ -280,23 +311,10 @@ ErrCode ObjectEditorManagerSystemAbility::StartObjectEditorExtension(
     }
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "operation:%{public}d",
         document->GetOperateType());
-    if (document->GetHmid() == PACKAGE_HMID &&
-        (document->GetOperateType() == OperateType::CREATE_BY_HMID ||
-         document->GetOperateType() == OperateType::EDIT)) {
-        std::string operateTypeStr =
-            document->GetOperateType() == OperateType::CREATE_BY_HMID ? "CREATE_BY_HMID" : "EDIT";
-        OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA,
-            "OperateType: %{public}s. Choose PackageExtension", operateTypeStr.c_str());
-        isPackageExtension = true;
-        return ObjectEditorManagerErrCode::SA_OK;
-    }
     std::unique_ptr<ObjectEditorFormat> objectEditorFormat;
-    errCode = ObjectEditorManagerErrCode::SA_DB_QUERY_EMPTY;
-    if (document->GetOperateType() == OperateType::CREATE_BY_HMID) {
-        errCode = StartObjectEditorExtensionByFile(document, objectEditorClientCallback,
-            oeExtensionRemoteObject, isPackageExtension, objectEditorFormat);
-    } else {
-        errCode = HandleOperateHasHmid(*document, objectEditorFormat);
+    errCode = GetObjectEditorFormat(*document, objectEditorFormat, isPackageExtension);
+    if (isPackageExtension) {
+        return ObjectEditorManagerErrCode::SA_OK;
     }
     if (errCode != ObjectEditorManagerErrCode::SA_OK || objectEditorFormat == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "get object editor format failed");
@@ -341,8 +359,8 @@ ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::HandleOperateHasHmi
     std::unique_ptr<ObjectEditorFormat> &objectEditorFormat)
 {
     objectEditorFormat = std::make_unique<ObjectEditorFormat>();
-    auto errCode = ObjectEditorManagerDatabase::GetInstance().GetObjectEditorFormatByHmid(document.GetHmid(),
-        objectEditorFormat);
+    auto errCode = ObjectEditorManagerDatabase::GetInstance().GetObjectEditorFormatByHmid(
+        document.GetHmid(), objectEditorFormat);
     if (errCode == ObjectEditorManagerErrCode::SA_DB_QUERY_EMPTY &&
         document.GetOperateType() == OperateType::EDIT) {
         std::string targetHmid;
@@ -399,17 +417,17 @@ ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::GetDefaultAppBundle
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "get default app proxy failed");
         return ObjectEditorManagerErrCode::SA_BMS_QUERY_DEFAULT_LAUNCHER_APP_FAILED;
     }
-    AppExecFwk::BundleInfo defaultAppInfo;
-    errCode = defaultAppProxy->GetDefaultApplication(UserMgr::GetInstance().GetUserId(), utdType,
-        defaultAppInfo);
+    AppExecFwk::BundleInfo bundleInfo;
+    errCode = defaultAppProxy->GetDefaultApplication(
+        UserMgr::GetInstance().GetUserId(), utdType, bundleInfo);
     if (errCode != ERR_OK && errCode != ERR_BUNDLE_MANAGER_DEFAULT_APP_NOT_EXIST) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "get default app bundlename failed");
         return ObjectEditorManagerErrCode::SA_BMS_QUERY_DEFAULT_LAUNCHER_APP_FAILED;
     }
-    if (defaultAppInfo.name.empty()) {
+    if (bundleInfo.name.empty()) {
         OBJECT_EDITOR_LOGW(ObjectEditorDomain::SA, "default app bundlename is empty");
     } else {
-        bundleName = defaultAppInfo.name;
+        bundleName = bundleInfo.name;
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "fileExt:%{public}s default app bundlename is %{public}s",
             fileExt.c_str(), bundleName.c_str());
     }
@@ -434,9 +452,8 @@ ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::CheckIsAllowStartEx
     return ObjectEditorManagerErrCode::SA_CHECK_START_EXTENSION_OK;
 }
 
-ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::GetTargetHmid(
-    const std::string &sourceHmid, std::string &targetHmid,
-    std::string &minVersion)
+ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::GetTargetHmid(const std::string &sourceHmid,
+    std::string &targetHmid, std::string &minVersion)
 {
     std::shared_lock lock(diversionMapMutex_);
     auto it = diversionMap_.find(sourceHmid);
@@ -480,13 +497,13 @@ ErrCode ObjectEditorManagerSystemAbility::StopObjectEditorExtension(
         return ObjectEditorManagerErrCode::SA_NOT_FOUND_ABILITY_BY_REMOTE_OBJECT;
     }
     auto connection = it->second;
-    ErrCode code = ObjectEditorManagerErrCode::SA_OK;
+    ErrCode errCode = ObjectEditorManagerErrCode::SA_OK;
     if (connection != nullptr && !isPackageExtension) {
-        code = connection->StopConnect();
-        code = code != ObjectEditorManagerErrCode::SA_DISCONNECT_ABILITY_SUCCEED ?
-            code : ObjectEditorManagerErrCode::SA_OK;
+        errCode = connection->StopConnect();
+        errCode = errCode != ObjectEditorManagerErrCode::SA_DISCONNECT_ABILITY_SUCCEED ?
+            errCode : ObjectEditorManagerErrCode::SA_OK;
     }
-    return code;
+    return errCode;
 }
 
 ErrCode ObjectEditorManagerSystemAbility::GetHmidByFileExtension(const std::string &hmid,
@@ -549,19 +566,19 @@ ErrCode ObjectEditorManagerSystemAbility::StartUIAbility(const std::unique_ptr<A
 bool ObjectEditorManagerSystemAbility::CheckClientFileValid(const ObjectEditorDocument &document)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "in");
-    if (!document.GetTmpFileUri().has_value() || document.GetSnapshotUri().empty()) {
+    if ((!document.GetTmpFileUri().has_value() && !document.GetLinking()) ||
+        document.GetSnapshotUri().empty()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "uri is empty");
         return false;
     }
     std::vector<std::string> uriVec;
-    uriVec.push_back(document.GetTmpFileUri().value());
+    if (!document.GetLinking()) {
+        uriVec.push_back(document.GetTmpFileUri().value());
+    }
     uriVec.push_back(document.GetSnapshotUri());
     if (document.GetOperateType() == OperateType::CREATE_BY_FILE) {
         if (document.GetNativeFileUri().has_value()) {
             uriVec.push_back(document.GetNativeFileUri().value());
-        }
-        if (document.GetLinking() && document.GetOriFileUri().has_value()) {
-            uriVec.push_back(document.GetOriFileUri().value());
         }
     }
     auto tokenId = IPCSkeleton::GetCallingTokenID();
@@ -580,7 +597,7 @@ bool ObjectEditorManagerSystemAbility::GrantClientFileUriPermissionToServerExten
     const ObjectEditorDocument &document, const std::string &targetBundleName)
 {
     std::vector<Uri> uriList;
-    if (document.GetTmpFileUri().has_value()) {
+    if (!document.GetTmpFileUri().has_value() && !document.GetLinking()) {
         uriList.push_back(Uri(document.GetTmpFileUri().value()));
     }
     if (!document.GetSnapshotUri().empty()) {
@@ -589,9 +606,6 @@ bool ObjectEditorManagerSystemAbility::GrantClientFileUriPermissionToServerExten
     if (document.GetOperateType() == OperateType::CREATE_BY_FILE) {
         if (document.GetNativeFileUri().has_value()) {
             uriList.push_back(Uri(document.GetNativeFileUri().value()));
-        }
-        if (document.GetLinking() && document.GetOriFileUri().has_value()) {
-            uriList.push_back(Uri(document.GetOriFileUri().value()));
         }
     }
     auto readAndWritePermission = Want::FLAG_AUTH_READ_URI_PERMISSION |
@@ -614,9 +628,6 @@ void ObjectEditorManagerSystemAbilityConnectionStatusCallback::OnConnectionStatu
 bool ObjectEditorManagerSystemAbility::CheckConnectionLimit(const std::string &clientBundleName,
     std::unique_ptr<ObjectEditorFormat> &format, sptr<IRemoteObject> &remoteObject)
 {
-    if (format == nullptr) {
-        return false;
-    }
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "clientBundleName:%{public}s", clientBundleName.c_str());
     std::lock_guard<std::mutex> lock(connectionMapMutex_);
     int32_t count = 0;
@@ -673,9 +684,9 @@ bool ObjectEditorManagerSystemAbility::ConnectObjectEditorExtAbility(
     if (!CheckConnectionLimit(clientBundleName, format, remoteObject)) {
         return false;
     }
-    if (remoteObject == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "ability object connect");
-        return false;
+    if (remoteObject != nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "ability already connect");
+        return true;
     }
     sptr<ObjectEditorConnection> connection = sptr<ObjectEditorConnection>::MakeSptr();
     if (connection == nullptr) {
