@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Device Co., Ltd. 2026-2026. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -116,10 +116,15 @@ typedef enum ContentEmbed_ErrorCode {
      */
     CE_ERR_CLIENT_CALLBACK_FAILED = 35300010,
     /**
-     * @brief The error code when the document operation failed.
+     * @brief The error code is returned when the extension abnormal exit.
      * @since 24
      */
     CE_ERR_EXTENSION_ABNORMAL_EXIT = 35300011,
+    /**
+     * @brief The error code when linking file is in application sandbox.
+     * @since 24
+     */
+    CE_ERR_INVALID_LINKING_PATH = 35300012,
 } ContentEmbed_ErrorCode;
 
 typedef enum ContentEmbed_CapabilityCode {

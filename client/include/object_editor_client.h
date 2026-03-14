@@ -48,7 +48,7 @@ class ObjectEditorClient {
 public:
     ErrCode StartObjectEditorExtension(
         std::unique_ptr<ObjectEditorDocument> &document,
-        const sptr<IObjectEditorClientCallback> &clientCallback,
+        const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
         sptr<IObjectEditorService> &oeExtensionRemoteObject,
         bool &isPackageExtension);
     ErrCode StopObjectEditorExtension(
@@ -87,8 +87,11 @@ private:
     void InitLoadState();
     bool WaitLoadStateChange();
     ErrCode PrepareFiles(const std::unique_ptr<ObjectEditorDocument> &document);
-    ErrCode HandlePackage(const std::unique_ptr<ObjectEditorDocument> &document,
-        const sptr<IObjectEditorClientCallback> &clientCallback,
+    ErrCode CleanupTempFiles(const std::unique_ptr<ObjectEditorDocument> &document);
+    std::string GetTempDir(const std::unique_ptr<ObjectEditorDocument> &document);
+    ErrCode HandlePackage(
+        const std::unique_ptr<ObjectEditorDocument> &document,
+        const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
         sptr<IObjectEditorService> &oeExtensionRemoteObject);
     std::string GenRandomUuid();
 

@@ -23,15 +23,15 @@ namespace ObjectEditor {
 // LCOV_EXCL_START
 ErrCode ObjectEditorManagerProxy::StartObjectEditorExtension(
     std::unique_ptr<ObjectEditorDocument> &document,
-    const sptr<IObjectEditorClientCallback> &callback,
+    const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
     sptr<IRemoteObject> &oeExtensionRemoteObject,
     bool &isPackageExtension)
 {
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
-    if (document == nullptr || callback == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "document or callback is null");
+    if (document == nullptr || objectEditorClientCallback == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "document or objectEditorClientCallback is nullptr");
         return ERR_INVALID_VALUE;
     }
     if (!data.WriteInterfaceToken(GetDescriptor())) {
@@ -42,7 +42,7 @@ ErrCode ObjectEditorManagerProxy::StartObjectEditorExtension(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write document fail");
         return ERR_INVALID_DATA;
     }
-    if (!data.WriteRemoteObject(callback->AsObject())) {
+    if (!data.WriteRemoteObject(objectEditorClientCallback->AsObject())) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write remote object fail");
         return ERR_INVALID_DATA;
     }
@@ -84,7 +84,7 @@ ErrCode ObjectEditorManagerProxy::StopObjectEditorExtension(
     }
     if (!data.WriteString(documentId)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write documentId failed");
-        return ERR_INVALID_DATA;
+        return ERR_INVALID_VALUE;
     }
     if (oeExtensionRemoteObject == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "oeExtensionRemoteObject is null");
@@ -287,7 +287,7 @@ ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatsByLocale(const std::stri
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(GetDescriptor())) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write descriptor fail");
-        return ERR_INVALID_VALUE;
+        return ERR_INVALID_DATA;
     }
     if (!data.WriteString16(Str8ToStr16(locale))) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write locale failed");
@@ -296,7 +296,7 @@ ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatsByLocale(const std::stri
     sptr<IRemoteObject> remote = Remote();
     if (remote == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "Remote is null");
-        return ERR_INVALID_DATA;
+        return ERR_INVALID_VALUE;
     }
     int32_t result = remote->SendRequest(
         static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_GET_FORMATS_BY_LOCALE), data, reply, option);

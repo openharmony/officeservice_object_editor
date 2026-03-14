@@ -211,6 +211,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_CreateDocumentByFile(const char *srcFileP
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create document failed");
         return CE_ERR_NULL_POINTER;
     }
+    if (isLinking && SystemUtils::IsAppSandboxPath(doc->GetOriFilePath())) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "app sandbox path is not supported");
+        return CE_ERR_INVALID_LINKING_PATH;
+    }
     auto *wrapper = new (std::nothrow) ContentEmbed_Document{{}, isLinking, {}, path, {}, {}, std::move(doc)};
     if (wrapper == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create document wrapper failed");
