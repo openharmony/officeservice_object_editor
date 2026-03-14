@@ -40,7 +40,6 @@ bool BuildObjectEditorFormat(ObjectEditorFormat &format, NativeRdb::RowEntity &r
     const std::string &locale);
 bool BuildValuesBuckets(std::vector<NativeRdb::ValuesBucket> &buckets, const AppExecFwk::BundleInfo &bundleInfo,
     const AppExecFwk::ExtensionAbilityInfo &extensionInfo);
-bool IsLegalCalling();
 } // namespace ObjectEditor
 } // namespace OHOS
 #endif // OHOS_OBJECT_EDITOR_OBJECT_EDITOR_MANAGER_UTILS_H

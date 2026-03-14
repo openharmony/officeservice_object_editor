@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Device Co., Ltd. 2026-2026. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -65,6 +65,24 @@ typedef struct ContentEmbed_Document ContentEmbed_Document;
 typedef struct ContentEmbed_Storage ContentEmbed_Storage;
 
 /**
+ * @brief Define the ContentEmbed_StorageElement structure type.
+ *
+ * @brief Provides methods for Content Embed Kit.
+ *
+ * @since 24
+ */
+typedef struct ContentEmbed_StorageElement ContentEmbed_StorageElement;
+
+/**
+ * @brief Define the ContentEmbed_StorageElements structure type.
+ *
+ * @brief Provides methods for Content Embed Kit.
+ *
+ * @since 24
+ */
+typedef struct ContentEmbed_StorageElements ContentEmbed_StorageElements;
+
+/**
  * @brief Define the ContentEmbed_Stream structure type.
  *
  * Provides methods for Content Embed Kit.
@@ -107,6 +125,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_CreateDocumentByHmid(
  *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
+ *     {@link CE_ERR_INVALID_LINKING_PATH} - linking file is in application sandbox.
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
@@ -238,7 +257,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetRootStorage(
 ContentEmbed_ErrorCode OH_ContentEmbed_Document_Flush(const ContentEmbed_Document *document);
 
 /**
- * @brief Creates a new {@link ContentEmbed_Storage} instance.
+ * @brief Create a new {@link ContentEmbed_Storage} instance.
  * The caller is responsible for destroying the storage by calling
  * {@link OH_ContentEmbed_DestroyStorage} to avoid memory leaks.
  *
@@ -343,7 +362,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_DeleteEntry(
     ContentEmbed_Storage *parentStorage, const char *name);
 
 /**
- * @brief Destroy an {@link ContentEmbed_Storage} instance and reclaims the memory occupied by it.
+ * @brief Destroy an {@link ContentEmbed_Storage} instance and reclaims the memory occupied by the instance.
  *
  * @param storage Represents a pointer to an {@link ContentEmbed_Storage} instance.
  * After this call, the pointer becomes invalid and must not be used.
@@ -382,7 +401,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_Read(
  * @brief Write the buffer data to an {@link ContentEmbed_Stream} instance.
  *
  * @param stream Represents a pointer to an {@link ContentEmbed_Stream} instance.
- * @param data Represents the data to write to an {@link ContentEmbed_Stream} instance.
+ * @param data Represents the data write to an {@link ContentEmbed_Stream} instance.
  * @param length Represents the length of the data.
  * @param num Output parameter represents the num of the data that has been written.
  * @return Returns a specific error code.
@@ -402,7 +421,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_Write(
  * @brief Sets the current read position of the {@link ContentEmbed_Stream} to the specified offset.
  *
  * @param stream Represents a pointer to an {@link ContentEmbed_Stream} instance that will be modified.
- * @param position The offset in bytes from the beginning of the stream to which the position will be set.
+ * @param position The offset in bytes from the beginning of the stream to which the position should be set.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
@@ -438,9 +457,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_GetPosition(ContentEmbed_Stream *s
  * @brief Retrieves the size of the data in the {@link ContentEmbed_Stream}.
  *
  * This function attempts to determine the total size of the data available in the provided stream.
- * If successful, the size is written to the memory location pointed to by the 'size' parameter.
+ * If successful, the size is written to the memory location pointed to by the `size` parameter.
  *
- * @param stream Represents a pointer to an {@link ContentEmbed_Stream} instance from which
+ * @param stream Represents a pointer to the {@link ContentEmbed_Stream} instance from which
  *               the size is to be retrieved.
  * @param size Output parameter represents a pointer to a size_t variable where the size of the stream will be stored.
  * @return Returns a specific error code.
@@ -457,7 +476,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_GetPosition(ContentEmbed_Stream *s
 ContentEmbed_ErrorCode OH_ContentEmbed_Stream_GetSize(ContentEmbed_Stream *stream, size_t *size);
 
 /**
- * @brief Destroys an {@link ContentEmbed_Stream} instance and reclaims the memory occupied by it.
+ * @brief Destroy an {@link ContentEmbed_Stream} instance and reclaims the memory occupied by the instance.
  *
  * @param stream Represents a pointer to an {@link ContentEmbed_Stream} instance.
  * After this call, the pointer becomes invalid and must not be used.
@@ -472,7 +491,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_GetSize(ContentEmbed_Stream *strea
 ContentEmbed_ErrorCode OH_ContentEmbed_DestroyStream(ContentEmbed_Stream *stream);
 
 /**
- * @brief Destroys an {@link ContentEmbed_Document} instance and reclaims the memory occupied by it.
+ * @brief Destroy an {@link ContentEmbed_Document} instance and reclaims the memory occupied by the instance.
  *
  * @param document Represents a pointer to an {@link ContentEmbed_Document} instance.
  * After this call, the pointer becomes invalid and must not be used.

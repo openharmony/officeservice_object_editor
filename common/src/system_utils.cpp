@@ -34,6 +34,8 @@ namespace {
 constexpr int32_t HOURS_OF_ONE_DAY = 24;
 constexpr int32_t BEIJING_TIME_ZONE = 8;
 constexpr int32_t NUMBER_BASE = 10;
+const std::string FILE_MANAGER_AUTHORITY = "docs";
+const std::string MEDIA_AUTHORITY = "media";
 } // namespace
 
 // LCOV_EXCL_START
@@ -245,6 +247,13 @@ std::string GetPathFromUri(const std::string &uri)
 {
     AppFileService::ModuleFileUri::FileUri fileUri(uri);
     return fileUri.GetRealPath();
+}
+
+bool IsAppSandboxPath(const std::string &path)
+{
+    Uri uri(GetUriFromPath(path));
+    std::string authority = uri.GetAuthority();
+    return authority != FILE_MANAGER_AUTHORITY && authority != MEDIA_AUTHORITY;
 }
 
 std::string GetSubstrByPrefix(const std::string &str, const std::string &prefix)

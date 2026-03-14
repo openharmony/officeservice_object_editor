@@ -37,6 +37,7 @@ bool FileExtsHasFileExt(const std::string &fileExts, const std::string &fileExt)
 std::string UTCToBeijingTime(int64_t timestamp);
 std::string GetUriFromPath(const std::string &path);
 std::string GetPathFromUri(const std::string &uri);
+bool IsAppSandboxPath(const std::string &path);
 /* str形如 "prefixabcdef"，返回"abcdef"*/
 std::string GetSubstrByPrefix(const std::string &str, const std::string &prefix);
 /* str形如 "prefix123456"，num返回"123456"*/

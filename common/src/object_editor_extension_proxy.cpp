@@ -187,7 +187,7 @@ ErrCode ObjectEditorExtensionProxy::GetCapability(const std::string &documentId,
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "reply failed");
         return errCode;
     }
-    *bitmask = reply.ReadInt32();
+    *bitmask = reply.ReadUint32();
     return ERR_OK;
 }
 
@@ -239,7 +239,7 @@ ErrCode ObjectEditorExtensionProxy::Initial(std::unique_ptr<ObjectEditorDocument
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write document fail");
         return ERR_INVALID_DATA;
     }
-    if (!clientCallback) {
+    if (clientCallback == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "clientCallback is null");
         return ERR_INVALID_DATA;
     }

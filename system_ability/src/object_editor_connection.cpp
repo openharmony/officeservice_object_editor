@@ -23,7 +23,7 @@ namespace ObjectEditor {
 namespace {
 constexpr int32_t DEFAULT_USER_ID = -1;
 constexpr int32_t RETRY_TIMES = 1;
-constexpr int32_t MAX_CHECK_REMOTE_EDIT_STATUS_TIMES = 1;
+constexpr int32_t MAX_CHECK_REMOTE_EDITSTATUS_TIMES = 1;
 constexpr int32_t CONNECT_TIMEOUT = 3;
 }
 
@@ -54,17 +54,17 @@ void ObjectEditorConnection::OnAbilityConnectDone(const AppExecFwk::ElementName 
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "%{public}s/%{public}s/%{public}s, ret: %{public}d",
         element.GetBundleName().c_str(), element.GetModuleName().c_str(),
         element.GetAbilityName().c_str(), resultCode);
-    std::unique_lock<std::mutex> lock(extensionProxyMutex_);
+    std::unique_lock<std::mutex> uniqueProxyLock(extensionProxyMutex_);
     extensionProxy_ = remoteObject;
     isConnectReady_ = true;
     connectCondition_.notify_all();
     ResetStopExtensionTimer();
-    std::unique_lock<std::mutex> connectLock(connectionStatusCallbackMutex_);
-    if (connectionStatusCallback_ != nullptr) {
-        connectionStatusCallback_->OnConnectionStatusChanged(extensionProxy_,
+    std::unique_lock<std::mutex> callbackLock(callbackMutex_);
+    if (callback_ != nullptr) {
+        callback_->OnConnectionStatusChanged(extensionProxy_,
             ObjectEditorConnectionStatus::STATUS_CONNECTED);
     } else {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "connectionStatusCallback is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "callback is null");
     }
 }
 
@@ -73,48 +73,47 @@ void ObjectEditorConnection::OnAbilityDisconnectDone(const AppExecFwk::ElementNa
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "%{public}s/%{public}s/%{public}s, ret: %{public}d",
         element.GetBundleName().c_str(), element.GetModuleName().c_str(),
         element.GetAbilityName().c_str(), resultCode);
-    std::unique_lock<std::mutex> lock(extensionProxyMutex_);
-    std::unique_lock<std::mutex> connectLock(connectionStatusCallbackMutex_);
-    if (connectionStatusCallback_ != nullptr) {
-        connectionStatusCallback_->OnConnectionStatusChanged(extensionProxy_,
+    std::unique_lock<std::mutex> uniqueProxyLock(extensionProxyMutex_);
+    std::unique_lock<std::mutex> callbackLock(callbackMutex_);
+    if (callback_ != nullptr) {
+        callback_->OnConnectionStatusChanged(extensionProxy_,
             ObjectEditorConnectionStatus::STATUS_DISCONNECTED);
     } else {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "connectionStatusCallback is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "callback is null");
     }
     extensionProxy_ = nullptr;
     isConnectReady_ = false;
     connectCondition_.notify_all();
 }
 
-ObjectEditorManagerErrCode ObjectEditorConnection::StartConnect(
-    const std::string &bundleName, const std::string &abilityName,
-    const std::string &moduleName, sptr<IRemoteObject> &remoteObject)
+ObjectEditorManagerErrCode ObjectEditorConnection::StartConnect(const std::string &bundleName,
+    const std::string &abilityName, const std::string &moduleName, sptr<IRemoteObject> &remoteObject)
 {
     auto errCode = DoConnect(bundleName, abilityName, moduleName, remoteObject);
     if (errCode == ObjectEditorManagerErrCode::SA_CONNECT_ABILITY_SUCCEED) {
         return errCode;
     }
-    int32_t retryTimes = RETRY_TIMES;
+    int32_t currRetryTimes = RETRY_TIMES;
     do {
-        OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "retry connect, times: %{public}d", retryTimes);
+        OBJECT_EDITOR_LOGW(ObjectEditorDomain::SA, "retry connect, times: %{public}d", currRetryTimes);
         errCode = DoConnect(bundleName, abilityName, moduleName, remoteObject);
         if (errCode == ObjectEditorManagerErrCode::SA_CONNECT_ABILITY_SUCCEED) {
             break;
         }
-        retryTimes--;
-    } while (retryTimes > 0);
+        currRetryTimes--;
+    } while (currRetryTimes > 0);
     return errCode;
 }
 
 void ObjectEditorConnection::RegisterConnectionStatusCallback(
     const std::shared_ptr<IObjectEditorConnectionStatusCallback> callback)
 {
-    std::unique_lock<std::mutex> connectLock(connectionStatusCallbackMutex_);
+    std::unique_lock<std::mutex> callbackLock(callbackMutex_);
     if (callback == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "callback is null");
         return;
     }
-    connectionStatusCallback_ = callback;
+    callback_ = callback;
 }
 
 void ObjectEditorConnection::ResetStopExtensionTimer()
@@ -144,33 +143,32 @@ void ObjectEditorConnection::TimerThreadStopExtension()
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "in");
     while (!timerStopFlag_.load()) {
         std::unique_lock<std::mutex> lock(mutexTimer_);
-        OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "start wait %{public}ds", EXTENSION_STOP_TIME_S);
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "start wait %{public}ds", EXTENSION_STOP_TIME_S);
         auto waitResult = cvTimer_.wait_for(lock, std::chrono::seconds(EXTENSION_STOP_TIME_S),
-                                            [this] { return timerNotify_.load() || timerStopFlag_.load(); });
-        if (waitResult) {
-            timerNotify_.store(false);
-            OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "wait finish");
-            continue;
-        }
-        bool isScreenLocked = ObjectEditorEventManager::GetInstance().CheckIsScreenLocked();
-        if (isScreenLocked) {
-            if (curCheckEditStatusTimes >= MAX_CHECK_REMOTE_EDIT_STATUS_TIMES) {
-                OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "screen locked");
+                                            [this]() { return timerNotify_.load() || timerStopFlag_.load(); });
+        if (!waitResult) {
+            bool isScreenLocked = ObjectEditorEventManager::GetInstance().CheckIsScreenLocked();
+            if (isScreenLocked && curCheckEditStatusTimes_ >= MAX_CHECK_REMOTE_EDITSTATUS_TIMES) {
                 timerNotify_.store(false);
                 continue;
-            } else {
-                curCheckEditStatusTimes++;
             }
-        } else {
-            curCheckEditStatusTimes = 0;
+            if (isScreenLocked && curCheckEditStatusTimes_ < MAX_CHECK_REMOTE_EDITSTATUS_TIMES) {
+                curCheckEditStatusTimes_++;
+            }
+            if (!isScreenLocked) {
+                curCheckEditStatusTimes_ = 0;
+            }
+            bool isEditing = CheckRemoteEditStatus();
+            if (isEditing) {
+                OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "server is editing");
+                timerNotify_.store(false);
+                continue;
+            }
+            StopConnect();
+            break;
         }
-        bool isEditing = CheckRemoteEditStatus();
-        if (isEditing) {
-            OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "server is editing");
-            timerNotify_.store(false);
-            continue;
-        }
-        StopConnect();
+        timerNotify_.store(false);
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "wait finish");
     }
     timerRunning_.store(false);
 }
@@ -178,16 +176,15 @@ void ObjectEditorConnection::TimerThreadStopExtension()
 bool ObjectEditorConnection::CheckRemoteEditStatus()
 {
     bool isEditing = false;
-    std::unique_lock<std::mutex> lock(extensionProxyMutex_);
+    std::unique_lock<std::mutex> uniqueProxyLock(extensionProxyMutex_);
     if (extensionProxy_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "extensionProxy is null");
         return isEditing;
     }
-    sptr<ObjectEditorExtensionProxy> objectEditorExtensionProxy =
-        iface_cast<ObjectEditorExtensionProxy>(extensionProxy_);
+    auto objectEditorExtensionProxy = iface_cast<ObjectEditorExtensionProxy>(extensionProxy_);
     if (objectEditorExtensionProxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "objectEditorExtensionProxy is null");
-        return false;
+        return isEditing;
     }
     objectEditorExtensionProxy->GetExtensionEditStatus(isEditing);
     return isEditing;
@@ -210,7 +207,7 @@ ObjectEditorManagerErrCode ObjectEditorConnection::DoConnect(
     const std::string &bundleName, const std::string &abilityName,
     const std::string &moduleName, sptr<IRemoteObject> &remoteObject)
 {
-    std::unique_lock<std::mutex> lock(extensionProxyMutex_);
+    std::unique_lock<std::mutex> uniqueProxyLock(extensionProxyMutex_);
     if (extensionProxy_ != nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "%{public}s/%{public}s/%{public}s is connected",
             bundleName.c_str(), moduleName.c_str(), abilityName.c_str());
@@ -231,10 +228,10 @@ ObjectEditorManagerErrCode ObjectEditorConnection::DoConnect(
         return ObjectEditorManagerErrCode::SA_CONNECT_ABILITY_FAILED;
     }
     isConnectReady_ = false;
-    auto waitStatus = connectCondition_.wait_for(lock, std::chrono::seconds(CONNECT_TIMEOUT),
+    auto waitStatus = connectCondition_.wait_for(uniqueProxyLock, std::chrono::seconds(CONNECT_TIMEOUT),
         [this] { return isConnectReady_; });
     if (!waitStatus) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "%{public}s/%{public}s/%{public}s connect timeout",
+        OBJECT_EDITOR_LOGW(ObjectEditorDomain::SA, "%{public}s/%{public}s/%{public}s connect timeout",
             bundleName.c_str(), moduleName.c_str(), abilityName.c_str());
         return ObjectEditorManagerErrCode::SA_CONNECT_ABILITY_TIMEOUT;
     }
@@ -252,6 +249,7 @@ ObjectEditorManagerErrCode ObjectEditorConnection::DoConnect(
 
 ObjectEditorConnection::~ObjectEditorConnection()
 {
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "%{public}s", extensionBundleName_.c_str());
     if (timerThread_.joinable()) {
         timerStopFlag_.store(true);
         {
