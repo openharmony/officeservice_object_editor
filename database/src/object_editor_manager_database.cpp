@@ -28,6 +28,7 @@ namespace ObjectEditor {
 namespace {
 constexpr const char* APP_INDEX = "appIndex";
 const std::string TABLE_NAME = "object_editor_info";
+const std::string DB_DIR = "/data/service/el2/public/object_editor_service/database/";
 
 std::vector<std::string> GetDefaultDbSql()
 {
@@ -81,14 +82,13 @@ public:
         return NativeRdb::E_OK;
     }
 };
-}
+} // namespace
 
 IMPLEMENT_SINGLE_INSTANCE(ObjectEditorManagerDatabase);
 
 ObjectEditorManagerDatabase::ObjectEditorManagerDatabase()
     : store_(nullptr),
-    dbDir_("/data/service/el2/public/object_editor_service/database/" +
-        std::to_string(UserMgr::GetInstance().GetUserId())),
+    dbDir_(DB_DIR + std::to_string(UserMgr::GetInstance().GetUserId())),
     dbPath_(dbDir_ + "/object_editor.db"),
     bundleMgr_(nullptr),
     subscriber_(nullptr)
@@ -112,6 +112,15 @@ void ObjectEditorManagerDatabase::Init()
         OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "duplicate init");
         return;
     }
+    HandleOpenDb();
+    if (!InitSubscriber()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "init subscriber fail");
+        store_ = nullptr;
+    }
+}
+
+void ObjectEditorManagerDatabase::HandleOpenDb()
+{
     if (!(std::filesystem::exists(dbDir_) && std::filesystem::is_directory(dbDir_))) {
         OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "dbDir not exist");
         std::error_code ec;
@@ -139,13 +148,15 @@ void ObjectEditorManagerDatabase::Init()
     if (errCode != ObjectEditorManagerErrCode::SA_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "RefreshDb failed, errCode: %{public}d", errCode);
         store_ = nullptr;
-        return;
     }
-    if (!InitSubscriber()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "InitSubscriber failed");
-        store_ = nullptr;
-        return;
-    }
+}
+
+void ObjectEditorManagerDatabase::OnUserSwitched()
+{
+    dbDir_ = DB_DIR + std::to_string(UserMgr::GetInstance().GetUserId());
+    dbPath_ = dbDir_ + "/object_editor.db";
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "dbPath_: %{private}s", dbPath_.c_str());
+    HandleOpenDb();
 }
 
 bool ObjectEditorManagerDatabase::OpenDb()
@@ -170,7 +181,7 @@ bool ObjectEditorManagerDatabase::OpenDb()
         return false;
     }
     if (!CreateDefaultTable()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "CreateDefaultTable failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "create default table fail");
         store_ = nullptr;
         return false;
     }
@@ -183,7 +194,7 @@ bool ObjectEditorManagerDatabase::DeleteDb()
     store_ = nullptr;
     int32_t errCode = NativeRdb::RdbHelper::DeleteRdbStore(dbPath_);
     if (errCode != NativeRdb::E_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "DeleteRdbStore failed, errCode: %{public}d", errCode);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "delete db fail");
         return false;
     }
     return true;
@@ -208,6 +219,7 @@ bool ObjectEditorManagerDatabase::InitSubscriber()
     matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_CHANGED);
     matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_REMOVED);
     matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_FULLY_REMOVED);
+    matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USER_SWITCHED);
     EventFwk::CommonEventSubscribeInfo subscribeInfo(matchingSkills);
     subscriber_ = std::make_shared<DbPackageSubscriber>(subscribeInfo);
     if (subscriber_ == nullptr) {
@@ -260,7 +272,7 @@ void ObjectEditorManagerDatabase::AddBundle(const std::string &bundleName)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "bundleName: %{public}s", bundleName.c_str());
     if (store_ == nullptr) {
-        OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "store is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "store is null");
         return;
     }
     std::vector<NativeRdb::ValuesBucket> buckets;
@@ -290,7 +302,7 @@ void ObjectEditorManagerDatabase::RemoveBundle(const std::string &bundleName)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "bundleName: %{public}s", bundleName.c_str());
     if (store_ == nullptr) {
-        OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "store is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "store is null");
         return;
     }
     int32_t ret = store_->BeginTransaction();
@@ -314,7 +326,7 @@ void ObjectEditorManagerDatabase::UpdateBundle(const std::string &bundleName)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "bundleName: %{public}s", bundleName.c_str());
     if (store_ == nullptr) {
-        OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "store is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "store is null");
         return;
     }
     std::vector<NativeRdb::ValuesBucket> buckets;
@@ -403,10 +415,10 @@ bool ObjectEditorManagerDatabase::DoInsert(const std::vector<NativeRdb::ValuesBu
 
 bool ObjectEditorManagerDatabase::DoDeleteBundle(const std::string &bundleName)
 {
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DATABASE, "bundleName: %{public}s", bundleName.c_str());
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "bundleName: %{public}s", bundleName.c_str());
     ObjectEditorManagerResmgr::GetInstance().RemoveBundle(bundleName);
     if (store_ == nullptr) {
-        OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "store is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "store is null");
         return false;
     }
     NativeRdb::AbsRdbPredicates predicates(TABLE_NAME);
@@ -496,7 +508,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByH
     }
     if (!BuildObjectEditorFormat(*format, rowEntity, locale)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "BuildObjectEditorFormat failed");
-        return ObjectEditorManagerErrCode::SA_ALLOC_FAIL;
+        return ObjectEditorManagerErrCode::SA_DB_PARSE_FAIL;
     }
     return ObjectEditorManagerErrCode::SA_OK;
 }
@@ -725,6 +737,8 @@ void ObjectEditorManagerDatabase::DbPackageSubscriber::OnReceiveEvent(
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_REPLACED ||
         action == EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_CHANGED) {
         ObjectEditorManagerDatabase::GetInstance().UpdateBundle(bundleName);
+    } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USER_SWITCHED) {
+        ObjectEditorManagerDatabase::GetInstance().OnUserSwitched();
     }
 }
 // LCOV_EXCL_STOP

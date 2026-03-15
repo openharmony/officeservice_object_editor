@@ -22,7 +22,7 @@ namespace OHOS {
 namespace ObjectEditor {
 namespace SystemUtils {
 uint64_t GetFileSize(const std::string &filePath);
-std::string GetFileSuffix(const std::string &filePath);
+std::string GetFileSuffix(const std::string &filepath);
 std::string ReadFile(const std::string &filePath);
 std::vector<std::string> SplitString(const std::string &str, char pattern);
 void TrimString(std::string &inputStr);

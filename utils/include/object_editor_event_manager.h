@@ -26,7 +26,7 @@ namespace OHOS {
 namespace ObjectEditor {
 
 class ObjectEditorEventManager {
-DECLARE_SINGLE_INSTANCE(ObjectEditorEventManager)
+DECLARE_SINGLE_INSTANCE(ObjectEditorEventManager);
 public:
     void OnScreenLocked();
     void OnScreenUnlocked();
