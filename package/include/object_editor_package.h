@@ -15,7 +15,9 @@
 #ifndef OHOS_OBJECT_EDITOR_OBJECT_EDITOR_PACKAGE_H
 #define OHOS_OBJECT_EDITOR_OBJECT_EDITOR_PACKAGE_H
 
+#include "file_watcher.h"
 #include "iobject_editor_package.h"
+#include "package_data.h"
 
 namespace OHOS {
 namespace ObjectEditor {
@@ -27,14 +29,6 @@ struct ExtractionResult {
     std::string outputPath;
     bool success = false;
     std::string error;
-};
-
-struct Ole10NativeHeader {
-    uint32_t totalSize = 0;
-    uint32_t dataSize = 0;
-    uint16_t type = 0;
-    uint16_t unknown1 = 0;
-    wchar_t filename[260] = {0};
 };
 
 class ObjectEditorPackage : public IObjectEditorPackage {
@@ -57,11 +51,11 @@ public:
         const sptr<IObjectEditorClientCallback> &clientCb) override;
 
 private:
-    ExtractionResult ParseOle10NativeStream(Stream *stream);
-    ErrCode CreatePackageObject();
-
     std::shared_ptr<ObjectEditorDocument> document_ = nullptr;
     sptr<IObjectEditorClientCallback> clientCb_ = nullptr;
+    std::unique_ptr<PackageData> packageData_ = nullptr;
+    std::shared_ptr<FileWatcher> watcher_ = nullptr;
+    bool isEditing_ = false;
 };
 
 } // namespace ObjectEditor

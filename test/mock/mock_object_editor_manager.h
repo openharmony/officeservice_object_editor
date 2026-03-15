@@ -28,7 +28,8 @@ public:
         const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
         sptr<IRemoteObject> &oeExtensionRemoteObject,
         bool &isPackageExtension), (override));
-    MOCK_METHOD(ErrCode, StopObjectEditorExtension, (const sptr<IRemoteObject> &oeExtensionRemoteObject,
+    MOCK_METHOD(ErrCode, StopObjectEditorExtension, (const std::string &documentId,
+        const sptr<IRemoteObject> &oeExtensionRemoteObject,
         const bool &isPackageExtension), (override));
     MOCK_METHOD(ErrCode, GetHmidByFileExtension, (const std::string &hmid, std::string &fileExtension), (override));
     MOCK_METHOD(ErrCode, GetIconByHmid, (const std::string &hmid, std::string &resourceId), (override));
