@@ -29,7 +29,7 @@ public:
     MOCK_METHOD(ErrCode, OnUpdate, (std::unique_ptr<ObjectEditor::ObjectEditorDocument>& document), (override));
     MOCK_METHOD(ErrCode, OnError, (ContentEmbed_ErrorCode error), (override));
     MOCK_METHOD(ErrCode, OnStopEdit, (bool dataModified), (override));
-    MOCK_METHOD(ErrCode, OnExtensionStoped, (), (override));
+    MOCK_METHOD(ErrCode, OnExtensionStopped, (), (override));
 };
 }
 }

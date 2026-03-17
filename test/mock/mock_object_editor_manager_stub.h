@@ -31,6 +31,7 @@ public:
         sptr<IRemoteObject> &oeExtensionRemoteObject,
         bool &isPackageExtension), (override));
     MOCK_METHOD(ErrCode, StopObjectEditorExtension, (const sptr<IRemoteObject> &oeExtensionRemoteObject,
+        std::unique_ptr<ObjectEditorDocument> &document,
         const bool &isPackageExtension), (override));
     MOCK_METHOD(ErrCode, GetHmidByFileExtension, (const std::string &hmid, std::string &fileExtension), (override));
     MOCK_METHOD(ErrCode, GetIconByHmid, (const std::string &hmid, std::string &resourceId), (override));

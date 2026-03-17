@@ -24,14 +24,15 @@ namespace ObjectEditor {
 
 class MockObjectEditorService : public IObjectEditorService {
 public:
-    MOCK_METHOD(ErrCode, RegisterClientCB, (
+    MOCK_METHOD(ErrCode, GetSnapshot, (const std::string &documentId), (override));
+    MOCK_METHOD(ErrCode, DoEdit, (const std::string &documentId), (override));
+    MOCK_METHOD(ErrCode, GetEditStatus, (const std::string &documentId, bool *isEditing,
+        bool *isModified), (override));
+    MOCK_METHOD(ErrCode, GetCapability, (const std::string &documentId, uint32_t *bitmask), (override));
+    MOCK_METHOD(ErrCode, Close, (const std::string &documentId, bool &isAllObjectsRemoved), (override));
+    MOCK_METHOD(ErrCode, Initial, (std::unique_ptr<ObjectEditorDocument> document,
         const sptr<IObjectEditorClientCallback> &clientCb), (override));
-    MOCK_METHOD(ErrCode, GetSnapshot, (), (override));
-    MOCK_METHOD(ErrCode, DoEdit, (), (override));
-    MOCK_METHOD(ErrCode, GetEditStatus, (bool *isEditing, bool *isModified), (override));
-    MOCK_METHOD(ErrCode, GetCapability, (uint32_t *bitmask), (override));
-    MOCK_METHOD(ErrCode, Close, (), (override));
-    MOCK_METHOD(ErrCode, Initial, (std::unique_ptr<ObjectEditorDocument> document), (override));
+    MOCK_METHOD(ErrCode, GetExtensionEditStatus, (bool &isEditing), (override));
 };
 
 } // namespace ObjectEditor
