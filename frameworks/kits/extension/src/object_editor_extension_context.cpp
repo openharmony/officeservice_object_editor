@@ -38,7 +38,7 @@ ErrCode ObjectEditorExtensionContext::StartAbility(const AAFwk::Want &want) cons
     ErrCode err = objectEditorManagerProxy->StartUIAbility(innerWant);
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "ret=%{public}d", err);
     if (err != ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "StartAbility failed, err: %{public}d", err);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "failed, err: %{public}d", err);
     }
     return err;
 }
@@ -107,31 +107,28 @@ ErrCode ObjectEditorExtensionContext::StartAbilityWithAccount(
 bool ObjectEditorExtensionContext::ConnectAbilityWithAccount(
     const AAFwk::Want &want, int accountId, const sptr<AbilityConnectCallback> &connectCallback) const
 {
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "in");
     ErrCode ret = ConnectionManager::GetInstance().ConnectAbilityWithAccount(token_, want, accountId, connectCallback);
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "ConnectAbilityWithAccount ret: %{public}d", ret);
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "ret: %{public}d", ret);
     return ret == ERR_OK;
 }
 
 ErrCode ObjectEditorExtensionContext::DisconnectAbility(
     const AAFwk::Want &want, const sptr<AbilityConnectCallback> &connectCallback) const
 {
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "in");
     ErrCode ret = ConnectionManager::GetInstance().DisconnectAbility(token_, want.GetElement(), connectCallback);
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "DisconnectAbility ret: %{public}d", ret);
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "ret: %{public}d", ret);
     return ret;
 }
 
 ErrCode ObjectEditorExtensionContext::TerminateAbility()
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "in");
     auto abilityManagerClient = AAFwk::AbilityManagerClient::GetInstance();
     if (abilityManagerClient == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "abilityManagerClient is nullptr");
         return ERR_NO_INIT;
     }
     ErrCode ret = abilityManagerClient->TerminateAbility(token_, ILLEGAL_REQUEST_CODE, nullptr);
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "TerminateAbility ret: %{public}d", ret);
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "ret: %{public}d", ret);
     return ret;
 }
 

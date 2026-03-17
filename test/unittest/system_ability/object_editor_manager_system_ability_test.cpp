@@ -13,24 +13,36 @@
  * limitations under the License.
  */
 
-#ifndef MOCK_OBJECT_EDITOR_CLIENT_CALLBACK_H
-#define MOCK_OBJECT_EDITOR_CLIENT_CALLBACK_H
-
+#include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "iobject_editor_client_callback.h"
+#define protected public
+#include "mock_message_parcel.h"
+#include "object_editor_client_callback.h"
+#include "object_editor_document.h"
+#include "object_editor_manager_stub.h"
+#include "object_editor_manager_system_ability.h"
+#undef protected
+
+using namespace testing;
+using namespace testing::ext;
 
 namespace OHOS {
 namespace ObjectEditor {
 
-class MockObjectEditorClientCallback : public IObjectEditorClientCallback {
+class ObjectEditorManagerSystemAbilityTest : public ::testing::Test {
 public:
-    MOCK_METHOD(ErrCode, OnUpdate, (std::unique_ptr<ObjectEditorDocument>& document), (override));
-    MOCK_METHOD(ErrCode, OnError, (ContentEmbed_ErrorCode error), (override));
-    MOCK_METHOD(ErrCode, OnStopEdit, (bool dataModified), (override));
-    MOCK_METHOD(ErrCode, OnExtensionStopped, (), (override));
-    MOCK_METHOD(sptr<IRemoteObject>, AsObject, (), (override));
+    static void SetUpTestCase();
+    static void TearDownTestCase();
+    void SetUp();
+    void TearDown();
 };
 
+void ObjectEditorManagerSystemAbilityTest::SetUpTestCase() {}
+
+void ObjectEditorManagerSystemAbilityTest::TearDownTestCase() {}
+
+void ObjectEditorManagerSystemAbilityTest::SetUp() {}
+
+void ObjectEditorManagerSystemAbilityTest::TearDown() {}
 } // namespace ObjectEditor
 } // namespace OHOS
-#endif  // MOCK_OBJECT_EDITOR_CLIENT_CALLBACK_H

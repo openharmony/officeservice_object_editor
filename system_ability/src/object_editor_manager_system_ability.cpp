@@ -41,7 +41,6 @@
 #include "object_editor_manager_system_ability.h"
 #include "object_editor_manager_utils.h"
 #include "object_editor_permission_utils.h"
-
 #include "system_utils.h"
 #include "user_mgr.h"
 
@@ -278,8 +277,10 @@ ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::GetObjectEditorForm
     if (document.GetOperateType() == OperateType::CREATE_BY_FILE && document.GetOriFileUri().has_value()) {
         std::vector<std::unique_ptr<ObjectEditorFormat>> objectEditorFormats;
         std::string fileExt = SystemUtils::GetFileSuffix(document.GetOriFileUri().value());
-        errCode = ObjectEditorManagerDatabase::GetInstance().GetObjectEditorFormatsByFileExt(
-            fileExt, objectEditorFormats);
+        if (!fileExt.empty()) {
+            errCode = ObjectEditorManagerDatabase::GetInstance().GetObjectEditorFormatsByFileExt(
+                fileExt, objectEditorFormats);
+        }
         if (errCode == ObjectEditorManagerErrCode::SA_DB_QUERY_EMPTY) {
             OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "use package extension");
             isPackageExtension = true;
@@ -685,7 +686,7 @@ bool ObjectEditorManagerSystemAbility::ConnectObjectEditorExtAbility(
         return false;
     }
     if (remoteObject != nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "ability already connect");
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "ability already connect");
         return true;
     }
     sptr<ObjectEditorConnection> connection = sptr<ObjectEditorConnection>::MakeSptr();

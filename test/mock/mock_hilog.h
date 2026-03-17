@@ -19,7 +19,6 @@
 namespace OHOS {
 namespace ObjectEditor {
 std::string logMsg;
-
 void MyLogCallback(const LogType type, const LogLevel level, const unsigned int domain, const char *tag,
     const char *msg)
 {

@@ -339,6 +339,7 @@ ErrCode ObjectEditorClient::HandlePackage(
         }
         newDocument->SetOperateType(OperateType::EDIT);
     }
+    newDocument->SetDocumentId(document->GetDocumentId());
     if (document->GetTmpFileUri().has_value()) {
         newDocument->SetTmpFileUri(document->GetTmpFileUri().value());
     }

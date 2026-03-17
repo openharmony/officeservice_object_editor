@@ -22,7 +22,9 @@
 
 namespace OHOS {
 namespace ObjectEditor {
+namespace {
 constexpr int32_t DEFAULT_INVAL_VALUE = -1;
+}
 
 class CEAbilityManagerClient {
 public:
