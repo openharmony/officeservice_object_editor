@@ -207,9 +207,9 @@ ObjectEditorManagerErrCode ObjectEditorConnection::DoConnect(
     const std::string &bundleName, const std::string &abilityName,
     const std::string &moduleName, sptr<IRemoteObject> &remoteObject)
 {
-    std::unique_lock<std::mutex> uniqueProxyLock(extensionProxyMutex_);
+    std::unique_lock<std::mutex> uniqueConnectLock(extensionProxyMutex_);
     if (extensionProxy_ != nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "%{public}s/%{public}s/%{public}s is connected",
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "%{public}s/%{public}s/%{public}s is connected",
             bundleName.c_str(), moduleName.c_str(), abilityName.c_str());
         remoteObject = extensionProxy_;
         return ObjectEditorManagerErrCode::SA_CONNECT_ABILITY_SUCCEED;
@@ -222,13 +222,13 @@ ObjectEditorManagerErrCode ObjectEditorConnection::DoConnect(
     AAFwk::Want want;
     want.SetModuleName(moduleName);
     want.SetElementName(bundleName, abilityName);
-    int32_t ret = abilityManagerClient->ConnectExtensionAbility(want, this, DEFAULT_USER_ID);
+    auto ret = abilityManagerClient->ConnectExtensionAbility(want, this, DEFAULT_USER_ID);
     if (ret != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "ConnectExtensionAbility failed: %{public}d", ret);
         return ObjectEditorManagerErrCode::SA_CONNECT_ABILITY_FAILED;
     }
     isConnectReady_ = false;
-    auto waitStatus = connectCondition_.wait_for(uniqueProxyLock, std::chrono::seconds(CONNECT_TIMEOUT),
+    auto waitStatus = connectCondition_.wait_for(uniqueConnectLock, std::chrono::seconds(CONNECT_TIMEOUT),
         [this] { return isConnectReady_; });
     if (!waitStatus) {
         OBJECT_EDITOR_LOGW(ObjectEditorDomain::SA, "%{public}s/%{public}s/%{public}s connect timeout",
@@ -236,7 +236,7 @@ ObjectEditorManagerErrCode ObjectEditorConnection::DoConnect(
         return ObjectEditorManagerErrCode::SA_CONNECT_ABILITY_TIMEOUT;
     }
     if (extensionProxy_ == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "%{public}s/%{public}s/%{public}s connect failed",
+        OBJECT_EDITOR_LOGW(ObjectEditorDomain::SA, "%{public}s/%{public}s/%{public}s connect failed",
             bundleName.c_str(), moduleName.c_str(), abilityName.c_str());
         return ObjectEditorManagerErrCode::SA_CONNECT_ABILITY_FAILED;
     }
@@ -260,7 +260,6 @@ ObjectEditorConnection::~ObjectEditorConnection()
         timerThread_.join();
     }
 }
-
 // LCOV_EXCL_STOP
 } // namespace ObjectEditor
 } // namespace OHOS

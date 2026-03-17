@@ -57,6 +57,7 @@ constexpr float ERROR_FLOAT = -1.0f;
 constexpr int32_t ERROR_SIZE = 1;
 std::u16string remoteDescriptor = u"";
 sptr<IRemoteObject> g_remote = nullptr;
+std::string readStringResult = "readStringResult";
 }  // namespace
 
 namespace ObjectEditor {
@@ -462,6 +463,17 @@ bool Parcel::ReadString(std::string &val)
         g_ReadStringErrorCount--;
     }
     return true;
+}
+
+const std::string Parcel::ReadString()
+{
+    if (g_setReadStringErrorFlag && g_ReadStringErrorCount < 1) {
+        return "";
+    }
+    if (g_ReadStringErrorCount > 0) {
+        g_ReadStringErrorCount--;
+    }
+    return readStringResult;
 }
 
 const std::u16string Parcel::ReadString16()

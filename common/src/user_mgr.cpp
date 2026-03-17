@@ -32,10 +32,10 @@ constexpr int32_t DEFAULT_USER_ID = 100;
 std::vector<int32_t> GetAllActiveUserIds()
 {
     ErrCode result = -1;
-    std::vector<int32_t> userIds;
+    std::vector<int32_t> osAccountIds;
     int retry = 0;
-    while ((result != ERR_OK || userIds.empty()) && retry < MAX_RETRY) {
-        result = AccountSA::OsAccountManager::QueryActiveOsAccountIds(userIds);
+    while ((result != ERR_OK || osAccountIds.empty()) && retry < MAX_RETRY) {
+        result = AccountSA::OsAccountManager::QueryActiveOsAccountIds(osAccountIds);
         if (result != ERR_OK) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON,
                 "Query active os account ids failed, retry: %{public}d", retry);
@@ -43,7 +43,7 @@ std::vector<int32_t> GetAllActiveUserIds()
             retry++;
             continue;
         }
-        if (userIds.empty()) {
+        if (osAccountIds.empty()) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON,
                 "Query active os account ids failed, retry: %{public}d", retry);
             sleep(RETRY_INTERVAL_SECOND);
@@ -51,28 +51,22 @@ std::vector<int32_t> GetAllActiveUserIds()
             continue;
         }
     }
-    std::string osAccountIdsStr = "";
-    for (auto userId : userIds) {
-        osAccountIdsStr.append(std::to_string(userId) + ",");
-    }
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::COMMON, "GetAllActiveUserIds success");
-    return userIds;
+    return osAccountIds;
 }
 
 int32_t GetCurrentUserId()
 {
-    std::vector<int32_t> userIds = GetAllActiveUserIds();
-    if (userIds.empty()) {
+    std::vector<int32_t> osAccountIds = GetAllActiveUserIds();
+    if (osAccountIds.empty()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Get all active user ids failed");
         return DEFAULT_USER_ID;
     }
-    int32_t currentUserId = userIds[0];
-    if (currentUserId <= DEFAULT_USER_ID) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Current user id is invalid");
+    int32_t currentOsAccount = osAccountIds[0];
+    if (currentOsAccount <= DEFAULT_USER_ID) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Current os account id is invalid");
         return DEFAULT_USER_ID;
     }
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::COMMON, "GetCurrentUserId success");
-    return currentUserId;
+    return currentOsAccount;
 }
 } // namespace
 
@@ -92,6 +86,7 @@ void UserMgr::SetNewUserId(int32_t newUserId)
 int32_t UserMgr::GetUserId()
 {
     std::shared_lock<std::shared_mutex> lock(mtx_);
+    userId_ = GetCurrentUserId();
     return userId_;
 }
 // LCOV_EXCL_STOP

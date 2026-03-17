@@ -78,6 +78,9 @@ private:
         std::set<std::string> &oldBundles) const;
     ObjectEditorManagerErrCode RefreshDb();
 
+    void HandleOpenDb();
+    void OnUserSwitched();
+
 private:
     class DbPackageSubscriber : public EventFwk::CommonEventSubscriber {
     public:
@@ -88,8 +91,8 @@ private:
     };
 
     std::shared_ptr<OHOS::NativeRdb::RdbStore> store_;
-    const std::string dbDir_;
-    const std::string dbPath_;
+    std::string dbDir_;
+    std::string dbPath_;
     sptr<AppExecFwk::IBundleMgr> bundleMgr_;
     std::shared_ptr<DbPackageSubscriber> subscriber_;
 };

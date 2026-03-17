@@ -34,7 +34,7 @@ struct ObjectEditorFormat : public Parcelable {
     std::string fileExts;
 
     std::shared_ptr<Media::PixelMap> pIconPixelMap;
-    int64_t createTime;
+    int64_t createTime = 0;
 
     virtual bool Marshalling(Parcel &parcel) const override;
     static ObjectEditorFormat *Unmarshalling(Parcel &parcel);
