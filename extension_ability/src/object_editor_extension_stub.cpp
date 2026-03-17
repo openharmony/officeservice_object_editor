@@ -59,7 +59,7 @@ int32_t ObjectEditorExtensionStub::OnRemoteRequestInner(
         case IObjectEditorServiceIpcCode::COMMAND_CLOSE:
             return HandleExtensionClose(data, reply);
         case IObjectEditorServiceIpcCode::COMMAND_GET_EXTENSION_EDITING_STATUS:
-            return HandleExtensionGetEditStatus(data, reply);
+            return HandleExtensionGetExtensionEditStatus(data, reply);
         default:
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
     }

@@ -34,6 +34,7 @@ namespace {
 constexpr int32_t HOURS_OF_ONE_DAY = 24;
 constexpr int32_t BEIJING_TIME_ZONE = 8;
 constexpr int32_t NUMBER_BASE = 10;
+constexpr int32_t TIME_FORMAT_SIZE = 64;
 const std::string FILE_MANAGER_AUTHORITY = "docs";
 const std::string MEDIA_AUTHORITY = "media";
 } // namespace
@@ -55,9 +56,9 @@ uint64_t GetFileSize(const std::string &filePath)
     return fileSize;
 }
 
-std::string ReadFile(const std::string &filePath)
+std::string ReadFile(const std::string &filepath)
 {
-    std::filesystem::path path(filePath);
+    std::filesystem::path path(filepath);
     std::string directory = path.parent_path().string() + "/";
     std::string filename = path.filename().string();
 
@@ -77,10 +78,10 @@ std::string ReadFile(const std::string &filePath)
             canonicalFilePath.c_str());
         return "";
     }
-    std::stringstream infile;
-    infile << in.rdbuf();
+    std::stringstream inStr;
+    inStr << in.rdbuf();
     in.close();
-    return infile.str();
+    return inStr.str();
 }
 
 std::vector<std::string> SplitString(const std::string &str, char pattern)
@@ -211,8 +212,8 @@ std::string UTCToBeijingTime(int64_t utcTime)
         timePtr->tm_hour -= HOURS_OF_ONE_DAY;
         timePtr->tm_mday++;
     }
-    char buffer[64] = {0x00};
-    if (strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timePtr) == 0) {
+    char buffer[TIME_FORMAT_SIZE] = {0x00};
+    if (strftime(buffer, TIME_FORMAT_SIZE, "%Y-%m-%d %H:%M:%S", timePtr) == 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "strftime failed, utcTime: %{private}s", ctime(&timeValue));
         return "";
     }
@@ -245,13 +246,12 @@ std::string GetUriFromPath(const std::string &path)
 
 std::string GetPathFromUri(const std::string &uri)
 {
-    AppFileService::ModuleFileUri::FileUri fileUri(uri);
-    return fileUri.GetRealPath();
+    return AppFileService::ModuleFileUri::FileUri(uri).GetRealPath();
 }
 
 bool IsAppSandboxPath(const std::string &path)
 {
-    Uri uri(GetUriFromPath(path));
+    Uri uri(SystemUtils::GetUriFromPath(path));
     std::string authority = uri.GetAuthority();
     return authority != FILE_MANAGER_AUTHORITY && authority != MEDIA_AUTHORITY;
 }

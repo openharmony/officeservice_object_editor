@@ -1,0 +1,135 @@
+# Copyright (c) Huawei Device Co., Ltd. 2026-2026. All rights reserved.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# Description: oe service test build.gn file
+
+import("//build/test.gni")
+import("//foundation/officeservice/object_editor/object_editor.gni")
+
+group("system_ability_unittest") {
+  testonly = true
+
+  deps = [
+    ":object_editor_manager_stub_test",
+    ":object_editor_manager_system_ability_test",
+  ]
+}
+
+ohos_unittest("object_editor_manager_stub_test") {
+  module_out_path = "object_editor/unittest"
+  sources = [
+    "object_editor_manager_stub_test.cpp",
+    "${object_editor_path}/test/mock/message_parcel/mock_message_parcel.cpp",
+  ]
+  include_dirs = [
+    "${object_editor_path}/system_ability/include",
+    "${object_editor_path}/interfaces/innerkits/include",
+    "${object_editor_path}/document/include",
+    "${object_editor_path}/utils/include",
+    "${object_editor_path}/utils/include/dfx",
+    "${object_editor_path}/common/include",
+    "${object_editor_path}/database/include",
+    "${object_editor_path}/interfaces/kits/c/",
+    "${object_editor_path}/test/mock/",
+    "${object_editor_path}/test/mock/message_parcel",
+  ]
+  configs = [
+    "${object_editor_path}/resources/config/build:coverage_flags",
+    "${object_editor_path}/resources/config/build:testcase_flags",
+  ]
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/system_ability:content_embed_service",
+  ]
+  external_deps = [
+    "c_utils:utils",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+    "hilog:libhilog",
+    "relational_store:native_rdb",
+    "ability_runtime:uri_permission_mgr",
+    "ability_runtime:ability_connect_callback_stub",
+    "ability_runtime:ability_manager",
+    "ability_base:zuri",
+    "ability_base:want",
+    "ability_runtime:wantagent_innerkits",
+    "os_account:os_account_innerkits",
+    "cJSON:cjson",
+    "bundle_framework:bundle_napi_common",
+    "napi:ace_napi",
+    "udmf:utd_client",
+    "app_file_service:fileuri_native",
+    "image_framework:image_native",
+    "resource_management:global_resmgr",
+    "access_token:libaccesstoken_sdk",
+    "common_event_service:cesfwk_innerkits",
+    "googletest:gmock",
+  ]
+  part_name = "object_editor"
+  subsystem_name = "officeservice"
+}
+
+ohos_unittest("object_editor_manager_system_ability_test") {
+  module_out_path = "object_editor/unittest"
+  sources = [
+    "object_editor_manager_system_ability_test.cpp",
+    "${object_editor_path}/test/mock/ability_manager_client/mock_ability_manager_client.cpp",
+  ]
+  include_dirs = [
+    "${object_editor_path}/system_ability/include",
+    "${object_editor_path}/interfaces/innerkits/include",
+    "${object_editor_path}/document/include",
+    "${object_editor_path}/utils/include",
+    "${object_editor_path}/utils/include/dfx",
+    "${object_editor_path}/common/include",
+    "${object_editor_path}/database/include",
+    "${object_editor_path}/interfaces/kits/c/",
+    "${object_editor_path}/test/mock/",
+    "${object_editor_path}/test/mock/message_parcel",
+  ]
+  configs = [
+    "${object_editor_path}/resources/config/build:coverage_flags",
+    "${object_editor_path}/resources/config/build:testcase_flags",
+  ]
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/system_ability:content_embed_service",
+  ]
+  external_deps = [
+    "c_utils:utils",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+    "hilog:libhilog",
+    "relational_store:native_rdb",
+    "ability_runtime:uri_permission_mgr",
+    "ability_runtime:ability_connect_callback_stub",
+    "ability_runtime:ability_manager",
+    "ability_base:zuri",
+    "ability_base:want",
+    "ability_runtime:wantagent_innerkits",
+    "os_account:os_account_innerkits",
+    "cJSON:cjson",
+    "bundle_framework:bundle_napi_common",
+    "napi:ace_napi",
+    "udmf:utd_client",
+    "app_file_service:fileuri_native",
+    "image_framework:image_native",
+    "resource_management:global_resmgr",
+    "access_token:libaccesstoken_sdk",
+    "common_event_service:cesfwk_innerkits",
+    "googletest:gmock",
+  ]
+  part_name = "object_editor"
+  subsystem_name = "officeservice"
+}

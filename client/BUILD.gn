@@ -56,8 +56,10 @@ ohos_shared_library("content_embed_client") {
         "${object_editor_path}/common/src/object_editor_config.cpp",
         "${object_editor_path}/common/src/object_editor_format.cpp",
         "${object_editor_path}/common/src/object_editor_extension_proxy.cpp",
-        "${object_editor_path}/package/src/object_editor_package.cpp",
         "${object_editor_path}/common/src/user_mgr.cpp",
+        "${object_editor_path}/package/src/object_editor_package.cpp",
+        "${object_editor_path}/package/src/file_watcher.cpp",
+        "${object_editor_path}/package/src/package_data.cpp",
     ]
 
     deps = [
