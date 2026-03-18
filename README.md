@@ -442,7 +442,7 @@ void ObjectEditorClientDemo()
 开发者需要新增一个二级配置json文件，用于启用OE配置。该json文件需要开发者自行创建，并放置在工程目录下。推荐的文件名及路径为`resources/base/profile/content_embed_config.json` 。</br>
 该json文件中需配置`hmid`，它是**OE文档**的系统可识别标识符。
 - 如果OE服务端应用在其它操作系统上也有相同功能，建议复用已在其它系统中使用的ID；
-- 如果OE服务端应用该功能仅在OpenHarmony系统上提供，则建议使用配套提供的UUID工具生成新的ID。
+- 如果OE服务端应用该功能仅在OpenHarmony系统上提供，则建议使用系统自带的“终端”工具，通过`uuidgen`命令生成新的ID。
   
 以下是content_embed_config.json文件配置示例：
 ```
