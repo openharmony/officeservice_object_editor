@@ -8,7 +8,6 @@
 
 `object_editor` 是一个可选系统能力，应用需要通过 SystemCapability.ContentEmbed.ObjectEditor [**判断OpenHarmony设备是否支持本能力**](https://gitcode.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/common/syscap__ndk_8h.md)。
 
-
 ## 术语与缩略语
 1. **OE**：object editor缩写，代表OpenHarmony提供的对象编辑功能框架与技术，支持应用间文档的嵌入与协同编辑。
 2. **OE对象**：指开发者用于实现对象嵌入和编辑的程序对象，通常表示某个**OE Extension**在客户端的代理实例，用于与服务端交互。
