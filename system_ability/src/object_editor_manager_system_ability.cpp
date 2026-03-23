@@ -69,7 +69,7 @@ std::string ObjectEditorManagerSystemAbility::permissionClient_("ohos.permission
 ObjectEditorManagerSystemAbility::ObjectEditorManagerSystemAbility()
     : SystemAbility(OBJECT_EDITOR_SERVICE_SA_ID, true)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "constructor");
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "wangxf constructor");
     ReadDiversionsJsonFile();
     ObjectEditorManagerDatabase::GetInstance().Init();
     InitScreenChangedCommonEventSubscriber();
