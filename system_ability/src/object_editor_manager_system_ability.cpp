@@ -104,7 +104,7 @@ void ObjectEditorManagerSystemAbility::ResetScreenChangedCommonEventSubscriber()
 
 void ObjectEditorManagerSystemAbility::OnStart()
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "in");
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "wangxf in");
     if (state_ == ServiceRunningState::STATE_RUNNING) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "already running");
         return;
