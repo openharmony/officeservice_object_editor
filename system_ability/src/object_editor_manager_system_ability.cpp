@@ -137,7 +137,7 @@ int32_t ObjectEditorManagerSystemAbility::OnIdle(const SystemAbilityOnDemandReas
 
 void ObjectEditorManagerSystemAbility::ReadDiversionsJsonFile()
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "in");
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "wangxf in");
     std::ifstream inFile(DIVERSION_MAP_JSON_PATH);
     if (!inFile.is_open()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "open file failed");
