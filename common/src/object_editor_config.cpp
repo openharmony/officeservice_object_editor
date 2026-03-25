@@ -24,9 +24,6 @@
 
 namespace OHOS {
 namespace ObjectEditor {
-namespace {
-constexpr const char *IS_SUPPORT_OBJECT_EDITOR = "const.object_editor.object_editor_enable";
-}
 // LCOV_EXCL_START
 IMPLEMENT_SINGLE_INSTANCE(ObjectEditorConfig);
 
