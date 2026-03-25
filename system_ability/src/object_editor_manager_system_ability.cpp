@@ -69,7 +69,7 @@ std::string ObjectEditorManagerSystemAbility::permissionClient_("ohos.permission
 ObjectEditorManagerSystemAbility::ObjectEditorManagerSystemAbility()
     : SystemAbility(OBJECT_EDITOR_SERVICE_SA_ID, true)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "wangxf constructor");
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "constructor");
     ReadDiversionsJsonFile();
     ObjectEditorManagerDatabase::GetInstance().Init();
     InitScreenChangedCommonEventSubscriber();
@@ -104,7 +104,7 @@ void ObjectEditorManagerSystemAbility::ResetScreenChangedCommonEventSubscriber()
 
 void ObjectEditorManagerSystemAbility::OnStart()
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "wangxf in");
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "in");
     if (state_ == ServiceRunningState::STATE_RUNNING) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "already running");
         return;
@@ -137,7 +137,7 @@ int32_t ObjectEditorManagerSystemAbility::OnIdle(const SystemAbilityOnDemandReas
 
 void ObjectEditorManagerSystemAbility::ReadDiversionsJsonFile()
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "wangxf in");
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "in");
     std::ifstream inFile(DIVERSION_MAP_JSON_PATH);
     if (!inFile.is_open()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "open file failed");
