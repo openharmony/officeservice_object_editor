@@ -505,6 +505,235 @@ ContentEmbed_ErrorCode OH_ContentEmbed_DestroyStream(ContentEmbed_Stream *stream
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_DestroyDocument(ContentEmbed_Document *document);
 
+/**
+ * @brief Gets the hmid of the {@link ContentEmbed_Storage}.
+ *
+ * @param storage Represents a pointer to an {@link ContentEmbed_Storage} instance.
+ * @param hmid Output parameter represents a pointer to a char array where the hmid will be stored.
+ * @param hmidSize Represents the size of the hmid buffer.
+ * @return Returns a specific error code.
+ *     {@link CE_ERR_OK} - success.
+ *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
+ *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
+ *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
+ * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
+ * @since 24
+ */
+ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetHmid(ContentEmbed_Storage *storage,
+    char *hmid, size_t hmidSize);
+
+/**
+ * @brief Sets the hmid of the {@link ContentEmbed_Storage}.
+ *
+ * @param storage Represents a pointer to an {@link ContentEmbed_Storage} instance.
+ * @param hmid Input parameter represents a pointer to a char array containing the hmid to be set.
+ * @param hmidSize Represents the size of the hmid buffer.
+ * @return Returns a specific error code.
+ *     {@link CE_ERR_OK} - success.
+ *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
+ *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
+ *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
+ * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
+ * @since 24
+ */
+ContentEmbed_ErrorCode OH_ContentEmbed_Storage_SetHmid(ContentEmbed_Storage *storage,
+    char *hmid, size_t hmidSize);
+
+/**
+ * @brief Creates an {@link ContentEmbed_StorageElements} instance and initializes it.
+ *
+ * @param storageElements Output parameter represents a pointer to a pointer
+ *     to an {@link ContentEmbed_StorageElements} instance.
+ * After this call, the pointer to the instance is stored in the 'storageElements' parameter.
+ * @return Returns a specific error code.
+ *     {@link CE_ERR_OK} - success.
+ *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
+ *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
+ *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
+ * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
+ * @since 24
+ */
+ContentEmbed_ErrorCode OH_ContentEmbed_StorageElements_Create(ContentEmbed_StorageElements **storageElements);
+
+/**
+ * @brief Destroys an {@link ContentEmbed_StorageElements} instance and reclaims the memory occupied by it.
+ *
+ * @param storageElements Represents a pointer to a pointer to an {@link ContentEmbed_StorageElements} instance.
+ * After this call, the pointer to the instance becomes invalid and must not be used.
+ * @return Returns a specific error code.
+ *     {@link CE_ERR_OK} - success.
+ *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
+ *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
+ *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
+ * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
+ * @since 24
+ */
+ContentEmbed_ErrorCode OH_ContentEmbed_StorageElements_Destroy(ContentEmbed_StorageElements *storageElements);
+
+/**
+ * @brief Gets the {@link ContentEmbed_StorageElements} of the {@link ContentEmbed_Storage}.
+ *
+ * @param storage Represents a pointer to an {@link ContentEmbed_Storage} instance.
+ * @param storageElements Output parameter represents a pointer to an {@link ContentEmbed_StorageElements} instance.
+ * After this call, the pointer to the instance is stored in the 'storageElements' parameter.
+ * @return Returns a specific error code.
+ *     {@link CE_ERR_OK} - success.
+ *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
+ *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
+ *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
+ * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
+ * @since 24
+ */
+ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetElements(const ContentEmbed_Storage *storage,
+    ContentEmbed_StorageElements *storageElements);
+
+/**
+ * @brief Gets the count of elements in the {@link ContentEmbed_StorageElements}.
+ *
+ * @param storageElements Represents a pointer to an {@link ContentEmbed_StorageElements} instance.
+ * @param count Output parameter represents a pointer to a size_t variable where the count will be stored.
+ * After this call, the count of elements in the 'storageElements' instance is stored in the 'count' parameter.
+ * @return Returns a specific error code.
+ *     {@link CE_ERR_OK} - success.
+ *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
+ *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
+ *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
+ * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
+ * @since 24
+ */
+ContentEmbed_ErrorCode OH_ContentEmbed_StorageElements_GetCount(const ContentEmbed_StorageElements *storageElements,
+    size_t *count);
+
+/**
+ * @brief Gets the element at the specified index in the {@link ContentEmbed_StorageElements}.
+ *
+ * @param storageElements Represents a pointer to an {@link ContentEmbed_StorageElements} instance.
+ * @param index Represents the index of the element to be retrieved.
+ * @param storageElement Output parameter represents a pointer to an {@link ContentEmbed_StorageElement} instance.
+ * After this call, the pointer to the instance is stored in the 'storageElement' parameter.
+ * @return Returns a specific error code.
+ *     {@link CE_ERR_OK} - success.
+ *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
+ *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
+ *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
+ * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
+ * @since 24
+ */
+ContentEmbed_ErrorCode OH_ContentEmbed_StorageElements_GetElement(const ContentEmbed_StorageElements *storageElements,
+    size_t index, ContentEmbed_StorageElement **storageElement);
+
+/**
+ * @brief Gets the name of the {@link ContentEmbed_StorageElement}.
+ *
+ * @param storageElement Represents a pointer to an {@link ContentEmbed_StorageElement} instance.
+ * @param name Output parameter represents a pointer to a character array where the name will be stored.
+ * After this call, the name of the 'storageElement' instance is stored in the 'name' parameter.
+ * @param nameSize Represents the size of the 'name' buffer.
+ * @return Returns a specific error code.
+ *     {@link CE_ERR_OK} - success.
+ *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
+ *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
+ *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
+ * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
+ * @since 24
+ */
+ContentEmbed_ErrorCode OH_ContentEmbed_StorageElement_GetName(const ContentEmbed_StorageElement *storageElement,
+    char *name, size_t nameSize);
+
+/**
+ * @brief Get element create time.
+ *
+ * @param element Represents a pointer to an {@link ContentEmbed_StorageElement} instance.
+ * @param ctime Out param, represents the create time of element.
+ * @return Returns a specific error code.
+ *     {@link CE_ERR_OK} - success.
+ *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
+ *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
+ *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
+ * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
+ * @since 24
+ */
+ContentEmbed_ErrorCode OH_ContentEmbed_StorageElement_GetCTime(
+    const ContentEmbed_StorageElement *element, uint64_t *ctime);
+
+/**
+ * @brief Get element modify time.
+ *
+ * @param element Represents a pointer to an {@link ContentEmbed_StorageElement} instance.
+ * @param mtime Out param, represents the modify time of element.
+ * @return Returns a specific error code.
+ *     {@link CE_ERR_OK} - success.
+ *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
+ *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
+ *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
+ * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
+ * @since 24
+ */
+ContentEmbed_ErrorCode OH_ContentEmbed_StorageElement_GetMTime(
+    const ContentEmbed_StorageElement *element, uint64_t *mtime);
+
+/**
+ * @brief Checks whether the {@link ContentEmbed_StorageElement} is a storage.
+ *
+ * @param storageElement Represents a pointer to an {@link ContentEmbed_StorageElement} instance.
+ * @param isStorage Output parameter represents a pointer to a boolean variable where the result will be stored.
+ * After this call, the result of the check is stored in the 'isStorage' parameter.
+ * @return Returns a specific error code.
+ *     {@link CE_ERR_OK} - success.
+ *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
+ *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
+ *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
+ * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
+ * @since 24
+ */
+ContentEmbed_ErrorCode OH_ContentEmbed_StorageElement_IsStorage(const ContentEmbed_StorageElement *storageElement,
+    bool *isStorage);
+
+/**
+ * @brief Determine if an element is a stream type.
+ *
+ * @param element Represents a pointer to an {@link ContentEmbed_StorageElement} instance.
+ * @param isStream Out param, represents it is true if the element is a stream type.
+ * @return Returns a specific error code.
+ *     {@link CE_ERR_OK} - success.
+ *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
+ *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
+ *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
+ * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
+ * @since 24
+ */
+ContentEmbed_ErrorCode OH_ContentEmbed_StorageElement_IsStream(
+    const ContentEmbed_StorageElement *element, bool *isStream);
+
+/**
+ * @brief Copies the content of the source {@link ContentEmbed_Storage} to the destination {@link ContentEmbed_Storage}.
+ *
+ * @param srcStorage Represents a pointer to the source {@link ContentEmbed_Storage} instance.
+ * @param destStorage Represents a pointer to the destination {@link ContentEmbed_Storage} instance.
+ * @return Returns a specific error code.
+ *     {@link CE_ERR_OK} - success.
+ *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
+ *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
+ *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
+ * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
+ * @since 24
+ */
+ContentEmbed_ErrorCode OH_ContentEmbed_Storage_CopyTo(ContentEmbed_Storage *srcStorage,
+    ContentEmbed_Storage *destStorage);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

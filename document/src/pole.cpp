@@ -104,6 +104,9 @@ DirEntry *Storage::GetStorage(const std::string &path, bool create)
     created->SetChild(DIR_ENTRY_END);
     created->SetSize(0);
     created->SetStart(DIR_ENTRY_END);
+    if (created->Type() == DirEntry::EntryType::DIR) {
+        created->SetCreationTime(GetCurrentFileTime());
+    }
     return created->IsDir() ? created : nullptr;
 }
 
