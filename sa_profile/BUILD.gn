@@ -16,6 +16,6 @@ import("//build/ohos/sa_profile/sa_profile.gni")
 
 # ohos_sa_profile：预置xml到/system/profile/object_editor_service.json
 ohos_sa_profile("object_editor_service_sa_profile") {
-    sources = [ "66528.json" ]
+    sources = [ "8650.json" ]
     part_name = "object_editor"
 }
