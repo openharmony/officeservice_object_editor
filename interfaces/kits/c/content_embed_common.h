@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ * Copyright (c) 2026-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -127,6 +127,11 @@ typedef enum ContentEmbed_ErrorCode {
     CE_ERR_INVALID_LINKING_PATH = 35300012,
 } ContentEmbed_ErrorCode;
 
+/**
+ * @brief The value type of capability code.
+ *
+ * @since 24
+ */
 typedef enum ContentEmbed_CapabilityCode {
     /**
      * @brief The code means application supports document snapshot capture.

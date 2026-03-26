@@ -87,12 +87,12 @@ private:
     void InitLoadState();
     bool WaitLoadStateChange();
     ErrCode PrepareFiles(const std::unique_ptr<ObjectEditorDocument> &document);
-    ErrCode CleanupTempFiles(const std::unique_ptr<ObjectEditorDocument> &document);
-    std::string GetTempDir(const std::unique_ptr<ObjectEditorDocument> &document);
     ErrCode HandlePackage(
         const std::unique_ptr<ObjectEditorDocument> &document,
         const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
         sptr<IObjectEditorService> &oeExtensionRemoteObject);
+    ErrCode CleanupTempFiles(const std::unique_ptr<ObjectEditorDocument> &document);
+    std::string GetTempDir(const std::unique_ptr<ObjectEditorDocument> &document);
     std::string GenRandomUuid();
 
     std::mutex proxyMutex_;

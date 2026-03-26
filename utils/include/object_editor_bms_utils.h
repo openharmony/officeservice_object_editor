@@ -13,19 +13,20 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_OBJECT_EDITOR_PERMISSION_UTILS_H
-#define OHOS_OBJECT_EDITOR_PERMISSION_UTILS_H
+#ifndef OHOS_OBJECT_EDITOR_BMS_UTILS_H
+#define OHOS_OBJECT_EDITOR_BMS_UTILS_H
 
-#include <string>
+#include "want.h"
 
 namespace OHOS {
 namespace ObjectEditor {
 
-class ObjectEditorPermissionUtils {
+class ObjectEditorBmsUtils {
 public:
-    static bool CheckCallingPermission(const std::string &permission);
-    static bool CheckRequestPermission(const std::string &bundleName, const std::string &permission);
+    static bool QueryAbilityInfo(const AAFwk::Want &want, AppExecFwk::AbilityInfo &abilityInfo);
+    static sptr<AppExecFwk::IBundleMgr> GetBundleMgr();
 };
 } // namespace ObjectEditor
 } // namespace OHOS
-#endif // OHOS_OBJECT_EDITOR_PERMISSION_UTILS_H
+
+#endif // OHOS_OBJECT_EDITOR_BMS_UTILS_H

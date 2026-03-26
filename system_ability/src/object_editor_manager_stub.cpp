@@ -110,7 +110,6 @@ int32_t ObjectEditorManagerStub::HandleStartObjectEditorExtension(MessageParcel 
     return ERR_NONE;
 }
 
-
 int32_t ObjectEditorManagerStub::HandleStopObjectEditorExtension(MessageParcel &data, MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::SA, "call");
