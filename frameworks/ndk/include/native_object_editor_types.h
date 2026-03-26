@@ -81,6 +81,8 @@ struct ContentEmbed_StorageElement {
     std::string name;
     bool isStorage = false;
     size_t size = 0;
+    uint64_t creationTime = 0;
+    uint64_t modifiedTime = 0;
 };
 
 struct ContentEmbed_StorageElements {
