@@ -14,6 +14,16 @@
             "project":"build",
             "path":"build",
             "pr_url":"https://gitcode.com/openharmony/build/pull/6525"
+        },
+        {
+            "project":"hiviewdfx_hidumper",
+            "path":"hiviewdfx_hidumper",
+            "pr_url":"https://gitcode.com/openharmony/hiviewdfx_hidumper/pull/726"
+        },
+        {
+            "project":"systemabilitymgr_samgr",
+            "path":"systemabilitymgr_samgr",
+            "pr_url":"https://gitcode.com/openharmony/systemabilitymgr_samgr/pull/1430"
         }
     ]
 }
