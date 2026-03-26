@@ -13,7 +13,7 @@
 # Description: oe service test build.gn file
 
 import("//build/test.gni")
-import("//vendor/huawei/domains/officeservice/object_editor_service/object_editor.gni")
+import("//foundation/officeservice/object_editor/object_editor.gni")
 module_output_path = "object_editor/fuzztest"
 
 config("fuzzer_config") {
@@ -51,23 +51,13 @@ ohos_fuzztest("OHContentEmbedGetContentEmbedFormatByHmidAndLocaleFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
-    "c_utils:utils",
-    "napi:ace_napi",
-    "ipc:ipc_core",
-    "image_framework:image_native",
-    "image_framework:pixelmap",
-    "safwk:system_ability_fwk",
-    "googletest:gmock",
-    "hilog:libhilog",
     "ability_base:ability_base_want",
-    "ability_runtime:ability_context_native",
-    "ability_runtime:ability_manager",
-    "ability_runtime:ability_start_options",
     "ability_runtime:abilitykit_native",
-    "ability_runtime:app_context",
-    "ability_runtime:extensionkit_native",
-    "ability_runtime:napi_common",
     "ability_runtime:ability_runtime",
+    "c_utils:utils",
+    "image_framework:pixelmap",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
   ]
 }
 
@@ -83,23 +73,13 @@ ohos_fuzztest("OhContentEmbedGetcontentEmbedInfoFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
-    "c_utils:utils",
-    "napi:ace_napi",
-    "ipc:ipc_core",
-    "image_framework:image_native",
-    "image_framework:pixelmap",
-    "safwk:system_ability_fwk",
-    "googletest:gmock",
-    "hilog:libhilog",
     "ability_base:ability_base_want",
-    "ability_runtime:ability_context_native",
-    "ability_runtime:ability_manager",
-    "ability_runtime:ability_start_options",
     "ability_runtime:abilitykit_native",
-    "ability_runtime:app_context",
-    "ability_runtime:extensionkit_native",
-    "ability_runtime:napi_common",
     "ability_runtime:ability_runtime",
+    "c_utils:utils",
+    "image_framework:pixelmap",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
   ]
 }
 
@@ -115,23 +95,13 @@ ohos_fuzztest("OHContentEmbedCreateContentEmbedInfoFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
-    "c_utils:utils",
-    "napi:ace_napi",
-    "ipc:ipc_core",
-    "image_framework:image_native",
-    "image_framework:pixelmap",
-    "safwk:system_ability_fwk",
-    "googletest:gmock",
-    "hilog:libhilog",
     "ability_base:ability_base_want",
-    "ability_runtime:ability_context_native",
-    "ability_runtime:ability_manager",
-    "ability_runtime:ability_start_options",
     "ability_runtime:abilitykit_native",
-    "ability_runtime:app_context",
-    "ability_runtime:extensionkit_native",
-    "ability_runtime:napi_common",
     "ability_runtime:ability_runtime",
+    "c_utils:utils",
+    "image_framework:pixelmap",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
   ]
 }
 
@@ -147,23 +117,13 @@ ohos_fuzztest("OHContentEmbedDestroyContentEmbedInfoFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
-    "c_utils:utils",
-    "napi:ace_napi",
-    "ipc:ipc_core",
-    "image_framework:image_native",
-    "image_framework:pixelmap",
-    "safwk:system_ability_fwk",
-    "googletest:gmock",
-    "hilog:libhilog",
     "ability_base:ability_base_want",
-    "ability_runtime:ability_context_native",
-    "ability_runtime:ability_manager",
-    "ability_runtime:ability_start_options",
     "ability_runtime:abilitykit_native",
-    "ability_runtime:app_context",
-    "ability_runtime:extensionkit_native",
-    "ability_runtime:napi_common",
     "ability_runtime:ability_runtime",
+    "c_utils:utils",
+    "image_framework:pixelmap",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
   ]
 }
 
@@ -179,23 +139,13 @@ ohos_fuzztest("OHContentEmbedInfoGetFormatCountFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
-    "c_utils:utils",
-    "napi:ace_napi",
-    "ipc:ipc_core",
-    "image_framework:image_native",
-    "image_framework:pixelmap",
-    "safwk:system_ability_fwk",
-    "googletest:gmock",
-    "hilog:libhilog",
     "ability_base:ability_base_want",
-    "ability_runtime:ability_context_native",
-    "ability_runtime:ability_manager",
-    "ability_runtime:ability_start_options",
     "ability_runtime:abilitykit_native",
-    "ability_runtime:app_context",
-    "ability_runtime:extensionkit_native",
-    "ability_runtime:napi_common",
     "ability_runtime:ability_runtime",
+    "c_utils:utils",
+    "image_framework:pixelmap",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
   ]
 }
 
@@ -211,23 +161,13 @@ ohos_fuzztest("OHContentEmbedGetFormatFromInfoFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
-    "c_utils:utils",
-    "napi:ace_napi",
-    "ipc:ipc_core",
-    "image_framework:image_native",
-    "image_framework:pixelmap",
-    "safwk:system_ability_fwk",
-    "googletest:gmock",
-    "hilog:libhilog",
     "ability_base:ability_base_want",
-    "ability_runtime:ability_context_native",
-    "ability_runtime:ability_manager",
-    "ability_runtime:ability_start_options",
     "ability_runtime:abilitykit_native",
-    "ability_runtime:app_context",
-    "ability_runtime:extensionkit_native",
-    "ability_runtime:napi_common",
     "ability_runtime:ability_runtime",
+    "c_utils:utils",
+    "image_framework:pixelmap",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
   ]
 }
 
@@ -243,23 +183,13 @@ ohos_fuzztest("OHContentEmbedCreateContentEmbedFormatFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
-    "c_utils:utils",
-    "napi:ace_napi",
-    "ipc:ipc_core",
-    "image_framework:image_native",
-    "image_framework:pixelmap",
-    "safwk:system_ability_fwk",
-    "googletest:gmock",
-    "hilog:libhilog",
     "ability_base:ability_base_want",
-    "ability_runtime:ability_context_native",
-    "ability_runtime:ability_manager",
-    "ability_runtime:ability_start_options",
     "ability_runtime:abilitykit_native",
-    "ability_runtime:app_context",
-    "ability_runtime:extensionkit_native",
-    "ability_runtime:napi_common",
     "ability_runtime:ability_runtime",
+    "c_utils:utils",
+    "image_framework:pixelmap",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
   ]
 }
 
@@ -275,23 +205,13 @@ ohos_fuzztest("OHContentEmbedDestroyContentEmbedFormatFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
-    "c_utils:utils",
-    "napi:ace_napi",
-    "ipc:ipc_core",
-    "image_framework:image_native",
-    "image_framework:pixelmap",
-    "safwk:system_ability_fwk",
-    "googletest:gmock",
-    "hilog:libhilog",
     "ability_base:ability_base_want",
-    "ability_runtime:ability_context_native",
-    "ability_runtime:ability_manager",
-    "ability_runtime:ability_start_options",
     "ability_runtime:abilitykit_native",
-    "ability_runtime:app_context",
-    "ability_runtime:extensionkit_native",
-    "ability_runtime:napi_common",
     "ability_runtime:ability_runtime",
+    "c_utils:utils",
+    "image_framework:pixelmap",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
   ]
 }
 
@@ -307,23 +227,13 @@ ohos_fuzztest("OHContentEmbedFormatGetHmidFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
-    "c_utils:utils",
-    "napi:ace_napi",
-    "ipc:ipc_core",
-    "image_framework:image_native",
-    "image_framework:pixelmap",
-    "safwk:system_ability_fwk",
-    "googletest:gmock",
-    "hilog:libhilog",
     "ability_base:ability_base_want",
-    "ability_runtime:ability_context_native",
-    "ability_runtime:ability_manager",
-    "ability_runtime:ability_start_options",
     "ability_runtime:abilitykit_native",
-    "ability_runtime:app_context",
-    "ability_runtime:extensionkit_native",
-    "ability_runtime:napi_common",
     "ability_runtime:ability_runtime",
+    "c_utils:utils",
+    "image_framework:pixelmap",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
   ]
 }
 
@@ -339,23 +249,13 @@ ohos_fuzztest("OHContentEmbedGetIconFromFormatFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
-    "c_utils:utils",
-    "napi:ace_napi",
-    "ipc:ipc_core",
-    "image_framework:image_native",
-    "image_framework:pixelmap",
-    "safwk:system_ability_fwk",
-    "googletest:gmock",
-    "hilog:libhilog",
     "ability_base:ability_base_want",
-    "ability_runtime:ability_context_native",
-    "ability_runtime:ability_manager",
-    "ability_runtime:ability_start_options",
     "ability_runtime:abilitykit_native",
-    "ability_runtime:app_context",
-    "ability_runtime:extensionkit_native",
-    "ability_runtime:napi_common",
     "ability_runtime:ability_runtime",
+    "c_utils:utils",
+    "image_framework:pixelmap",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
   ]
 }
 
@@ -371,23 +271,13 @@ ohos_fuzztest("OHContentEmbedGetFileNameExtensionsFromFormatFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
-    "c_utils:utils",
-    "napi:ace_napi",
-    "ipc:ipc_core",
-    "image_framework:image_native",
-    "image_framework:pixelmap",
-    "safwk:system_ability_fwk",
-    "googletest:gmock",
-    "hilog:libhilog",
     "ability_base:ability_base_want",
-    "ability_runtime:ability_context_native",
-    "ability_runtime:ability_manager",
-    "ability_runtime:ability_start_options",
     "ability_runtime:abilitykit_native",
-    "ability_runtime:app_context",
-    "ability_runtime:extensionkit_native",
-    "ability_runtime:napi_common",
     "ability_runtime:ability_runtime",
+    "c_utils:utils",
+    "image_framework:pixelmap",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
   ]
 }
 
@@ -404,23 +294,13 @@ ohos_fuzztest("OHContentEmbedCreateExtensionProxyFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
-    "c_utils:utils",
-    "napi:ace_napi",
-    "ipc:ipc_core",
-    "image_framework:image_native",
-    "image_framework:pixelmap",
-    "safwk:system_ability_fwk",
-    "googletest:gmock",
-    "hilog:libhilog",
     "ability_base:ability_base_want",
-    "ability_runtime:ability_context_native",
-    "ability_runtime:ability_manager",
-    "ability_runtime:ability_start_options",
     "ability_runtime:abilitykit_native",
-    "ability_runtime:app_context",
-    "ability_runtime:extensionkit_native",
-    "ability_runtime:napi_common",
     "ability_runtime:ability_runtime",
+    "c_utils:utils",
+    "image_framework:pixelmap",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
   ]
 }
 
@@ -436,23 +316,13 @@ ohos_fuzztest("OHContentEmbedDestroyExtensionProxyFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
-    "c_utils:utils",
-    "napi:ace_napi",
-    "ipc:ipc_core",
-    "image_framework:image_native",
-    "image_framework:pixelmap",
-    "safwk:system_ability_fwk",
-    "googletest:gmock",
-    "hilog:libhilog",
     "ability_base:ability_base_want",
-    "ability_runtime:ability_context_native",
-    "ability_runtime:ability_manager",
-    "ability_runtime:ability_start_options",
     "ability_runtime:abilitykit_native",
-    "ability_runtime:app_context",
-    "ability_runtime:extensionkit_native",
-    "ability_runtime:napi_common",
     "ability_runtime:ability_runtime",
+    "c_utils:utils",
+    "image_framework:pixelmap",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
   ]
 }
 
@@ -468,23 +338,13 @@ ohos_fuzztest("OHContentEmbedProxyRegisterOnUpdateFuncFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
-    "c_utils:utils",
-    "napi:ace_napi",
-    "ipc:ipc_core",
-    "image_framework:image_native",
-    "image_framework:pixelmap",
-    "safwk:system_ability_fwk",
-    "googletest:gmock",
-    "hilog:libhilog",
     "ability_base:ability_base_want",
-    "ability_runtime:ability_context_native",
-    "ability_runtime:ability_manager",
-    "ability_runtime:ability_start_options",
     "ability_runtime:abilitykit_native",
-    "ability_runtime:app_context",
-    "ability_runtime:extensionkit_native",
-    "ability_runtime:napi_common",
     "ability_runtime:ability_runtime",
+    "c_utils:utils",
+    "image_framework:pixelmap",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
   ]
 }
 
@@ -500,23 +360,13 @@ ohos_fuzztest("OHContentEmbedProxyRegisterOnErrorFuncFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
-    "c_utils:utils",
-    "napi:ace_napi",
-    "ipc:ipc_core",
-    "image_framework:image_native",
-    "image_framework:pixelmap",
-    "safwk:system_ability_fwk",
-    "googletest:gmock",
-    "hilog:libhilog",
     "ability_base:ability_base_want",
-    "ability_runtime:ability_context_native",
-    "ability_runtime:ability_manager",
-    "ability_runtime:ability_start_options",
     "ability_runtime:abilitykit_native",
-    "ability_runtime:app_context",
-    "ability_runtime:extensionkit_native",
-    "ability_runtime:napi_common",
     "ability_runtime:ability_runtime",
+    "c_utils:utils",
+    "image_framework:pixelmap",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
   ]
 }
 
@@ -532,23 +382,13 @@ ohos_fuzztest("OHContentEmbedProxyRegisterOnEditingFinishedFuncFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
-    "c_utils:utils",
-    "napi:ace_napi",
-    "ipc:ipc_core",
-    "image_framework:image_native",
-    "image_framework:pixelmap",
-    "safwk:system_ability_fwk",
-    "googletest:gmock",
-    "hilog:libhilog",
     "ability_base:ability_base_want",
-    "ability_runtime:ability_context_native",
-    "ability_runtime:ability_manager",
-    "ability_runtime:ability_start_options",
     "ability_runtime:abilitykit_native",
-    "ability_runtime:app_context",
-    "ability_runtime:extensionkit_native",
-    "ability_runtime:napi_common",
     "ability_runtime:ability_runtime",
+    "c_utils:utils",
+    "image_framework:pixelmap",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
   ]
 }
 
@@ -564,23 +404,13 @@ ohos_fuzztest("OHContentEmbedProxyRegisterOnExtensionStoppedFuncFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
-    "c_utils:utils",
-    "napi:ace_napi",
-    "ipc:ipc_core",
-    "image_framework:image_native",
-    "image_framework:pixelmap",
-    "safwk:system_ability_fwk",
-    "googletest:gmock",
-    "hilog:libhilog",
     "ability_base:ability_base_want",
-    "ability_runtime:ability_context_native",
-    "ability_runtime:ability_manager",
-    "ability_runtime:ability_start_options",
     "ability_runtime:abilitykit_native",
-    "ability_runtime:app_context",
-    "ability_runtime:extensionkit_native",
-    "ability_runtime:napi_common",
     "ability_runtime:ability_runtime",
+    "c_utils:utils",
+    "image_framework:pixelmap",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
   ]
 }
 
@@ -596,23 +426,13 @@ ohos_fuzztest("OHContentEmbedGetNameAndDescriptionFromFormatFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
-    "c_utils:utils",
-    "napi:ace_napi",
-    "ipc:ipc_core",
-    "image_framework:image_native",
-    "image_framework:pixelmap",
-    "safwk:system_ability_fwk",
-    "googletest:gmock",
-    "hilog:libhilog",
     "ability_base:ability_base_want",
-    "ability_runtime:ability_context_native",
-    "ability_runtime:ability_manager",
-    "ability_runtime:ability_start_options",
     "ability_runtime:abilitykit_native",
-    "ability_runtime:app_context",
-    "ability_runtime:extensionkit_native",
-    "ability_runtime:napi_common",
     "ability_runtime:ability_runtime",
+    "c_utils:utils",
+    "image_framework:pixelmap",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
   ]
 }
 

@@ -22,7 +22,6 @@
 #include "want_manager.h"
 #include "image_packer.h"
 
-
 // LCOV_EXCL_START
 using namespace OHOS::ObjectEditor;
 

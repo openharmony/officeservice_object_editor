@@ -320,29 +320,31 @@ ErrCode ObjectEditorClient::HandlePackage(
     sptr<IObjectEditorService> &oeExtensionRemoteObject)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "in");
+    if ((document->GetOperateType() == OperateType::CREATE_BY_FILE &&
+         document->GetNativeFileUri().has_value()) ||
+        document->GetTmpFileUri().has_value()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "document param is invalid");
+        return ERR_INVALID_OPERATION;
+    }
     std::unique_ptr<ObjectEditorDocument> newDocument = nullptr;
     if (document->GetOperateType() == OperateType::CREATE_BY_FILE) {
         newDocument = ObjectEditorDocument::CreateByFile(document->GetOriFilePath());
         if (newDocument == nullptr) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "create document by file failed");
-            return ERR_INVALID_VALUE;
+            return CE_ERR_NULL_POINTER;
         }
         newDocument->SetHmid(PACKAGE_HMID);
-        if (document->GetNativeFileUri().has_value()) {
-            newDocument->SetNativeFileUri(document->GetNativeFileUri().value());
-        }
+        newDocument->SetNativeFileUri(document->GetNativeFileUri().value());
     } else if (document->GetOperateType() == OperateType::EDIT) {
         newDocument = ObjectEditorDocument::CreateByHmid(PACKAGE_HMID);
         if (newDocument == nullptr) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "create document by hmid failed");
-            return ERR_INVALID_VALUE;
+            return CE_ERR_NULL_POINTER;
         }
         newDocument->SetOperateType(OperateType::EDIT);
     }
     newDocument->SetDocumentId(document->GetDocumentId());
-    if (document->GetTmpFileUri().has_value()) {
-        newDocument->SetTmpFileUri(document->GetTmpFileUri().value());
-    }
+    newDocument->SetTmpFileUri(document->GetTmpFileUri().value());
     newDocument->SetSnapshotUri(document->GetSnapshotUri());
     sptr<ObjectEditorPackage> packageProxy = sptr<ObjectEditorPackage>::MakeSptr();
     if (packageProxy == nullptr) {

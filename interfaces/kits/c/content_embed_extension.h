@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ * Copyright (c) 2026-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -116,7 +116,6 @@ typedef struct ContentEmbed_Object* ContentEmbed_ObjectHandle;
  *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
- * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetContentEmbedContext(ContentEmbed_ExtensionInstanceHandle ceInstance,
@@ -133,30 +132,27 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetContentEmbedContext(ContentE
  *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
- * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetContext(ContentEmbed_ExtensionContextHandle ceContext,
                                                             AbilityRuntime_ContextHandle *context);
 
 /**
- * @brief Get the content embed extension instance from base extension instance.
+ * @brief Get content embed extension instance from base extension instance.
  *
- * @param baseExtensionInstance Represents a pointer to an {@link AbilityRuntime_ExtensionInstance} instance.
- * @param ceExtensionInstance Represents a pointer to an {@link ContentEmbed_ExtensionInstance} instance
- *                            that is a output param.
+ * @param baseInstance Represents a pointer to an {@link AbilityRuntime_ExtensionInstance} instance.
+ * @param ceInstance Represents a pointer to an {@link ContentEmbed_ExtensionInstance} instance that is a output param.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
- * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetExtensionInstance(
-    AbilityRuntime_ExtensionInstanceHandle baseExtensionInstance,
-    ContentEmbed_ExtensionInstanceHandle *ceExtensionInstance);
+    AbilityRuntime_ExtensionInstanceHandle baseInstance,
+    ContentEmbed_ExtensionInstanceHandle *ceInstance);
 
 /**
  * @brief Called when the content embed extension instance is created.
@@ -214,24 +210,26 @@ typedef void (*OH_ContentEmbed_Extension_OnObjectDetachFunc)(
     ContentEmbed_ExtensionInstanceHandle instance, ContentEmbed_ObjectHandle object);
 
 /**
- * @brief Called when the content embed object instance is written to data stream.
+ * @brief Called when the content embed object instance writes to the data stream.
  *
  * You need to implement this function, set it to {@link ContentEmbed_ObjectHandle} through {@link
  * OH_ContentEmbed_Extension_RegisterOnWriteToDataStreamFunc} to complete the registration.
  *
- * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
+ * @param object Represents a pointer to an
+ *                 {@link ContentEmbed_ObjectHandle} object which will be set in.
  * @since 24
  */
 typedef void (*OH_ContentEmbed_Extension_OnWriteToDataStreamFunc)(
     ContentEmbed_ObjectHandle object);
 
 /**
- * @brief Called when the content embed object instance gets a snapshot.
+ * @brief Called when content embed object instance gets a snapshot.
  *
  * You need to implement this function, set it to {@link ContentEmbed_ObjectHandle} through {@link
- * OH_ContentEmbed_Extension_RegisterOnGetSnapShotFunc} to complete the registration.
+ * OH_ContentEmbed_Extension_RegisterOnGetSnapshotFunc} to complete the registration.
  *
- * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
+ * @param object Represents a pointer to an
+ *                 {@link ContentEmbed_ObjectHandle} object which will be set in.
  * @since 24
  */
 typedef void (*OH_ContentEmbed_Extension_OnGetSnapshotFunc)(
@@ -243,7 +241,8 @@ typedef void (*OH_ContentEmbed_Extension_OnGetSnapshotFunc)(
  * You need to implement this function, set it to {@link ContentEmbed_ObjectHandle} through {@link
  * OH_ContentEmbed_Extension_RegisterOnDoEditFunc} to complete the registration.
  *
- * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
+ * @param object Represents a pointer to an
+ *                 {@link ContentEmbed_ObjectHandle} object which will be set in.
  * @since 24
  */
 typedef void (*OH_ContentEmbed_Extension_OnDoEditFunc)(
@@ -255,7 +254,8 @@ typedef void (*OH_ContentEmbed_Extension_OnDoEditFunc)(
  * You need to implement this function, set it to {@link ContentEmbed_ObjectHandle} through {@link
  * OH_ContentEmbed_Extension_RegisterOnGetEditStatusFunc} to complete the registration.
  *
- * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
+ * @param object Represents a pointer to an
+ *                 {@link ContentEmbed_ObjectHandle} object which will be set in.
  * @param isEditing Indicates that the content embed document is being edited.
  * @param isModified Indicates that the content embed document has been modified.
  * @since 24
@@ -269,8 +269,9 @@ typedef void (*OH_ContentEmbed_Extension_OnGetEditStatusFunc)(
  * You need to implement this function, set it to {@link ContentEmbed_ObjectHandle} through {@link
  * OH_ContentEmbed_Extension_RegisterOnGetCapabilityFunc} to complete the registration.
  *
- * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
- * @param bitmask Indicates the capabilities possessed by a content embed object instance.
+ * @param object Represents a pointer to an
+ *                 {@link ContentEmbed_ObjectHandle} object which will be set in.
+ * @param bitmask Indicates the capabilities possessed by a content embed extension instance.
  * @since 24
  */
 typedef void (*OH_ContentEmbed_Extension_OnGetCapabilityFunc)(
@@ -288,7 +289,6 @@ typedef void (*OH_ContentEmbed_Extension_OnGetCapabilityFunc)(
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
- * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnCreateFunc(
@@ -306,7 +306,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnCreateFunc(
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
- * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnDestroyFunc(
@@ -315,6 +314,8 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnDestroyFunc(
 /**
  * @brief Register function {@link OH_ContentEmbed_Extension_OnObjectAttachFunc} into
  *        {@link ContentEmbed_ExtensionInstance}.
+ * The {@link ContentEmbed_ExtensionInstance} can unregister the onObjectAttach function by calling
+ * {@link OH_ContentEmbed_Extension_UnRegisterOnObjectAttachFunc}
  *
  * @param instance Represents a pointer to an {@link ContentEmbed_ExtensionInstance} instance
  *                 which will be set function in.
@@ -325,7 +326,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnDestroyFunc(
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
- * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnObjectAttachFunc(
@@ -333,8 +333,24 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnObjectAttachFunc(
     OH_ContentEmbed_Extension_OnObjectAttachFunc onObjectAttachFunc);
 
 /**
+ * @brief UnRegister the OnObjectAttach function for the {@link ContentEmbed_ExtensionInstance}.
+ *
+ * @param instance Represents a pointer to an {@link ContentEmbed_ExtensionInstance} instance.
+ * @return Returns a specific error code.
+ *     {@link CE_ERR_OK} - success.
+ *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
+ *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
+ * @since 24
+ */
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_UnRegisterOnObjectAttachFunc(
+    ContentEmbed_ExtensionInstanceHandle instance);
+
+/**
  * @brief Register function {@link OH_ContentEmbed_Extension_OnObjectDetachFunc} into
  *        {@link ContentEmbed_ExtensionInstance}.
+ * The {@link ContentEmbed_ExtensionInstance} can unregister the OnObjectDetach function by calling
+ * {@link OH_ContentEmbed_Extension_UnRegisterOnObjectDetachFunc}
  *
  * @param instance Represents a pointer to an {@link ContentEmbed_ExtensionInstance} instance
  *                 which will be set function in.
@@ -345,7 +361,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnObjectAttachFunc(
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
- * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnObjectDetachFunc(
@@ -353,10 +368,24 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnObjectDetachFunc(
     OH_ContentEmbed_Extension_OnObjectDetachFunc onObjectDetachFunc);
 
 /**
- * @brief Register function {@link OH_ContentEmbed_Extension_OnWriteToDataStreamFunc} into
- *        {@link ContentEmbed_Object}.
+ * @brief UnRegister the OnObjectDetach function for the {@link ContentEmbed_ExtensionInstance}.
  *
- * @param object Represents a pointer to an {@link ContentEmbed_Object} instance
+ * @param instance Represents a pointer to an {@link ContentEmbed_ExtensionInstance} instance.
+ * @return Returns a specific error code.
+ *     {@link CE_ERR_OK} - success.
+ *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
+ *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
+ * @since 24
+ */
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_UnRegisterOnObjectDetachFunc(
+    ContentEmbed_ExtensionInstanceHandle instance);
+
+/**
+ * @brief Register function {@link OH_ContentEmbed_Extension_OnWriteToDataStreamFunc} into
+ *        {@link ContentEmbed_ObjectHandle}.
+ *
+ * @param object Represents a pointer to an {@link ContentEmbed_ObjectHandle} object
  *                 which will be set function in.
  * @param onWriteToDataStreamFunc Represents function {@link OH_ContentEmbed_Extension_OnWriteToDataStreamFunc}
  *                                which will be set in.
@@ -365,7 +394,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnObjectDetachFunc(
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
- * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnWriteToDataStreamFunc(
@@ -374,9 +402,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnWriteToDataStreamFunc
 
 /**
  * @brief Register function {@link OH_ContentEmbed_Extension_OnGetSnapshotFunc} into
- *        {@link ContentEmbed_Object}.
+ *        {@link ContentEmbed_ObjectHandle}.
  *
- * @param object Represents a pointer to an {@link ContentEmbed_Object} instance
+ * @param object Represents a pointer to an {@link ContentEmbed_ObjectHandle} object
  *                 which will be set function in.
  * @param onGetSnapshotFunc Represents function {@link OH_ContentEmbed_Extension_OnGetSnapshotFunc}
  *                          which will be set in.
@@ -385,17 +413,16 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnWriteToDataStreamFunc
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
- * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetSnapshotFunc(
-    ContentEmbed_ObjectHandle object, OH_ContentEmbed_Extension_OnGetSnapshotFunc onGetSnapShotFunc);
+    ContentEmbed_ObjectHandle object, OH_ContentEmbed_Extension_OnGetSnapshotFunc onGetSnapshotFunc);
 
 /**
  * @brief Register function {@link OH_ContentEmbed_Extension_OnDoEditFunc} into
- *        {@link ContentEmbed_Object}.
+ *        {@link ContentEmbed_ObjectHandle}.
  *
- * @param object Represents a pointer to an {@link ContentEmbed_Object} instance
+ * @param object Represents a pointer to an {@link ContentEmbed_ObjectHandle} object
  *                 which will be set function in.
  * @param onDoEditFunc Represents function {@link OH_ContentEmbed_Extension_OnDoEditFunc} which will be set in.
  * @return Returns a specific error code.
@@ -403,7 +430,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetSnapshotFunc(
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
- * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnDoEditFunc(
@@ -411,9 +437,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnDoEditFunc(
 
 /**
  * @brief Register function {@link OH_ContentEmbed_Extension_OnGetEditStatusFunc} into
- *        {@link ContentEmbed_Object}.
+ *        {@link ContentEmbed_ObjectHandle}.
  *
- * @param object Represents a pointer to an {@link ContentEmbed_Object} instance
+ * @param object Represents a pointer to an {@link ContentEmbed_ObjectHandle} object
  *                 which will be set function in.
  * @param onGetEditStatusFunc Represents function {@link OH_ContentEmbed_Extension_OnGetEditStatusFunc}
  *                            which will be set in.
@@ -422,7 +448,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnDoEditFunc(
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
- * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetEditStatusFunc(
@@ -430,9 +455,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetEditStatusFunc(
 
 /**
  * @brief Register function {@link OH_ContentEmbed_Extension_OnGetCapabilityFunc} into
- *        {@link ContentEmbed_Object}.
+ *        {@link ContentEmbed_ObjectHandle}.
  *
- * @param object Represents a pointer to an {@link ContentEmbed_Object} instance
+ * @param object Represents a pointer to an {@link ContentEmbed_ObjectHandle} object
  *                 which will be set function in.
  * @param onGetCapabilityFunc Represents function {@link OH_ContentEmbed_Extension_OnGetCapabilityFunc}
  *                            which will be set in.
@@ -441,33 +466,31 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetEditStatusFunc(
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
- * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetCapabilityFunc(
     ContentEmbed_ObjectHandle object, OH_ContentEmbed_Extension_OnGetCapabilityFunc onGetCapabilityFunc);
 
 /**
- * @brief Get {@link ContentEmbed_Document} instance from {@link ContentEmbed_Object}.
+ * @brief Get the content embed document from the content embed object.
  *
- * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
- * @param document Represents a pointer to an {@link ContentEmbed_Document} instance that is a output param.
+ * @param object Represents a pointer to an {@link ContentEmbed_ObjectHandle} object.
+ * @param ceDocument Represents a pointer to an {@link ContentEmbed_Document} ceDocument that is a output param.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
- * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetContentEmbedDocument(
-    ContentEmbed_ObjectHandle object, ContentEmbed_Document **document);
+    ContentEmbed_ObjectHandle object, ContentEmbed_Document **ceDocument);
 
 /**
  * @brief Invoke the OnUpdate callback registered by the client.
  *
- * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
+ * @param object Represents a pointer to an {@link ContentEmbed_ObjectHandle} object.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
@@ -476,7 +499,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetContentEmbedDocument(
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_CLIENT_CALLBACK_FAILED} - the client callback fails.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
- * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnUpdate(
@@ -485,7 +507,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnUpdate(
 /**
  * @brief Invoke the OnError callback registered by the client.
  *
- * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
+ * @param object Represents a pointer to an {@link ContentEmbed_ObjectHandle} object.
  * @param code Indicates the error code.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
@@ -495,7 +517,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnUpdate(
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_CLIENT_CALLBACK_FAILED} - the client callback fails.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
- * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnError(
@@ -504,7 +525,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnError(
 /**
  * @brief Invoke the OnEditingFinished callback registered by the client.
  *
- * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
+ * @param object Represents a pointer to an {@link ContentEmbed_ObjectHandle} object.
  * @param dataModified Indicates whether the document data has been modified.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
@@ -514,16 +535,15 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnError(
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_CLIENT_CALLBACK_FAILED} - the client callback fails.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
- * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnEditingFinished(
     ContentEmbed_ObjectHandle object, bool dataModified);
 
 /**
- * @brief Invoke the OnExtensionStoped callback registered by the client.
+ * @brief Invoke the OnExtensionStopped callback registered by the client.
  *
- * @param handle Represents a pointer to an {@link ContentEmbed_ExtensionInstance} instance.
+ * @param instance Represents a pointer to an {@link ContentEmbed_ExtensionInstance} instance.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
@@ -532,25 +552,23 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnEditingFinished(
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_CLIENT_CALLBACK_FAILED} - the client callback fails.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
- * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnExtensionStopped(
-    ContentEmbed_ExtensionInstanceHandle handle);
+    ContentEmbed_ExtensionInstanceHandle instance);
 
 /**
  * @brief Send the document snapshot to the client application.
  *
- * @param object Represents a pointer to an {@link ContentEmbed_Object} instance.
- * @param pixelMap Document snapshot.
+ * @param object Represents a pointer to an {@link ContentEmbed_ObjectHandle} object.
+ * @param pixelMap Document Snapshot.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
- *     {@link CE_ERR_IMAGE_PACKER_OPERATION_FAILED} - the image packer operation failed.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
- * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
+ *     {@link CE_ERR_IMAGE_PACKER_OPERATION_FAILED} - the image packer operation failed.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_SetSnapshot(
@@ -561,7 +579,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_SetSnapshot(
  *
  * @param context Represents a pointer to an {@link ContentEmbed_ExtensionContext} instance.
  * @param want The arguments passed to start self UIAbility.
- * For detail, see {@link AbilityBase_Want}.
+ * For details, see {@link AbilityBase_Want}.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
@@ -569,7 +587,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_SetSnapshot(
  *     {@link CE_ERR_SYSTEM_ABNORMAL} - the system service works abnormally.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
- * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
+ * For details, see {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextStartSelfUIAbility(
@@ -580,9 +598,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextStartSelfUIAbility(
  *
  * @param context Represents a pointer to an {@link ContentEmbed_ExtensionContext} instance.
  * @param want The arguments passed to start self UIAbility.
- * For detail, see {@link AbilityBase_Want}.
+ * For details, see {@link AbilityBase_Want}.
  * @param options The start options passed to start self UIAbility.
- * For detail, see {@link AbilityRuntime_StartOptions}.
+ * For details, see {@link AbilityRuntime_StartOptions}.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
@@ -590,7 +608,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextStartSelfUIAbility(
  *     {@link CE_ERR_SYSTEM_ABNORMAL} - the system service works abnormally.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
- * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
+ * For details, see {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextStartSelfUIAbilityWithStartOptions(
@@ -598,7 +616,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextStartSelfUIAbilityWithSt
     AbilityBase_Want *want, AbilityRuntime_StartOptions *options);
 
 /**
- * @brief Terminates self UIAbility.
+ * @brief Terminate self UIAbility.
  *
  * @param context Represents a pointer to an {@link ContentEmbed_ExtensionContext} instance.
  * @return Returns a specific error code.
@@ -608,7 +626,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextStartSelfUIAbilityWithSt
  *     {@link CE_ERR_SYSTEM_ABNORMAL} - the system service works abnormally.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
- * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
+ * For details, see {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextTerminateAbility(

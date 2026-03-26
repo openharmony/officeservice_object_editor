@@ -33,5 +33,16 @@ bool ObjectEditorPermissionUtils::CheckCallingPermission(const std::string &perm
     return true;
 }
 
+bool ObjectEditorPermissionUtils::CheckRequestPermission(const std::string &bundleName, const std::string &permission)
+{
+    
+    if (Security::AccessToken::AccessTokenKit::VerifyAccessToken(IPCSkeleton::GetCallingTokenID(), permission) !=
+        AppExecFwk::Constants::PERMISSION_GRANTED) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "permission:%{public}s denied", permission.c_str());
+        return false;
+    }
+    return true;
+}
+
 } // namespace ObjectEditor
 } // namespace OHOS

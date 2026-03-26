@@ -50,7 +50,7 @@ void DirEntry::SetClsid(const std::array<std::uint8_t, CLSID_SIZE> &clsid, uint8
         return;
     }
     clsid_ = clsid;
-    SetModify();
+    SetModify(true, false);
 }
 
 void DirTree::Clear()
@@ -171,10 +171,11 @@ size_t DirTree::ReuseOrAppendSlot()
 DirEntry DirTree::MakeNewEntry(const std::string &name, size_t index, uint32_t oldChild, int type) const
 {
     const uint16_t nameLen = static_cast<uint16_t>(name.size() * 2 + 2);
-    return DirEntry(name, nameLen, type, 0, 0, DIR_ENTRY_END,
+    DirEntry e(name, nameLen, type, 0, 0, DIR_ENTRY_END,
                     oldChild,
                     DIR_ENTRY_END,
-                    index);
+                    index, 0, 0);
+    return e;
 }
 
 DirEntry *DirTree::Entry(const std::string &name, bool create)
@@ -309,12 +310,15 @@ bool DirTree::Load(Byte *buffer, size_t size)
         uint32_t prev = ReadUint32(buffer + 0x44 + p);
         uint32_t next = ReadUint32(buffer + 0x48 + p);
         uint32_t child = ReadUint32(buffer + 0x4C + p);
-
+        uint64_t creationTime = static_cast<uint64_t>(ReadUint32(buffer + CREATION_TIME_LOW_OFFSET + p));
+        creationTime |= static_cast<uint64_t>(ReadUint32(buffer + CREATION_TIME_HIGH_OFFSET + p)) << BIT_MASK;
+        uint64_t modifiedTime = static_cast<uint64_t>(ReadUint32(buffer + MODIFIED_TIME_LOW_OFFSET + p));
+        modifiedTime |= static_cast<uint64_t>(ReadUint32(buffer + MODIFIED_TIME_HIGH_OFFSET + p)) << BIT_MASK;
         std::array<std::uint8_t, CLSID_SIZE> clsid;
         for (size_t j = 0; j < CLSID_SIZE; j++)
             clsid[j] = buffer[0x50 + p + j];
 
-        DirEntry e(name, len, type, entrySize, start, prev, next, child, entries_.size());
+        DirEntry e(name, len, type, entrySize, start, prev, next, child, entries_.size(), creationTime, modifiedTime);
         e.SetClsid(clsid, std::size(clsid));
         entries_.push_back(e);
     }
@@ -347,7 +351,14 @@ bool DirTree::Save(Byte *buffer, size_t len)
         WriteUint32(buffer + i * BUFFER_OFFSET + 0x44, e->Prev());
         WriteUint32(buffer + i * BUFFER_OFFSET + 0x48, e->Next());
         WriteUint32(buffer + i * BUFFER_OFFSET + 0x4c, e->Child());
-
+        uint64_t ct = e->GetCreationTime();
+        WriteUint32(buffer + i * BUFFER_ENTRY_SIZE + CREATION_TIME_LOW_OFFSET, static_cast<uint32_t>(ct & FULL_MASK));
+        WriteUint32(buffer + i * BUFFER_ENTRY_SIZE + CREATION_TIME_HIGH_OFFSET,
+            static_cast<uint32_t>((ct >> BIT_MASK) & FULL_MASK));
+        uint64_t mt = e->GetModifiedTime();
+        WriteUint32(buffer + i * BUFFER_ENTRY_SIZE + MODIFIED_TIME_LOW_OFFSET, static_cast<uint32_t>(mt & FULL_MASK));
+        WriteUint32(buffer + i * BUFFER_ENTRY_SIZE + MODIFIED_TIME_HIGH_OFFSET,
+            static_cast<uint32_t>((mt >> BIT_MASK) & FULL_MASK));
         const auto &clsid = e->Clsid();
         for (size_t j = 0; j < CLSID_SIZE; j++)
             buffer[i * BUFFER_OFFSET + CLSID_OFFSET + j] = clsid[j];
@@ -649,7 +660,7 @@ void DirTree::ClearDirEntry(DirEntry *e)
 {
     if (!e)
         return;
-    e->Set("", 0, 0, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 0, true);
+    e->Set("", 0, 0, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 0, 0, 0, true);
 }
 
 bool DirTree::DeleteEntry(const std::string &path, int level, std::vector<bool> *visited)
