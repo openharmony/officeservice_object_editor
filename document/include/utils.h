@@ -40,6 +40,26 @@ constexpr uint32_t BYTE_SHIFT_1 = BITS_PER_BYTE;      // 8
 constexpr uint32_t BYTE_SHIFT_2 = 2 * BITS_PER_BYTE;  // 16
 constexpr uint32_t BYTE_SHIFT_3 = 3 * BITS_PER_BYTE;  // 24
 
+constexpr size_t BUFFER_ENTRY_SIZE = 128;
+constexpr uint32_t FULL_MASK = 0xFFFFFFFFU;
+constexpr size_t BIT_MASK = 32;
+constexpr size_t CREATION_TIME_LOW_OFFSET = 0x64;
+constexpr size_t CREATION_TIME_HIGH_OFFSET = 0x68;
+constexpr size_t MODIFIED_TIME_LOW_OFFSET = 0x6C;
+constexpr size_t MODIFIED_TIME_HIGH_OFFSET = 0x70;
+constexpr uint64_t WINDOWS_TICK = 10000000ULL;
+constexpr uint64_t SEC_TO_UNIX_EPOCH = 11644473600ULL;
+constexpr uint64_t NANOS_PER_SEC = 1000000000ULL;
+
+inline uint64_t GetCurrentFileTime()
+{
+    auto now = std::chrono::system_clock::now();
+    auto duration = now.time_since_epoch();
+    uint64_t secs = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
+    uint64_t nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count() % NANOS_PER_SEC;
+    return (secs * SEC_TO_UNIX_EPOCH) * WINDOWS_TICK + (nanos / 100ULL);
+}
+
 inline uint32_t ReadUint32(const Byte *ptr)
 {
     return static_cast<uint32_t>(ptr[BYTE_INDEX_0]) |

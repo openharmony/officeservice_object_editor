@@ -44,13 +44,15 @@ public:
           child_(DIR_ENTRY_END),
           clsid_{},
           index_(0),
-          modify_(false)
+          modify_(false),
+          creationTime_(0),
+          modifiedTime_(0)
     {
     }
     DirEntry(const std::string &name, uint16_t len, uint8_t type, uint64_t size, uint32_t start, uint32_t prev,
-             uint32_t next, uint32_t child, size_t index)
+             uint32_t next, uint32_t child, size_t index, uint64_t creationTime, uint64_t modifiedTime)
     {
-        Set(name, len, type, size, start, prev, next, child, index);
+        Set(name, len, type, size, start, prev, next, child, index, creationTime, modifiedTime);
     }
 
 public:
@@ -95,6 +97,14 @@ public:
     {
         return child_;
     }
+    uint64_t GetCreationTime() const
+    {
+        return creationTime_;
+    }
+    uint64_t GetModifiedTime() const
+    {
+        return modifiedTime_;
+    }
     const std::array<std::uint8_t, CLSID_SIZE> &Clsid() const;
     bool Modified() const
     {
@@ -107,7 +117,8 @@ public:
 
 public:
     void Set(const std::string &name, uint16_t len, uint8_t type, uint64_t size, uint32_t start, uint32_t prev,
-             uint32_t next, uint32_t child, size_t index, bool modify = false)
+             uint32_t next, uint32_t child, size_t index, uint64_t creationTime,
+             uint64_t modifiedTime, bool modify = false)
     {
         name_ = name;
         nameLen_ = len;
@@ -117,6 +128,8 @@ public:
         prev_ = prev;
         next_ = next;
         child_ = child;
+        creationTime_ = creationTime;
+        modifiedTime_ = modifiedTime;
         clsid_.fill(0);
         index_ = index;
         modify_ = modify;
@@ -161,11 +174,19 @@ public:
         child_ = child;
         SetModify();
     }
+    void SetCreationTime(uint64_t ct)
+    {
+        creationTime_ = ct;
+        SetModify();
+    }
 
     void SetClsid(const std::array<std::uint8_t, CLSID_SIZE> &clsid, uint8_t size);
-    void SetModify(bool modify = true)
+    void SetModify(bool modify = true, bool modtime = true)
     {
         modify_ = modify;
+        if (modtime && (type_ == EntryType::DIR || type_ == EntryType::ROOT)) {
+            modifiedTime_ = GetCurrentFileTime();
+        }
     }
 
 private:
@@ -180,6 +201,8 @@ private:
     std::array<std::uint8_t, CLSID_SIZE> clsid_;
     size_t index_ = 0;
     bool modify_ = false;
+    uint64_t creationTime_ = 0;
+    uint64_t modifiedTime_ = 0;
 };
 
 class DirTree {
