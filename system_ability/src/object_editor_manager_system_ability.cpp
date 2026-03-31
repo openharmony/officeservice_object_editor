@@ -224,7 +224,7 @@ int32_t ObjectEditorManagerSystemAbility::CallbackEnter([[maybe_unused]] uint32_
 bool ObjectEditorManagerSystemAbility::CheckCallingPermission(uint32_t code)
 {
     switch (static_cast<IObjectEditorManagerIpcCode>(code)) {
-        case IObjectEditorManagerIpcCode::COMMAND_START_OBJECT_EDITOR_EXTENSION: 
+        case IObjectEditorManagerIpcCode::COMMAND_START_OBJECT_EDITOR_EXTENSION:
         case IObjectEditorManagerIpcCode::COMMAND_GET_HMID_BY_FILE_EXTENSION:
         case IObjectEditorManagerIpcCode::COMMAND_GET_ICON_BY_HMID:
         case IObjectEditorManagerIpcCode::COMMAND_GET_FORMAT_NAME:
@@ -598,7 +598,7 @@ bool ObjectEditorManagerSystemAbility::GrantClientFileUriPermissionToServerExten
     const ObjectEditorDocument &document, const std::string &targetBundleName)
 {
     std::vector<Uri> uriList;
-    if (!document.GetTmpFileUri().has_value() && !document.GetLinking()) {
+    if (document.GetTmpFileUri().has_value() && !document.GetLinking()) {
         uriList.push_back(Uri(document.GetTmpFileUri().value()));
     }
     if (!document.GetSnapshotUri().empty()) {
