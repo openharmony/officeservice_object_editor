@@ -27,8 +27,8 @@ namespace ObjectEditor {
 // LCOV_EXCL_START
 namespace {
 constexpr const char* APP_INDEX = "appIndex";
-const std::string TABLE_NAME = "object_editor_info";
-const std::string DB_DIR = "/data/service/el2/public/object_editor_service/database/";
+const char* TABLE_NAME = "object_editor_info";
+const char* DB_DIR = "/data/service/el2/public/object_editor_service/database/";
 
 std::vector<std::string> GetDefaultDbSql()
 {
@@ -438,7 +438,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByH
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "hmid: %{public}s", hmid.c_str());
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
-    std::string sql = "SELECT hmid, bundle_name, module_name, ability_name from " + TABLE_NAME + " WHERE hmid = ?";
+    std::string sql = "SELECT hmid, bundle_name, module_name, ability_name from object_editor_info WHERE hmid = ?";
     ObjectEditorManagerErrCode errCode = QueryBySql(sql, resultSet, { hmid });
     if (errCode != ObjectEditorManagerErrCode::SA_OK || resultSet == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "query failed");
@@ -464,7 +464,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByH
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "hmid: %{public}s, minVersion: %{public}s",
         hmid.c_str(), minVersion.c_str());
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
-    std::string sql = "SELECT hmid, bundle_name, module_name, ability_name from " + TABLE_NAME +
+    std::string sql = "SELECT hmid, bundle_name, module_name, ability_name from object_editor_info" +
         " WHERE hmid = ? and min_version >= ?";
     ObjectEditorManagerErrCode errCode = QueryBySql(sql, resultSet, { hmid, minVersion });
     if (errCode != ObjectEditorManagerErrCode::SA_OK || resultSet == nullptr) {
@@ -607,7 +607,7 @@ std::map<std::string, int64_t> ObjectEditorManagerDatabase::GetBundleNameAndCrea
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DATABASE, "in");
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
-    std::string sql = "SELECT DISTINCT bundle_name, create_time from " + TABLE_NAME;
+    std::string sql = "SELECT DISTINCT bundle_name, create_time from object_editor_info";
     ObjectEditorManagerErrCode errCode = QueryBySql(sql, resultSet);
     if (errCode != ObjectEditorManagerErrCode::SA_OK || resultSet == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "queryBySql failed");
