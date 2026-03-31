@@ -223,8 +223,24 @@ int32_t ObjectEditorManagerSystemAbility::CallbackEnter([[maybe_unused]] uint32_
 
 bool ObjectEditorManagerSystemAbility::CheckCallingPermission(uint32_t code)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "unknown code:%{public}d", code);
-    return true;
+    switch (static_cast<IObjectEditorManagerIpcCode>(code)) {	 
+        case IObjectEditorManagerIpcCode::COMMAND_START_OBJECT_EDITOR_EXTENSION:	 
+        case IObjectEditorManagerIpcCode::COMMAND_GET_HMID_BY_FILE_EXTENSION: 
+        case IObjectEditorManagerIpcCode::COMMAND_GET_ICON_BY_HMID: 
+        case IObjectEditorManagerIpcCode::COMMAND_GET_FORMAT_NAME: 
+        case IObjectEditorManagerIpcCode::COMMAND_GET_FORMAT_BY_HMID_AND_LOCALE: 
+        case IObjectEditorManagerIpcCode::COMMAND_GET_FORMATS_BY_LOCALE: 
+        case IObjectEditorManagerIpcCode::COMMAND_STOP_OBJECT_EDITOR_EXTENSION: { 
+            return ObjectEditorPermissionUtils::CheckCallingPermission(permissionClient_); 
+        } 
+        case IObjectEditorManagerIpcCode::COMMAND_START_UI_ABILITY: { 
+            return true; 
+        } 
+        default: { 
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "unknown code:%{public}d", code); 
+            return false; 
+        } 
+     }
 }
 
 void ObjectEditorManagerSystemAbility::ResetStopSATimer()
