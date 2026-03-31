@@ -356,8 +356,8 @@ void GetBundleInfos(const sptr<AppExecFwk::IBundleMgr> &bundleMgr,
         if (std::find(permissions.begin(), permissions.end(), PERMISSION_SERVER) != permissions.end()) {
             OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "add bundleName:%{public}s",
                 extensionInfo.bundleName.c_str());
+            bundleInfos.emplace(extensionInfo.bundleName, std::move(bundleInfo));
         }
-        bundleInfos.emplace(extensionInfo.bundleName, std::move(bundleInfo));
     }
 }
 
