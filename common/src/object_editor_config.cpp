@@ -24,20 +24,20 @@
 
 namespace OHOS {
 namespace ObjectEditor {
-namespace { 
-constexpr const char *IS_SUPPORT_OBJECT_EDITOR = "const.object_editor.object_editor_enable"; 
+namespace {
+constexpr const char *IS_SUPPORT_OBJECT_EDITOR = "const.object_editor.object_editor_enable";
 }
 // LCOV_EXCL_START
 IMPLEMENT_SINGLE_INSTANCE(ObjectEditorConfig);
 
 bool ObjectEditorConfig::IsSupportObjectEditor()
 {
-    if (!isSupportObjectEditor_.isLoaded) {	 
-        isSupportObjectEditor_.value = system::GetBoolParameter(IS_SUPPORT_OBJECT_EDITOR, false); 
-        isSupportObjectEditor_.isLoaded = true; 
-        OBJECT_EDITOR_LOGI(ObjectEditorDomain::COMMON, "IsSupportObjectEditor: %{public}d", 
-            isSupportObjectEditor_.value); 
-    } 
+    if (!isSupportObjectEditor_.isLoaded) {
+        isSupportObjectEditor_.value = system::GetBoolParameter(IS_SUPPORT_OBJECT_EDITOR, false);
+        isSupportObjectEditor_.isLoaded = true;
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::COMMON, "IsSupportObjectEditor: %{public}d",
+            isSupportObjectEditor_.value);
+    }
     return isSupportObjectEditor_.value;
 }
 
