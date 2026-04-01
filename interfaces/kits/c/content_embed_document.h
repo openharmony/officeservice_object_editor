@@ -107,7 +107,7 @@ typedef struct ContentEmbed_Stream ContentEmbed_Stream;
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
-ContentEmbed_ErrorCode OH_ContentEmbed_CreateDocumentByHmid(
+ContentEmbed_ErrorCode OH_ContentEmbed_CreateDocumentByOEid(
     const char *hmid, ContentEmbed_Document **document);
 
 /**

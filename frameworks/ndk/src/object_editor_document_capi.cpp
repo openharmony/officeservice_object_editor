@@ -303,7 +303,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Helper_RequireStream(ContentEmbed_Stream 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-ContentEmbed_ErrorCode OH_ContentEmbed_CreateDocumentByHmid(const char *hmid, ContentEmbed_Document **document)
+ContentEmbed_ErrorCode OH_ContentEmbed_CreateDocumentByOEid(const char *hmid, ContentEmbed_Document **document)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
