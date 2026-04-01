@@ -191,7 +191,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_DestroyContentEmbedFormat(ContentEmbed_Fo
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
-ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedFormatByHmidAndLocale(const char *hmid,
+ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedFormatByOEidAndLocale(const char *hmid,
                                                                             const char *locale,
                                                                             ContentEmbed_Format *format);
 
