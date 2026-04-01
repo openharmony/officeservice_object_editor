@@ -61,9 +61,9 @@ bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
     locale[offset] = 0;
     ContentEmbed_Format format;
     if (size % RANDOM_NULL != 0) {
-        OH_ContentEmbed_GetContentEmbedFormatByHmidAndLocale(hmid, locale, &format);
+        OH_ContentEmbed_GetContentEmbedFormatByOEidAndLocale(hmid, locale, &format);
     } else {
-        OH_ContentEmbed_GetContentEmbedFormatByHmidAndLocale(hmid, locale, nullptr);
+        OH_ContentEmbed_GetContentEmbedFormatByOEidAndLocale(hmid, locale, nullptr);
     }
     free(hmid);
     free(locale);
