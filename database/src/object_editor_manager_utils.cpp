@@ -33,21 +33,21 @@ namespace ObjectEditor {
 // LCOV_EXCL_START
 namespace {
 constexpr const char* PERMISSION_SERVER = "ohos.permission.REGISTER_OBJECTEDITOR_EXTENSION";
-const std::string CONFIG_FILE_KEY = "content_embed_config";
-const std::string MEDIA_PREFIX = "$media:";
-const std::string STRING_PREFIX = "$string:";
-const std::string HMID = "hmid";
-const std::string FILE_EXTS = "file_exts";
-const std::string ICON_ID = "icon_id";
-const std::string NAME_ID = "name_id";
-const std::string DESCRIPTION_ID = "description_id";
-const std::string BUNDLE_NAME = "bundle_name";
-const std::string MODULE_NAME = "module_name";
-const std::string ABILITY_NAME = "ability_name";
-const std::string CREATE_TIME = "create_time";
-const std::string RESOURCE_PATH = "resource_path";
-const std::string HAP_PATH = "hap_path";
-const std::string VERSION = "version";
+const char* CONFIG_FILE_KEY = "content_embed_config";
+const char* MEDIA_PREFIX = "$media:";
+const char* STRING_PREFIX = "$string:";
+const char* HMID = "hmid";
+const char* FILE_EXTS = "file_exts";
+const char* ICON_ID = "icon_id";
+const char* NAME_ID = "name_id";
+const char* DESCRIPTION_ID = "description_id";
+const char* BUNDLE_NAME = "bundle_name";
+const char* MODULE_NAME = "module_name";
+const char* ABILITY_NAME = "ability_name";
+const char* CREATE_TIME = "create_time";
+const char* RESOURCE_PATH = "resource_path";
+const char* HAP_PATH = "hap_path";
+const char* VERSION = "version";
 
 std::shared_ptr<Media::PixelMap> GetIconPixelMap(Global::Resource::ResourceManager &resMgr,
     int iconId, const std::string &hapPath)

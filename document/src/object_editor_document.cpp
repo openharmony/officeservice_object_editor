@@ -194,7 +194,7 @@ bool ObjectEditorDocument::HandleUserTempScenario()
     if (!storage_) {
         return false;
     }
-    const bool hasUserTmp = userTmpFilePath_.empty();
+    const bool hasUserTmp = !userTmpFilePath_.empty();
     std::string tmpFilePath = GetTmpFilePath();
     const bool hasTmpFilePath = !tmpFilePath.empty();
     if (hasUserTmp && !hasTmpFilePath) {
