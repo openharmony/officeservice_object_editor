@@ -598,7 +598,7 @@ bool ObjectEditorManagerSystemAbility::GrantClientFileUriPermissionToServerExten
     const ObjectEditorDocument &document, const std::string &targetBundleName)
 {
     std::vector<Uri> uriList;
-    if (!document.GetTmpFileUri().has_value() && !document.GetLinking()) {
+    if (document.GetTmpFileUri().has_value() && !document.GetLinking()) {
         uriList.push_back(Uri(document.GetTmpFileUri().value()));
     }
     if (!document.GetSnapshotUri().empty()) {

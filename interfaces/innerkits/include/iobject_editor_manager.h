@@ -27,7 +27,7 @@
 
 namespace OHOS {
 namespace ObjectEditor {
-constexpr int OBJECT_EDITOR_SERVICE_SA_ID = 66528;
+constexpr int OBJECT_EDITOR_SERVICE_SA_ID = 8650;
 constexpr int32_t LOAD_TIMEOUT_MS = 5000;
 constexpr int32_t SA_EXIT_TIME_S = 600;
 
