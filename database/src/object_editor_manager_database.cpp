@@ -464,8 +464,8 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByH
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "hmid: %{public}s, minVersion: %{public}s",
         hmid.c_str(), minVersion.c_str());
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
-    std::string sql = "SELECT hmid, bundle_name, module_name, ability_name from object_editor_info" +
-        " WHERE hmid = ? and min_version >= ?";
+    std::string sql = "SELECT hmid, bundle_name, module_name, ability_name from object_editor_info"
+       " WHERE hmid = ? and min_version >= ?";
     ObjectEditorManagerErrCode errCode = QueryBySql(sql, resultSet, { hmid, minVersion });
     if (errCode != ObjectEditorManagerErrCode::SA_OK || resultSet == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "query failed");
