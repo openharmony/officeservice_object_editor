@@ -33,10 +33,10 @@ constexpr int32_t SA_EXIT_TIME_S = 600;
 
 enum class IObjectEditorManagerIpcCode {
     COMMAND_START_OBJECT_EDITOR_EXTENSION = MIN_TRANSACTION_ID,
-    COMMAND_GET_HMID_BY_FILE_EXTENSION,
-    COMMAND_GET_ICON_BY_HMID,
+    COMMAND_GET_OEID_BY_FILE_EXTENSION,
+    COMMAND_GET_ICON_BY_OEID,
     COMMAND_GET_FORMAT_NAME,
-    COMMAND_GET_FORMAT_BY_HMID_AND_LOCALE,
+    COMMAND_GET_FORMAT_BY_OEID_AND_LOCALE,
     COMMAND_GET_FORMATS_BY_LOCALE,
     COMMAND_STOP_OBJECT_EDITOR_EXTENSION,
     COMMAND_START_UI_ABILITY,
@@ -55,13 +55,13 @@ public:
                                               const sptr<IRemoteObject> &oeExtensionRemoteObject,
                                               const bool &isPackageExtension) = 0;
 
-    virtual ErrCode GetHmidByFileExtension(const std::string &hmid, std::string &fileExtension) = 0;
+    virtual ErrCode GetOEidByFileExtension(const std::string &oeid, std::string &fileExtension) = 0;
 
-    virtual ErrCode GetIconByHmid(const std::string &hmid, std::string &resourceId) = 0;
+    virtual ErrCode GetIconByOEid(const std::string &oeid, std::string &resourceId) = 0;
 
-    virtual ErrCode GetFormatName(const std::string &hmid, const std::string &locale, std::string &InterName) = 0;
+    virtual ErrCode GetFormatName(const std::string &oeid, const std::string &locale, std::string &InterName) = 0;
 
-    virtual ErrCode GetObjectEditorFormatByHmidAndLocale(const std::string &hmid, const std::string &locale,
+    virtual ErrCode GetObjectEditorFormatByOEidAndLocale(const std::string &oeid, const std::string &locale,
                                                          std::unique_ptr<ObjectEditorFormat> &format) = 0;
 
     virtual ErrCode GetObjectEditorFormatsByLocale(const std::string &locale,

@@ -12,7 +12,7 @@
 # limitations under the License.
 # Description: oe service test build.gn file
 
-group("oe_unittest") {
+group("unittest") {
   testonly = true
   deps = [
     "client:client_unittest",

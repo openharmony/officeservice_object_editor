@@ -22,7 +22,7 @@
 namespace OHOS {
 namespace ObjectEditor {
 struct ObjectEditorFormat : public Parcelable {
-    std::string hmid;
+    std::string oeid;
     std::string bundleName;
     std::string moduleName;
     std::string abilityName;

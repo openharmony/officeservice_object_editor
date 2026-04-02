@@ -27,6 +27,7 @@ enum ObjectEditorClientErrCode : int32_t {
     CLIENT_GET_PATH_ERROR,
     CLIENT_PREPARE_FILES_ERROR,
     CLIENT_MEMORY_ALLOCATION_FAILED,
+    CLIENT_COPY_FILE_FAILED,
 };
 
 enum ObjectEditorManagerErrCode : int32_t {

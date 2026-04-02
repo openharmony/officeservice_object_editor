@@ -48,12 +48,12 @@ int32_t ObjectEditorManagerStub::OnRemoteRequestInner(
     switch (static_cast<IObjectEditorManagerIpcCode>(code)) {
         case IObjectEditorManagerIpcCode::COMMAND_START_OBJECT_EDITOR_EXTENSION:
             return HandleStartObjectEditorExtension(data, reply);
-        case IObjectEditorManagerIpcCode::COMMAND_GET_HMID_BY_FILE_EXTENSION:
-            return HandleGetHmidByFileExtension(data, reply);
-        case IObjectEditorManagerIpcCode::COMMAND_GET_ICON_BY_HMID:
-            return HandleGetIconByHmid(data, reply);
-        case IObjectEditorManagerIpcCode::COMMAND_GET_FORMAT_BY_HMID_AND_LOCALE:
-            return HandleGetObjectEditorFormatByHmidAndLocale(data, reply);
+        case IObjectEditorManagerIpcCode::COMMAND_GET_OEID_BY_FILE_EXTENSION:
+            return HandleGetOEidByFileExtension(data, reply);
+        case IObjectEditorManagerIpcCode::COMMAND_GET_ICON_BY_OEID:
+            return HandleGetIconByOEid(data, reply);
+        case IObjectEditorManagerIpcCode::COMMAND_GET_FORMAT_BY_OEID_AND_LOCALE:
+            return HandleGetObjectEditorFormatByOEidAndLocale(data, reply);
         case IObjectEditorManagerIpcCode::COMMAND_GET_FORMATS_BY_LOCALE:
             return HandleGetObjectEditorFormatsByLocale(data, reply);
         case IObjectEditorManagerIpcCode::COMMAND_START_UI_ABILITY:
@@ -110,7 +110,6 @@ int32_t ObjectEditorManagerStub::HandleStartObjectEditorExtension(MessageParcel 
     return ERR_NONE;
 }
 
-
 int32_t ObjectEditorManagerStub::HandleStopObjectEditorExtension(MessageParcel &data, MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::SA, "call");
@@ -137,12 +136,12 @@ int32_t ObjectEditorManagerStub::HandleStopObjectEditorExtension(MessageParcel &
     return ERR_NONE;
 }
 
-int32_t ObjectEditorManagerStub::HandleGetHmidByFileExtension(MessageParcel &data, MessageParcel &reply)
+int32_t ObjectEditorManagerStub::HandleGetOEidByFileExtension(MessageParcel &data, MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::SA, "call");
-    std::string hmid = Str16ToStr8(data.ReadString16());
+    std::string oeid = Str16ToStr8(data.ReadString16());
     std::string fileExtension;
-    ErrCode errCode = GetHmidByFileExtension(hmid, fileExtension);
+    ErrCode errCode = GetOEidByFileExtension(oeid, fileExtension);
     if (!reply.WriteInt32(errCode)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "write errCode failed");
         return ERR_INVALID_VALUE;
@@ -158,12 +157,12 @@ int32_t ObjectEditorManagerStub::HandleGetHmidByFileExtension(MessageParcel &dat
     return ERR_NONE;
 }
 
-int32_t ObjectEditorManagerStub::HandleGetIconByHmid(MessageParcel &data, MessageParcel &reply)
+int32_t ObjectEditorManagerStub::HandleGetIconByOEid(MessageParcel &data, MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::SA, "call");
-    std::string hmid = Str16ToStr8(data.ReadString16());
+    std::string oeid = Str16ToStr8(data.ReadString16());
     std::string resourceId;
-    ErrCode errCode = GetIconByHmid(hmid, resourceId);
+    ErrCode errCode = GetIconByOEid(oeid, resourceId);
     if (!reply.WriteInt32(errCode)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "write errCode failed");
         return ERR_INVALID_VALUE;
@@ -179,14 +178,14 @@ int32_t ObjectEditorManagerStub::HandleGetIconByHmid(MessageParcel &data, Messag
     return ERR_NONE;
 }
 
-int32_t ObjectEditorManagerStub::HandleGetObjectEditorFormatByHmidAndLocale(MessageParcel &data,
+int32_t ObjectEditorManagerStub::HandleGetObjectEditorFormatByOEidAndLocale(MessageParcel &data,
     MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::SA, "call");
-    std::string hmid = Str16ToStr8(data.ReadString16());
+    std::string oeid = Str16ToStr8(data.ReadString16());
     std::string locale = Str16ToStr8(data.ReadString16());
     std::unique_ptr<ObjectEditorFormat> format = nullptr;
-    ErrCode errCode = GetObjectEditorFormatByHmidAndLocale(hmid, locale, format);
+    ErrCode errCode = GetObjectEditorFormatByOEidAndLocale(oeid, locale, format);
     if (!reply.WriteInt32(errCode)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "write errCode failed");
         return ERR_INVALID_VALUE;

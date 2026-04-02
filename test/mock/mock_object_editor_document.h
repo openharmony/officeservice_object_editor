@@ -31,10 +31,10 @@ class MockObjectEditorDocument : public ObjectEditorDocument {
 public:
     MockObjectEditorDocument() = default;
     ~MockObjectEditorDocument() = default;
-    MOCK_METHOD(std::string, GetHmid, (), (const));
-    MOCK_METHOD(void, SetHmid, (const std::string &hmid));
-    MOCK_METHOD(bool, FlushHmid, ());
-    MOCK_METHOD(std::string, GetHmidInternal, (), (const));
+    MOCK_METHOD(std::string, GetOEid, (), (const));
+    MOCK_METHOD(void, SetOEid, (const std::string &oeid));
+    MOCK_METHOD(bool, FlushOEid, ());
+    MOCK_METHOD(std::string, GetOEidInternal, (), (const));
     MOCK_METHOD(bool, GetLinking, ());
     MOCK_METHOD(void, SetLinking, (bool isLinking));
     MOCK_METHOD(Storage *, GetRootStorage, (), (noexcept));

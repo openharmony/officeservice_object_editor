@@ -31,11 +31,11 @@ public:
     MOCK_METHOD(ErrCode, StopObjectEditorExtension, (const std::string &documentId,
         const sptr<IRemoteObject> &oeExtensionRemoteObject,
         const bool &isPackageExtension), (override));
-    MOCK_METHOD(ErrCode, GetHmidByFileExtension, (const std::string &hmid, std::string &fileExtension), (override));
-    MOCK_METHOD(ErrCode, GetIconByHmid, (const std::string &hmid, std::string &resourceId), (override));
-    MOCK_METHOD(ErrCode, GetFormatName, (const std::string &hmid,
+    MOCK_METHOD(ErrCode, GetOEidByFileExtension, (const std::string &oeid, std::string &fileExtension), (override));
+    MOCK_METHOD(ErrCode, GetIconByOEid, (const std::string &oeid, std::string &resourceId), (override));
+    MOCK_METHOD(ErrCode, GetFormatName, (const std::string &oeid,
         const std::string &locale, std::string &InterName), (override));
-    MOCK_METHOD(ErrCode, GetObjectEditorFormatByHmidAndLocale, (const std::string &hmid, const std::string &locale,
+    MOCK_METHOD(ErrCode, GetObjectEditorFormatByOEidAndLocale, (const std::string &oeid, const std::string &locale,
         std::unique_ptr<ObjectEditorFormat> &format), (override));
     MOCK_METHOD(ErrCode, GetObjectEditorFormatsByLocale, (const std::string &locale,
         std::vector<std::unique_ptr<ObjectEditorFormat>> &formats), (override));

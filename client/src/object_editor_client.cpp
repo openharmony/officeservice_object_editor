@@ -57,6 +57,7 @@ constexpr int32_t RIGHT_SHIFT_32 = 32;
 constexpr int32_t RIGHT_SHIFT_40 = 40;
 constexpr int32_t RIGHT_SHIFT_48 = 48;
 constexpr int32_t RIGHT_SHIFT_56 = 56;
+constexpr int32_t METADATA_BUFFER_SIZE = 2048;
 }
 namespace fs = std::filesystem;
 // LCOV_EXCL_START
@@ -261,7 +262,7 @@ void ObjectEditorClient::OnRemoteDied(const wptr<IRemoteObject> &remote)
         return;
     }
     sptr<IRemoteObject> serviceRemote = oeSAProxy_->AsObject();
-    if (serviceRemote != nullptr && serviceRemote == remote.promote()) {
+    if ((serviceRemote != nullptr) && (serviceRemote == remote.promote())) {
         serviceRemote->RemoveDeathRecipient(deathRecipient_);
         oeSAProxy_ = nullptr;
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "onRemoteDied");
@@ -320,29 +321,36 @@ ErrCode ObjectEditorClient::HandlePackage(
     sptr<IObjectEditorService> &oeExtensionRemoteObject)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "in");
+    if ((document->GetOperateType() == OperateType::CREATE_BY_FILE &&
+         !document->GetNativeFileUri().has_value()) ||
+        !document->GetTmpFileUri().has_value()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "document param is invalid");
+        return ERR_INVALID_OPERATION;
+    }
     std::unique_ptr<ObjectEditorDocument> newDocument = nullptr;
     if (document->GetOperateType() == OperateType::CREATE_BY_FILE) {
         newDocument = ObjectEditorDocument::CreateByFile(document->GetOriFilePath());
         if (newDocument == nullptr) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "create document by file failed");
-            return ERR_INVALID_VALUE;
+            return CE_ERR_NULL_POINTER;
         }
-        newDocument->SetHmid(PACKAGE_HMID);
-        if (document->GetNativeFileUri().has_value()) {
-            newDocument->SetNativeFileUri(document->GetNativeFileUri().value());
-        }
+        newDocument->SetOEid(PACKAGE_OEID);
+        newDocument->SetNativeFileUri(document->GetNativeFileUri().value());
     } else if (document->GetOperateType() == OperateType::EDIT) {
-        newDocument = ObjectEditorDocument::CreateByHmid(PACKAGE_HMID);
+        newDocument = ObjectEditorDocument::CreateByOEid(PACKAGE_OEID);
         if (newDocument == nullptr) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "create document by hmid failed");
-            return ERR_INVALID_VALUE;
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "create document by oeid failed");
+            return CE_ERR_NULL_POINTER;
         }
         newDocument->SetOperateType(OperateType::EDIT);
     }
-    newDocument->SetDocumentId(document->GetDocumentId());
-    if (document->GetTmpFileUri().has_value()) {
-        newDocument->SetTmpFileUri(document->GetTmpFileUri().value());
+    if (newDocument == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "newDocument is nullptr");
+        return CE_ERR_NULL_POINTER;
     }
+    newDocument->SetLinking(document->GetLinking());
+    newDocument->SetDocumentId(document->GetDocumentId());
+    newDocument->SetTmpFileUri(document->GetTmpFileUri().value());
     newDocument->SetSnapshotUri(document->GetSnapshotUri());
     sptr<ObjectEditorPackage> packageProxy = sptr<ObjectEditorPackage>::MakeSptr();
     if (packageProxy == nullptr) {
@@ -455,6 +463,14 @@ ErrCode ObjectEditorClient::PrepareFiles(const std::unique_ptr<ObjectEditorDocum
         } else {
             fs::path sourcePath(source);
             fs::path destPath = targetDirPath / sourcePath.filename().string();
+            std::uintmax_t fileSize = fs::file_size(sourcePath);
+            auto spaceInfo = fs::space(destPath.parent_path());
+            std::uintmax_t freeSpace = spaceInfo.available;
+            if (freeSpace < fileSize + METADATA_BUFFER_SIZE) {
+                OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "freeSpace: %{public}llu fileSize: %{public}llu",
+                    static_cast<uint64_t>(freeSpace), static_cast<uint64_t>(fileSize));
+                return ObjectEditorClientErrCode::CLIENT_COPY_FILE_FAILED;
+            }
             result = fs::copy_file(sourcePath, destPath, fs::copy_options::overwrite_existing);
             if (!result) {
                 OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "copy source to sandboxPath failed");
@@ -493,8 +509,8 @@ ErrCode ObjectEditorClient::CleanupTempFiles(const std::unique_ptr<ObjectEditorD
         return ObjectEditorClientErrCode::CLIENT_GET_PATH_ERROR;
     }
     if (!fs::exists(sandboxPath) || !fs::is_directory(sandboxPath)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "sandboxPath not exist or not directory");
-        return ObjectEditorClientErrCode::CLIENT_UNKNOWN_OPERATE;
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "sandboxPath not exist or not directory");
+        return ObjectEditorClientErrCode::CLIENT_OK;
     }
     std::string snapshotPath = sandboxPath + "/snapshot.png";
     std::error_code ec;
@@ -562,7 +578,7 @@ ErrCode ObjectEditorClient::StopObjectEditorExtension(
     return ERR_OK;
 }
 
-ErrCode ObjectEditorClient::GetIcon(const std::string &hmid, std::string &resFilePath)
+ErrCode ObjectEditorClient::GetIcon(const std::string &oeid, std::string &resFilePath)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
     sptr<IObjectEditorManager> objectEditorManagerProxy = GetIObjectEditorManager();
@@ -570,15 +586,15 @@ ErrCode ObjectEditorClient::GetIcon(const std::string &hmid, std::string &resFil
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "get proxy fail");
         return ERR_INVALID_VALUE;
     }
-    ErrCode ret = objectEditorManagerProxy->GetIconByHmid(hmid, resFilePath);
+    ErrCode ret = objectEditorManagerProxy->GetIconByOEid(oeid, resFilePath);
     if (ret != ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "GetIconByHmid failed:%{public}d", ret);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "GetIconByOEid failed:%{public}d", ret);
         return ret;
     }
     return ERR_OK;
 }
 
-ErrCode ObjectEditorClient::GetFormatName(const std::string &hmid,
+ErrCode ObjectEditorClient::GetFormatName(const std::string &oeid,
     const std::string &locale, std::string &formatName)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
@@ -587,7 +603,7 @@ ErrCode ObjectEditorClient::GetFormatName(const std::string &hmid,
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "get proxy fail");
         return ERR_INVALID_VALUE;
     }
-    ErrCode ret = objectEditorManagerProxy->GetFormatName(hmid, locale, formatName);
+    ErrCode ret = objectEditorManagerProxy->GetFormatName(oeid, locale, formatName);
     if (ret != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "GetFormatName failed:%{public}d", ret);
         return ret;
@@ -595,8 +611,8 @@ ErrCode ObjectEditorClient::GetFormatName(const std::string &hmid,
     return ERR_OK;
 }
 
-ErrCode ObjectEditorClient::GetObjectEditorFormatByHmidAndLocale(
-    const std::string &hmid,
+ErrCode ObjectEditorClient::GetObjectEditorFormatByOEidAndLocale(
+    const std::string &oeid,
     const std::string &locale,
     std::unique_ptr<ObjectEditorFormat> &format)
 {
@@ -606,7 +622,7 @@ ErrCode ObjectEditorClient::GetObjectEditorFormatByHmidAndLocale(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "get proxy fail");
         return ERR_INVALID_VALUE;
     }
-    ErrCode ret = objectEditorManagerProxy->GetObjectEditorFormatByHmidAndLocale(hmid, locale, format);
+    ErrCode ret = objectEditorManagerProxy->GetObjectEditorFormatByOEidAndLocale(oeid, locale, format);
     if (ret != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "failed:%{public}d", ret);
         return ret;

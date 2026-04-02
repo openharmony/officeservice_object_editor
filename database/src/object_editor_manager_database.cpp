@@ -21,6 +21,7 @@
 #include "object_editor_manager_resmgr.h"
 #include "system_utils.h"
 #include "user_mgr.h"
+#include "object_editor_permission_utils.h"
 
 namespace OHOS {
 namespace ObjectEditor {
@@ -37,7 +38,7 @@ std::vector<std::string> GetDefaultDbSql()
     defaultSqlList.emplace_back("PRAGMA FOREIGN_KEYS = ON;");
     defaultSqlList.emplace_back("CREATE TABLE IF NOT EXISTS object_editor_info"
         "(id INTEGER PRIMARY KEY AUTOINCREMENT, "
-        "hmid TEXT NOT NULL UNIQUE, "
+        "oeid TEXT NOT NULL UNIQUE, "
         "bundle_name TEXT NOT NULL, "
         "module_name TEXT NOT NULL, "
         "ability_name TEXT NOT NULL, "
@@ -50,8 +51,8 @@ std::vector<std::string> GetDefaultDbSql()
         "icon_id INTEGER NOT NULL, "
         "create_time INTEGER NOT NULL);"
     );
-    // 为hmid创建索引
-    defaultSqlList.emplace_back("CREATE INDEX IF NOT EXISTS idx_hmid ON object_editor_info(hmid);");
+    // 为oeid创建索引
+    defaultSqlList.emplace_back("CREATE INDEX IF NOT EXISTS idx_oeid ON object_editor_info(oeid);");
     return defaultSqlList;
 }
 
@@ -116,6 +117,7 @@ void ObjectEditorManagerDatabase::Init()
     if (!InitSubscriber()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "init subscriber fail");
         store_ = nullptr;
+        return;
     }
 }
 
@@ -148,6 +150,7 @@ void ObjectEditorManagerDatabase::HandleOpenDb()
     if (errCode != ObjectEditorManagerErrCode::SA_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "RefreshDb failed, errCode: %{public}d", errCode);
         store_ = nullptr;
+        return;
     }
 }
 
@@ -275,6 +278,11 @@ void ObjectEditorManagerDatabase::AddBundle(const std::string &bundleName)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "store is null");
         return;
     }
+    if (!ObjectEditorPermissionUtils::CheckRequestPermission(bundleName, PERMISSION_SERVER)) {
+        OBJECT_EDITOR_LOGE(
+            ObjectEditorDomain::DATABASE, "permission denid, bundleName:%{public}s", bundleName.c_str());
+        return;
+    }
     std::vector<NativeRdb::ValuesBucket> buckets;
     ObjectEditorManagerErrCode errCode = GetBundleInfoValuesBuckets(bundleName, buckets);
     if (errCode != ObjectEditorManagerErrCode::SA_OK) {
@@ -295,6 +303,7 @@ void ObjectEditorManagerDatabase::AddBundle(const std::string &bundleName)
     if (ret != NativeRdb::E_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "Commit failed, errCode: %{public}d", ret);
         store_->RollBack();
+        return;
     }
 }
 
@@ -319,6 +328,7 @@ void ObjectEditorManagerDatabase::RemoveBundle(const std::string &bundleName)
     if (ret != NativeRdb::E_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "Commit failed, errCode: %{public}d", ret);
         store_->RollBack();
+        return;
     }
 }
 
@@ -327,6 +337,11 @@ void ObjectEditorManagerDatabase::UpdateBundle(const std::string &bundleName)
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "bundleName: %{public}s", bundleName.c_str());
     if (store_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "store is null");
+        return;
+    }
+    if (!ObjectEditorPermissionUtils::CheckRequestPermission(bundleName, PERMISSION_SERVER)) {
+        OBJECT_EDITOR_LOGE(
+            ObjectEditorDomain::DATABASE, "permission denid, bundleName:%{public}s", bundleName.c_str());
         return;
     }
     std::vector<NativeRdb::ValuesBucket> buckets;
@@ -354,6 +369,7 @@ void ObjectEditorManagerDatabase::UpdateBundle(const std::string &bundleName)
     if (ret != NativeRdb::E_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "Commit failed, errCode: %{public}d", ret);
         store_->RollBack();
+        return;
     }
 }
 
@@ -433,13 +449,13 @@ bool ObjectEditorManagerDatabase::DoDeleteBundle(const std::string &bundleName)
     return true;
 }
 
-ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByHmid(
-    const std::string &hmid, std::unique_ptr<ObjectEditorFormat> &format) const
+ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByOEid(
+    const std::string &oeid, std::unique_ptr<ObjectEditorFormat> &format) const
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "hmid: %{public}s", hmid.c_str());
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "oeid: %{public}s", oeid.c_str());
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
-    std::string sql = "SELECT hmid, bundle_name, module_name, ability_name from object_editor_info WHERE hmid = ?";
-    ObjectEditorManagerErrCode errCode = QueryBySql(sql, resultSet, { hmid });
+    std::string sql = "SELECT oeid, bundle_name, module_name, ability_name from object_editor_info WHERE oeid = ?";
+    ObjectEditorManagerErrCode errCode = QueryBySql(sql, resultSet, { oeid });
     if (errCode != ObjectEditorManagerErrCode::SA_OK || resultSet == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "query failed");
         return errCode;
@@ -451,22 +467,22 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByH
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "format is null");
         return ObjectEditorManagerErrCode::SA_ALLOC_FAIL;
     }
-    rowEntity.Get("hmid").GetString(format->hmid);
+    rowEntity.Get("oeid").GetString(format->oeid);
     rowEntity.Get("bundle_name").GetString(format->bundleName);
     rowEntity.Get("module_name").GetString(format->moduleName);
     rowEntity.Get("ability_name").GetString(format->abilityName);
     return ObjectEditorManagerErrCode::SA_OK;
 }
 
-ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByHmidAndMinVersion(
-    const std::string &hmid, const std::string &minVersion, std::unique_ptr<ObjectEditorFormat> &format) const
+ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByOEidAndMinVersion(
+    const std::string &oeid, const std::string &minVersion, std::unique_ptr<ObjectEditorFormat> &format) const
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "hmid: %{public}s, minVersion: %{public}s",
-        hmid.c_str(), minVersion.c_str());
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "oeid: %{public}s, minVersion: %{public}s",
+        oeid.c_str(), minVersion.c_str());
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
-    std::string sql = "SELECT hmid, bundle_name, module_name, ability_name from object_editor_info"
-       " WHERE hmid = ? and min_version >= ?";
-    ObjectEditorManagerErrCode errCode = QueryBySql(sql, resultSet, { hmid, minVersion });
+    std::string sql = "SELECT oeid, bundle_name, module_name, ability_name from object_editor_info"
+       " WHERE oeid = ? and min_version >= ?";
+    ObjectEditorManagerErrCode errCode = QueryBySql(sql, resultSet, { oeid, minVersion });
     if (errCode != ObjectEditorManagerErrCode::SA_OK || resultSet == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "query failed");
         return errCode;
@@ -479,22 +495,22 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByH
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "format is null");
         return ObjectEditorManagerErrCode::SA_ALLOC_FAIL;
     }
-    rowEntity.Get("hmid").GetString(format->hmid);
+    rowEntity.Get("oeid").GetString(format->oeid);
     rowEntity.Get("bundle_name").GetString(format->bundleName);
     rowEntity.Get("module_name").GetString(format->moduleName);
     rowEntity.Get("ability_name").GetString(format->abilityName);
     return ObjectEditorManagerErrCode::SA_OK;
 }
 
-ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByHmidAndLocale(
-    const std::string &hmid, const std::string &locale, std::unique_ptr<ObjectEditorFormat> &format) const
+ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByOEidAndLocale(
+    const std::string &oeid, const std::string &locale, std::unique_ptr<ObjectEditorFormat> &format) const
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "hmid: %{public}s, locale: %{public}s",
-        hmid.c_str(), locale.c_str());
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "oeid: %{public}s, locale: %{public}s",
+        oeid.c_str(), locale.c_str());
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
-    ObjectEditorManagerErrCode errCode = QueryBySql("SELECT hmid, bundle_name, module_name, resource_path,"
-        " hap_path, file_exts, name_id, description_id, icon_id from object_editor_info WHERE hmid = ?",
-        resultSet, { hmid });
+    ObjectEditorManagerErrCode errCode = QueryBySql("SELECT oeid, bundle_name, module_name, resource_path,"
+        " hap_path, file_exts, name_id, description_id, icon_id from object_editor_info WHERE oeid = ?",
+        resultSet, { oeid });
     if (errCode != ObjectEditorManagerErrCode::SA_OK || resultSet == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "query failed");
         return errCode;
@@ -518,7 +534,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatsBy
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "locale: %{public}s", locale.c_str());
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
-    ObjectEditorManagerErrCode errCode = QueryBySql("SELECT hmid, bundle_name, module_name, resource_path,"
+    ObjectEditorManagerErrCode errCode = QueryBySql("SELECT oeid, bundle_name, module_name, resource_path,"
         " hap_path, file_exts, name_id, description_id, icon_id from object_editor_info", resultSet);
     if (errCode != ObjectEditorManagerErrCode::SA_OK || resultSet == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "query failed");
@@ -551,7 +567,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatsBy
         return ObjectEditorManagerErrCode::SA_INVALID_PARAMETER;
     }
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
-    ObjectEditorManagerErrCode errCode = QueryBySql("SELECT hmid, bundle_name, module_name, ability_name,"
+    ObjectEditorManagerErrCode errCode = QueryBySql("SELECT oeid, bundle_name, module_name, ability_name,"
         " file_exts from object_editor_info WHERE file_exts like ? ORDER BY create_time DESC",
         resultSet, { "%" + fileExt + "%" });
     if (errCode != ObjectEditorManagerErrCode::SA_OK || resultSet == nullptr) {
@@ -572,7 +588,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatsBy
             formats.clear();
             return ObjectEditorManagerErrCode::SA_ALLOC_FAIL;
         }
-        rowEntity.Get("hmid").GetString(format->hmid);
+        rowEntity.Get("oeid").GetString(format->oeid);
         rowEntity.Get("bundle_name").GetString(format->bundleName);
         rowEntity.Get("module_name").GetString(format->moduleName);
         rowEntity.Get("ability_name").GetString(format->abilityName);
