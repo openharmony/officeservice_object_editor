@@ -57,7 +57,7 @@ inline uint64_t GetCurrentFileTime()
     auto duration = now.time_since_epoch();
     uint64_t secs = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
     uint64_t nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count() % NANOS_PER_SEC;
-    return (secs * SEC_TO_UNIX_EPOCH) * WINDOWS_TICK + (nanos / 100ULL);
+    return (secs + SEC_TO_UNIX_EPOCH) * WINDOWS_TICK + (nanos / 100ULL);
 }
 
 inline uint32_t ReadUint32(const Byte *ptr)
