@@ -56,9 +56,9 @@ public:
         const sptr<IObjectEditorService> &oeExtensionRemoteObject,
         const bool &isPackageExtension);
 
-    ErrCode GetIcon(const std::string &hmid, std::string &resourceId);
-    ErrCode GetFormatName(const std::string &hmid, const std::string &locale, std::string &formatName);
-    ErrCode GetObjectEditorFormatByHmidAndLocale(const std::string &hmid, const std::string &locale,
+    ErrCode GetIcon(const std::string &oeid, std::string &resourceId);
+    ErrCode GetFormatName(const std::string &oeid, const std::string &locale, std::string &formatName);
+    ErrCode GetObjectEditorFormatByOEidAndLocale(const std::string &oeid, const std::string &locale,
         std::unique_ptr<ObjectEditorFormat> &format);
     ErrCode GetObjectEditorFormatsByLocale(const std::string &locale,
         std::vector<std::unique_ptr<ObjectEditorFormat>> &formats);
@@ -87,12 +87,12 @@ private:
     void InitLoadState();
     bool WaitLoadStateChange();
     ErrCode PrepareFiles(const std::unique_ptr<ObjectEditorDocument> &document);
-    ErrCode CleanupTempFiles(const std::unique_ptr<ObjectEditorDocument> &document);
-    std::string GetTempDir(const std::unique_ptr<ObjectEditorDocument> &document);
     ErrCode HandlePackage(
         const std::unique_ptr<ObjectEditorDocument> &document,
         const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
         sptr<IObjectEditorService> &oeExtensionRemoteObject);
+    ErrCode CleanupTempFiles(const std::unique_ptr<ObjectEditorDocument> &document);
+    std::string GetTempDir(const std::unique_ptr<ObjectEditorDocument> &document);
     std::string GenRandomUuid();
 
     std::mutex proxyMutex_;

@@ -26,7 +26,7 @@ namespace ObjectEditor {
 class MockStorage : public Storage {
 public:
     MockStorage(const char *filename) : Storage(filename) {}
-    MockStorage(const std::string &hmid) : Storage(hmid) {}
+    MockStorage(const std::string &oeid) : Storage(oeid) {}
     MOCK_METHOD(int, Result, (), (const));
     MOCK_METHOD(void, Path, (std::string & result), (const));
     MOCK_METHOD(void, ListEntries, (std::vector<const DirEntry *> & result), (const));

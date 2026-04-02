@@ -45,7 +45,7 @@ ErrCode ObjectEditorClientCallback::OnUpdate(std::unique_ptr<ObjectEditorDocumen
         return ERR_INVALID_VALUE;
     }
     document->RestoreStorage();
-    proxy_->ceDocument->hmid = document->GetHmid();
+    proxy_->ceDocument->oeid = document->GetOEid();
     proxy_->ceDocument->oeDocumentInner = std::move(document);
     proxy_->onUpdateFunc(proxy_);
     return ERR_OK;

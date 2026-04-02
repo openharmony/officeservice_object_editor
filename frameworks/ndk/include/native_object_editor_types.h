@@ -34,7 +34,7 @@
 
 static constexpr uint32_t MAX_FILENAME_EXTENSIONS_NUM = 100;
 struct ContentEmbed_Format {
-    std::string hmid;
+    std::string oeid;
     std::string locale;
     std::string name;
     std::string description;
@@ -63,7 +63,7 @@ struct ContentEmbed_ExtensionProxy {
 };
 
 struct ContentEmbed_Document {
-    std::string hmid;
+    std::string oeid;
     bool linking = false;
     std::string tmpFileUri;
     std::string oriFileUri;

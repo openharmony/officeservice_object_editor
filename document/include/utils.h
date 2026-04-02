@@ -50,6 +50,7 @@ constexpr size_t MODIFIED_TIME_HIGH_OFFSET = 0x70;
 constexpr uint64_t WINDOWS_TICK = 10000000ULL;
 constexpr uint64_t SEC_TO_UNIX_EPOCH = 11644473600ULL;
 constexpr uint64_t NANOS_PER_SEC = 1000000000ULL;
+constexpr uint32_t READ_U32_BUF_LEN = 4;
 
 inline uint64_t GetCurrentFileTime()
 {
@@ -57,11 +58,19 @@ inline uint64_t GetCurrentFileTime()
     auto duration = now.time_since_epoch();
     uint64_t secs = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
     uint64_t nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count() % NANOS_PER_SEC;
+    // 检查系统时钟的分辨率
+    auto period = std::chrono::high_resolution_clock::period();
+    if (period.den != NANOS_PER_SEC) {
+        OBJECT_EDITOR_LOGW(ObjectEditorDomain::CLIENT_NDK, "System clock resolution is not nanosecond-precise");
+    }
     return (secs * SEC_TO_UNIX_EPOCH) * WINDOWS_TICK + (nanos / 100ULL);
 }
 
-inline uint32_t ReadUint32(const Byte *ptr)
+inline uint32_t ReadUint32(const Byte *ptr, uint32_t size = READ_U32_BUF_LEN)
 {
+    if (size < READ_U32_BUF_LEN) {
+        return 0;
+    }
     return static_cast<uint32_t>(ptr[BYTE_INDEX_0]) |
            (static_cast<uint32_t>(ptr[BYTE_INDEX_1]) << BYTE_SHIFT_1) |
            (static_cast<uint32_t>(ptr[BYTE_INDEX_2]) << BYTE_SHIFT_2) |
@@ -104,9 +113,9 @@ namespace {
     constexpr uint32_t LENGTH = 32;
     constexpr uint32_t LENGTH_HYPHEN = 36;
 }
-std::optional<CLSID> ParseHmidToClsid(const std::string &uuid);
+std::optional<CLSID> ParseOEidToClsid(const std::string &uuid);
 
-std::string FormatClsidToHmid(const CLSID &clsid);
+std::string FormatClsidToOEid(const CLSID &clsid);
 
 }  // namespace ObjectEditor
 }  // namespace OHOS

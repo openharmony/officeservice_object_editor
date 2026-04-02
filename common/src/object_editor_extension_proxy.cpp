@@ -62,7 +62,7 @@ ErrCode ObjectEditorExtensionProxy::DoEdit(const std::string &documentId)
     }
     if (!data.WriteString(documentId)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write documentId fail");
-        return ERR_INVALID_DATA;
+        return ERR_INVALID_VALUE;
     }
 
     sptr<IRemoteObject> remote = Remote();
@@ -95,7 +95,7 @@ ErrCode ObjectEditorExtensionProxy::GetEditStatus(const std::string &documentId,
     }
     if (isEditing == nullptr || isModified == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "isEditing or isModified is null");
-        return ERR_INVALID_VALUE;
+        return ERR_INVALID_DATA;
     }
     if (!data.WriteString(documentId)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write documentId fail");
