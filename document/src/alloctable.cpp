@@ -87,14 +87,19 @@ bool AllocTable::Follow(uint32_t start, std::vector<uint32_t> &chain) const
 
 size_t AllocTable::Unused()
 {
-    for (size_t i = 0; i < data_.size(); i++) {
+    // 从上次找到的位置开始搜索
+    for (size_t i = nextUnused_; i < data_.size(); i++) {
         if (data_[i] == Avail) {
+            nextUnused_ = i + 1;
             return i;
         }
     }
 
+    // 没有找到，扩展表
+    nextUnused_ = 0;
     size_t block = data_.size();
     Resize(data_.size() + kGrowStep);
+    nextUnused_ = block + 1;  // 更新下一个搜索位置
     return block;
 }
 

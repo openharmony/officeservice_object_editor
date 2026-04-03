@@ -961,27 +961,28 @@ uint32_t StorageIO::SaveBlockToFile(uint64_t physicalOffset, const Byte *data, u
     if (!file_->good()) {
         return 0;
     }
-    file_->write(reinterpret_cast<const char *>(data), static_cast<std::streamsize>(len));
-    if (!file_->good()) {
-        return 0;
-    }
-    file_->flush();
-    if (!file_->good()) {
-        return 0;
-    }
-    if (auto *buf = file_->rdbuf()) {
-        if (buf->pubsync() == -1) {
+
+    // 只在必要时刷新
+    writeBufferSize_ += len;
+    if (writeBufferSize_ >= MAX_BUFFER_SIZE) {
+        file_->flush();
+        if (!file_->good()) {
             return 0;
         }
-    } else {
-        return 0;
+        if (auto *buf = file_->rdbuf()) {
+            if (buf->pubsync() == -1) {
+                return 0;
+            }
+        } else {
+            return 0;
+        }
+        writeBufferSize_ = 0;
     }
-
     const auto endPos = file_->tellp();
     if (endPos == static_cast<std::streampos>(-1)) {
         return 0;
     }
-    file_->seekg(endPos);
+    file_->seekp(endPos);
     if (!file_->good()) {
         return 0;
     }

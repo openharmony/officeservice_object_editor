@@ -414,6 +414,8 @@ private:
     std::vector<uint32_t> difatSectors_;       // 所有 DIFAT block 编号
     std::set<uint32_t> protectedBlocksCache_;  // 保护块缓存（避免重复构建）
     bool protectedBlocksDirty_ = true;         // 缓存失效标志
+    uint32_t writeBufferSize_ = 0;             // 已缓冲的字节数
+    static constexpr uint32_t MAX_BUFFER_SIZE = 16 * 1024 * 1024;  // 16M 缓冲区
 
     // 禁止拷贝与赋值
     StorageIO(const StorageIO &) = delete;

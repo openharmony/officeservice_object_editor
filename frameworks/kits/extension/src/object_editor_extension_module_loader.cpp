@@ -33,7 +33,7 @@ Extension *ObjectEditorExtensionModuleLoader::Create(const std::unique_ptr<Runti
 std::map<std::string, std::string> ObjectEditorExtensionModuleLoader::GetParams()
 {
     std::map<std::string, std::string> params;
-    params.insert(std::pair<std::string, std::string>("type", "600"));
+    params.insert(std::pair<std::string, std::string>("type", "511"));
     params.insert(std::pair<std::string, std::string>("name", "ObjectEditorExtension"));
     return params;
 }
