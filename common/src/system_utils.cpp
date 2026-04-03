@@ -56,9 +56,9 @@ uint64_t GetFileSize(const std::string &filePath)
     return fileSize;
 }
 
-std::string ReadFile(const std::string &filepath)
+std::string ReadFile(const std::string &filePath)
 {
-    std::filesystem::path path(filepath);
+    std::filesystem::path path(filePath);
     std::string directory = path.parent_path().string() + "/";
     std::string filename = path.filename().string();
 

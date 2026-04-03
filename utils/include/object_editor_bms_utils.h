@@ -13,11 +13,20 @@
  * limitations under the License.
  */
 
-option_stub_hooks on;  // 开启钩子功能
-sequenceable OHOS.IRemoteObject;
-sequenceable document..OHOS.ObjectEditorDocument;
-interface OHOS.ObjectEditor.IObjectEditorManager {
-    void startObjectEditorExtension([in] uniqueptr<ObjectEditorDocument> document, [out] IRemoteObject remoteObject);
-    void getOEidByFileExtension([in] String fileExtension, [out] String fileExtension);
-    void getIconByOEid([in] String oeid, [out] String resourceId);
-}
+#ifndef OHOS_OBJECT_EDITOR_BMS_UTILS_H
+#define OHOS_OBJECT_EDITOR_BMS_UTILS_H
+
+#include "want.h"
+
+namespace OHOS {
+namespace ObjectEditor {
+
+class ObjectEditorBmsUtils {
+public:
+    static bool QueryAbilityInfo(const AAFwk::Want &want, AppExecFwk::AbilityInfo &abilityInfo);
+    static sptr<AppExecFwk::IBundleMgr> GetBundleMgr();
+};
+} // namespace ObjectEditor
+} // namespace OHOS
+
+#endif // OHOS_OBJECT_EDITOR_BMS_UTILS_H

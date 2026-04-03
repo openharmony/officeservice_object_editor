@@ -21,11 +21,11 @@
 namespace OHOS {
 namespace ObjectEditor {
 
-static constexpr unsigned int OBJECT_EDITOR_HILOG_DOMAIN = 0xD003901;
+static constexpr unsigned int OBJECT_EDITOR_HILOG_DOMAIN = 0xD005118;
 
 // 设置Domain ID，新加模块，加到UNDEFINED前
 enum class ObjectEditorDomain {
-    COMMON = OBJECT_EDITOR_HILOG_DOMAIN,
+    COMMON,
     UTILS,
     SA,
     CLIENT,
@@ -75,15 +75,20 @@ static inline unsigned int GetHiLogDomain(OHOS::ObjectEditor::ObjectEditorDomain
     return static_cast<unsigned int>(domain);
 }
 
-#define OBJECT_EDITOR_LOGE(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_ERROR, GetHiLogDomain(domain), \
+#define OBJECT_EDITOR_LOGE(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_ERROR, \
+    OHOS::ObjectEditor::OBJECT_EDITOR_HILOG_DOMAIN, \
     GetHiLogTag(domain), "[%{public}s]" fmt, __FUNCTION__, ##__VA_ARGS__)
-#define OBJECT_EDITOR_LOGF(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_FATAL, GetHiLogDomain(domain), \
+#define OBJECT_EDITOR_LOGF(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_FATAL, \
+    OHOS::ObjectEditor::OBJECT_EDITOR_HILOG_DOMAIN, \
     GetHiLogTag(domain), "[%{public}s]" fmt, __FUNCTION__, ##__VA_ARGS__)
-#define OBJECT_EDITOR_LOGW(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_WARN, GetHiLogDomain(domain), \
+#define OBJECT_EDITOR_LOGW(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_WARN, \
+    OHOS::ObjectEditor::OBJECT_EDITOR_HILOG_DOMAIN, \
     GetHiLogTag(domain), "[%{public}s]" fmt, __FUNCTION__, ##__VA_ARGS__)
-#define OBJECT_EDITOR_LOGI(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_INFO, GetHiLogDomain(domain), \
+#define OBJECT_EDITOR_LOGI(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_INFO, \
+    OHOS::ObjectEditor::OBJECT_EDITOR_HILOG_DOMAIN, \
     GetHiLogTag(domain), "[%{public}s]" fmt, __FUNCTION__, ##__VA_ARGS__)
-#define OBJECT_EDITOR_LOGD(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_DEBUG, GetHiLogDomain(domain), \
+#define OBJECT_EDITOR_LOGD(domain, fmt, ...) HILOG_IMPL(LOG_CORE, LOG_DEBUG, \
+    OHOS::ObjectEditor::OBJECT_EDITOR_HILOG_DOMAIN, \
     GetHiLogTag(domain), "[%{public}s]" fmt, __FUNCTION__, ##__VA_ARGS__)
 
 } // namespace ObjectEditor

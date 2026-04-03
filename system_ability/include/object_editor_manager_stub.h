@@ -35,9 +35,9 @@ public:
 
 private:
     int32_t HandleStartObjectEditorExtension(MessageParcel &data, MessageParcel &reply);
-    int32_t HandleGetHmidByFileExtension(MessageParcel &data, MessageParcel &reply);
-    int32_t HandleGetIconByHmid(MessageParcel &data, MessageParcel &reply);
-    int32_t HandleGetObjectEditorFormatByHmidAndLocale(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleGetOEidByFileExtension(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleGetIconByOEid(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleGetObjectEditorFormatByOEidAndLocale(MessageParcel &data, MessageParcel &reply);
     int32_t HandleGetObjectEditorFormatsByLocale(MessageParcel &data, MessageParcel &reply);
     int32_t HandleStartUIAbility(MessageParcel &data, MessageParcel &reply);
     int32_t HandleStopObjectEditorExtension(MessageParcel &data, MessageParcel &reply);

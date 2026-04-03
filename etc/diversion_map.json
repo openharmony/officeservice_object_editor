@@ -1,9 +1,19 @@
 {
-    "diversion": [
+    "diversions": [
         {
-            "sourceHmid": "",
-            "targetHmid": "",
-            "minVersion": "1.0.0"
+            "sourceOEid": "91493441-5A91-11CF-8700-00AA0060263B",
+            "targetOEid": "E0A8B74A-445B-4D7A-8B05-07B5509B50D8",
+            "minVersion": "1.0"
+        },
+        {
+            "sourceOEid": "0002E559-0000-0000-C000-000000000046",
+            "targetOEid": "E0A8B74B-445B-4D7A-8B05-07B5509B50D8",
+            "minVersion": "1.0"
+        },
+        {
+            "sourceOEid": "00020812-0000-0000-C000-000000000046",
+            "targetOEid": "E0A8B74C-445B-4D7A-8B05-07B5509B50D8",
+            "minVersion": "1.0"
         }
     ]
 }

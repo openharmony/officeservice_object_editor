@@ -119,8 +119,8 @@ ErrCode ObjectEditorManagerProxy::StopObjectEditorExtension(
     return ERR_OK;
 }
 
-ErrCode ObjectEditorManagerProxy::GetHmidByFileExtension(
-    const std::string &hmid,
+ErrCode ObjectEditorManagerProxy::GetOEidByFileExtension(
+    const std::string &oeid,
     std::string &fileExtension)
 {
     MessageParcel data;
@@ -130,8 +130,8 @@ ErrCode ObjectEditorManagerProxy::GetHmidByFileExtension(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write descriptor fail");
         return ERR_INVALID_VALUE;
     }
-    if (!data.WriteString16(Str8ToStr16(hmid))) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write hmid failed");
+    if (!data.WriteString16(Str8ToStr16(oeid))) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write oeid failed");
         return ERR_INVALID_DATA;
     }
     sptr<IRemoteObject> remote = Remote();
@@ -140,7 +140,7 @@ ErrCode ObjectEditorManagerProxy::GetHmidByFileExtension(
         return ERR_INVALID_DATA;
     }
     int32_t result = remote->SendRequest(
-        static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_GET_HMID_BY_FILE_EXTENSION),
+        static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_GET_OEID_BY_FILE_EXTENSION),
         data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
@@ -156,8 +156,8 @@ ErrCode ObjectEditorManagerProxy::GetHmidByFileExtension(
     return ERR_OK;
 }
 
-ErrCode ObjectEditorManagerProxy::GetIconByHmid(
-    const std::string &hmid,
+ErrCode ObjectEditorManagerProxy::GetIconByOEid(
+    const std::string &oeid,
     std::string &resFilePath)
 {
     MessageParcel data;
@@ -167,8 +167,8 @@ ErrCode ObjectEditorManagerProxy::GetIconByHmid(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write descriptor fail");
         return ERR_INVALID_VALUE;
     }
-    if (!data.WriteString16(Str8ToStr16(hmid))) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write hmid failed");
+    if (!data.WriteString16(Str8ToStr16(oeid))) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write oeid failed");
         return ERR_INVALID_DATA;
     }
     sptr<IRemoteObject> remote = Remote();
@@ -177,7 +177,7 @@ ErrCode ObjectEditorManagerProxy::GetIconByHmid(
         return ERR_INVALID_DATA;
     }
     int32_t result = remote->SendRequest(
-        static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_GET_ICON_BY_HMID),
+        static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_GET_ICON_BY_OEID),
         data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
@@ -194,7 +194,7 @@ ErrCode ObjectEditorManagerProxy::GetIconByHmid(
 }
 
 ErrCode ObjectEditorManagerProxy::GetFormatName(
-    const std::string &hmid,
+    const std::string &oeid,
     const std::string &locale,
     std::string &formatName)
 {
@@ -205,8 +205,8 @@ ErrCode ObjectEditorManagerProxy::GetFormatName(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write descriptor fail");
         return ERR_INVALID_VALUE;
     }
-    if (!data.WriteString16(Str8ToStr16(hmid))) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write hmid failed");
+    if (!data.WriteString16(Str8ToStr16(oeid))) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write oeid failed");
         return ERR_INVALID_DATA;
     }
     if (!data.WriteString(locale)) {
@@ -235,7 +235,7 @@ ErrCode ObjectEditorManagerProxy::GetFormatName(
     return ERR_OK;
 }
 
-ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatByHmidAndLocale(const std::string &hmid,
+ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatByOEidAndLocale(const std::string &oeid,
     const std::string &locale, std::unique_ptr<ObjectEditorFormat> &format)
 {
     MessageParcel data;
@@ -245,8 +245,8 @@ ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatByHmidAndLocale(const std
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write descriptor fail");
         return ERR_INVALID_VALUE;
     }
-    if (!data.WriteString16(Str8ToStr16(hmid))) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write hmid failed");
+    if (!data.WriteString16(Str8ToStr16(oeid))) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write oeid failed");
         return ERR_INVALID_DATA;
     }
     if (!data.WriteString16(Str8ToStr16(locale))) {
@@ -259,7 +259,7 @@ ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatByHmidAndLocale(const std
         return ERR_INVALID_DATA;
     }
     int32_t result = remote->SendRequest(
-        static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_GET_FORMAT_BY_HMID_AND_LOCALE),
+        static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_GET_FORMAT_BY_OEID_AND_LOCALE),
         data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
@@ -302,7 +302,7 @@ ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatsByLocale(const std::stri
         static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_GET_FORMATS_BY_LOCALE), data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
-        return result;
+        return ERR_INVALID_DATA;
     }
     ErrCode errCode = reply.ReadInt32();
     if (FAILED(errCode)) {
@@ -310,7 +310,7 @@ ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatsByLocale(const std::stri
         return errCode;
     }
     int32_t count = reply.ReadInt32();
-    if (count <= 0 || count > MAX_READ_COUNT) {
+    if (count < 0 || count > MAX_READ_COUNT) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "ReadInt32 count failed");
         return ERR_INVALID_DATA;
     }

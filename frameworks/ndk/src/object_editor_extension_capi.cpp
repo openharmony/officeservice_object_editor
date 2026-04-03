@@ -22,7 +22,6 @@
 #include "want_manager.h"
 #include "image_packer.h"
 
-
 // LCOV_EXCL_START
 using namespace OHOS::ObjectEditor;
 
@@ -93,6 +92,22 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnObjectAttachFunc(
     return CE_ERR_OK;
 }
 
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_UnRegisterOnObjectAttachFunc(
+    ContentEmbed_ExtensionInstanceHandle instance)
+{
+    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
+    if (supported != CE_ERR_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
+        return supported;
+    }
+    if (instance == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "instance is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    instance->onObjectAttachFunc = nullptr;
+    return CE_ERR_OK;
+}
+
 ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnObjectDetachFunc(
     ContentEmbed_ExtensionInstanceHandle instance, OH_ContentEmbed_Extension_OnObjectDetachFunc onObjectDetachFunc)
 {
@@ -114,7 +129,24 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnObjectDetachFunc(
     return CE_ERR_OK;
 }
 
-ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnWriteToDataStreamFunc(ContentEmbed_ObjectHandle object,
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_UnRegisterOnObjectDetachFunc(
+    ContentEmbed_ExtensionInstanceHandle instance)
+{
+    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
+    if (supported != CE_ERR_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
+        return supported;
+    }
+    if (instance == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "instance is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    instance->onObjectDetachFunc = nullptr;
+    return CE_ERR_OK;
+}
+
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnWriteToDataStreamFunc(
+    ContentEmbed_ObjectHandle object,
     OH_ContentEmbed_Extension_OnWriteToDataStreamFunc onWriteToDataStreamFunc)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
@@ -135,8 +167,8 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnWriteToDataStreamFunc
     return CE_ERR_OK;
 }
 
-ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetSnapshotFunc(ContentEmbed_ObjectHandle object,
-    OH_ContentEmbed_Extension_OnGetSnapshotFunc onGetSnapshotFunc)
+ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetSnapshotFunc(
+    ContentEmbed_ObjectHandle object, OH_ContentEmbed_Extension_OnGetSnapshotFunc onGetSnapshotFunc)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();

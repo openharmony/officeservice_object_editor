@@ -16,6 +16,8 @@
 #ifndef MOCK_HILOG_H
 #define MOCK_HILOG_H
 
+#include "hilog/log.h"
+
 namespace OHOS {
 namespace ObjectEditor {
 std::string logMsg;

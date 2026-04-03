@@ -42,21 +42,21 @@ public:
         const sptr<IRemoteObject> &oeExtensionRemoteObject,
         const bool &isPackageExtension) override;
 
-    ErrCode GetHmidByFileExtension(
-        const std::string &hmid,
+    ErrCode GetOEidByFileExtension(
+        const std::string &oeid,
         std::string &fileExtension) override;
 
-    ErrCode GetIconByHmid(
-        const std::string &hmid,
+    ErrCode GetIconByOEid(
+        const std::string &oeid,
         std::string &resourceId) override;
 
     ErrCode GetFormatName(
-        const std::string &hmid,
+        const std::string &oeid,
         const std::string &locale,
         std::string &formatName) override;
 
-    ErrCode GetObjectEditorFormatByHmidAndLocale(
-        const std::string &hmid,
+    ErrCode GetObjectEditorFormatByOEidAndLocale(
+        const std::string &oeid,
         const std::string &locale,
         std::unique_ptr<ObjectEditorFormat> &format) override;
 

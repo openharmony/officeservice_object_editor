@@ -23,7 +23,8 @@ config("libobject_editor_utils_private_config") {
 config("libobject_editor_utils_public_config") {
     include_dirs = [
         "include",
-        "include/dfx"
+        "include/dfx",
+        "${object_editor_path}/common/include",
     ]
 }
 
@@ -44,6 +45,8 @@ ohos_shared_library("content_embed_utils") {
         "${object_editor_path}/utils/src/object_editor_event_manager.cpp",
         "${object_editor_path}/utils/src/object_editor_screen_change_receiver.cpp",
         "${object_editor_path}/utils/src/object_editor_permission_utils.cpp",
+        "${object_editor_path}/utils/src/object_editor_bms_utils.cpp",
+        "${object_editor_path}/common/src/user_mgr.cpp",
     ]
     external_deps = [
         "hilog:libhilog",
@@ -54,6 +57,10 @@ ohos_shared_library("content_embed_utils") {
         "bundle_framework:appexecfwk_base",
         "bundle_framework:appexecfwk_core",
         "ipc:ipc_core",
+        "samgr:samgr_proxy",
+        "bundle_framework:bundle_napi_common",
+        "c_utils:utils",
+        "os_account:os_account_innerkits",
     ]
     defines = []
     part_name = "object_editor"
