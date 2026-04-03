@@ -77,6 +77,7 @@ public:
 private:
     std::vector<uint32_t> data_;
     uint32_t blockSize_ = 0;
+    size_t nextUnused_ = 0;
 
     AllocTable(const AllocTable &);
     AllocTable &operator=(const AllocTable &);
