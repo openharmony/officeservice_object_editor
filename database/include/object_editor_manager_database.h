@@ -43,11 +43,11 @@ public:
     void RemoveBundle(const std::string &bundleName);
     void UpdateBundle(const std::string &bundleName);
 
-    ObjectEditorManagerErrCode GetObjectEditorFormatByHmid(const std::string &hmid,
+    ObjectEditorManagerErrCode GetObjectEditorFormatByOEid(const std::string &oeid,
         std::unique_ptr<ObjectEditorFormat> &format) const;
-    ObjectEditorManagerErrCode GetObjectEditorFormatByHmidAndMinVersion(const std::string &hmid,
+    ObjectEditorManagerErrCode GetObjectEditorFormatByOEidAndMinVersion(const std::string &oeid,
         const std::string &minVersion, std::unique_ptr<ObjectEditorFormat> &format) const;
-    ObjectEditorManagerErrCode GetObjectEditorFormatByHmidAndLocale(const std::string &hmid,
+    ObjectEditorManagerErrCode GetObjectEditorFormatByOEidAndLocale(const std::string &oeid,
         const std::string &locale, std::unique_ptr<ObjectEditorFormat> &format) const;
     ObjectEditorManagerErrCode GetObjectEditorFormatsByLocale(const std::string &locale,
         std::vector<std::unique_ptr<ObjectEditorFormat>> &formats) const;

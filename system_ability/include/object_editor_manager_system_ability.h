@@ -34,8 +34,8 @@ namespace OHOS {
 namespace ObjectEditor {
 
 struct ContentEmbed_Diversion {
-    std::string sourceHmid;
-    std::string targetHmid;
+    std::string sourceOEid;
+    std::string targetOEid;
     std::string minVersion;
 };
 
@@ -67,18 +67,18 @@ public:
         const std::string &documentId,
         const sptr<IRemoteObject> &oeExtensionRemoteObject,
         const bool &isPackageExtension) override;
-    ErrCode GetHmidByFileExtension(
-        const std::string &hmid,
+    ErrCode GetOEidByFileExtension(
+        const std::string &oeid,
         std::string &fileExtension) override;
-    ErrCode GetIconByHmid(
-        const std::string &hmid,
+    ErrCode GetIconByOEid(
+        const std::string &oeid,
         std::string &resourceId) override;
     ErrCode GetFormatName(
-        const std::string &hmid,
+        const std::string &oeid,
         const std::string &locale,
         std::string &formatName) override;
-    ErrCode GetObjectEditorFormatByHmidAndLocale(
-        const std::string &hmid,
+    ErrCode GetObjectEditorFormatByOEidAndLocale(
+        const std::string &oeid,
         const std::string &locale,
         std::unique_ptr<ObjectEditorFormat> &format) override;
     ErrCode GetObjectEditorFormatsByLocale(
@@ -105,8 +105,8 @@ private:
     bool GrantClientFileUriPermissionToServerExtension(const ObjectEditorDocument &document,
         const std::string &targetBundleName);
     void ReadDiversionsJsonFile();
-    ObjectEditorManagerErrCode GetTargetHmid(const std::string &sourceHmid,
-        std::string &targetHmid, std::string &minVersion);
+    ObjectEditorManagerErrCode GetTargetOEid(const std::string &sourceOEid,
+        std::string &targetOEid, std::string &minVersion);
     ObjectEditorManagerErrCode HandleDefaultAppFormatPolicy(
         const std::string &fileExt,
         std::vector<std::unique_ptr<ObjectEditorFormat>> &formats,
@@ -114,7 +114,7 @@ private:
     ObjectEditorManagerErrCode GetDefaultAppBundleNameByFileExt(
         const std::string &fileExt, std::string &bundleName);
     ObjectEditorManagerErrCode CheckIsAllowStartExtension(const ObjectEditorDocument &document);
-    ObjectEditorManagerErrCode HandleOperateHasHmid(const ObjectEditorDocument &document,
+    ObjectEditorManagerErrCode HandleOperateHasOEid(const ObjectEditorDocument &document,
         std::unique_ptr<ObjectEditorFormat> &objectEditorFormat);
     ObjectEditorManagerErrCode GetObjectEditorFormat(const ObjectEditorDocument &document,
         std::unique_ptr<ObjectEditorFormat> &objectEditorFormat, bool &isPackageExtension);

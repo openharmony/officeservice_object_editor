@@ -24,7 +24,7 @@ namespace ObjectEditor {
 
 class ObjectEditorClientCallbackProxy : public IRemoteProxy<IObjectEditorClientCallback> {
 public:
-    explicit ObjectEditorClientCallbackProxy(const sptr<IRemoteObject>& remote)
+    explicit ObjectEditorClientCallbackProxy(const sptr<IRemoteObject> &remote)
         : IRemoteProxy<IObjectEditorClientCallback>(remote) {}
     virtual ~ObjectEditorClientCallbackProxy() {}
     ErrCode OnUpdate(std::unique_ptr<ObjectEditorDocument> &document) override;

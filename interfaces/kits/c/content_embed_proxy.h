@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ * Copyright (c) 2026-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -54,7 +54,7 @@ extern "C" {
 #define MAX_DESCRIPTION_LENGTH (1 * 1024)
 
 /**
- * @brief Defines the ContentEmbed_Info structure type.
+ * @brief Define the ContentEmbed_Info structure type.
  *
  * Provides methods for Content Embed Kit.
  *
@@ -63,7 +63,7 @@ extern "C" {
 typedef struct ContentEmbed_Info ContentEmbed_Info;
 
 /**
- * @brief Defines the ContentEmbed_Format structure type.
+ * @brief Define the ContentEmbed_Format structure type.
  *
  * Provides methods for Content Embed Kit.
  *
@@ -88,7 +88,7 @@ typedef struct ContentEmbed_Format ContentEmbed_Format;
 ContentEmbed_ErrorCode OH_ContentEmbed_CreateContentEmbedInfo(ContentEmbed_Info **info);
 
 /**
- * @brief Destroy an {@link ContentEmbed_Info} instance and reclaims the memory occupied by it.
+ * @brief Destroy an {@link ContentEmbed_Info} instance and reclaims the memory occupied by the instance.
  *
  * @param info Represents a pointer to an {@link ContentEmbed_Info} instance.
  * After this call, the pointer becomes invalid and must not be used.
@@ -102,9 +102,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_CreateContentEmbedInfo(ContentEmbed_Info 
 ContentEmbed_ErrorCode OH_ContentEmbed_DestroyContentEmbedInfo(ContentEmbed_Info *info);
 
 /**
- * @brief Get an {@link ContentEmbed_Info} instance based on the specified locale.
+ * @brief Get an {@link ContentEmbed_Info} instance based on the locale.
  *
- * @param locale Represents a locale value.
+ * @param locale Represents locale value.
  * @param info Represents a pointer to an {@link ContentEmbed_Info} instance.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
@@ -164,7 +164,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetFormatFromInfo(const ContentEmbed_Info
 ContentEmbed_ErrorCode OH_ContentEmbed_CreateContentEmbedFormat(ContentEmbed_Format **format);
 
 /**
- * @brief Destroy an {@link ContentEmbed_Format} instance and reclaims the memory occupied by it.
+ * @brief Destroy an {@link ContentEmbed_Format} instance and reclaims the memory occupied by the instance.
  *
  * @param format Represents a pointer to an {@link ContentEmbed_Format} instance.
  * After this call, the pointer becomes invalid and must not be used.
@@ -178,10 +178,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_CreateContentEmbedFormat(ContentEmbed_For
 ContentEmbed_ErrorCode OH_ContentEmbed_DestroyContentEmbedFormat(ContentEmbed_Format *format);
 
 /**
- * @brief Get an {@link ContentEmbed_Format} instance based on the specified hmid and locale.
+ * @brief Get a {@link ContentEmbed_Format} instance using oeid and locale.
  *
- * @param hmid Represents the hmid value.
- * @param locale Represents a locale value.
+ * @param oeid Represents the oeid value.
+ * @param locale Represents the locale value.
  * @param format Output parameter represents a pointer to an {@link ContentEmbed_Format} instance.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
@@ -191,15 +191,15 @@ ContentEmbed_ErrorCode OH_ContentEmbed_DestroyContentEmbedFormat(ContentEmbed_Fo
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
-ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedFormatByOEidAndLocale(const char *hmid,
+ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedFormatByOEidAndLocale(const char *oeid,
                                                                             const char *locale,
                                                                             ContentEmbed_Format *format);
 
 /**
- * @brief Get the hmid value from an {@link ContentEmbed_Format} instance.
+ * @brief Get oeid from {@link ContentEmbed_Format} instance.
  *
  * @param format Represents a pointer to an {@link ContentEmbed_Format} instance.
- * @param hmid Output parameter represents the hmid value.
+ * @param oeid Output parameter represents the oeid value.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
@@ -207,10 +207,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedFormatByOEidAndLocale(cons
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
-ContentEmbed_ErrorCode OH_ContentEmbed_GetHmidFromFormat(const ContentEmbed_Format *format, char hmid[MAX_HMID_LENGTH]);
+ContentEmbed_ErrorCode OH_ContentEmbed_GetOEidFromFormat(const ContentEmbed_Format *format, char *oeid);
 
 /**
- * @brief Get name and description from an {@link ContentEmbed_Format} instance.
+ * @brief Get name and description from {@link ContentEmbed_Format} instance.
  *
  * @param format Represents a pointer to an {@link ContentEmbed_Format} instance.
  * @param name Output parameter represents the name value.
@@ -223,16 +223,15 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetHmidFromFormat(const ContentEmbed_Form
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_GetNameAndDescriptionFromFormat(const ContentEmbed_Format *format,
-                                                                       char name[MAX_NAME_LENGTH],
-                                                                       char description[MAX_DESCRIPTION_LENGTH]);
+                                                                       char *name, char *description);
 
 /**
- * @brief Get icon from an {@link ContentEmbed_Format} instance.
- * The caller is responsible for destroying the instance by calling
+ * @brief Get icon from {@link ContentEmbed_Format} instance.
+ * The caller is responsible for destroying the icon by calling
  * {@link OH_PixelmapNative_Destroy} to avoid memory leaks.
  *
  * @param format Represents a pointer to an {@link ContentEmbed_Format} instance.
- * @param icon The output pixelmap of the application.
+ * @param icon The output pixel map of the application.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
@@ -244,12 +243,12 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetNameAndDescriptionFromFormat(const Con
 ContentEmbed_ErrorCode OH_ContentEmbed_GetIconFromFormat(const ContentEmbed_Format *format, OH_PixelmapNative **icon);
 
 /**
- * @brief Get all file name extensions from an {@link ContentEmbed_Format} instance.
+ * @brief Get all file name extensions in the {@link ContentEmbed_Format} data.
  *
- * @param format Represents a pointer to an {@link ContentEmbed_Format} instance.
- * @param count Output parameter represents the file name extensions count value.
- * @return Returns string array that in {@link ContentEmbed_Format} when input parameters is valid,
-           otherwise return nullptr.
+ * @param format Represents a pointer to an instance of {@link ContentEmbed_Format}.
+ * @param count Represents the file name extensions count that is a output param.
+ * @return Returns string array that in {@link ContentEmbed_Format} when input parameters valid,
+ *         otherwise return nullptr.
  * @since 24
  */
 char** OH_ContentEmbed_GetFileNameExtensionsFromFormat(const ContentEmbed_Format *format, unsigned int *count);
@@ -287,7 +286,8 @@ typedef struct ContentEmbed_Capability ContentEmbed_Capability;
  * {@link OH_ContentEmbed_DestroyExtensionProxy} to avoid memory leaks.
  *
  * @param document Represents a pointer to an {@link ContentEmbed_Document} instance.
- * @param proxy Represents the pointer to an {@link ContentEmbed_ExtensionProxy} instance which will be created.
+ * @param proxy Represents a pointer to an {@link ContentEmbed_ExtensionProxy} instance which will be created.
+ * @param contextPtr Represents a pointer to an context instance.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
@@ -298,10 +298,11 @@ typedef struct ContentEmbed_Capability ContentEmbed_Capability;
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_CreateExtensionProxy(ContentEmbed_Document *document,
-                                                            ContentEmbed_ExtensionProxy **proxy);
+                                                            ContentEmbed_ExtensionProxy **proxy,
+                                                            void *contextPtr);
 
 /**
- * @brief Destroy an {@link ContentEmbed_ExtensionProxy} instance and reclaims the memory occupied by it.
+ * @brief Destroy an {@link ContentEmbed_ExtensionProxy} instance and reclaims the memory occupied by the instance.
  *
  * @param proxy Represents a pointer to an {@link ContentEmbed_ExtensionProxy} instance.
  * After this call, the pointer becomes invalid and must not be used.
@@ -318,7 +319,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_DestroyExtensionProxy(ContentEmbed_Extens
 /**
  * @brief Called when the server notifies the client to update the content embed document.
  *
- * You need to implement this function, set it to {@link OH_ContentEmbed_ExtensionProxy} through {@link
+ * You need to implement this function, set it to {@link ContentEmbed_ExtensionProxy} through {@link
  * OH_ContentEmbed_Proxy_RegisterOnUpdateFunc} to complete the registration.
  *
  * @param proxy Represents a pointer to an
@@ -331,7 +332,7 @@ typedef void (*OH_ContentEmbed_ClientCallbackOnUpdateFunc)(
 /**
  * @brief Called when the server notifies the client that an error has occurred.
  *
- * You need to implement this function, set it to {@link OH_ContentEmbed_ExtensionProxy} through {@link
+ * You need to implement this function, set it to {@link ContentEmbed_ExtensionProxy} through {@link
  * OH_ContentEmbed_Proxy_RegisterOnErrorFunc} to complete the registration.
  *
  * @param proxy Represents a pointer to an
@@ -343,9 +344,9 @@ typedef void (*OH_ContentEmbed_ClientCallbackOnErrorFunc)(
     ContentEmbed_ExtensionProxy *proxy, ContentEmbed_ErrorCode error);
 
 /**
- * @brief Called when content embed document editing is finished.
+ * @brief Called when content embed document editing is completed.
  *
- * You need to implement this function, set it to {@link OH_ContentEmbed_ExtensionProxy} through {@link
+ * You need to implement this function, set it to {@link ContentEmbed_ExtensionProxy} through {@link
  * OH_ContentEmbed_Proxy_RegisterOnEditingFinishedFunc} to complete the registration.
  *
  * @param proxy Represents a pointer to an
@@ -357,8 +358,9 @@ typedef void (*OH_ContentEmbed_ClientCallbackOnEditingFinishedFunc)(
     ContentEmbed_ExtensionProxy *proxy, bool dataModified);
 
 /**
- * @brief Called when content embed document extension is stopped.
- * You need to implement this function, set it to {@link OH_ContentEmbed_ExtensionProxy} through {@link
+ * @brief Called when the content embed document extension is stopped.
+ *
+ * You need to implement this function, set it to {@link ContentEmbed_ExtensionProxy} through {@link
  * OH_ContentEmbed_Proxy_RegisterOnExtensionStoppedFunc} to complete the registration.
  *
  * @param proxy Represents a pointer to an
@@ -424,7 +426,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_RegisterOnEditingFinishedFunc(
  *
  * @param proxy Represents a pointer to an {@link ContentEmbed_ExtensionProxy} instance which will be set function in.
  * @param onExtensionStoppedFunc Represents function {@link OH_ContentEmbed_ClientCallbackOnExtensionStoppedFunc}
- *                               which will be set in.
+ *                              which will be set in.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
@@ -536,16 +538,19 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetCapability(ContentEmbed_Extensio
                                                            uint32_t *bitmask);
 
 /**
- * @brief Get the document from the server application.
+ * @brief Get the document from the {@link ContentEmbed_ExtensionProxy} instance.
+ * The document can be created by calling {@link OH_ContentEmbed_CreateDocumentByOEid},
+ * {@link OH_ContentEmbed_CreateDocumentByFile}, or {@link OH_ContentEmbed_LoadDocumentFromFile}.
+ * The document should be destroyed by calling
+ * {@link OH_ContentEmbed_DestroyDocument} when it is no longer needed.
  *
  * @param proxy Represents a pointer to an {@link ContentEmbed_ExtensionProxy} instance.
- * @param ceDocument Output parameter representing the document of a content embed extension instance.
+ * @param ceDocument Represents a pointer to an {@link ContentEmbed_Document} that is a output param.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
- * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetDocument(ContentEmbed_ExtensionProxy *proxy,

@@ -20,10 +20,11 @@
 
 namespace OHOS {
 namespace ObjectEditor {
-
+constexpr const char* PERMISSION_SERVER = "ohos.permission.REGISTER_OBJECTEDITOR_EXTENSION";
 class ObjectEditorPermissionUtils {
 public:
     static bool CheckCallingPermission(const std::string &permission);
+    static bool CheckRequestPermission(const std::string &bundleName, const std::string &permission);
 };
 } // namespace ObjectEditor
 } // namespace OHOS

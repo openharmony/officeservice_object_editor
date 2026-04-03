@@ -168,19 +168,19 @@ void ObjectEditorManagerSystemAbility::ReadDiversionsJsonFile()
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "get diversion item failed");
             continue;
         }
-        cJSON *sourceHmid = cJSON_GetObjectItemCaseSensitive(diversionItem, "sourceHmid");
-        cJSON *targetHmid = cJSON_GetObjectItemCaseSensitive(diversionItem, "targetHmid");
+        cJSON *sourceOEid = cJSON_GetObjectItemCaseSensitive(diversionItem, "sourceOEid");
+        cJSON *targetOEid = cJSON_GetObjectItemCaseSensitive(diversionItem, "targetOEid");
         cJSON *minVersion = cJSON_GetObjectItemCaseSensitive(diversionItem, "minVersion");
-        if (!cJSON_IsString(sourceHmid) || !cJSON_IsString(targetHmid) || !cJSON_IsString(minVersion)) {
+        if (!cJSON_IsString(sourceOEid) || !cJSON_IsString(targetOEid) || !cJSON_IsString(minVersion)) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "get field failed");
             continue;
         }
         ContentEmbed_Diversion diversion;
-        diversion.sourceHmid = sourceHmid->valuestring;
-        diversion.targetHmid = targetHmid->valuestring;
+        diversion.sourceOEid = sourceOEid->valuestring;
+        diversion.targetOEid = targetOEid->valuestring;
         diversion.minVersion = minVersion->valuestring;
         std::unique_lock lock(diversionMapMutex_);
-        diversionMap_[diversion.sourceHmid] = diversion;
+        diversionMap_[diversion.sourceOEid] = diversion;
     }
     cJSON_Delete(json);
 }
@@ -225,10 +225,10 @@ bool ObjectEditorManagerSystemAbility::CheckCallingPermission(uint32_t code)
 {
     switch (static_cast<IObjectEditorManagerIpcCode>(code)) {
         case IObjectEditorManagerIpcCode::COMMAND_START_OBJECT_EDITOR_EXTENSION:
-        case IObjectEditorManagerIpcCode::COMMAND_GET_HMID_BY_FILE_EXTENSION:
-        case IObjectEditorManagerIpcCode::COMMAND_GET_ICON_BY_HMID:
+        case IObjectEditorManagerIpcCode::COMMAND_GET_OEID_BY_FILE_EXTENSION:
+        case IObjectEditorManagerIpcCode::COMMAND_GET_ICON_BY_OEID:
         case IObjectEditorManagerIpcCode::COMMAND_GET_FORMAT_NAME:
-        case IObjectEditorManagerIpcCode::COMMAND_GET_FORMAT_BY_HMID_AND_LOCALE:
+        case IObjectEditorManagerIpcCode::COMMAND_GET_FORMAT_BY_OEID_AND_LOCALE:
         case IObjectEditorManagerIpcCode::COMMAND_GET_FORMATS_BY_LOCALE:
         case IObjectEditorManagerIpcCode::COMMAND_STOP_OBJECT_EDITOR_EXTENSION: {
             return ObjectEditorPermissionUtils::CheckCallingPermission(permissionClient_);
@@ -266,10 +266,10 @@ ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::GetObjectEditorForm
     std::unique_ptr<ObjectEditorFormat> &objectEditorFormat,
     bool &isPackageExtension)
 {
-    if (document.GetHmid() == PACKAGE_HMID &&
-        (document.GetOperateType() == OperateType::CREATE_BY_HMID ||
+    if (document.GetOEid() == PACKAGE_OEID &&
+        (document.GetOperateType() == OperateType::CREATE_BY_OEID ||
          document.GetOperateType() == OperateType::EDIT)) {
-        OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "hmid is package");
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "oeid is package");
         isPackageExtension = true;
         return ObjectEditorManagerErrCode::SA_OK;
     }
@@ -291,7 +291,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::GetObjectEditorForm
             errCode = HandleDefaultAppFormatPolicy(fileExt, objectEditorFormats, objectEditorFormat);
         }
     } else {
-        errCode = HandleOperateHasHmid(document, objectEditorFormat);
+        errCode = HandleOperateHasOEid(document, objectEditorFormat);
     }
     return errCode;
 }
@@ -322,7 +322,7 @@ ErrCode ObjectEditorManagerSystemAbility::StartObjectEditorExtension(
         return errCode;
     }
     if (document->GetOperateType() == OperateType::CREATE_BY_FILE) {
-        document->SetHmid(objectEditorFormat->hmid);
+        document->SetOEid(objectEditorFormat->oeid);
     }
     if (!GrantClientFileUriPermissionToServerExtension(*document, objectEditorFormat->bundleName)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "grant client file permission to server extension failed");
@@ -355,22 +355,22 @@ ErrCode ObjectEditorManagerSystemAbility::StartObjectEditorExtension(
     return ObjectEditorManagerErrCode::SA_OK;
 }
 
-ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::HandleOperateHasHmid(
+ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::HandleOperateHasOEid(
     const ObjectEditorDocument &document,
     std::unique_ptr<ObjectEditorFormat> &objectEditorFormat)
 {
     objectEditorFormat = std::make_unique<ObjectEditorFormat>();
-    auto errCode = ObjectEditorManagerDatabase::GetInstance().GetObjectEditorFormatByHmid(
-        document.GetHmid(), objectEditorFormat);
+    auto errCode = ObjectEditorManagerDatabase::GetInstance().GetObjectEditorFormatByOEid(
+        document.GetOEid(), objectEditorFormat);
     if (errCode == ObjectEditorManagerErrCode::SA_DB_QUERY_EMPTY &&
         document.GetOperateType() == OperateType::EDIT) {
-        std::string targetHmid;
+        std::string targetOEid;
         std::string minVersion;
-        errCode = GetTargetHmid(document.GetHmid(), targetHmid, minVersion);
-        if (errCode == ObjectEditorManagerErrCode::SA_OK && !targetHmid.empty() &&
+        errCode = GetTargetOEid(document.GetOEid(), targetOEid, minVersion);
+        if (errCode == ObjectEditorManagerErrCode::SA_OK && !targetOEid.empty() &&
             !minVersion.empty()) {
-            errCode = ObjectEditorManagerDatabase::GetInstance().GetObjectEditorFormatByHmidAndMinVersion(
-                targetHmid, minVersion, objectEditorFormat);
+            errCode = ObjectEditorManagerDatabase::GetInstance().GetObjectEditorFormatByOEidAndMinVersion(
+                targetOEid, minVersion, objectEditorFormat);
         }
     }
     return errCode;
@@ -453,21 +453,21 @@ ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::CheckIsAllowStartEx
     return ObjectEditorManagerErrCode::SA_CHECK_START_EXTENSION_OK;
 }
 
-ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::GetTargetHmid(const std::string &sourceHmid,
-    std::string &targetHmid, std::string &minVersion)
+ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::GetTargetOEid(const std::string &sourceOEid,
+    std::string &targetOEid, std::string &minVersion)
 {
     std::shared_lock lock(diversionMapMutex_);
-    auto it = diversionMap_.find(sourceHmid);
+    auto it = diversionMap_.find(sourceOEid);
     if (it == diversionMap_.end()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "source hmid %{public}s get diversion failed",
-            sourceHmid.c_str());
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "source oeid %{public}s get diversion failed",
+            sourceOEid.c_str());
         return ObjectEditorManagerErrCode::SA_OK;
     }
-    targetHmid = it->second.targetHmid;
+    targetOEid = it->second.targetOEid;
     minVersion = it->second.minVersion;
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "source hmid %{public}s get target hmid %{public}s "
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "source oeid %{public}s get target oeid %{public}s "
         "min version %{public}s",
-        sourceHmid.c_str(), targetHmid.c_str(), minVersion.c_str());
+        sourceOEid.c_str(), targetOEid.c_str(), minVersion.c_str());
     return ObjectEditorManagerErrCode::SA_OK;
 }
 
@@ -507,32 +507,32 @@ ErrCode ObjectEditorManagerSystemAbility::StopObjectEditorExtension(
     return errCode;
 }
 
-ErrCode ObjectEditorManagerSystemAbility::GetHmidByFileExtension(const std::string &hmid,
+ErrCode ObjectEditorManagerSystemAbility::GetOEidByFileExtension(const std::string &oeid,
     std::string &fileExtension)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "in");
     return ObjectEditorManagerErrCode::SA_OK;
 }
 
-ErrCode ObjectEditorManagerSystemAbility::GetIconByHmid(const std::string &hmid, std::string &resourceId)
+ErrCode ObjectEditorManagerSystemAbility::GetIconByOEid(const std::string &oeid, std::string &resourceId)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "in");
     return ObjectEditorManagerErrCode::SA_OK;
 }
 
-ErrCode ObjectEditorManagerSystemAbility::GetFormatName(const std::string &hmid, const std::string &locale,
+ErrCode ObjectEditorManagerSystemAbility::GetFormatName(const std::string &oeid, const std::string &locale,
     std::string &formatName)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "in");
     return ObjectEditorManagerErrCode::SA_OK;
 }
 
-ErrCode ObjectEditorManagerSystemAbility::GetObjectEditorFormatByHmidAndLocale(const std::string &hmid,
+ErrCode ObjectEditorManagerSystemAbility::GetObjectEditorFormatByOEidAndLocale(const std::string &oeid,
     const std::string &locale, std::unique_ptr<ObjectEditorFormat> &format)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "hmid: %{public}s, locale: %{public}s",
-        hmid.c_str(), locale.c_str());
-    return ObjectEditorManagerDatabase::GetInstance().GetObjectEditorFormatByHmidAndLocale(hmid,
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "oeid: %{public}s, locale: %{public}s",
+        oeid.c_str(), locale.c_str());
+    return ObjectEditorManagerDatabase::GetInstance().GetObjectEditorFormatByOEidAndLocale(oeid,
         locale, format);
 }
 

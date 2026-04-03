@@ -20,7 +20,7 @@
 #include "fuzzer/FuzzedDataProvider.h"
 #include "native_object_editor_types.h"
 #include "object_editor_extension_proxy.h"
-#include "oh_contentembed_format_gethmid.h"
+#include "oh_contentembed_format_getoeid.h"
 
 using namespace OHOS::ObjectEditor;
 namespace {
@@ -38,13 +38,13 @@ bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
     }
     ContentEmbed_Format info;
     int32_t length = provider.ConsumeIntegralInRange<int32_t>(0, 50); // 50: max length
-    char *hmid = new char[length];
+    char *oeid = new char[length];
     if (provider.ConsumeBool()) {
-        OH_ContentEmbed_GetHmidFromFormat(&info, hmid);
+        OH_ContentEmbed_GetOEidFromFormat(&info, oeid);
     } else {
-        OH_ContentEmbed_GetHmidFromFormat(nullptr, hmid);
+        OH_ContentEmbed_GetOEidFromFormat(nullptr, oeid);
     }
-    delete[] hmid;
+    delete[] oeid;
     return true;
 }
 }

@@ -27,16 +27,16 @@
 #include "object_editor_manager_resmgr.h"
 #include "system_utils.h"
 #include "user_mgr.h"
+#include "object_editor_permission_utils.h"
 
 namespace OHOS {
 namespace ObjectEditor {
 // LCOV_EXCL_START
 namespace {
-constexpr const char* PERMISSION_SERVER = "ohos.permission.REGISTER_OBJECTEDITOR_EXTENSION";
 const char* CONFIG_FILE_KEY = "content_embed_config";
 const char* MEDIA_PREFIX = "$media:";
 const char* STRING_PREFIX = "$string:";
-const char* HMID = "hmid";
+const char* OEID = "oeid";
 const char* FILE_EXTS = "file_exts";
 const char* ICON_ID = "icon_id";
 const char* NAME_ID = "name_id";
@@ -142,14 +142,14 @@ bool ReadConfigFile(std::string &fileContent, Global::Resource::ResourceManager 
     return true;
 }
 
-bool GetConfigHmid(const nlohmann::json &json, std::string &hmid)
+bool GetConfigOEid(const nlohmann::json &json, std::string &oeid)
 {
-    auto it = json.find(HMID);
+    auto it = json.find(OEID);
     if (it == json.end() || !it->is_string()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "invalid config file, no hmid");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "invalid config file, no oeid");
         return false;
     }
-    hmid = it.value();
+    oeid = it.value();
     return true;
 }
 
@@ -210,8 +210,8 @@ bool ParseConfigEntry(NativeRdb::ValuesBucket &bucket, const nlohmann::json &con
     Global::Resource::ResourceManager &resMgr, const AppExecFwk::BundleInfo &bundleInfo,
     const AppExecFwk::ExtensionAbilityInfo &extensionInfo)
 {
-    std::string hmid;
-    if (!GetConfigHmid(configEntry, hmid)) {
+    std::string oeid;
+    if (!GetConfigOEid(configEntry, oeid)) {
         return false;
     }
     std::string fileExts;
@@ -230,7 +230,7 @@ bool ParseConfigEntry(NativeRdb::ValuesBucket &bucket, const nlohmann::json &con
     if (!GetConfigDescriptionId(configEntry, descriptionId)) {
         descriptionId = -1;
     }
-    bucket.PutString(HMID, hmid);
+    bucket.PutString(OEID, oeid);
     bucket.PutString(BUNDLE_NAME, extensionInfo.bundleName);
     bucket.PutString(MODULE_NAME, extensionInfo.moduleName);
     bucket.PutString(ABILITY_NAME, extensionInfo.name);
@@ -352,8 +352,7 @@ void GetBundleInfos(const sptr<AppExecFwk::IBundleMgr> &bundleMgr,
                 extensionInfo.bundleName.c_str());
             continue;
         }
-        std::vector<std::string> permissions = bundleInfo.reqPermissions;
-        if (std::find(permissions.begin(), permissions.end(), PERMISSION_SERVER) != permissions.end()) {
+        if (ObjectEditorPermissionUtils::CheckRequestPermission(extensionInfo.bundleName, PERMISSION_SERVER)) {
             OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "add bundleName:%{public}s",
                 extensionInfo.bundleName.c_str());
             bundleInfos.emplace(extensionInfo.bundleName, std::move(bundleInfo));
@@ -370,7 +369,7 @@ bool BuildObjectEditorFormat(ObjectEditorFormat &format, NativeRdb::RowEntity &r
     int descriptionId = -1;
     int iconId = -1;
 
-    rowEntity.Get(HMID).GetString(format.hmid);
+    rowEntity.Get(OEID).GetString(format.oeid);
     rowEntity.Get(BUNDLE_NAME).GetString(format.bundleName);
     rowEntity.Get(MODULE_NAME).GetString(format.moduleName);
     rowEntity.Get(ABILITY_NAME).GetString(format.abilityName);
