@@ -982,7 +982,7 @@ uint32_t StorageIO::SaveBlockToFile(uint64_t physicalOffset, const Byte *data, u
     if (endPos == static_cast<std::streampos>(-1)) {
         return 0;
     }
-    file_->seekp(endPos);
+    file_->seekg(endPos);
     if (!file_->good()) {
         return 0;
     }
