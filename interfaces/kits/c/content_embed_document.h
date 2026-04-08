@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ * Copyright (c) 2026-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -44,7 +44,7 @@ extern "C" {
  *
  * @since 24
  */
-#define MAX_PATH_LENGTH (1 * 1024)
+#define MAX_PATH_LENGTH (4 * 1024)
 
 /**
  * @brief Define the ContentEmbed_Document structure type.
@@ -67,7 +67,7 @@ typedef struct ContentEmbed_Storage ContentEmbed_Storage;
 /**
  * @brief Define the ContentEmbed_StorageElement structure type.
  *
- * @brief Provides methods for Content Embed Kit.
+ * Provides methods for Content Embed Kit.
  *
  * @since 24
  */
@@ -76,7 +76,7 @@ typedef struct ContentEmbed_StorageElement ContentEmbed_StorageElement;
 /**
  * @brief Define the ContentEmbed_StorageElements structure type.
  *
- * @brief Provides methods for Content Embed Kit.
+ * Provides methods for Content Embed Kit.
  *
  * @since 24
  */
@@ -92,11 +92,11 @@ typedef struct ContentEmbed_StorageElements ContentEmbed_StorageElements;
 typedef struct ContentEmbed_Stream ContentEmbed_Stream;
 
 /**
- * @brief Create a new {@link ContentEmbed_Document} instance using the provided hmid.
+ * @brief Create a new {@link ContentEmbed_Document} instance using the provided oeid.
  * The caller is responsible for destroying the instance by calling
  * {@link OH_ContentEmbed_DestroyDocument} to avoid memory leaks.
  *
- * @param hmid Represents hmid value.
+ * @param oeid Represents oeid value.
  * @param document Represents a pointer to an {@link ContentEmbed_Document} instance which will be created.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
@@ -107,8 +107,8 @@ typedef struct ContentEmbed_Stream ContentEmbed_Stream;
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
-ContentEmbed_ErrorCode OH_ContentEmbed_CreateDocumentByHmid(
-    const char *hmid, ContentEmbed_Document **document);
+ContentEmbed_ErrorCode OH_ContentEmbed_CreateDocumentByOEid(
+    const char *oeid, ContentEmbed_Document **document);
 
 /**
  * @brief Create a new {@link ContentEmbed_Document} instance from the source file.
@@ -174,10 +174,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_Read(
     uint8_t *buffer, size_t length, ContentEmbed_Document *document, size_t offset, size_t *readSize);
 
 /**
- * @brief Get hmid from {@link ContentEmbed_Document} instance.
+ * @brief Get oeid from {@link ContentEmbed_Document} instance.
  *
  * @param document Represents a pointer to an {@link ContentEmbed_Document} instance.
- * @param hmid Output parameter represents the hmid value.
+ * @param oeid Output parameter represents the oeid value.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
@@ -186,8 +186,8 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_Read(
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
-ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetHmid(
-    const ContentEmbed_Document *document, char hmid[MAX_HMID_LENGTH]);
+ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetOEid(
+    const ContentEmbed_Document *document, char *oeid);
 
 /**
  * @brief whether the source file is linked to the {@link ContentEmbed_Document} instance.
@@ -262,6 +262,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_Flush(const ContentEmbed_Documen
  * {@link OH_ContentEmbed_DestroyStorage} to avoid memory leaks.
  *
  * @param parentStorage Represents a pointer to an {@link ContentEmbed_Storage} instance.
+ *                      when an entry is to be deleted from the parent storage, invoke either
+ *                      {@link OH_ContentEmbed_Storage_DeleteEntry} for a specific entry or
+ *                      {@link OH_ContentEmbed_Storage_DeleteAllEntry} to remove all entries,
+ *                      depending on the required operation.
  * @param name Represents the name of an {@link ContentEmbed_Storage} instance which will be created.
  * @param childStorage Output parameter represents a pointer to an {@link ContentEmbed_Storage} instance.
  * @return Returns a specific error code.
@@ -278,8 +282,8 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_CreateStorage(
     const ContentEmbed_Storage *parentStorage, const char *name, ContentEmbed_Storage **childStorage);
 
 /**
- * @brief Obtain the child {@link ContentEmbed_Storage} instance from its parent instance.
- * The caller is responsible for destroying the storage by calling
+ * @brief Obtain the child storage instance from its parent instance.
+ * The caller is responsible for destroying the child storage by calling
  * {@link OH_ContentEmbed_DestroyStorage} to avoid memory leaks.
  *
  * @param parentStorage Represents a pointer to an {@link ContentEmbed_Storage} instance.
@@ -304,6 +308,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetStorage(
  * {@link OH_ContentEmbed_DestroyStream} to avoid memory leaks.
  *
  * @param parentStorage Represents a pointer to an {@link ContentEmbed_Storage} instance.
+ *                      when an entry is to be deleted from the parent storage, invoke either
+ *                      {@link OH_ContentEmbed_Storage_DeleteEntry} for a specific entry or
+ *                      {@link OH_ContentEmbed_Storage_DeleteAllEntry} to remove all entries,
+ *                      depending on the required operation.
  * @param name Represents the name of an {@link ContentEmbed_Stream} instance which will be created.
  * @param childStream Output parameter represents a pointer to an {@link ContentEmbed_Stream} instance.
  * @return Returns a specific error code.
@@ -321,8 +329,8 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_CreateStream(
     ContentEmbed_Storage *parentStorage, const char *name, ContentEmbed_Stream **childStream);
 
 /**
- * @brief Obtain the child {@link ContentEmbed_Stream} instance from the parent storage instance.
- * The caller is responsible for destroying the stream by calling
+ * @brief Obtain the child stream instance from the parent storage instance.
+ * The caller is responsible for destroying the child stream by calling
  * {@link OH_ContentEmbed_DestroyStream} to avoid memory leaks.
  *
  * @param parentStorage Represents a pointer to an {@link ContentEmbed_Storage} instance.
@@ -343,10 +351,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetStream(
     ContentEmbed_Storage *parentStorage, const char *name, ContentEmbed_Stream **childStream);
 
 /**
- * @brief Delete a specific Storage or Stream directory entry in a directory tree.
+ * @brief Delete a specific storage or stream directory entry in directory tree.
  *
  * @param parentStorage Represents a pointer to an {@link ContentEmbed_Storage} instance.
- * @param name Represents the name of an storage or stream which will be deleted.
+ * @param name Represents the name of a storage or stream which will be delete.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
@@ -360,6 +368,22 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetStream(
  */
 ContentEmbed_ErrorCode OH_ContentEmbed_Storage_DeleteEntry(
     ContentEmbed_Storage *parentStorage, const char *name);
+
+/**
+ * @brief Delete all entries of the storage from the directory tree to clear the storage.
+ *
+ * @param storage Represents a pointer to an {@link ContentEmbed_Storage} instance.
+ * @return Returns a specific error code.
+ *     {@link CE_ERR_OK} - success.
+ *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
+ *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
+ *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
+ *     {@link CE_ERR_STORAGE_OPERATION_FAILED} - the storage operation failed.
+ *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
+ * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
+ * @since 24
+ */
+ContentEmbed_ErrorCode OH_ContentEmbed_Storage_DeleteAllEntry(ContentEmbed_Storage *storage);
 
 /**
  * @brief Destroy an {@link ContentEmbed_Storage} instance and reclaims the memory occupied by the instance.
@@ -418,7 +442,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_Write(
     ContentEmbed_Stream *stream, const unsigned char *data, size_t length, size_t *num);
 
 /**
- * @brief Sets the current read position of the {@link ContentEmbed_Stream} to the specified offset.
+ * @brief Sets the current read position of the stream to the specified offset.
  *
  * @param stream Represents a pointer to an {@link ContentEmbed_Stream} instance that will be modified.
  * @param position The offset in bytes from the beginning of the stream to which the position should be set.
@@ -435,11 +459,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_Write(
 ContentEmbed_ErrorCode OH_ContentEmbed_Stream_Seek(ContentEmbed_Stream *stream, size_t position);
 
 /**
- * @brief Gets the current read position of the {@link ContentEmbed_Stream}.
+ * @brief Retrieves the current position in the stream.
  *
- * @param stream Represents a pointer to an {@link ContentEmbed_Stream} instance.
- * @param position Output parameter represents a pointer to a size_t variable
- *                 where the current read position will be stored.
+ * @param stream Represents a pointer to the {@link ContentEmbed_Stream} instance.
+ * @param position Represents a pointer to a size_t variable where the current position will be stored.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
@@ -454,14 +477,14 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_Seek(ContentEmbed_Stream *stream, 
 ContentEmbed_ErrorCode OH_ContentEmbed_Stream_GetPosition(ContentEmbed_Stream *stream, size_t *position);
 
 /**
- * @brief Retrieves the size of the data in the {@link ContentEmbed_Stream}.
+ * @brief Retrieves the size of the data in the stream.
  *
  * This function attempts to determine the total size of the data available in the provided stream.
  * If successful, the size is written to the memory location pointed to by the `size` parameter.
  *
  * @param stream Represents a pointer to the {@link ContentEmbed_Stream} instance from which
  *               the size is to be retrieved.
- * @param size Output parameter represents a pointer to a size_t variable where the size of the stream will be stored.
+ * @param size Represents a pointer to a size_t variable where the size of the stream will be stored.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
@@ -506,11 +529,11 @@ ContentEmbed_ErrorCode OH_ContentEmbed_DestroyStream(ContentEmbed_Stream *stream
 ContentEmbed_ErrorCode OH_ContentEmbed_DestroyDocument(ContentEmbed_Document *document);
 
 /**
- * @brief Gets the hmid of the {@link ContentEmbed_Storage}.
+ * @brief Gets the oeid of the {@link ContentEmbed_Storage}.
  *
  * @param storage Represents a pointer to an {@link ContentEmbed_Storage} instance.
- * @param hmid Output parameter represents a pointer to a char array where the hmid will be stored.
- * @param hmidSize Represents the size of the hmid buffer.
+ * @param oeid Output parameter represents a pointer to a char array where the oeid will be stored.
+ * @param oeidSize Represents the size of the oeid buffer.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
@@ -520,15 +543,15 @@ ContentEmbed_ErrorCode OH_ContentEmbed_DestroyDocument(ContentEmbed_Document *do
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
-ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetHmid(ContentEmbed_Storage *storage,
-    char *hmid, size_t hmidSize);
+ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetOEid(ContentEmbed_Storage *storage,
+    char *oeid, size_t oeidSize);
 
 /**
- * @brief Sets the hmid of the {@link ContentEmbed_Storage}.
+ * @brief Sets the oeid of the {@link ContentEmbed_Storage}.
  *
  * @param storage Represents a pointer to an {@link ContentEmbed_Storage} instance.
- * @param hmid Input parameter represents a pointer to a char array containing the hmid to be set.
- * @param hmidSize Represents the size of the hmid buffer.
+ * @param oeid Input parameter represents a pointer to a char array containing the oeid to be set.
+ * @param oeidSize Represents the size of the oeid buffer.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
@@ -538,8 +561,8 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetHmid(ContentEmbed_Storage *sto
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
-ContentEmbed_ErrorCode OH_ContentEmbed_Storage_SetHmid(ContentEmbed_Storage *storage,
-    char *hmid, size_t hmidSize);
+ContentEmbed_ErrorCode OH_ContentEmbed_Storage_SetOEid(ContentEmbed_Storage *storage,
+    char *oeid, size_t oeidSize);
 
 /**
  * @brief Creates an {@link ContentEmbed_StorageElements} instance and initializes it.

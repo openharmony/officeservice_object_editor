@@ -69,23 +69,23 @@ StorageIO::StorageIO(std::iostream *stream)
     }
 }
 
-StorageIO::StorageIO(const std::string &hmid)
+StorageIO::StorageIO(const std::string &oeid)
 {
     dtModified_ = false;
     Init();
-    if (!ConfigMinimalCd(hmid)) {
+    if (!ConfigMinimalCd(oeid)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "ConfigMinimalCd failed");
         return;
     }
 
     if (!SerializeToMemory()) {
-        SetError(ErrorCode::BadOLE, "Failed to serialize the minimal in-memory OLE from HMID");
+        SetError(ErrorCode::BadOLE, "Failed to serialize the minimal in-memory OLE from OEID");
         return;
     }
     ClearError();
 }
 
-bool StorageIO::ConfigMinimalCd(const std::string &hmid)
+bool StorageIO::ConfigMinimalCd(const std::string &oeid)
 {
     if (!dirtree_ || !header_ || !bbat_) {
         return false;
@@ -94,9 +94,9 @@ bool StorageIO::ConfigMinimalCd(const std::string &hmid)
         dirtree_->Clear();
     }
 
-    const auto clsidOpt = ParseHmidToClsid(hmid);
+    const auto clsidOpt = ParseOEidToClsid(oeid);
     if (!clsidOpt) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Invalid HMID");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Invalid OEID");
         return false;
     }
     const CLSID &clsid = *clsidOpt;

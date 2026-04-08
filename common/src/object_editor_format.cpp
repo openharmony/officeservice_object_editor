@@ -22,8 +22,8 @@ namespace ObjectEditor {
 // LCOV_EXCL_START
 bool ObjectEditorFormat::Marshalling(Parcel &parcel) const
 {
-    if (!parcel.WriteString(hmid)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "write hmid failed");
+    if (!parcel.WriteString(oeid)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "write oeid failed");
         return false;
     }
     if (!parcel.WriteString(bundleName)) {
@@ -76,8 +76,8 @@ ObjectEditorFormat *ObjectEditorFormat::Unmarshalling(Parcel &parcel)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "alloc format failed");
         return nullptr;
     }
-    if (!parcel.ReadString(format->hmid)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "read hmid failed");
+    if (!parcel.ReadString(format->oeid)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "read oeid failed");
         delete format;
         return nullptr;
     }

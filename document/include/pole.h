@@ -47,7 +47,7 @@ public:
         UnknownError
     };
     explicit Storage(const char *filename);
-    explicit Storage(const std::string &hmid);
+    explicit Storage(const std::string &oeid);
     ~Storage();
     [[nodiscard]] int Result() const;
     void Path(std::string &result) const;

@@ -519,7 +519,7 @@ ErrCode ObjectEditorExtension::CreateObject(std::unique_ptr<ObjectEditorDocument
         return ERR_INVALID_VALUE;
     }
     object->ceInstance = ceInstance_;
-    object->document->hmid = document->GetHmid();
+    object->document->oeid = document->GetOEid();
     object->document->linking = document->GetLinking();
     object->document->oeDocumentInner = std::move(document);
     object->clientCb = clientCb;
@@ -569,7 +569,7 @@ ErrCode ObjectEditorExtension::Initial(std::unique_ptr<ObjectEditorDocument> doc
         return ERR_INVALID_VALUE;
     }
     document->RestoreStorage();
-    document->FlushHmid();
+    document->FlushOEid();
     return CreateObject(std::move(document), clientCb);
 }
 

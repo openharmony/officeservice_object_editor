@@ -51,8 +51,8 @@ public:
 public:
     explicit StorageIO(const char *filename);
     explicit StorageIO(std::iostream *stream);
-    // 依据 HMID（32 位十六进制）构造内存态 CD 存储
-    explicit StorageIO(const std::string &hmid);
+    // 依据 OEID（32 位十六进制）构造内存态 CD 存储
+    explicit StorageIO(const std::string &oeid);
     ~StorageIO();
 
 public:
@@ -229,8 +229,8 @@ private:
     // 统一设置错误码/信息
     void SetError(ErrorCode code, const std::string &message = "", bool invalidate = true);
 
-    // 构造最小 CD 结构（用于 HMID 内存态）
-    bool ConfigMinimalCd(const std::string &hmid);
+    // 构造最小 CD 结构（用于 OEID 内存态）
+    bool ConfigMinimalCd(const std::string &oeid);
     // 序列化 Header/DirTree/AllocTable 到内存流
     [[nodiscard]] bool SerializeToMemory();
     // 校验 Header 声明与布局（MS-CFB 偏移/阈值）

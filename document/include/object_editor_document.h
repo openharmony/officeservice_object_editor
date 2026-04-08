@@ -35,14 +35,14 @@ namespace OHOS {
 namespace ObjectEditor {
 using namespace OHOS::ObjectEditor;
 
-enum class OperateType : uint32_t { UNKNOWN, CREATE_BY_FILE, CREATE_BY_HMID, EDIT };
+enum class OperateType : uint32_t { UNKNOWN, CREATE_BY_FILE, CREATE_BY_OEID, EDIT };
 
-static const inline std::string PACKAGE_HMID = "0003000C-0000-0000-C000-000000000046";
+static const inline std::string PACKAGE_OEID = "0003000C-0000-0000-C000-000000000046";
 
 class ObjectEditorDocument final : public Parcelable {
 public:
     ObjectEditorDocument() : storage_{nullptr}, oriFileUri_{}, tmpFileUri_{}, nativeFileUri_{}, snapshotUri_{},
-        hmid_{}, isLinking_{false}, operateType_{OperateType::UNKNOWN}, documentId_{} {}
+        oeid_{}, isLinking_{false}, operateType_{OperateType::UNKNOWN}, documentId_{} {}
     ObjectEditorDocument(const ObjectEditorDocument &) = delete;
     ObjectEditorDocument &operator=(const ObjectEditorDocument &) = delete;
     ObjectEditorDocument(ObjectEditorDocument &&) noexcept = default;
@@ -52,18 +52,18 @@ public:
     bool Marshalling(Parcel &parcel) const override;
     static ObjectEditorDocument *Unmarshalling(Parcel &parcel);
 
-    [[nodiscard]] static std::unique_ptr<ObjectEditorDocument> CreateByHmid(const std::string &hmid);
+    [[nodiscard]] static std::unique_ptr<ObjectEditorDocument> CreateByOEid(const std::string &oeid);
     [[nodiscard]] static std::unique_ptr<ObjectEditorDocument> CreateByFile(const std::string &path,
                                                                             bool isLinking = false);
     [[nodiscard]] static std::unique_ptr<ObjectEditorDocument> LoadFromFile(const std::string &path);
     [[nodiscard]] static std::unique_ptr<ObjectEditorDocument> LoadFromBytes(const std::vector<std::uint8_t> &data);
     [[nodiscard]] static std::unique_ptr<ObjectEditorDocument> LoadFromStream(std::istream &stream);
 
-    std::string GetHmid() const;
-    void SetHmid(const std::string &hmid);
+    std::string GetOEid() const;
+    void SetOEid(const std::string &oeid);
 
-    bool FlushHmid();
-    std::string GetHmidInternal() const;
+    bool FlushOEid();
+    std::string GetOEidInternal() const;
 
     bool GetLinking() const
     {
@@ -142,7 +142,7 @@ private:
     std::string tmpFileUri_;
     std::string nativeFileUri_;
     std::string snapshotUri_;
-    std::string hmid_;
+    std::string oeid_;
     bool isLinking_{false};
     OperateType operateType_{OperateType::UNKNOWN};
     std::string userTmpFilePath_;

@@ -60,14 +60,14 @@ ErrCode ObjectEditorPackage::GetSnapshot(const std::string &documentId)
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "create document by file failed");
             return ERR_INVALID_VALUE;
         }
-        newDocument->SetHmid(PACKAGE_HMID);
+        newDocument->SetOEid(PACKAGE_OEID);
         if (document_->GetNativeFileUri().has_value()) {
             newDocument->SetNativeFileUri(document_->GetNativeFileUri().value());
         }
     } else if (document_->GetOperateType() == OperateType::EDIT) {
-        newDocument = ObjectEditorDocument::CreateByHmid(PACKAGE_HMID);
+        newDocument = ObjectEditorDocument::CreateByOEid(PACKAGE_OEID);
         if (newDocument == nullptr) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "create document by hmid failed");
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "create document by oeid failed");
             return ERR_INVALID_VALUE;
         }
         newDocument->SetOperateType(OperateType::EDIT);
@@ -171,7 +171,7 @@ ErrCode ObjectEditorPackage::Initial(std::unique_ptr<ObjectEditorDocument> docum
         return ERR_INVALID_VALUE;
     }
     document->RestoreStorage();
-    document->FlushHmid();
+    document->FlushOEid();
     document_ = std::move(document);
     clientCb_ = clientCb;
     if (document_ == nullptr) {

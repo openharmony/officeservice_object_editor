@@ -34,7 +34,7 @@ std::vector<int32_t> GetAllActiveUserIds()
     ErrCode result = -1;
     std::vector<int32_t> osAccountIds;
     int retry = 0;
-    while ((result != ERR_OK || osAccountIds.empty()) && retry < MAX_RETRY) {
+    while ((result != ERR_OK || osAccountIds.empty()) && retry <= MAX_RETRY) {
         result = AccountSA::OsAccountManager::QueryActiveOsAccountIds(osAccountIds);
         if (result != ERR_OK) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON,
@@ -62,7 +62,7 @@ int32_t GetCurrentUserId()
         return DEFAULT_USER_ID;
     }
     int32_t currentOsAccount = osAccountIds[0];
-    if (currentOsAccount <= DEFAULT_USER_ID) {
+    if (currentOsAccount < DEFAULT_USER_ID) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Current os account id is invalid");
         return DEFAULT_USER_ID;
     }

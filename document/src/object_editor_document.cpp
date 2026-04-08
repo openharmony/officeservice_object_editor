@@ -48,27 +48,27 @@ ObjectEditorDocument::ObjectEditorDocument(std::unique_ptr<Storage> storage,
     }
     DirEntry *root = storage_->GetRootEntry();
     if (root) {
-        hmid_ = FormatClsidToHmid(root->Clsid());
+        oeid_ = FormatClsidToOEid(root->Clsid());
     }
 }
 
-std::unique_ptr<ObjectEditorDocument> ObjectEditorDocument::CreateByHmid(const std::string &hmid)
+std::unique_ptr<ObjectEditorDocument> ObjectEditorDocument::CreateByOEid(const std::string &oeid)
 {
-    auto storage = std::make_unique<Storage>(hmid);
+    auto storage = std::make_unique<Storage>(oeid);
     if (!storage || storage->Result() != Storage::Ok) {
         return nullptr;
     }
     ObjectEditorDocument instance(std::move(storage), std::string{});
-    instance.hmid_ = hmid;
-    instance.operateType_ = OperateType::CREATE_BY_HMID;
+    instance.oeid_ = oeid;
+    instance.operateType_ = OperateType::CREATE_BY_OEID;
     return std::make_unique<ObjectEditorDocument>(std::move(instance));
 }
 
 std::unique_ptr<ObjectEditorDocument> ObjectEditorDocument::CreateByFile(
     const std::string &path, [[maybe_unused]] bool isLinking)
 {
-    static constexpr char kDefaultHmid[] = "00000000000000000000000000000000";
-    auto documentPtr = CreateByHmid(kDefaultHmid);
+    static constexpr char kDefaultOEid[] = "00000000000000000000000000000000";
+    auto documentPtr = CreateByOEid(kDefaultOEid);
     if (!documentPtr) {
         return nullptr;
     }
@@ -91,17 +91,17 @@ std::unique_ptr<ObjectEditorDocument> ObjectEditorDocument::LoadFromFile(const s
     return std::make_unique<ObjectEditorDocument>(std::move(instance));
 }
 
-std::string ObjectEditorDocument::GetHmid() const
+std::string ObjectEditorDocument::GetOEid() const
 {
-    return hmid_;
+    return oeid_;
 }
 
-void ObjectEditorDocument::SetHmid(const std::string &hmid)
+void ObjectEditorDocument::SetOEid(const std::string &oeid)
 {
-    hmid_ = hmid;
+    oeid_ = oeid;
 }
 
-bool ObjectEditorDocument::FlushHmid()
+bool ObjectEditorDocument::FlushOEid()
 {
     if (!storage_) {
         return false;
@@ -111,9 +111,9 @@ bool ObjectEditorDocument::FlushHmid()
         return false;
     }
 
-    const auto clsidOpt = ParseHmidToClsid(hmid_);
+    const auto clsidOpt = ParseOEidToClsid(oeid_);
     if (!clsidOpt) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "parse hmid failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "parse oeid failed");
         return false;
     }
 
@@ -121,7 +121,7 @@ bool ObjectEditorDocument::FlushHmid()
     return storage_->Flush();
 }
 
-std::string ObjectEditorDocument::GetHmidInternal() const
+std::string ObjectEditorDocument::GetOEidInternal() const
 {
     if (!storage_) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "storage_ is null");
@@ -194,7 +194,7 @@ bool ObjectEditorDocument::HandleUserTempScenario()
     if (!storage_) {
         return false;
     }
-    const bool hasUserTmp = userTmpFilePath_.empty();
+    const bool hasUserTmp = !userTmpFilePath_.empty();
     std::string tmpFilePath = GetTmpFilePath();
     const bool hasTmpFilePath = !tmpFilePath.empty();
     if (hasUserTmp && !hasTmpFilePath) {
@@ -547,7 +547,7 @@ bool ObjectEditorDocument::RebuildAndFlush()
 
     TempGuard guard{tempPath, true};
 
-    auto newDoc = ObjectEditorDocument::CreateByHmid(GetHmid());
+    auto newDoc = ObjectEditorDocument::CreateByOEid(GetOEid());
     if (!newDoc)
         return false;
     Storage *newStorage = newDoc->GetRootStorage();
@@ -587,8 +587,8 @@ bool ObjectEditorDocument::RebuildAndFlush()
 
 bool ObjectEditorDocument::Marshalling(Parcel &parcel) const
 {
-    if (!parcel.WriteString(hmid_)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Write hmid failed");
+    if (!parcel.WriteString(oeid_)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Write oeid failed");
         return false;
     }
     if (!parcel.WriteBool(isLinking_)) {
@@ -629,7 +629,7 @@ ObjectEditorDocument *ObjectEditorDocument::Unmarshalling(Parcel &parcel)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Create ObjectEditorDocument failed");
         return nullptr;
     }
-    doc->hmid_ = parcel.ReadString();
+    doc->oeid_ = parcel.ReadString();
     doc->isLinking_ = parcel.ReadBool();
     doc->tmpFileUri_ = parcel.ReadString();
     doc->oriFileUri_ = parcel.ReadString();
