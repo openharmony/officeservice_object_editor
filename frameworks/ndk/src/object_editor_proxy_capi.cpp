@@ -143,7 +143,7 @@ void ContentEmbed_Format::Build(std::unique_ptr<ObjectEditorFormat> &format)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "format is nullptr");
         return;
     }
-    hmid = std::move(format->hmid);
+    oeid = std::move(format->oeid);
     locale = std::move(format->locale);
     name = std::move(format->formatName);
     description = std::move(format->description);
@@ -218,7 +218,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedInfo(const char *locale, C
     std::string strLocale = locale == nullptr ? "" : std::string(locale);
     std::vector<std::unique_ptr<ObjectEditorFormat>> oeFormats;
     auto errCode = ObjectEditorClient::GetInstance().GetObjectEditorFormatsByLocale(strLocale, oeFormats);
-    if (errCode != CE_ERR_OK) {
+    if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "GetFormats failed: %{public}d", errCode);
         return CE_ERR_SYSTEM_ABNORMAL;
     }
@@ -309,7 +309,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_DestroyContentEmbedFormat(ContentEmbed_Fo
 }
 // LCOV_EXCL_STOP
 
-ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedFormatByHmidAndLocale(const char *hmid, const char *locale,
+ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedFormatByOEidAndLocale(const char *oeid, const char *locale,
     ContentEmbed_Format *format)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
@@ -317,15 +317,15 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedFormatByHmidAndLocale(cons
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
         return CE_ERR_DEVICE_NOT_SUPPORTED;
     }
-    if (hmid == nullptr || format == nullptr) {
+    if (oeid == nullptr || format == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
         return CE_ERR_PARAM_INVALID;
     }
     std::string strLocale = locale == nullptr ? "" : std::string(locale);
     std::unique_ptr<ObjectEditorFormat> oeFormat;
-    auto errCode = ObjectEditorClient::GetInstance().GetObjectEditorFormatByHmidAndLocale(std::string(hmid),
+    auto errCode = ObjectEditorClient::GetInstance().GetObjectEditorFormatByOEidAndLocale(std::string(oeid),
         strLocale, oeFormat);
-    if (errCode != CE_ERR_OK) {
+    if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "GetFormat failed: %{public}d", errCode);
         return CE_ERR_SYSTEM_ABNORMAL;
     }
@@ -336,18 +336,18 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedFormatByHmidAndLocale(cons
 }
 
 // LCOV_EXCL_START
-ContentEmbed_ErrorCode OH_ContentEmbed_GetHmidFromFormat(const ContentEmbed_Format *format, char *hmid)
+ContentEmbed_ErrorCode OH_ContentEmbed_GetOEidFromFormat(const ContentEmbed_Format *format, char *oeid)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
         return CE_ERR_DEVICE_NOT_SUPPORTED;
     }
-    if (format == nullptr || hmid == nullptr) {
+    if (format == nullptr || oeid == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
         return CE_ERR_PARAM_INVALID;
     }
-    if (strcpy_s(hmid, MAX_HMID_LENGTH, format->hmid.c_str()) != 0) {
+    if (strcpy_s(oeid, MAX_OEID_LENGTH, format->oeid.c_str()) != 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "strcpy_s failed");
         return CE_ERR_PARAM_INVALID;
     }
@@ -434,7 +434,8 @@ char **OH_ContentEmbed_GetFileNameExtensionsFromFormat(const ContentEmbed_Format
 }
 
 ContentEmbed_ErrorCode OH_ContentEmbed_CreateExtensionProxy(ContentEmbed_Document *ceDocument,
-    ContentEmbed_ExtensionProxy **proxy)
+                                                            ContentEmbed_ExtensionProxy **proxy,
+                                                            void* contextPtr)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
@@ -450,12 +451,17 @@ ContentEmbed_ErrorCode OH_ContentEmbed_CreateExtensionProxy(ContentEmbed_Documen
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is null");
         return CE_ERR_PARAM_INVALID;
     }
+    if (contextPtr == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "contextPtr is null");
+        return CE_ERR_PARAM_INVALID;
+    }
     *proxy = new (std::nothrow) ContentEmbed_ExtensionProxy();
     if (*proxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "extensionProxy alloc failed");
         return CE_ERR_NULL_POINTER;
     }
     (*proxy)->ceDocument = ceDocument;
+    (*proxy)->contextPtr = contextPtr;
     return CE_ERR_OK;
 }
 
@@ -592,10 +598,16 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StartWork(ContentEmbed_ExtensionPro
     }
     auto errCode = ObjectEditorClient::GetInstance().StartObjectEditorExtension(proxy->ceDocument->oeDocumentInner,
         oeCallbackInner, proxy->objectEditorService, proxy->isPackageExtension);
-    if (errCode != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "StartWork failed, errCode: %{public}d", errCode);
-        delete oeCallbackInner;
-        return CE_ERR_SYSTEM_ABNORMAL;
+    if (errCode != OHOS::ERR_OK) {
+        if (errCode == OHOS::ObjectEditor::ObjectEditorClientErrCode::CLIENT_COPY_FILE_FAILED) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "fail copy file, errCode: %{public}d", errCode);
+            delete oeCallbackInner;
+            return CE_ERR_FILE_OPERATION_FAILED;
+        } else {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "StartWork failed, errCode: %{public}d", errCode);
+            delete oeCallbackInner;
+            return CE_ERR_SYSTEM_ABNORMAL;
+        }
     }
     if (proxy->isPackageExtension) {
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT_NDK, "is package");
@@ -644,8 +656,22 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_DoEdit(ContentEmbed_ExtensionProxy 
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
         return CE_ERR_PARAM_INVALID;
     }
+    if (proxy->isPackageExtension) {
+        auto context = static_cast<std::weak_ptr<OHOS::AbilityRuntime::Context>*>(proxy->contextPtr);
+        if (context == nullptr) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "context is null");
+            return CE_ERR_PARAM_INVALID;
+        }
+        auto contextSptr = context->lock();
+        if (contextSptr == nullptr) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "contextSptr is null");
+            return CE_ERR_PARAM_INVALID;
+        }
+        proxy->objectEditorService->SetRemoteObject(contextSptr->GetToken());
+    }
+
     auto errCode = proxy->objectEditorService->DoEdit(proxy->ceDocument->oeDocumentInner->GetDocumentId());
-    if (errCode != CE_ERR_OK) {
+    if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed: %{public}d", errCode);
         return CE_ERR_EXTENSION_ERROR;
     }
@@ -653,7 +679,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_DoEdit(ContentEmbed_ExtensionProxy 
 }
 
 ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetEditStatus(ContentEmbed_ExtensionProxy *proxy,
-    bool *isEditing, bool *isModified)
+                                                           bool *isEditing, bool *isModified)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
@@ -684,7 +710,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetEditStatus(ContentEmbed_Extensio
     auto errCode = proxy->objectEditorService->GetEditStatus(
         proxy->ceDocument->oeDocumentInner->GetDocumentId(),
         isEditing, isModified);
-    if (errCode != CE_ERR_OK) {
+    if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed: %{public}d", errCode);
         return CE_ERR_EXTENSION_ERROR;
     }
@@ -719,7 +745,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetCapability(ContentEmbed_Extensio
     auto errCode = proxy->objectEditorService->GetCapability(
         proxy->ceDocument->oeDocumentInner->GetDocumentId(),
         bitmask);
-    if (errCode != CE_ERR_OK) {
+    if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed: %{public}d", errCode);
         return CE_ERR_EXTENSION_ERROR;
     }
@@ -757,7 +783,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetSnapshot(ContentEmbed_ExtensionP
     }
     auto errCode = proxy->objectEditorService->GetSnapshot(
         proxy->ceDocument->oeDocumentInner->GetDocumentId());
-    if (errCode != CE_ERR_OK) {
+    if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed: %{public}d", errCode);
         return CE_ERR_EXTENSION_ERROR;
     }
@@ -795,7 +821,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StopWork(ContentEmbed_ExtensionProx
     }
     auto errCode = ObjectEditorClient::GetInstance().StopObjectEditorExtension(proxy->ceDocument->oeDocumentInner,
         proxy->objectEditorService, proxy->isPackageExtension);
-    if (errCode != CE_ERR_OK) {
+    if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed: %{public}d", errCode);
         return CE_ERR_SYSTEM_ABNORMAL;
     }

@@ -25,9 +25,9 @@ Storage::Storage(const char *filename)
     io_ = std::make_unique<StorageIO>(filename);
 }
 
-Storage::Storage(const std::string &hmid)
+Storage::Storage(const std::string &oeid)
 {
-    io_ = std::make_unique<StorageIO>(hmid);
+    io_ = std::make_unique<StorageIO>(oeid);
 }
 
 Storage::~Storage() = default;
@@ -201,7 +201,13 @@ void Storage::Debug()
 bool Storage::DeleteEntry(const std::string &path)
 {
     if (io_) {
-        return io_->DeleteEntry(path);
+        bool result = io_->DeleteEntry(path);
+        if (result) {
+            streams_.remove_if([&](const std::unique_ptr<Stream> &stream) {
+                return stream && stream->Path() == path;
+            });
+        }
+        return result;
     }
     return false;
 }

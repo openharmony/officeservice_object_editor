@@ -19,7 +19,7 @@
 
 #include "native_object_editor_types.h"
 #include "object_editor_extension_proxy.h"
-#include "oh_contentembed_getcontentembedformatbyhmidandlocale_fuzzer.h"
+#include "oh_contentembed_getcontentembedformatbyoeidandlocale_fuzzer.h"
 
 using namespace OHOS::ObjectEditor;
 namespace OHOS {
@@ -36,36 +36,36 @@ bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
         config.isSupportObjectEditor_.isLoaded = true;
         config.isSupportObjectEditor_.value = true;
     }
-    int32_t hmidSize = size / SPILT_NUM + 1;
-    char *hmid = static_cast<char*>(malloc(sizeof(char) * hmidSize));
-    if (hmid == nullptr) {
+    int32_t oeidSize = size / SPILT_NUM + 1;
+    char *oeid = static_cast<char*>(malloc(sizeof(char) * oeidSize));
+    if (oeid == nullptr) {
         return false;
     }
-    if (memcpy_s(hmid, size / SPILT_NUM, data, size / SPILT_NUM) != EOK) {
-        free(hmid);
+    if (memcpy_s(oeid, size / SPILT_NUM, data, size / SPILT_NUM) != EOK) {
+        free(oeid);
         return false;
     }
-    hmid[hmidSize - 1] = 0;
+    oeid[oeidSize - 1] = 0;
     int32_t offset = size - (size / SPILT_NUM);
     int32_t localeSize = static_cast<int32_t>(offset) + 1;
     char *locale = static_cast<char*>(malloc(sizeof(char) * localeSize));
     if (locale == nullptr) {
-        free(hmid);
+        free(oeid);
         return false;
     }
     if (memcpy_s(locale, localeSize, data + size / SPILT_NUM, offset) != EOK) {
-        free(hmid);
+        free(oeid);
         free(locale);
         return false;
     }
     locale[offset] = 0;
     ContentEmbed_Format format;
     if (size % RANDOM_NULL != 0) {
-        OH_ContentEmbed_GetContentEmbedFormatByHmidAndLocale(hmid, locale, &format);
+        OH_ContentEmbed_GetContentEmbedFormatByOEidAndLocale(oeid, locale, &format);
     } else {
-        OH_ContentEmbed_GetContentEmbedFormatByHmidAndLocale(hmid, locale, nullptr);
+        OH_ContentEmbed_GetContentEmbedFormatByOEidAndLocale(oeid, locale, nullptr);
     }
-    free(hmid);
+    free(oeid);
     free(locale);
     return true;
 }

@@ -18,7 +18,7 @@
 namespace OHOS {
 namespace ObjectEditor {
 // LCOV_EXCL_START
-std::optional<CLSID> ParseHmidToClsid(const std::string &uuid)
+std::optional<CLSID> ParseOEidToClsid(const std::string &uuid)
 {
     std::array<char, LENGTH> hex{};
     if (uuid.size() == LENGTH_HYPHEN) {
@@ -68,7 +68,7 @@ std::optional<CLSID> ParseHmidToClsid(const std::string &uuid)
     return clsid;
 }
 
-std::string FormatClsidToHmid(const CLSID &clsid)
+std::string FormatClsidToOEid(const CLSID &clsid)
 {
     CLSID canonical{};
     canonical[INDEX_ZERO] = clsid[INDEX_THREE];
