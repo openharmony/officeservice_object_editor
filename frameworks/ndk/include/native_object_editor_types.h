@@ -60,6 +60,7 @@ struct ContentEmbed_ExtensionProxy {
     ContentEmbed_Document *ceDocument = nullptr;
     void *contextPtr = { nullptr };
     bool isPackageExtension = false;
+    OHOS::sptr<OHOS::IRemoteObject::DeathRecipient> deathRecipient = { nullptr };
 };
 
 struct ContentEmbed_Document {
