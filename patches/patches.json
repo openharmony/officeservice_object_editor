@@ -14,26 +14,6 @@
             "project":"build",
             "path":"build",
             "pr_url":"https://gitcode.com/openharmony/build/pull/6525"
-        },
-        {
-            "project":"hiviewdfx_hidumper",
-            "path":"base/hiviewdfx/hidumper",
-            "pr_url":"https://gitcode.com/openharmony/hiviewdfx_hidumper/pull/726"
-        },
-        {
-            "project":"systemabilitymgr_samgr",
-            "path":"foundation/systemabilitymgr/samgr",
-            "pr_url":"https://gitcode.com/openharmony/systemabilitymgr_samgr/pull/1430"
-        },
-        {
-            "project":"security_selinux_adapter",
-            "path":"base/security/selinux_adapter",
-            "pr_url":"https://gitcode.com/openharmony/security_selinux_adapter/pull/7670"
-        },
-        {
-            "project":"startup_init",
-            "path":"base/startup/init",
-            "pr_url":"https://gitcode.com/openharmony/startup_init/pull/4528"
         }
     ]
 }
