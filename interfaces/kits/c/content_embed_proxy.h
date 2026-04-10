@@ -104,10 +104,12 @@ ContentEmbed_ErrorCode OH_ContentEmbed_DestroyContentEmbedInfo(ContentEmbed_Info
 /**
  * @brief Get an {@link ContentEmbed_Info} instance based on the locale.
  *
+ * @permission ohos.permission.CONNECT_OBJECTEDITOR_EXTENSION
  * @param locale Represents locale value.
  * @param info Represents a pointer to an {@link ContentEmbed_Info} instance.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
+ *     {@link CE_PERMISSION_DENIED} - permission verification failed.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_SYSTEM_ABNORMAL} - the system service works abnormally.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
@@ -180,11 +182,13 @@ ContentEmbed_ErrorCode OH_ContentEmbed_DestroyContentEmbedFormat(ContentEmbed_Fo
 /**
  * @brief Get a {@link ContentEmbed_Format} instance using oeid and locale.
  *
+ * @permission ohos.permission.CONNECT_OBJECTEDITOR_EXTENSION
  * @param oeid Represents the oeid value.
  * @param locale Represents the locale value.
  * @param format Output parameter represents a pointer to an {@link ContentEmbed_Format} instance.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
+ *     {@link CE_PERMISSION_DENIED} - permission verification failed.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_SYSTEM_ABNORMAL} - the system service works abnormally.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
@@ -441,9 +445,11 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_RegisterOnExtensionStoppedFunc(
 /**
  * @brief Start the server application.
  *
+ * @permission ohos.permission.CONNECT_OBJECTEDITOR_EXTENSION
  * @param proxy Represents a pointer to an {@link ContentEmbed_ExtensionProxy} instance.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
+ *     {@link CE_PERMISSION_DENIED} - permission verification failed.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_CLIENT_CALLBACK_NOT_REGISTERED} - the client callback is not registered.
  *     {@link CE_ERR_SYSTEM_ABNORMAL} - the system service works abnormally.
@@ -460,9 +466,11 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StartWork(ContentEmbed_ExtensionPro
 /**
  * @brief Stop the server application.
  *
+ * @permission ohos.permission.CONNECT_OBJECTEDITOR_EXTENSION
  * @param proxy Represents a pointer to an {@link ContentEmbed_ExtensionProxy} instance.
  * @return Returns a specific error code.
  *     {@link CE_ERR_OK} - success.
+ *     {@link CE_PERMISSION_DENIED} - permission verification failed.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_SYSTEM_ABNORMAL} - the system service works abnormally.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.

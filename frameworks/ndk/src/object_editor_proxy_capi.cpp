@@ -24,6 +24,7 @@
 #include "object_editor_client_callback.h"
 #include "object_editor_config.h"
 #include "object_editor_extension_death_recipient.h"
+#include "object_editor_native_common.h"
 #include "system_utils.h"
 
 using namespace OHOS::ObjectEditor;
@@ -117,32 +118,6 @@ char **SplitToCStrings(const std::string &str, char pattern, uint32_t &count)
         result[i] = subCstr;
     }
     return result;
-}
-
-ContentEmbed_ErrorCode GetStartWorkErrorCode(OHOS::ErrCode code)
-{
-    switch (code) {
-        case ObjectEditorClientErrCode::CLIENT_COPY_FILE_FAILED:
-            return CE_ERR_DISK_FULL;
-        case ObjectEditorManagerErrCode::SA_CONNECT_LIMIT_EXCEED:
-            return CE_ERR_CONNECT_LIMIT_EXCEED;
-        case ObjectEditorManagerErrCode::SA_CHECK_CLIENT_FILE_VALID_FAILED:
-            return CE_ERR_FILE_NOT_GRANT;
-        default:
-            return CE_ERR_SYSTEM_ABNORMAL;
-    }
-    return CE_ERR_PARAM_INVALID;
-}
-
-ContentEmbed_ErrorCode GetExtensionErrorCode(OHOS::ErrCode code)
-{
-    switch (code) {
-        case ObjectEditorExtensionErrCode::EXTENSION_CAPABILITY_NOT_SUPPORT:
-            return CE_ERR_EXTENSION_NOT_SUPPORT;
-        default:
-            return CE_ERR_EXTENSION_ERROR;
-    }
-    return CE_ERR_EXTENSION_ERROR;
 }
 } // namespace
 
@@ -246,7 +221,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedInfo(const char *locale, C
     auto errCode = ObjectEditorClient::GetInstance().GetObjectEditorFormatsByLocale(strLocale, oeFormats);
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "GetFormats failed: %{public}d", errCode);
-        return CE_ERR_SYSTEM_ABNORMAL;
+        return ConvertErrorToCode(errCode);
     }
 // LCOV_EXCL_START
     info->Build(oeFormats);
@@ -357,7 +332,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedFormatByOEidAndLocale(cons
         strLocale, oeFormat);
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "GetFormat failed: %{public}d", errCode);
-        return CE_ERR_SYSTEM_ABNORMAL;
+        return ConvertErrorToCode(errCode);
     }
 // LCOV_EXCL_START
     format->Build(oeFormat);
@@ -635,7 +610,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StartWork(ContentEmbed_ExtensionPro
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "errCode: %{public}d", errCode);
         delete oeCallbackInner;
-        return GetStartWorkErrorCode(errCode);
+        return ConvertErrorToCode(errCode, CE_ERR_SYSTEM_ABNORMAL);
     }
     if (proxy->isPackageExtension) {
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT_NDK, "is package");
@@ -701,7 +676,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_DoEdit(ContentEmbed_ExtensionProxy 
     auto errCode = proxy->objectEditorService->DoEdit(proxy->ceDocument->oeDocumentInner->GetDocumentId());
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed: %{public}d", errCode);
-        return GetExtensionErrorCode(errCode);
+        return ConvertErrorToCode(errCode, CE_ERR_SYSTEM_ABNORMAL);
     }
     return CE_ERR_OK;
 }
@@ -813,7 +788,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetSnapshot(ContentEmbed_ExtensionP
         proxy->ceDocument->oeDocumentInner->GetDocumentId());
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed: %{public}d", errCode);
-        return GetExtensionErrorCode(errCode);
+        return ConvertErrorToCode(errCode, CE_ERR_SYSTEM_ABNORMAL);
     }
     std::string snapshotPath = proxy->ceDocument->oeDocumentInner->GetSnapshotPath();
     if (!std::filesystem::exists(snapshotPath) || std::filesystem::file_size(snapshotPath) == 0) {
