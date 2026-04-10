@@ -116,8 +116,8 @@ ErrCode ObjectEditorPackage::GetCapability(const std::string &documentId, uint32
         return ERR_INVALID_VALUE;
     }
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "package");
-    *bitmask = ObjectorExtensionErrCode::EXTENSION_CAPABILITY_NOT_SUPPORT;
-    return ContentEmbed_CapabilityCode::CE_CAPABILITY_SUPPORT_DO_EDIT;
+    *bitmask = ContentEmbed_CapabilityCode::CE_CAPABILITY_SUPPORT_DO_EDIT;
+    return ERR_OK;
 }
 
 ErrCode ObjectEditorPackage::Close(const std::string &documentId, bool &isAllObjectsRemoved)

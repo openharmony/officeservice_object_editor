@@ -40,8 +40,8 @@ namespace {
 
 ObjectEditorDocument::~ObjectEditorDocument()
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DOCUMENT, "destructor oeid: %{public}s, documentId: %{private}s",
-        oeid.c_str(), documentId.c_str());
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "destructor oeid: %{public}s, documentId: %{private}s",
+        oeid_.c_str(), documentId_.c_str());
 }
 
 ObjectEditorDocument::ObjectEditorDocument(std::unique_ptr<Storage> storage,

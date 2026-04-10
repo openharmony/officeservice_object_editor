@@ -710,7 +710,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Helper_GetStreamInternal(ContentEmbed_Sto
     Stream *stream = storage->GetStream(targetPath, create, true);
     if (stream == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "get stream failed");
-        return CE_ERR_STORAGE_OPERATION_FAILED;
+        return CE_ERR_STREAM_OPERATION_FAILED;
     }
     auto *wrapper = new (std::nothrow) ContentEmbed_Stream{parentStorage->owner,
         targetPath, storage, stream, stream->Tell()};

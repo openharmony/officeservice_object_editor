@@ -320,7 +320,7 @@ ErrCode ObjectEditorExtension::GetSnapshot(const std::string &documentId)
         return ERR_INVALID_VALUE;
     }
     uint32_t bitmask = 0;
-    iter->second->onGetCapability(iter->second.get(), &bitmask);
+    iter->second->onGetCapabilityFunc(iter->second.get(), &bitmask);
     if ((bitmask & CE_CAPABILITY_SUPPORT_SNAPSHOT) == 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "capability not support");
         return ObjectorEditorExtensionErrCode::EXTENSION_CAPABILITY_NOT_SUPPORT;
@@ -347,7 +347,7 @@ ErrCode ObjectEditorExtension::DoEdit(const std::string &documentId)
         return ERR_INVALID_VALUE;
     }
     uint32_t bitmask = 0;
-    iter->second->onGetCapability(iter->second.get(), &bitmask);
+    iter->second->onGetCapabilityFunc(iter->second.get(), &bitmask);
     if ((bitmask & CE_CAPABILITY_SUPPORT_DO_EDIT) == 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "capability not support");
         return ObjectorEditorExtensionErrCode::EXTENSION_CAPABILITY_NOT_SUPPORT;

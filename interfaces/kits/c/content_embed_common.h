@@ -56,6 +56,11 @@ typedef enum ContentEmbed_ErrorCode {
      */
     CE_ERR_OK = 0,
     /**
+     * @error The error code when permission verification failed.
+     * @since 24
+     */
+    CE_PERMISSION_DENIED = 201,
+    /**
      * @brief The error code when parameter check failed.
      * @since 24
      */
