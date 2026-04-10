@@ -1073,6 +1073,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetOEid(ContentEmbed_Storage *sto
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
         return CE_ERR_PARAM_INVALID;
     }
+    if (oeid == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid or oeidSize is null");
+        return CE_ERR_PARAM_INVALID;
+    }
     OHOS::ObjectEditor::Storage *root = nullptr;
     ContentEmbed_ErrorCode ret = OH_ContentEmbed_Helper_RequireStorageEntry(storage, root);
     if (ret != CE_ERR_OK) {
@@ -1103,6 +1107,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_SetOEid(ContentEmbed_Storage *sto
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
         return CE_ERR_PARAM_INVALID;
     }
+    if (oeid == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid or oeidSize is null");
+        return CE_ERR_PARAM_INVALID;
+    }
     OHOS::ObjectEditor::Storage *root = nullptr;
     ContentEmbed_ErrorCode ret = OH_ContentEmbed_Helper_RequireStorageEntry(storage, root);
     if (ret != CE_ERR_OK) {
@@ -1116,10 +1124,15 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_SetOEid(ContentEmbed_Storage *sto
 
 ContentEmbed_ErrorCode OH_ContentEmbed_StorageElements_Create(ContentEmbed_StorageElements **storageElements)
 {
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
     if (supported != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
+    }
+    if (storageElements == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storageElements is null");
+        return CE_ERR_PARAM_INVALID;
     }
     *storageElements = new ContentEmbed_StorageElements();
     if (*storageElements == nullptr) {
@@ -1131,13 +1144,14 @@ ContentEmbed_ErrorCode OH_ContentEmbed_StorageElements_Create(ContentEmbed_Stora
 
 ContentEmbed_ErrorCode OH_ContentEmbed_StorageElements_Destroy(ContentEmbed_StorageElements *storageElements)
 {
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
     if (supported != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
     if (storageElements == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storageElements is null");
         return CE_ERR_PARAM_INVALID;
     }
     delete storageElements;
@@ -1148,13 +1162,18 @@ ContentEmbed_ErrorCode OH_ContentEmbed_StorageElements_Destroy(ContentEmbed_Stor
 ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetElements(const ContentEmbed_Storage *storage,
     ContentEmbed_StorageElements *storageElements)
 {
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
     if (supported != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
     if (storage == nullptr || storage->owner == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storage is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (storageElements == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storageElements is null");
         return CE_ERR_PARAM_INVALID;
     }
     OHOS::ObjectEditor::Storage *root = nullptr;
@@ -1172,7 +1191,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetElements(const ContentEmbed_St
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "rootStorage is null");
         return CE_ERR_NULL_POINTER;
     }
-
     bool res = rootStorage->EnterDirectory(storage->name);
     if (!res) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "enter directory failed");
@@ -1183,6 +1201,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetElements(const ContentEmbed_St
     storageElements->elements.clear();
     for (const auto entry : result) {
         auto element = std::make_unique<ContentEmbed_StorageElement>();
+        if (element == nullptr) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create storage element failed");
+            return CE_ERR_NULL_POINTER;
+        }
         element->name = entry->Name();
         element->isStorage = entry->IsDir();
         element->size = entry->Size();
@@ -1196,13 +1218,18 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetElements(const ContentEmbed_St
 ContentEmbed_ErrorCode OH_ContentEmbed_StorageElements_GetCount(
     const ContentEmbed_StorageElements *storageElements, size_t *count)
 {
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
     if (supported != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (storageElements == nullptr || count == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (storageElements == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storageElements is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (count == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "count is null");
         return CE_ERR_PARAM_INVALID;
     }
     *count = storageElements->elements.size();
@@ -1212,13 +1239,18 @@ ContentEmbed_ErrorCode OH_ContentEmbed_StorageElements_GetCount(
 ContentEmbed_ErrorCode OH_ContentEmbed_StorageElements_GetElement(const ContentEmbed_StorageElements *storageElements,
     size_t index, ContentEmbed_StorageElement **storageElement)
 {
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
     if (supported != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (storageElements == nullptr || storageElement == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (storageElements == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storageElements is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (storageElement == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storageElement is null");
         return CE_ERR_PARAM_INVALID;
     }
     if (index >= storageElements->elements.size() || index < 0) {
@@ -1232,13 +1264,22 @@ ContentEmbed_ErrorCode OH_ContentEmbed_StorageElements_GetElement(const ContentE
 ContentEmbed_ErrorCode OH_ContentEmbed_StorageElement_GetName(
     const ContentEmbed_StorageElement *storageElement, char *name, size_t nameSize)
 {
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
     if (supported != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (storageElement == nullptr || nameSize == 0) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (storageElement == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storageElement is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (name == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "name is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (nameSize < storageElement->name.size()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "name size exceeds limit");
         return CE_ERR_PARAM_INVALID;
     }
     if (strcpy_s(name, nameSize, storageElement->name.c_str()) != 0) {
@@ -1251,13 +1292,18 @@ ContentEmbed_ErrorCode OH_ContentEmbed_StorageElement_GetName(
 ContentEmbed_ErrorCode OH_ContentEmbed_StorageElement_GetCTime(
     const ContentEmbed_StorageElement *storageElement, uint64_t *ctime)
 {
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
     if (supported != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (storageElement == nullptr || ctime == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (storageElement == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storageElement is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (ctime == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "ctime is null");
         return CE_ERR_PARAM_INVALID;
     }
     *ctime = storageElement->creationTime;
@@ -1267,13 +1313,18 @@ ContentEmbed_ErrorCode OH_ContentEmbed_StorageElement_GetCTime(
 ContentEmbed_ErrorCode OH_ContentEmbed_StorageElement_GetMTime(
     const ContentEmbed_StorageElement *storageElement, uint64_t *mtime)
 {
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
     if (supported != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (storageElement == nullptr || mtime == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (storageElement == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storageElement is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (mtime == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "mtime is null");
         return CE_ERR_PARAM_INVALID;
     }
     *mtime = storageElement->modifiedTime;
@@ -1283,13 +1334,18 @@ ContentEmbed_ErrorCode OH_ContentEmbed_StorageElement_GetMTime(
 ContentEmbed_ErrorCode OH_ContentEmbed_StorageElement_IsStorage(
     const ContentEmbed_StorageElement *storageElement, bool *isStorage)
 {
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
     if (supported != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (storageElement == nullptr || isStorage == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (storageElement == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storageElement is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (isStorage == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "isStorage is null");
         return CE_ERR_PARAM_INVALID;
     }
     *isStorage = storageElement->isStorage;
@@ -1299,13 +1355,18 @@ ContentEmbed_ErrorCode OH_ContentEmbed_StorageElement_IsStorage(
 ContentEmbed_ErrorCode OH_ContentEmbed_StorageElement_IsStream(
     const ContentEmbed_StorageElement *storageElement, bool *isStream)
 {
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
     auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
     if (supported != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (storageElement == nullptr || isStream == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (storageElement == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storageElement is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (isStream == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "isStream is null");
         return CE_ERR_PARAM_INVALID;
     }
     *isStream = !(storageElement->isStorage);
@@ -1320,8 +1381,12 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_CopyTo(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (srcStorage == nullptr || dstStorage == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (srcStorage == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "srcStorage is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (dstStorage == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "dstStorage is null");
         return CE_ERR_PARAM_INVALID;
     }
     auto err = CopyOEid(srcStorage, dstStorage);

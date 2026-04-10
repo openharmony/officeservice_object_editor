@@ -664,6 +664,7 @@ void ObjectEditorClient::SARegCleanUp()
 
 ObjectEditorClient::~ObjectEditorClient()
 {
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "destructor");
     SARegCleanUp();
 }
 // LCOV_EXCL_STOP

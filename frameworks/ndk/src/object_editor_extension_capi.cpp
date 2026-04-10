@@ -239,8 +239,12 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnGetCapabilityFunc(Con
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (object == nullptr || onGetCapabilityFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (object == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "object is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (onGetCapabilityFunc == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "onGetCapabilityFunc is null");
         return CE_ERR_PARAM_INVALID;
     }
     object->onGetCapabilityFunc = onGetCapabilityFunc;
