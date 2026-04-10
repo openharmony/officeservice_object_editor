@@ -24,7 +24,7 @@ namespace ObjectEditor {
 class ObjectEditorClientCallback : public ObjectEditorClientCallbackStub {
 public:
     explicit ObjectEditorClientCallback(struct ContentEmbed_ExtensionProxy *proxy);
-    ~ObjectEditorClientCallback() = default;
+    ~ObjectEditorClientCallback();
     int32_t CallbackEnter(uint32_t code) override;
     int32_t CallbackExit(uint32_t code, int32_t result) override;
 

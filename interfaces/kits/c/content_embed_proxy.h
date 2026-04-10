@@ -449,6 +449,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_RegisterOnExtensionStoppedFunc(
  *     {@link CE_ERR_SYSTEM_ABNORMAL} - the system service works abnormally.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
+ *     {@link CE_ERR_CONNECT_LIMIT_EXCEED} - connections exceeds the limit.
+ *     {@link CE_ERR_FILE_NOT_GRANT} - file is not authorized.
+ *     {@link CE_ERR_DISK_FULL} - the disk is full.
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
@@ -481,6 +484,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StopWork(ContentEmbed_ExtensionProx
  *     {@link CE_ERR_EXTENSION_ERROR} - an error occurred in the extension application.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
+ *     {@link CE_ERR_EXTENSION_NOT_SUPPORT} - the capability is not supported by OE Extension.
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */
@@ -497,6 +501,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetSnapshot(ContentEmbed_ExtensionP
  *     {@link CE_ERR_EXTENSION_ERROR} - an error occurred in the extension application.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
+ *     {@link CE_ERR_EXTENSION_NOT_SUPPORT} - the capability is not supported by OE Extension.
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
  * @since 24
  */

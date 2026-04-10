@@ -319,6 +319,12 @@ ErrCode ObjectEditorExtension::GetSnapshot(const std::string &documentId)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onGetSnapshotFunc is nullptr");
         return ERR_INVALID_VALUE;
     }
+    uint32_t bitmask = 0;
+    iter->second->onGetCapability(iter->second.get(), &bitmask);
+    if ((bitmask & CE_CAPABILITY_SUPPORT_SNAPSHOT) == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "capability not support");
+        return ObjectorEditorExtensionErrCode::EXTENSION_CAPABILITY_NOT_SUPPORT;
+    }
     iter->second->onGetSnapshotFunc(iter->second.get());
     return ERR_OK;
 }
@@ -339,6 +345,12 @@ ErrCode ObjectEditorExtension::DoEdit(const std::string &documentId)
     if (iter->second == nullptr || iter->second->onDoEditFunc == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onDoEditFunc is nullptr");
         return ERR_INVALID_VALUE;
+    }
+    uint32_t bitmask = 0;
+    iter->second->onGetCapability(iter->second.get(), &bitmask);
+    if ((bitmask & CE_CAPABILITY_SUPPORT_DO_EDIT) == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "capability not support");
+        return ObjectorEditorExtensionErrCode::EXTENSION_CAPABILITY_NOT_SUPPORT;
     }
     iter->second->onDoEditFunc(iter->second.get());
     return ERR_OK;
@@ -583,6 +595,11 @@ int32_t ObjectEditorExtension::CallbackExit([[maybe_unused]] uint32_t code, [[ma
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "extension");
     return result;
+}
+
+ObjectEditorExtension::~ObjectEditorExtension()
+{
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "destructor");
 }
 // LCOV_EXCL_STOP
 } // namespace AbilityRuntime

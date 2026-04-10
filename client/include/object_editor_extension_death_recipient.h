@@ -24,6 +24,7 @@ namespace ObjectEditor {
 class ObjectEditorExtensionDeathRecipient : public IRemoteObject::DeathRecipient {
 public:
     explicit ObjectEditorExtensionDeathRecipient(struct ContentEmbed_ExtensionProxy *proxy);
+    ~ObjectEditorExtensionDeathRecipient();
     void OnRemoteDied(const wptr<IRemoteObject> &remote) override;
 private:
     struct ContentEmbed_ExtensionProxy *proxy_ {nullptr};

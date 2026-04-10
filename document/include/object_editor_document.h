@@ -47,7 +47,7 @@ public:
     ObjectEditorDocument &operator=(const ObjectEditorDocument &) = delete;
     ObjectEditorDocument(ObjectEditorDocument &&) noexcept = default;
     ObjectEditorDocument &operator=(ObjectEditorDocument &&) noexcept = default;
-    ~ObjectEditorDocument() = default;
+    ~ObjectEditorDocument();
 
     bool Marshalling(Parcel &parcel) const override;
     static ObjectEditorDocument *Unmarshalling(Parcel &parcel);

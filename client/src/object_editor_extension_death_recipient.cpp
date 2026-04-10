@@ -23,6 +23,11 @@ ObjectEditorExtensionDeathRecipient::ObjectEditorExtensionDeathRecipient(
 {
 }
 
+ObjectEditorExtensionDeathRecipient::~ObjectEditorExtensionDeathRecipient()
+{
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "destructor");
+}
+
 void ObjectEditorExtensionDeathRecipient::OnRemoteDied(const OHOS::wptr<OHOS::IRemoteObject> &remoteObject)
 {
     OBJECT_EDITOR_LOGW(ObjectEditorDomain::CLIENT, "extension remote died");

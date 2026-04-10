@@ -118,6 +118,32 @@ char **SplitToCStrings(const std::string &str, char pattern, uint32_t &count)
     }
     return result;
 }
+
+ContentEmbed_ErrorCode GetStartWorkErrorCode(OHOS::ErrCode code)
+{
+    switch (code) {
+        case ObjectEditorClientErrCode::CLIENT_COPY_FILE_FAILED:
+            return CE_ERR_DISK_FULL;
+        case ObjectEditorManagerErrCode::SA_CONNECT_LIMIT_EXCEED:
+            return CE_ERR_CONNECT_LIMIT_EXCEED;
+        case ObjectEditorManagerErrCode::SA_CHECK_CLIENT_FILE_VALID_FAILED:
+            return CE_ERR_FILE_NOT_GRANT;
+        default:
+            return CE_ERR_SYSTEM_ABNORMAL;
+    }
+    return CE_ERR_PARAM_INVALID;
+}
+
+ContentEmbed_ErrorCode GetExtensionErrorCode(OHOS::ErrCode code)
+{
+    switch (code) {
+        case ObjectEditorExtensionErrCode::EXTENSION_CAPABILITY_NOT_SUPPORT:
+            return CE_ERR_EXTENSION_NOT_SUPPORT;
+        default:
+            return CE_ERR_EXTENSION_ERROR;
+    }
+    return CE_ERR_EXTENSION_ERROR;
+}
 } // namespace
 
 ContentEmbed_Format::~ContentEmbed_Format()
@@ -317,8 +343,12 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedFormatByOEidAndLocale(cons
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
         return CE_ERR_DEVICE_NOT_SUPPORTED;
     }
-    if (oeid == nullptr || format == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (oeid == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (format == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "format is null");
         return CE_ERR_PARAM_INVALID;
     }
     std::string strLocale = locale == nullptr ? "" : std::string(locale);
@@ -343,8 +373,12 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetOEidFromFormat(const ContentEmbed_Form
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
         return CE_ERR_DEVICE_NOT_SUPPORTED;
     }
-    if (format == nullptr || oeid == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
+    if (format == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "format is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (oeid == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid is null");
         return CE_ERR_PARAM_INVALID;
     }
     if (strcpy_s(oeid, MAX_OEID_LENGTH, format->oeid.c_str()) != 0) {
@@ -599,15 +633,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StartWork(ContentEmbed_ExtensionPro
     auto errCode = ObjectEditorClient::GetInstance().StartObjectEditorExtension(proxy->ceDocument->oeDocumentInner,
         oeCallbackInner, proxy->objectEditorService, proxy->isPackageExtension);
     if (errCode != OHOS::ERR_OK) {
-        if (errCode == OHOS::ObjectEditor::ObjectEditorClientErrCode::CLIENT_COPY_FILE_FAILED) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "fail copy file, errCode: %{public}d", errCode);
-            delete oeCallbackInner;
-            return CE_ERR_FILE_OPERATION_FAILED;
-        } else {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "StartWork failed, errCode: %{public}d", errCode);
-            delete oeCallbackInner;
-            return CE_ERR_SYSTEM_ABNORMAL;
-        }
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "errCode: %{public}d", errCode);
+        delete oeCallbackInner;
+        return GetStartWorkErrorCode(errCode);
     }
     if (proxy->isPackageExtension) {
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT_NDK, "is package");
@@ -673,7 +701,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_DoEdit(ContentEmbed_ExtensionProxy 
     auto errCode = proxy->objectEditorService->DoEdit(proxy->ceDocument->oeDocumentInner->GetDocumentId());
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed: %{public}d", errCode);
-        return CE_ERR_EXTENSION_ERROR;
+        return GetExtensionErrorCode(errCode);
     }
     return CE_ERR_OK;
 }
@@ -785,7 +813,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetSnapshot(ContentEmbed_ExtensionP
         proxy->ceDocument->oeDocumentInner->GetDocumentId());
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed: %{public}d", errCode);
-        return CE_ERR_EXTENSION_ERROR;
+        return GetExtensionErrorCode(errCode);
     }
     std::string snapshotPath = proxy->ceDocument->oeDocumentInner->GetSnapshotPath();
     if (!std::filesystem::exists(snapshotPath) || std::filesystem::file_size(snapshotPath) == 0) {

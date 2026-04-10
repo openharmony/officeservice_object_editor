@@ -132,6 +132,12 @@ ObjectEditorFormat *ObjectEditorFormat::Unmarshalling(Parcel &parcel)
     }
     return format;
 }
+
+ObjectEditorFormat::~ObjectEditorFormat()
+{
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::COMMON, "destructor oeid: %{public}s", oeid.c_str());
+}
+
 // LCOV_EXCL_STOP
 } // namespace ObjectEditor
 } // namespace OHOS

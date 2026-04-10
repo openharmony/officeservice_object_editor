@@ -35,7 +35,7 @@ class ObjectEditorExtension
     : public ExtensionBase<ObjectEditorExtensionContext>, public ObjectEditorExtensionStub {
 public:
     ObjectEditorExtension() = default;
-    virtual ~ObjectEditorExtension() = default;
+    virtual ~ObjectEditorExtension();
 
     /**
      * @brief Create and init context.
