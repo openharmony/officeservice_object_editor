@@ -575,7 +575,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextStartSelfUIAbilityWithSt
     }
     OHOS::AAFwk::Want innerWant;
     OHOS::AAFwk::CWantManager::TransformToWant(*want, false, innerWant);
-    OHOS::AAFWK::StartOptions startOptions = options->GetInnerStartOptions();
+    OHOS::AAFwk::StartOptions startOptions = options->GetInnerStartOptions();
     auto ret = contextPtr->StartAbility(innerWant, startOptions);
     if (ret != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "start ability failed:%{public}d", ret);
