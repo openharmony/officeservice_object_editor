@@ -2,7 +2,7 @@
     "process": "object_editor_service",
     "systemability": [
         {
-            "name": 8650,
+            "name": 66528,
             "libpath": "libcontent_embed_service.z.so",
             "run-on-create": false,
             "distributed": false,
