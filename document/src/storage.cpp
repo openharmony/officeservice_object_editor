@@ -970,7 +970,7 @@ uint32_t StorageIO::SaveBlockToFile(uint64_t physicalOffset, const Byte *data, u
             return 0;
         }
         if (auto *buf = file_->rdbuf()) {
-            if (buf->pubsync() == -1) {
+            if (buf != nullptr && buf->pubsync() == -1) {
                 return 0;
             }
         } else {
