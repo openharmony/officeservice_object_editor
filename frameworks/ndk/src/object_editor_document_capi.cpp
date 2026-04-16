@@ -98,13 +98,13 @@ Storage *OH_ContentEmbed_Helper_GetRootStorage(const ContentEmbed_Storage *oeSto
 
 ContentEmbed_ErrorCode CopyOEid(ContentEmbed_Storage *srcStorage, ContentEmbed_Storage *dstStorage)
 {
-    char oeid[OEID_MAX_LEN];
-    auto err = OH_ContentEmbed_Storage_GetOEid(srcStorage, oeid, OEID_MAX_LEN);
+    char oeid[MAX_OEID_LENGTH];
+    auto err = OH_ContentEmbed_Storage_GetOEid(srcStorage, oeid, MAX_OEID_LENGTH);
     if (err != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "GetOEid failed, err: %{private}d", err);
         return err;
     }
-    err = OH_ContentEmbed_Storage_SetOEid(dstStorage, oeid, OEID_MAX_LEN);
+    err = OH_ContentEmbed_Storage_SetOEid(dstStorage, oeid, MAX_OEID_LENGTH);
     if (err != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "SetOEid failed, err: %{private}d", err);
         return err;

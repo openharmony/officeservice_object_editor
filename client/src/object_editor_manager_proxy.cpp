@@ -302,7 +302,7 @@ ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatsByLocale(const std::stri
         static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_GET_FORMATS_BY_LOCALE), data, reply, option);
     if (FAILED(result)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
-        return ERR_INVALID_DATA;
+        return result;
     }
     ErrCode errCode = reply.ReadInt32();
     if (FAILED(errCode)) {
