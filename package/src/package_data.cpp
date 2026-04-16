@@ -23,9 +23,9 @@ namespace ObjectEditor {
 namespace fs = std::filesystem;
 // LCOV_EXCL_START
 namespace {
-const std::string PACKAGE_STREAM_NATIVE_NAME = "\x01Ole10Native";
-const std::string PACKAGE_STREAM_COMPOBJ_NAME = "\x01CompObj";
-const std::string PACKAGE_STREAM_OBJINFO_NAME = "\x03ObjInfo";
+constexpr const char* PACKAGE_STREAM_NATIVE_NAME = "\x01Ole10Native";
+constexpr const char* PACKAGE_STREAM_COMPOBJ_NAME = "\x01CompObj";
+constexpr const char* PACKAGE_STREAM_OBJINFO_NAME = "\x03ObjInfo";
 constexpr uint32_t U16_BUF_LEN = 2;
 constexpr uint32_t U32_BUF_LEN = 4;
 constexpr uint32_t MARKER_VAL = 2;
