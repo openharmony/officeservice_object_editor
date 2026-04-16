@@ -118,13 +118,11 @@ ContentEmbed_ErrorCode CopyStream(ContentEmbed_Storage *srcStorage, ContentEmbed
     ContentEmbed_Stream *dstStream = nullptr;
     ContentEmbed_ErrorCode err = OH_ContentEmbed_Storage_GetStream(srcStorage, name, &srcStream);
     if (err != CE_ERR_OK || srcStream == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "GetStream failed, err: %{private}d", err);
         return err;
     }
 
     err = OH_ContentEmbed_Storage_CreateStream(dstStorage, name, &dstStream);
     if (err != CE_ERR_OK || dstStream == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "CreateStream failed, err: %{private}d", err);
         delete srcStream;
         srcStream = nullptr;
         return err;
@@ -174,14 +172,12 @@ ContentEmbed_ErrorCode CopyElement(ContentEmbed_Storage *srcStorage, ContentEmbe
     ContentEmbed_StorageElement *element = nullptr;
     auto err = OH_ContentEmbed_StorageElements_GetElement(elements, index, &element);
     if (err != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "GetElement failed, err: %{private}d", err);
         return err;
     }
 
     char name[MAX_NAME_LEN];
     err = OH_ContentEmbed_StorageElement_GetName(element, name, MAX_NAME_LEN);
     if (err != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "GetName failed, err: %{private}d", err);
         return err;
     }
     bool isStorage = false;
@@ -273,7 +269,8 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Helper_RequireStorageEntry(const ContentE
     }
     const std::string normalizedPath = OH_ContentEmbed_Helper_NormalizePath(handle->name);
     if (!storageOut->GetStorage(normalizedPath, false)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "GetStorage failed, path: %{private}s", normalizedPath.c_str());
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "GetStorage failed, path: %{private}s",
+            normalizedPath.c_str());
         return CE_ERR_STORAGE_OPERATION_FAILED;
     }
     return CE_ERR_OK;
@@ -303,7 +300,8 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Helper_RequireStream(ContentEmbed_Stream 
     if (!handle->stream || handle->storage != storage) {
         Stream *stream = storage->GetStream(handle->path, false, true);
         if (stream == nullptr) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "GetStream failed, path: %{private}s", handle->path.c_str());
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "GetStream failed, path: %{private}s",
+                handle->path.c_str());
             return CE_ERR_NULL_POINTER;
         }
         StreamPos desired = handle->pos;
@@ -1203,7 +1201,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetElements(const ContentEmbed_St
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
         return supported;
     }
-    if (storage == nullptr || storage->owner == nullptr) {
+    if (storage == nullptr || storage->owner == nullptr || storage->owner->oeDocumentInner == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storage is null");
         return CE_ERR_PARAM_INVALID;
     }
@@ -1216,10 +1214,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetElements(const ContentEmbed_St
     if (ret != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "require storage entry failed");
         return ret;
-    }
-    if (!storage->owner->oeDocumentInner) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed to access document");
-        return CE_ERR_NULL_POINTER;
     }
     OHOS::ObjectEditor::Storage *rootStorage = storage->owner->oeDocumentInner->GetRootStorage();
     if (!rootStorage) {
