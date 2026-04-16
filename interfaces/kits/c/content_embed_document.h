@@ -538,6 +538,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_DestroyDocument(ContentEmbed_Document *do
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
+ *     {@link CE_ERR_STORAGE_OPERATION_FAILED} - the storage operation failed.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
@@ -556,6 +557,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetOEid(ContentEmbed_Storage *sto
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
+ *     {@link CE_ERR_STORAGE_OPERATION_FAILED} - the storage operation failed.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
@@ -607,6 +609,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_StorageElements_Destroy(ContentEmbed_Stor
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
+ *     {@link CE_ERR_STORAGE_OPERATION_FAILED} - the storage operation failed.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.
@@ -749,6 +752,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_StorageElement_IsStream(
  *     {@link CE_ERR_OK} - success.
  *     {@link CE_ERR_PARAM_INVALID} - parameter check failed.
  *     {@link CE_ERR_NULL_POINTER} - unexpected null pointer.
+ *     {@link CE_ERR_STORAGE_OPERATION_FAILED} - the storage operation failed.
  *     {@link CE_ERR_DEVICE_NOT_SUPPORTED} - the device is not supported.
  *     {@link CE_ERR_IN_DLP_SANDBOX} - application is in dlp sandbox.
  * Specific error codes can be referenced {@link ContentEmbed_ErrorCode}.

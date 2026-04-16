@@ -38,6 +38,12 @@ namespace {
 }
 // LCOV_EXCL_START
 
+ObjectEditorDocument::~ObjectEditorDocument()
+{
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "destructor oeid: %{public}s, documentId: %{private}s",
+        oeid_.c_str(), documentId_.c_str());
+}
+
 ObjectEditorDocument::ObjectEditorDocument(std::unique_ptr<Storage> storage,
     std::string tmpFilePath) noexcept
     : storage_(std::move(storage)),

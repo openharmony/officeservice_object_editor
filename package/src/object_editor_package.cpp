@@ -49,39 +49,7 @@ ObjectEditorPackage::~ObjectEditorPackage()
 ErrCode ObjectEditorPackage::GetSnapshot(const std::string &documentId)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "package");
-    if (document_ == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "document is null");
-        return ERR_INVALID_VALUE;
-    }
-    std::unique_ptr<ObjectEditorDocument> newDocument = nullptr;
-    if (document_->GetOperateType() == OperateType::CREATE_BY_FILE) {
-        newDocument = ObjectEditorDocument::CreateByFile(document_->GetOriFilePath());
-        if (newDocument == nullptr) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "create document by file failed");
-            return ERR_INVALID_VALUE;
-        }
-        newDocument->SetOEid(PACKAGE_OEID);
-        if (document_->GetNativeFileUri().has_value()) {
-            newDocument->SetNativeFileUri(document_->GetNativeFileUri().value());
-        }
-    } else if (document_->GetOperateType() == OperateType::EDIT) {
-        newDocument = ObjectEditorDocument::CreateByOEid(PACKAGE_OEID);
-        if (newDocument == nullptr) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "create document by oeid failed");
-            return ERR_INVALID_VALUE;
-        }
-        newDocument->SetOperateType(OperateType::EDIT);
-    }
-    newDocument->SetDocumentId(document_->GetDocumentId());
-    if (document_->GetTmpFileUri().has_value()) {
-        newDocument->SetTmpFileUri(document_->GetTmpFileUri().value());
-    }
-    newDocument->SetSnapshotUri(document_->GetSnapshotUri());
-    if (!isEditing_ && clientCb_ != nullptr) {
-        OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "package update document");
-        clientCb_->OnUpdate(newDocument);
-    }
-    return ERR_OK;
+    return ObjectorEditorExtensionErrCode::EXTENSION_CAPABILITY_NOT_SUPPORT;
 }
 
 ErrCode ObjectEditorPackage::DoEdit(const std::string &documentId)
@@ -90,6 +58,14 @@ ErrCode ObjectEditorPackage::DoEdit(const std::string &documentId)
     if (document_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "document is null");
         return ERR_INVALID_VALUE;
+    }
+    if (document_->GetLinking()) {
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "handle linking");
+        if (!document_->GetNativeFileUri().has_value()) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "document native file uri is null");
+            return ERR_INVALID_VALUE;
+        }
+        return OpenFile(document_->GetNativeFileUri().value());
     }
     if (packageData_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "packageData is null");
@@ -112,34 +88,17 @@ ErrCode ObjectEditorPackage::DoEdit(const std::string &documentId)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "watcher start failed");
         return ERR_INVALID_VALUE;
     }
-    AAFwk::Want want;
-    want.SetAction(WANT_ACTION);
-    want.SetUri(SystemUtils::GetUriFromPath(packageData_->GetFilePath()));
-    int32_t flags = AAFwk::Want::FLAG_AUTH_READ_URI_PERMISSION | AAFwk::Want::FLAG_AUTH_WRITE_URI_PERMISSION;
-    want.SetFlags(flags);
-    want.SetParam(SHOW_DEFAULT_PICKER, true);
-    auto callerToken = GetRemoteObject();
-    if (callerToken == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "callerToken is null");
-    }
-    auto abilityManagerClient = AAFwk::AbilityManagerClient::GetInstance();
-    if (abilityManagerClient == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "abilityManagerClient is null");
-        return ObjectEditorManagerErrCode::SA_DISCONNECT_ABILITY_FAILED;
-    }
-    auto ret = abilityManagerClient->StartAbility(want, callerToken, ILLEGAL_REQUEST_CODE,
-        UserMgr::GetInstance().GetUserId());
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "package StartAbility result: %{public}d", ret);
-    if (ret == ERR_OK) {
-        isEditing_ = true;
-    }
-    return ret;
+    return OpenFile(SystemUtils::GetUriFromPath(packageData_->GetFilePath()));
 }
 
 ErrCode ObjectEditorPackage::GetEditStatus(const std::string &documentId, bool *isEditing, bool *isModified)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "package");
+    if (isEditing == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "isEditing is null");
+        return ERR_INVALID_VALUE;
+    }
     *isEditing = isEditing_;
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "isEditing:%{public}d", isEditing_);
     return ERR_OK;
 }
 
@@ -152,7 +111,12 @@ ErrCode ObjectEditorPackage::GetExtensionEditStatus(bool &isEditing)
 
 ErrCode ObjectEditorPackage::GetCapability(const std::string &documentId, uint32_t *bitmask)
 {
+    if (bitmask == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "bitmask is null");
+        return ERR_INVALID_VALUE;
+    }
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "package");
+    *bitmask = ContentEmbed_CapabilityCode::CE_CAPABILITY_SUPPORT_DO_EDIT;
     return ERR_OK;
 }
 
@@ -178,6 +142,10 @@ ErrCode ObjectEditorPackage::Initial(std::unique_ptr<ObjectEditorDocument> docum
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "document is null");
         return ERR_INVALID_VALUE;
     }
+    if (document_->GetLinking()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "document is linking");
+        return ERR_OK;
+    }
     if (document_->GetOperateType() == OperateType::CREATE_BY_FILE) {
         packageData_ = PackageData::CreateByDocument(document_);
     } else {
@@ -187,7 +155,50 @@ ErrCode ObjectEditorPackage::Initial(std::unique_ptr<ObjectEditorDocument> docum
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "packageData is null");
         return ERR_INVALID_VALUE;
     }
+    if (document_->GetOperateType() == OperateType::CREATE_BY_FILE) {
+        auto newDocument = ObjectEditorDocument::CreateByFile(document_->GetOriFilePath());
+        if (newDocument == nullptr) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "create document by file failed");
+            return ERR_OK;
+        }
+        newDocument->SetOEid(PACKAGE_OEID);
+        if (document_->GetNativeFileUri().has_value()) {
+            newDocument->SetNativeFileUri(document_->GetNativeFileUri().value());
+        }
+        newDocument->SetDocumentId(document_->GetDocumentId());
+        if (document_->GetTmpFileUri().has_value()) {
+            newDocument->SetTmpFileUri(document_->GetTmpFileUri().value());
+        }
+        newDocument->SetSnapshotUri(document_->GetSnapshotUri());
+        clientCb_->OnUpdate(newDocument);
+    }
     return ERR_OK;
+}
+
+ErrCode ObjectEditorPackage::OpenFile(const std::string &fileUri)
+{
+    AAFwk::Want want;
+    want.SetAction(WANT_ACTION);
+    want.SetUri(fileUri);
+    int32_t flags = AAFwk::Want::FLAG_AUTH_READ_URI_PERMISSION | AAFwk::Want::FLAG_AUTH_WRITE_URI_PERMISSION;
+    want.SetFlags(flags);
+    want.SetParam(SHOW_DEFAULT_PICKER, true);
+    auto callerToken = GetRemoteObject();
+    if (callerToken == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "callerToken is null");
+    }
+    auto abilityManagerClient = AAFwk::AbilityManagerClient::GetInstance();
+    if (abilityManagerClient == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "abilityManagerClient is null");
+        return ObjectEditorManagerErrCode::SA_DISCONNECT_ABILITY_FAILED;
+    }
+    auto ret = abilityManagerClient->StartAbility(want, callerToken, ILLEGAL_REQUEST_CODE,
+        UserMgr::GetInstance().GetUserId());
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "package StartAbility result: %{public}d", ret);
+    if (ret == ERR_OK) {
+        isEditing_ = true;
+    }
+    return ret;
 }
 // LCOV_EXCL_STOP
 } // namespace ObjectEditor

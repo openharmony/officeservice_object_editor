@@ -36,6 +36,7 @@ ohos_shared_library("content_embed_ndk") {
     sources = [
         "src/object_editor_document_capi.cpp",
         "src/object_editor_extension_capi.cpp",
+        "src/object_editor_native_common.cpp",
         "src/object_editor_proxy_capi.cpp",
         "${object_editor_path}/common/src/object_editor_config.cpp",
         "${object_editor_path}/common/src/system_utils.cpp",

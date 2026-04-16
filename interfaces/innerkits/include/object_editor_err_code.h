@@ -22,7 +22,7 @@ namespace OHOS {
 namespace ObjectEditor {
 enum ObjectEditorClientErrCode : int32_t {
     CLIENT_OK = 0,
-    CLIENT_INVALID_PARAMETER,
+    CLIENT_INVALID_PARAMETER = 1000,
     CLIENT_UNKNOWN_OPERATE,
     CLIENT_GET_PATH_ERROR,
     CLIENT_PREPARE_FILES_ERROR,
@@ -32,7 +32,7 @@ enum ObjectEditorClientErrCode : int32_t {
 
 enum ObjectEditorManagerErrCode : int32_t {
     SA_OK = 0,
-    SA_PERMISSION_DENIED,
+    SA_PERMISSION_DENIED = 2000,
     SA_UNKNOWN_OPERATE,
     SA_INVALID_PARAMETER,
     SA_GRANT_PERMISSION_TO_SERVER_EXTENSION_FAILED,
@@ -70,15 +70,18 @@ enum ObjectEditorManagerErrCode : int32_t {
     SA_CHECK_START_EXTENSION_OK,
     SA_ERR_DEVICE_NOT_SUPPORT,
     SA_START_UIABILITY_FAILED,
+    SA_CONNECT_LIMIT_EXCEED,
+    SA_CHECK_CLIENT_FILE_VALID_FAILED,
 };
 
 enum ObjectorEditorExtensionErrCode : int32_t {
     EXTENSION_OK = 0,
+    EXTENSION_CAPABILITY_NOT_SUPPORT = 3000,
 };
 
 enum ObjectEditorDocumentErrCode : int32_t {
     DOCUMENT_OK = 0,
-    DOCUMENT_FLUSH_ERROR,
+    DOCUMENT_FLUSH_ERROR = 4000,
 };
 
 } // namespace ObjectEditor

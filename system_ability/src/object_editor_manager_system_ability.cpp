@@ -328,10 +328,12 @@ ErrCode ObjectEditorManagerSystemAbility::StartObjectEditorExtension(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "grant client file permission to server extension failed");
         return ObjectEditorManagerErrCode::SA_GRANT_PERMISSION_TO_SERVER_EXTENSION_FAILED;
     }
-    bool ret = ConnectObjectEditorExtAbility(objectEditorFormat, oeExtensionRemoteObject);
+    bool isExceed = false;
+    bool ret = ConnectObjectEditorExtAbility(objectEditorFormat, oeExtensionRemoteObject, isExceed);
     if (!ret || oeExtensionRemoteObject == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "connect object editor extension ability failed");
-        return ObjectEditorManagerErrCode::SA_CONNECT_ABILITY_FAILED;
+        return isExceed ? ObjectEditorManagerErrCode::SA_CONNECT_LIMIT_EXCEED :
+            ObjectEditorManagerErrCode::SA_CONNECT_ABILITY_FAILED;
     }
     auto objectEditorExtensionProxy = iface_cast<ObjectEditorExtensionProxy>(oeExtensionRemoteObject);
     if (objectEditorExtensionProxy == nullptr) {
@@ -407,20 +409,14 @@ ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::GetDefaultAppBundle
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "fileExt:%{public}s bundleName:%{public}s",
         fileExt.c_str(), bundleName.c_str());
-    std::string utdType;
-    ErrCode errCode = UDMF::UtdClient::GetInstance().GetUniformDataTypeByFilenameExtension(fileExt, utdType);
-    if (errCode != ERR_OK || utdType.empty()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "get utd type failed");
-        return ObjectEditorManagerErrCode::SA_UTD_QUERY_FAILED;
-    }
     sptr<AppExecFwk::IDefaultApp> defaultAppProxy = AppExecFwk::CommonFunc::GetDefaultAppProxy();
     if (defaultAppProxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "get default app proxy failed");
         return ObjectEditorManagerErrCode::SA_BMS_QUERY_DEFAULT_LAUNCHER_APP_FAILED;
     }
     AppExecFwk::BundleInfo bundleInfo;
-    errCode = defaultAppProxy->GetDefaultApplication(
-        UserMgr::GetInstance().GetUserId(), utdType, bundleInfo);
+    auto errCode = defaultAppProxy->GetDefaultApplication(
+        UserMgr::GetInstance().GetUserId(), fileExt, bundleInfo);
     if (errCode != ERR_OK && errCode != ERR_BUNDLE_MANAGER_DEFAULT_APP_NOT_EXIST) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "get default app bundlename failed");
         return ObjectEditorManagerErrCode::SA_BMS_QUERY_DEFAULT_LAUNCHER_APP_FAILED;
@@ -448,7 +444,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::CheckIsAllowStartEx
     }
     if (!CheckClientFileValid(document)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "client file invalid");
-        return ObjectEditorManagerErrCode::SA_INVALID_PARAMETER;
+        return ObjectEditorManagerErrCode::SA_CHECK_CLIENT_FILE_VALID_FAILED;
     }
     return ObjectEditorManagerErrCode::SA_CHECK_START_EXTENSION_OK;
 }
@@ -668,7 +664,8 @@ std::string ObjectEditorManagerSystemAbility::GetCallerBundleName()
 }
 
 bool ObjectEditorManagerSystemAbility::ConnectObjectEditorExtAbility(
-    std::unique_ptr<ObjectEditorFormat> &format, sptr<IRemoteObject> &remoteObject)
+    std::unique_ptr<ObjectEditorFormat> &format, sptr<IRemoteObject> &remoteObject,
+    bool &isExceed)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "in");
     if (format == nullptr) {
@@ -683,6 +680,7 @@ bool ObjectEditorManagerSystemAbility::ConnectObjectEditorExtAbility(
         return false;
     }
     if (!CheckConnectionLimit(clientBundleName, format, remoteObject)) {
+        isExceed = true;
         return false;
     }
     if (remoteObject != nullptr) {
