@@ -56,6 +56,11 @@ typedef enum ContentEmbed_ErrorCode {
      */
     CE_ERR_OK = 0,
     /**
+     * @error The error code when permission verification failed.
+     * @since 24
+     */
+    CE_PERMISSION_DENIED = 201,
+    /**
      * @brief The error code when parameter check failed.
      * @since 24
      */
@@ -125,6 +130,26 @@ typedef enum ContentEmbed_ErrorCode {
      * @since 24
      */
     CE_ERR_INVALID_LINKING_PATH = 35300012,
+    /**
+    * @brief The error code when the number of OE Extension connections exceeds the limit.
+    * @since 24
+    */
+    CE_ERR_CONNECT_LIMIT_EXCEED = 35300013,
+    /**
+    * @brief The error code when the file is not authorized.
+    * @since 24
+    */
+    CE_ERR_FILE_NOT_GRANT = 35300014,
+    /**
+    * @brief The error code when the disk is full.
+    * @since 24
+    */
+    CE_ERR_DISK_FULL = 35300015,
+    /**
+    * @brief The error code when the capability is not supported by OE Extension.
+    * @since 24
+    */
+    CE_ERR_EXTENSION_NOT_SUPPORT = 35300016,
 } ContentEmbed_ErrorCode;
 
 /**

@@ -51,6 +51,8 @@ public:
         const sptr<IObjectEditorClientCallback> &clientCb) override;
 
 private:
+    ErrCode OpenFile(const std::string &fileUri);
+
     std::shared_ptr<ObjectEditorDocument> document_ = nullptr;
     sptr<IObjectEditorClientCallback> clientCb_ = nullptr;
     std::unique_ptr<PackageData> packageData_ = nullptr;

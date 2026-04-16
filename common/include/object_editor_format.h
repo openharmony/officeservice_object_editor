@@ -38,6 +38,7 @@ struct ObjectEditorFormat : public Parcelable {
 
     virtual bool Marshalling(Parcel &parcel) const override;
     static ObjectEditorFormat *Unmarshalling(Parcel &parcel);
+    ~ObjectEditorFormat();
 };
 
 } // namespace ObjectEditor

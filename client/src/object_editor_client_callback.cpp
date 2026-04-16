@@ -22,6 +22,11 @@ ObjectEditorClientCallback::ObjectEditorClientCallback(struct ContentEmbed_Exten
 {
 }
 
+ObjectEditorClientCallback::~ObjectEditorClientCallback()
+{
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "destructor");
+}
+
 int32_t ObjectEditorClientCallback::CallbackEnter(uint32_t code)
 {
     return 0;
