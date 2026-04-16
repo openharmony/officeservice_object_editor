@@ -201,6 +201,7 @@ private:
     std::shared_ptr<AbilityHandler> handler_ = nullptr;
     std::shared_ptr<struct ContentEmbed_ExtensionInstance> ceInstance_ = nullptr;
     std::shared_ptr<struct ContentEmbed_ExtensionContext> ceContext_ = nullptr;
+    std::shared_ptr<ObjectEditorExtensionContext> oeContext_ = nullptr;
     sptr<ObjectEditorExtensionDisplayListener> displayListener_ = nullptr;
 };
 

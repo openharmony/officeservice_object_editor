@@ -51,7 +51,6 @@ namespace ObjectEditor {
 // LCOV_EXCL_START
 namespace {
 constexpr const char* DIVERSION_MAP_JSON_PATH = "/system/etc/office_service/object_editor_service/diversion_map.json";
-constexpr int32_t ILLEGAL_REQUEST_CODE = -1;
 constexpr int32_t MAX_CONNECTION_COUNT = 2;
 }
 
@@ -539,7 +538,8 @@ ErrCode ObjectEditorManagerSystemAbility::GetObjectEditorFormatsByLocale(const s
     return ObjectEditorManagerDatabase::GetInstance().GetObjectEditorFormatsByLocale(locale, formats);
 }
 
-ErrCode ObjectEditorManagerSystemAbility::StartUIAbility(const std::unique_ptr<AAFwk::Want> &want)
+ErrCode ObjectEditorManagerSystemAbility::StartUIAbility(const std::unique_ptr<AAFwk::Want> &want,
+    sptr<IRemoteObject> extensionToken, int32_t clientPid)
 {
     if (want == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "want is null");
@@ -550,9 +550,9 @@ ErrCode ObjectEditorManagerSystemAbility::StartUIAbility(const std::unique_ptr<A
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "ability manager client is null");
         return ObjectEditorManagerErrCode::SA_START_UIABILITY_FAILED;
     }
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "bundlename: %{public}s", want->GetBundle().c_str());
-    ErrCode err = abilityManagerClient->StartAbility(*want, ILLEGAL_REQUEST_CODE,
-        UserMgr::GetInstance().GetUserId());
+    std::string specifiedFlag = want->GetParams().GetStringParam("specifiedFlag");
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "specifiedFlag: %{public}s", specifiedFlag.c_str());
+    ErrCode err = abilityManagerClient->StartAbilityByOEExt(*want, extensionToken, clientPid, specifiedFlag);
     if (err != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "failed:%{public}d", err);
         return ObjectEditorManagerErrCode::SA_START_UIABILITY_FAILED;

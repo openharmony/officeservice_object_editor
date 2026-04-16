@@ -328,7 +328,8 @@ ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatsByLocale(const std::stri
     return ERR_OK;
 }
 
-ErrCode ObjectEditorManagerProxy::StartUIAbility(const std::unique_ptr<AAFwk::Want> &want)
+ErrCode ObjectEditorManagerProxy::StartUIAbility(const std::unique_ptr<AAFwk::Want> &want,
+    sptr<IRemoteObject> extensionToken, int32_t clientPid)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -337,8 +338,24 @@ ErrCode ObjectEditorManagerProxy::StartUIAbility(const std::unique_ptr<AAFwk::Wa
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write descriptor fail");
         return ERR_INVALID_VALUE;
     }
+    if (want == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "want is null");
+        return ERR_INVALID_VALUE;
+    }
     if (!data.WriteParcelable(want.get())) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write want failed");
+        return ERR_INVALID_DATA;
+    }
+    if (!data.WriteInt32(clientPid)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write clientPid failed");
+        return ERR_INVALID_DATA;
+    }
+    if (extensionToken == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "extensionToken is null");
+        return ERR_INVALID_VALUE;
+    }
+    if (!data.WriteRemoteObject(extensionToken)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write extensionToken failed");
         return ERR_INVALID_DATA;
     }
     sptr<IRemoteObject> remote = Remote();

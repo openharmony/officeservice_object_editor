@@ -613,7 +613,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::QueryBySql(const std::st
     }
     int32_t rowResult = resultSet->GoToFirstRow();
     if (rowResult != NativeRdb::E_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "GoToFirstRow failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "GoToFirstRow failed, rowResult: %{public}d", rowResult);
         return ObjectEditorManagerErrCode::SA_DB_QUERY_EMPTY;
     }
     return ObjectEditorManagerErrCode::SA_OK;
