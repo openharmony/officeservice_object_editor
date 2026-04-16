@@ -50,7 +50,7 @@ namespace OHOS {
 namespace ObjectEditor {
 // LCOV_EXCL_START
 namespace {
-const std::string DIVERSION_MAP_JSON_PATH = "/system/etc/office_service/object_editor_service/diversion_map.json";
+constexpr const char* DIVERSION_MAP_JSON_PATH = "/system/etc/office_service/object_editor_service/diversion_map.json";
 constexpr int32_t ILLEGAL_REQUEST_CODE = -1;
 constexpr int32_t MAX_CONNECTION_COUNT = 2;
 }
