@@ -14,14 +14,17 @@
  */
 
 #include "object_editor_connection.h"
+
+#include <ipc_skeleton.h>
 #include "object_editor_extension_proxy.h"
 #include "object_editor_event_manager.h"
+#include "user_mgr.h"
+#include "caller_info.h"
 
 namespace OHOS {
 namespace ObjectEditor {
 // LCOV_EXCL_START
 namespace {
-constexpr int32_t DEFAULT_USER_ID = -1;
 constexpr int32_t RETRY_TIMES = 1;
 constexpr int32_t MAX_CHECK_REMOTE_EDITSTATUS_TIMES = 1;
 constexpr int32_t CONNECT_TIMEOUT = 3;
@@ -219,10 +222,12 @@ ObjectEditorManagerErrCode ObjectEditorConnection::DoConnect(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "abilityManagerClient is null");
         return ObjectEditorManagerErrCode::SA_CONNECT_ABILITY_FAILED;
     }
+    int32_t clientPid = IPCSkeleton::GetCallingPid();
     AAFwk::Want want;
     want.SetModuleName(moduleName);
     want.SetElementName(bundleName, abilityName);
-    auto ret = abilityManagerClient->ConnectExtensionAbility(want, this, DEFAULT_USER_ID);
+    want.SetParam("clientPid", clientPid);
+    auto ret = abilityManagerClient->ConnectExtensionAbility(want, this, UserMgr::GetInstance().GetUserId());
     if (ret != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "ConnectExtensionAbility failed: %{public}d", ret);
         return ObjectEditorManagerErrCode::SA_CONNECT_ABILITY_FAILED;

@@ -95,7 +95,7 @@ constexpr uint32_t DASH_THREE = 18;
 constexpr uint32_t DASH_FOUR = 23;
 
 constexpr uint32_t DASH_FIRST_INSERT = 4;
-constexpr uint32_t DASH_SECOND_INSERT = 4;
+constexpr uint32_t DASH_SECOND_INSERT = 6;
 constexpr uint32_t DASH_THREE_INSERT = 8;
 constexpr uint32_t DASH_FOUR_INSERT = 10;
 

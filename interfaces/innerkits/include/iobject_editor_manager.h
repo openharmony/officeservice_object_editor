@@ -67,7 +67,8 @@ public:
     virtual ErrCode GetObjectEditorFormatsByLocale(const std::string &locale,
                                                    std::vector<std::unique_ptr<ObjectEditorFormat>> &formats) = 0;
 
-    virtual ErrCode StartUIAbility(const std::unique_ptr<AAFwk::Want> &want) = 0;
+    virtual ErrCode StartUIAbility(const std::unique_ptr<AAFwk::Want> &want,
+        sptr<IRemoteObject> extensionToken, int32_t clientPid) = 0;
 
 protected:
     const int VECTOR_MAX_SIZE = 102400;

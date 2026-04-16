@@ -238,7 +238,17 @@ int32_t ObjectEditorManagerStub::HandleStartUIAbility(MessageParcel &data, Messa
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "want is nullptr");
         return ERR_INVALID_DATA;
     }
-    ErrCode errCode = StartUIAbility(want);
+    int32_t clientPid = data.ReadInt32();
+    if (clientPid <= 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "clientPid is invalid");
+        return ERR_INVALID_DATA;
+    }
+    sptr<IRemoteObject> extensionToken = data.ReadRemoteObject();
+    if (extensionToken == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "extensionToken is nullptr");
+        return ERR_INVALID_DATA;
+    }
+    ErrCode errCode = StartUIAbility(want, extensionToken, clientPid);
     if (!reply.WriteInt32(errCode)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "write errCode failed");
         return ERR_INVALID_VALUE;
