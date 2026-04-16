@@ -19,7 +19,6 @@
 #include <map>
 #include <mutex>
 #include "iremote_object.h"
-#include "single_instance.h"
 #include "system_ability.h"
 #include "single_instance.h"
 

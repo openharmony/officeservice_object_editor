@@ -35,8 +35,8 @@ constexpr int32_t HOURS_OF_ONE_DAY = 24;
 constexpr int32_t BEIJING_TIME_ZONE = 8;
 constexpr int32_t NUMBER_BASE = 10;
 constexpr int32_t TIME_FORMAT_SIZE = 64;
-const std::string FILE_MANAGER_AUTHORITY = "docs";
-const std::string MEDIA_AUTHORITY = "media";
+constexpr const char* FILE_MANAGER_AUTHORITY = "docs";
+constexpr const char* MEDIA_AUTHORITY = "media";
 } // namespace
 
 // LCOV_EXCL_START

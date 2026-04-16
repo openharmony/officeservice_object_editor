@@ -27,8 +27,8 @@
 namespace OHOS {
 namespace ObjectEditor {
 namespace {
-const std::string WANT_ACTION = "ohos.want.action.viewData";
-const std::string SHOW_DEFAULT_PICKER = "ability.params.showDefaultPicker";
+constexpr const char* WANT_ACTION = "ohos.want.action.viewData";
+constexpr const char* SHOW_DEFAULT_PICKER = "ability.params.showDefaultPicker";
 constexpr int32_t ILLEGAL_REQUEST_CODE = -1;
 }
 // LCOV_EXCL_START
