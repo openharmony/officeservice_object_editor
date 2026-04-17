@@ -116,6 +116,7 @@ public:
      * @return errCode ERR_OK on success, others on failure.
      */
     ErrCode TerminateAbility();
+    void SetClientPid(int32_t clientPid);
 
     using SelfType = ObjectEditorExtensionContext;
     static const size_t CONTEXT_TYPE_ID;
@@ -128,6 +129,7 @@ protected:
 
 private:
     sptr<IObjectEditorManager> GetIObjectEditorManager() const;
+    std::atomic<int32_t> clientPid_{0};
     static int ILLEGAL_REQUEST_CODE;
     /**
      * @brief Get Current Ability Type.
