@@ -35,12 +35,17 @@ ErrCode ObjectEditorExtensionContext::StartAbility(const AAFwk::Want &want) cons
         return ERR_INVALID_VALUE;
     }
     std::unique_ptr<AAFwk::Want> innerWant = std::make_unique<AAFwk::Want>(want);
-    ErrCode err = objectEditorManagerProxy->StartUIAbility(innerWant);
+    ErrCode err = objectEditorManagerProxy->StartUIAbility(innerWant, token_, clientPid_.load());
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "ret=%{public}d", err);
     if (err != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "failed, err: %{public}d", err);
     }
     return err;
+}
+
+void ObjectEditorExtensionContext::SetClientPid(int32_t clientPid)
+{
+    clientPid_.store(clientPid);
 }
 
 ErrCode ObjectEditorExtensionContext::StartAbility(

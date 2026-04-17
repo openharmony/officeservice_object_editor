@@ -83,7 +83,8 @@ public:
     ErrCode GetObjectEditorFormatsByLocale(
         const std::string &locale,
         std::vector<std::unique_ptr<ObjectEditorFormat>> &formats) override;
-    ErrCode StartUIAbility(const std::unique_ptr<AAFwk::Want> &want) override;
+    ErrCode StartUIAbility(const std::unique_ptr<AAFwk::Want> &want,
+        sptr<IRemoteObject> extensionToken, int32_t clientPid) override;
     int32_t CallbackEnter([[maybe_unused]] uint32_t code) override;
     int32_t CallbackExit([[maybe_unused]] uint32_t code, [[maybe_unused]] int32_t result) override;
 

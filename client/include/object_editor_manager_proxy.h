@@ -63,7 +63,8 @@ public:
     ErrCode GetObjectEditorFormatsByLocale(const std::string &locale,
         std::vector<std::unique_ptr<ObjectEditorFormat>> &formats) override;
 
-    ErrCode StartUIAbility(const std::unique_ptr<AAFwk::Want> &want) override;
+    ErrCode StartUIAbility(const std::unique_ptr<AAFwk::Want> &want,
+        sptr<IRemoteObject> extensionToken, int32_t clientPid) override;
 
 private:
     static inline BrokerDelegator<ObjectEditorManagerProxy> delegator_;
