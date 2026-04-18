@@ -52,6 +52,8 @@ namespace ObjectEditor {
 namespace {
 constexpr const char* DIVERSION_MAP_JSON_PATH = "/system/etc/office_service/object_editor_service/diversion_map.json";
 constexpr int32_t MAX_CONNECTION_COUNT = 2;
+constexpr int32_t MAX_REQUEST_COUNT = 50;
+constexpr int32_t WINDOW_SIZE_MS = 1000;
 }
 
 IMPLEMENT_SINGLE_INSTANCE(ObjectEditorManagerSystemAbility);
@@ -217,7 +219,26 @@ int32_t ObjectEditorManagerSystemAbility::CallbackEnter([[maybe_unused]] uint32_
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "permission:%{public}s denied", permissionClient_.c_str());
         return ObjectEditorManagerErrCode::SA_PERMISSION_DENIED;
     }
+    if (!CheckRateLimitAdvanced()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "rate limit advanced");
+        return ObjectEditorManagerErrCode::SA_CONNECT_LIMIT_EXCEED;
+    }
     return ERR_NONE;
+}
+
+bool ObjectEditorManagerSystemAbility::CheckRateLimitAdvanced()
+{
+    auto now = std::chrono::steady_clock::now();
+    auto nowMs = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+    uint64_t windowStartMs = windowStartMs_.load();
+    if (nowMs - windowStartMs >= WINDOW_SIZE_MS) {
+        if (windowStartMs_.compare_exchange_strong(windowStartMs, nowMs)) {
+            requestCount_.store(1);
+            return true;
+        }
+    }
+    uint32_t requestCount = requestCount_.fetch_add(1);
+    return requestCount < MAX_REQUEST_COUNT;
 }
 
 bool ObjectEditorManagerSystemAbility::CheckCallingPermission(uint32_t code)
@@ -399,6 +420,8 @@ ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::HandleDefaultAppFor
     }
     if (!defaultAppFormatRegistered || defaultAppBundleName.empty()) {
         objectEditorFormat = std::move(formats.front());
+    } else {
+        return errCode;
     }
     return ObjectEditorManagerErrCode::SA_OK;
 }
@@ -456,7 +479,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::GetTargetOEid(const
     if (it == diversionMap_.end()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "source oeid %{public}s get diversion failed",
             sourceOEid.c_str());
-        return ObjectEditorManagerErrCode::SA_OK;
+        return ObjectEditorManagerErrCode::SA_DIVERSION_QUERY_EMPTY;
     }
     targetOEid = it->second.targetOEid;
     minVersion = it->second.minVersion;

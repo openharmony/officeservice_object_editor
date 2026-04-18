@@ -50,7 +50,7 @@ StorageIO::StorageIO(const char *filename)
     stream_ = file_.get();
     const bool loaded = Load();
     if (!loaded) {
-        return;
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Load failed");
     }
 }
 
@@ -65,6 +65,7 @@ StorageIO::StorageIO(std::iostream *stream)
     stream_ = stream;
     const bool loaded = Load();
     if (!loaded) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Load failed");
         return;
     }
 }
@@ -959,9 +960,14 @@ uint32_t StorageIO::SaveBlockToFile(uint64_t physicalOffset, const Byte *data, u
     file_->clear();
     file_->seekp(offset);
     if (!file_->good()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to seek to offset");
         return 0;
     }
-
+    file_->write(reinterpret_cast<const char *>(data), static_cast<std::streamsize>(len));
+    if (!file_->good()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to write block");
+        return 0;
+    }
     // 只在必要时刷新
     writeBufferSize_ += len;
     if (writeBufferSize_ >= MAX_BUFFER_SIZE) {
@@ -1464,7 +1470,7 @@ bool StorageIO::FinalizeFlush(bool memoryMode, FlushSnapshot &snap, size_t block
         if (difatSectors_.empty() && snap.stagingMemory.size() != computedSize) {
             snap.stagingMemory.resize(computedSize, 0);
         }
-        auto newBuffer  = std::make_unique<std::vector<uint8_t>>(std::move(snap.stagingMemory));
+        auto newBuffer = std::make_unique<std::vector<uint8_t>>(std::move(snap.stagingMemory));
         memoryBuffer_.swap(newBuffer);
     } else if (memoryBuffer_) {
         size_ = computedSizeOff;
@@ -2150,7 +2156,7 @@ bool StorageIO::SaveDifat()
         return false;
     }
     const uint32_t difatEntries = entriesPerSector > 0 ? static_cast<uint32_t>(entriesPerSector - 1) : 0;
-    const size_t headerCount  = std::min<size_t>(fatSectors_.size(), HEADER_DIFAT_ARRAY_SIZE);
+    const size_t headerCount = std::min<size_t>(fatSectors_.size(), HEADER_DIFAT_ARRAY_SIZE);
     for (size_t i = 0; i < headerCount; ++i) {
         header_->SetDifatElem(i, static_cast<uint32_t>(fatSectors_[i]));
     }

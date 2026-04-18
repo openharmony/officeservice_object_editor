@@ -481,7 +481,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByO
         oeid.c_str(), minVersion.c_str());
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
     std::string sql = "SELECT oeid, bundle_name, module_name, ability_name from object_editor_info"
-       " WHERE oeid = ? and min_version >= ?";
+       " WHERE oeid = ? and version >= ?";
     ObjectEditorManagerErrCode errCode = QueryBySql(sql, resultSet, { oeid, minVersion });
     if (errCode != ObjectEditorManagerErrCode::SA_OK || resultSet == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "query failed");
