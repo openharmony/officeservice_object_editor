@@ -39,9 +39,9 @@ bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
     ContentEmbed_Document document;
     ContentEmbed_ExtensionProxy* proxy;
     if (provider.ConsumeBool()) {
-        OH_ContentEmbed_CreateExtensionProxy(&document, &proxy);
+        OH_ContentEmbed_CreateExtensionProxy(&document, &proxy, (void*)(&document));
     } else {
-        OH_ContentEmbed_CreateExtensionProxy(nullptr, &proxy);
+        OH_ContentEmbed_CreateExtensionProxy(nullptr, &proxy, nullptr);
     }
     return true;
 }
