@@ -21,7 +21,7 @@
 namespace OHOS {
 namespace ObjectEditor {
 
-class PackageData  {
+class PackageData {
 public:
     PackageData() = default;
     ~PackageData() = default;
@@ -34,9 +34,9 @@ public:
     }
 
 private:
-    bool ParseOle10NativeStream(Stream *stream, const std::string &oriFilePath);
+    bool ParseOle10NativeStream(Stream *stream, const std::string &tmpFilePath);
     bool FormatOle10NativeStream(const std::string &tmpFilePath, std::vector<Byte> &buffer, bool &withData);
-    bool WriteFileToSandbox(Stream *stream, StreamPos &offset, const std::string &oriFilePath);
+    bool WriteFileToSandbox(Stream *stream, StreamPos &offset, const std::string &tmpFilePath);
     bool WriteDataToStream(Stream *stream);
     bool WriteDataToBuffer(std::vector<Byte> &buffer);
     uint32_t fileSize_ = 0;
