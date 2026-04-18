@@ -100,7 +100,7 @@ bool ReadStreamUint32(Stream *stream, uint64_t streamSize, StreamPos &offset, ui
     stream->Seek(offset);
     Byte fileSizeBuf[U32_BUF_LEN];
     stream->Read(fileSizeBuf, U32_BUF_LEN);
-    value = ReadUint32(fileSizeBuf);
+    value = ReadUint32(fileSizeBuf, U32_BUF_LEN);
     offset += U32_BUF_LEN;
     return true;
 }
@@ -138,7 +138,7 @@ bool PackageData::ParseOle10NativeStream(Stream *stream, const std::string &tmpF
     stream->Seek(offset);
     std::vector<Byte> filenameBuf;
     auto filenameSize = stream->ReadBufferUntilNull(filenameBuf);
-    if (filenameSize < 0) {
+    if (filenameSize <= 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "filename is empty");
         return false;
     }
@@ -148,7 +148,7 @@ bool PackageData::ParseOle10NativeStream(Stream *stream, const std::string &tmpF
     stream->Seek(offset);
     std::vector<Byte> filepathBuf;
     auto filepathSize = stream->ReadBufferUntilNull(filepathBuf);
-    if (filepathSize < 0) {
+    if (filepathSize <= 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "filepath is empty");
         return false;
     }

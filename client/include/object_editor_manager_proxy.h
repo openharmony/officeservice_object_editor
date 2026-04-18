@@ -22,6 +22,7 @@
 
 namespace OHOS {
 namespace ObjectEditor {
+
 class ObjectEditorManagerProxy : public IRemoteProxy<IObjectEditorManager> {
 public:
     explicit ObjectEditorManagerProxy(const sptr<IRemoteObject> &remote)
