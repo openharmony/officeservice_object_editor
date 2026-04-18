@@ -125,6 +125,7 @@ private:
     bool CheckConnectionLimit(const std::string &clientBundleName, std::unique_ptr<ObjectEditorFormat> &format,
         sptr<IRemoteObject> &remoteObject);
     std::string GetCallerBundleName();
+    bool CheckRateLimitAdvanced();
 
     ServiceRunningState state_ = ServiceRunningState::STATE_NOT_START;
     std::shared_mutex diversionMapMutex_;
@@ -140,6 +141,9 @@ private:
     static std::string permissionClient_;
 
     std::shared_ptr<ObjectEditorScreenChangeReceiver> screenChangedReceiver_;
+
+    std::atomic<uint32_t> requestCount_ = 0;
+    std::atomic<uint64_t> windowStartMs_ = 0;
 };
 
 } // namespace ObjectEditor

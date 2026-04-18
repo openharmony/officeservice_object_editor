@@ -145,7 +145,7 @@ std::streamsize StreamImpl::ReadSmallBlocks(size_t pos, Byte *buffer, size_t all
             }
             break;
         }
-        const uint32_t read =  io_->LoadSmallBlock(blocks_[index], buf.data(), io_->SmallBlockSize());
+        const uint32_t read = io_->LoadSmallBlock(blocks_[index], buf.data(), io_->SmallBlockSize());
         if (read != io_->SmallBlockSize()) {
             state_ |= BAD_FLAG;
             break;
@@ -191,7 +191,7 @@ std::streamsize StreamImpl::ReadBigBlocks(size_t pos, Byte *buffer, size_t allow
             }
             break;
         }
-        const uint32_t read =  io_->LoadBigBlock(blocks_[index], buf.data(), io_->BigBlockSize());
+        const uint32_t read = io_->LoadBigBlock(blocks_[index], buf.data(), io_->BigBlockSize());
         if (read == 0) {
             if (pos + static_cast<size_t>(totalbytes) < entrySize) {
                 state_ |= BAD_FLAG;
