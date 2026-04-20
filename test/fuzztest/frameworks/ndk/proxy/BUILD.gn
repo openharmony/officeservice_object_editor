@@ -51,12 +51,17 @@ ohos_fuzztest("OHContentEmbedGetContentEmbedFormatByOEidAndLocaleFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
+    "ability_base:want",
     "ability_base:ability_base_want",
-    "ability_runtime:abilitykit_native",
+    "ability_runtime:ability_context_native",
     "ability_runtime:ability_runtime",
+    "ability_runtime:ability_manager",
+    "ability_runtime:abilitykit_native",
+    "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "image_framework:pixelmap",
     "ipc:ipc_core",
+    "ipc:ipc_napi",
     "safwk:system_ability_fwk",
   ]
 }
@@ -73,12 +78,17 @@ ohos_fuzztest("OhContentEmbedGetcontentEmbedInfoFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
+    "ability_base:want",
     "ability_base:ability_base_want",
-    "ability_runtime:abilitykit_native",
+    "ability_runtime:ability_context_native",
     "ability_runtime:ability_runtime",
+    "ability_runtime:ability_manager",
+    "ability_runtime:abilitykit_native",
+    "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "image_framework:pixelmap",
     "ipc:ipc_core",
+    "ipc:ipc_napi",
     "safwk:system_ability_fwk",
   ]
 }
@@ -95,12 +105,17 @@ ohos_fuzztest("OHContentEmbedCreateContentEmbedInfoFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
+    "ability_base:want",
     "ability_base:ability_base_want",
-    "ability_runtime:abilitykit_native",
+    "ability_runtime:ability_context_native",
     "ability_runtime:ability_runtime",
+    "ability_runtime:ability_manager",
+    "ability_runtime:abilitykit_native",
+    "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "image_framework:pixelmap",
     "ipc:ipc_core",
+    "ipc:ipc_napi",
     "safwk:system_ability_fwk",
   ]
 }
@@ -117,12 +132,17 @@ ohos_fuzztest("OHContentEmbedDestroyContentEmbedInfoFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
+    "ability_base:want",
     "ability_base:ability_base_want",
-    "ability_runtime:abilitykit_native",
+    "ability_runtime:ability_context_native",
     "ability_runtime:ability_runtime",
+    "ability_runtime:ability_manager",
+    "ability_runtime:abilitykit_native",
+    "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "image_framework:pixelmap",
     "ipc:ipc_core",
+    "ipc:ipc_napi",
     "safwk:system_ability_fwk",
   ]
 }
@@ -139,12 +159,17 @@ ohos_fuzztest("OHContentEmbedInfoGetFormatCountFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
+    "ability_base:want",
     "ability_base:ability_base_want",
-    "ability_runtime:abilitykit_native",
+    "ability_runtime:ability_context_native",
     "ability_runtime:ability_runtime",
+    "ability_runtime:ability_manager",
+    "ability_runtime:abilitykit_native",
+    "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "image_framework:pixelmap",
     "ipc:ipc_core",
+    "ipc:ipc_napi",
     "safwk:system_ability_fwk",
   ]
 }
@@ -161,12 +186,17 @@ ohos_fuzztest("OHContentEmbedGetFormatFromInfoFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
+    "ability_base:want",
     "ability_base:ability_base_want",
-    "ability_runtime:abilitykit_native",
+    "ability_runtime:ability_context_native",
     "ability_runtime:ability_runtime",
+    "ability_runtime:ability_manager",
+    "ability_runtime:abilitykit_native",
+    "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "image_framework:pixelmap",
     "ipc:ipc_core",
+    "ipc:ipc_napi",
     "safwk:system_ability_fwk",
   ]
 }
@@ -183,12 +213,17 @@ ohos_fuzztest("OHContentEmbedCreateContentEmbedFormatFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
+    "ability_base:want",
     "ability_base:ability_base_want",
-    "ability_runtime:abilitykit_native",
+    "ability_runtime:ability_context_native",
     "ability_runtime:ability_runtime",
+    "ability_runtime:ability_manager",
+    "ability_runtime:abilitykit_native",
+    "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "image_framework:pixelmap",
     "ipc:ipc_core",
+    "ipc:ipc_napi",
     "safwk:system_ability_fwk",
   ]
 }
@@ -205,12 +240,17 @@ ohos_fuzztest("OHContentEmbedDestroyContentEmbedFormatFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
+    "ability_base:want",
     "ability_base:ability_base_want",
-    "ability_runtime:abilitykit_native",
+    "ability_runtime:ability_context_native",
     "ability_runtime:ability_runtime",
+    "ability_runtime:ability_manager",
+    "ability_runtime:abilitykit_native",
+    "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "image_framework:pixelmap",
     "ipc:ipc_core",
+    "ipc:ipc_napi",
     "safwk:system_ability_fwk",
   ]
 }
@@ -227,12 +267,17 @@ ohos_fuzztest("OHContentEmbedFormatGetOEidFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
+    "ability_base:want",
     "ability_base:ability_base_want",
-    "ability_runtime:abilitykit_native",
+    "ability_runtime:ability_context_native",
     "ability_runtime:ability_runtime",
+    "ability_runtime:ability_manager",
+    "ability_runtime:abilitykit_native",
+    "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "image_framework:pixelmap",
     "ipc:ipc_core",
+    "ipc:ipc_napi",
     "safwk:system_ability_fwk",
   ]
 }
@@ -249,12 +294,17 @@ ohos_fuzztest("OHContentEmbedGetIconFromFormatFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
+    "ability_base:want",
     "ability_base:ability_base_want",
-    "ability_runtime:abilitykit_native",
+    "ability_runtime:ability_context_native",
     "ability_runtime:ability_runtime",
+    "ability_runtime:ability_manager",
+    "ability_runtime:abilitykit_native",
+    "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "image_framework:pixelmap",
     "ipc:ipc_core",
+    "ipc:ipc_napi",
     "safwk:system_ability_fwk",
   ]
 }
@@ -271,12 +321,17 @@ ohos_fuzztest("OHContentEmbedGetFileNameExtensionsFromFormatFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
+    "ability_base:want",
     "ability_base:ability_base_want",
-    "ability_runtime:abilitykit_native",
+    "ability_runtime:ability_context_native",
     "ability_runtime:ability_runtime",
+    "ability_runtime:ability_manager",
+    "ability_runtime:abilitykit_native",
+    "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "image_framework:pixelmap",
     "ipc:ipc_core",
+    "ipc:ipc_napi",
     "safwk:system_ability_fwk",
   ]
 }
@@ -294,12 +349,17 @@ ohos_fuzztest("OHContentEmbedCreateExtensionProxyFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
+    "ability_base:want",
     "ability_base:ability_base_want",
-    "ability_runtime:abilitykit_native",
+    "ability_runtime:ability_context_native",
     "ability_runtime:ability_runtime",
+    "ability_runtime:ability_manager",
+    "ability_runtime:abilitykit_native",
+    "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "image_framework:pixelmap",
     "ipc:ipc_core",
+    "ipc:ipc_napi",
     "safwk:system_ability_fwk",
   ]
 }
@@ -316,12 +376,17 @@ ohos_fuzztest("OHContentEmbedDestroyExtensionProxyFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
+    "ability_base:want",
     "ability_base:ability_base_want",
-    "ability_runtime:abilitykit_native",
+    "ability_runtime:ability_context_native",
     "ability_runtime:ability_runtime",
+    "ability_runtime:ability_manager",
+    "ability_runtime:abilitykit_native",
+    "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "image_framework:pixelmap",
     "ipc:ipc_core",
+    "ipc:ipc_napi",
     "safwk:system_ability_fwk",
   ]
 }
@@ -338,12 +403,17 @@ ohos_fuzztest("OHContentEmbedProxyRegisterOnUpdateFuncFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
+    "ability_base:want",
     "ability_base:ability_base_want",
-    "ability_runtime:abilitykit_native",
+    "ability_runtime:ability_context_native",
     "ability_runtime:ability_runtime",
+    "ability_runtime:ability_manager",
+    "ability_runtime:abilitykit_native",
+    "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "image_framework:pixelmap",
     "ipc:ipc_core",
+    "ipc:ipc_napi",
     "safwk:system_ability_fwk",
   ]
 }
@@ -360,12 +430,17 @@ ohos_fuzztest("OHContentEmbedProxyRegisterOnErrorFuncFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
+    "ability_base:want",
     "ability_base:ability_base_want",
-    "ability_runtime:abilitykit_native",
+    "ability_runtime:ability_context_native",
     "ability_runtime:ability_runtime",
+    "ability_runtime:ability_manager",
+    "ability_runtime:abilitykit_native",
+    "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "image_framework:pixelmap",
     "ipc:ipc_core",
+    "ipc:ipc_napi",
     "safwk:system_ability_fwk",
   ]
 }
@@ -382,12 +457,17 @@ ohos_fuzztest("OHContentEmbedProxyRegisterOnEditingFinishedFuncFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
+    "ability_base:want",
     "ability_base:ability_base_want",
-    "ability_runtime:abilitykit_native",
+    "ability_runtime:ability_context_native",
     "ability_runtime:ability_runtime",
+    "ability_runtime:ability_manager",
+    "ability_runtime:abilitykit_native",
+    "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "image_framework:pixelmap",
     "ipc:ipc_core",
+    "ipc:ipc_napi",
     "safwk:system_ability_fwk",
   ]
 }
@@ -404,12 +484,17 @@ ohos_fuzztest("OHContentEmbedProxyRegisterOnExtensionStoppedFuncFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
+    "ability_base:want",
     "ability_base:ability_base_want",
-    "ability_runtime:abilitykit_native",
+    "ability_runtime:ability_context_native",
     "ability_runtime:ability_runtime",
+    "ability_runtime:ability_manager",
+    "ability_runtime:abilitykit_native",
+    "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "image_framework:pixelmap",
     "ipc:ipc_core",
+    "ipc:ipc_napi",
     "safwk:system_ability_fwk",
   ]
 }
@@ -426,12 +511,17 @@ ohos_fuzztest("OHContentEmbedGetNameAndDescriptionFromFormatFuzzTest") {
     "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
   external_deps = [
+    "ability_base:want",
     "ability_base:ability_base_want",
-    "ability_runtime:abilitykit_native",
+    "ability_runtime:ability_context_native",
     "ability_runtime:ability_runtime",
+    "ability_runtime:ability_manager",
+    "ability_runtime:abilitykit_native",
+    "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "image_framework:pixelmap",
     "ipc:ipc_core",
+    "ipc:ipc_napi",
     "safwk:system_ability_fwk",
   ]
 }
