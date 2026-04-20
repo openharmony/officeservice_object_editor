@@ -53,7 +53,7 @@ bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
         free(oeid);
         return false;
     }
-    if (memcpy_s(locale, localeSize, data + size / SPILT_NUM, offset) != EOK) {
+    if (memcpy_s(locale, sizeof(char) * localeSize, data + size / SPILT_NUM, offset) != EOK) {
         free(oeid);
         free(locale);
         return false;
