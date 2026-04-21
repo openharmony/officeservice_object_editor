@@ -578,6 +578,23 @@ ErrCode ObjectEditorClient::StopObjectEditorExtension(
     return ERR_OK;
 }
 
+ErrCode ObjectEditorClient::QueryExtensionStopReason(const sptr<IRemoteObject> &oeExtensionRemoteObject,
+    ExtensionStopReason &stopReason)
+{
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
+    sptr<IObjectEditorManager> objectEditorManagerProxy = GetIObjectEditorManager();
+    if (objectEditorManagerProxy == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "get proxy fail");
+        return ERR_INVALID_VALUE;
+    }
+    ErrCode ret = objectEditorManagerProxy->QueryExtensionStopReason(oeExtensionRemoteObject, stopReason);
+    if (ret != ERR_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "failed:%{public}d", ret);
+        return ret;
+    }
+    return ERR_OK;
+}
+
 ErrCode ObjectEditorClient::GetIcon(const std::string &oeid, std::string &resFilePath)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");

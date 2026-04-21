@@ -41,6 +41,7 @@ private:
     int32_t HandleGetObjectEditorFormatsByLocale(MessageParcel &data, MessageParcel &reply);
     int32_t HandleStartUIAbility(MessageParcel &data, MessageParcel &reply);
     int32_t HandleStopObjectEditorExtension(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleQueryExtensionStopReason(MessageParcel &data, MessageParcel &reply);
 };
 
 } // namespace ObjectEditor

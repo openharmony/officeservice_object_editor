@@ -62,6 +62,8 @@ public:
         std::unique_ptr<ObjectEditorFormat> &format);
     ErrCode GetObjectEditorFormatsByLocale(const std::string &locale,
         std::vector<std::unique_ptr<ObjectEditorFormat>> &formats);
+    ErrCode QueryExtensionStopReason(const sptr<IRemoteObject> &oeExtensionRemoteObject,
+        ExtensionStopReason &stopReason);
 
     void LoadSystemAbilitySuccess(const sptr<IRemoteObject> &object);
     void LoadSystemAbilityFail();
