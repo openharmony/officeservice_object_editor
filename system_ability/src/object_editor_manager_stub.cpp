@@ -60,6 +60,8 @@ int32_t ObjectEditorManagerStub::OnRemoteRequestInner(
             return HandleStartUIAbility(data, reply);
         case IObjectEditorManagerIpcCode::COMMAND_STOP_OBJECT_EDITOR_EXTENSION:
             return HandleStopObjectEditorExtension(data, reply);
+        case IObjectEditorManagerIpcCode::COMMAND_QUERY_EXTENSION_STOP_REASON:
+            return HandleQueryExtensionStopReason(data, reply);
         default:
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
     }
@@ -256,6 +258,31 @@ int32_t ObjectEditorManagerStub::HandleStartUIAbility(MessageParcel &data, Messa
     if (!SUCCEEDED(errCode)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "errCode is failed");
         return errCode;
+    }
+    return ERR_NONE;
+}
+
+int32_t ObjectEditorManagerStub::HandleQueryExtensionStopReason(MessageParcel &data, MessageParcel &reply)
+{
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::SA, "call");
+    sptr<IRemoteObject> oeExtensionRemoteObject = data.ReadRemoteObject();
+    if (oeExtensionRemoteObject == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "oeExtensionRemoteObject is nullptr");
+        return ERR_INVALID_DATA;
+    }
+    ExtensionStopReason stopReason = ExtensionStopReason::UNKNOWN;
+    ErrCode errCode = QueryExtensionStopReason(oeExtensionRemoteObject, stopReason);
+    if (!reply.WriteInt32(errCode)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "write errCode failed");
+        return ERR_INVALID_VALUE;
+    }
+    if (!SUCCEEDED(errCode)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "errCode is failed");
+        return errCode;
+    }
+    if (!reply.WriteInt32(static_cast<int32_t>(stopReason))) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "write stopReason failed");
+        return ERR_INVALID_DATA;
     }
     return ERR_NONE;
 }

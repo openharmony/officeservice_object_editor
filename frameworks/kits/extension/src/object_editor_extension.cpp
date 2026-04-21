@@ -315,17 +315,17 @@ ErrCode ObjectEditorExtension::GetSnapshot(const std::string &documentId)
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "documentId: %{private}s", documentId.c_str());
     if (ceInstance_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is null");
-        return ERR_INVALID_VALUE;
+        return ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER;
     }
     std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
     auto iter = ceInstance_->objects.find(documentId);
     if (iter == ceInstance_->objects.end()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId not found");
-        return ERR_INVALID_VALUE;
+        return ObjectorEditorExtensionErrCode::EXTENSION_DOCUMENT_NOT_FOUND;
     }
     if (iter->second == nullptr || iter->second->onGetSnapshotFunc == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onGetSnapshotFunc is nullptr");
-        return ERR_INVALID_VALUE;
+        return ObjectorEditorExtensionErrCode::EXTENSION_CALLBACK_NULL;
     }
     uint32_t bitmask = 0;
     iter->second->onGetCapabilityFunc(iter->second.get(), &bitmask);
@@ -334,7 +334,7 @@ ErrCode ObjectEditorExtension::GetSnapshot(const std::string &documentId)
         return ObjectorEditorExtensionErrCode::EXTENSION_CAPABILITY_NOT_SUPPORT;
     }
     iter->second->onGetSnapshotFunc(iter->second.get());
-    return ERR_OK;
+    return ObjectorEditorExtensionErrCode::EXTENSION_OK;
 }
 
 ErrCode ObjectEditorExtension::DoEdit(const std::string &documentId)
@@ -342,17 +342,17 @@ ErrCode ObjectEditorExtension::DoEdit(const std::string &documentId)
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "documentId: %{private}s", documentId.c_str());
     if (ceInstance_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is null");
-        return ERR_INVALID_VALUE;
+        return ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER;
     }
     std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
     auto iter = ceInstance_->objects.find(documentId);
     if (iter == ceInstance_->objects.end()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId not found");
-        return ERR_INVALID_VALUE;
+        return ObjectorEditorExtensionErrCode::EXTENSION_DOCUMENT_NOT_FOUND;
     }
     if (iter->second == nullptr || iter->second->onDoEditFunc == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onDoEditFunc is nullptr");
-        return ERR_INVALID_VALUE;
+        return ObjectorEditorExtensionErrCode::EXTENSION_CALLBACK_NULL;
     }
     uint32_t bitmask = 0;
     iter->second->onGetCapabilityFunc(iter->second.get(), &bitmask);
@@ -361,7 +361,7 @@ ErrCode ObjectEditorExtension::DoEdit(const std::string &documentId)
         return ObjectorEditorExtensionErrCode::EXTENSION_CAPABILITY_NOT_SUPPORT;
     }
     iter->second->onDoEditFunc(iter->second.get());
-    return ERR_OK;
+    return ObjectorEditorExtensionErrCode::EXTENSION_OK;
 }
 
 ErrCode ObjectEditorExtension::GetEditStatus(const std::string &documentId, bool *isEditing, bool *isModified)
@@ -369,28 +369,28 @@ ErrCode ObjectEditorExtension::GetEditStatus(const std::string &documentId, bool
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "documentId: %{private}s", documentId.c_str());
     if (ceInstance_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is null");
-        return ERR_INVALID_VALUE;
+        return ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER;
     }
     if (isEditing == nullptr || isModified == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "isEditing or isModified is null");
-        return ERR_INVALID_VALUE;
+        return ObjectorEditorExtensionErrCode::EXTENSION_PARAM_INVALID;
     }
     {
         std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
         auto iter = ceInstance_->objects.find(documentId);
         if (iter == ceInstance_->objects.end()) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId not found");
-            return ERR_INVALID_VALUE;
+            return ObjectorEditorExtensionErrCode::EXTENSION_DOCUMENT_NOT_FOUND;
         }
         if (iter->second == nullptr || iter->second->onGetEditStatusFunc == nullptr) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onGetEditStatusFunc is nullptr");
-            return ERR_INVALID_VALUE;
+            return ObjectorEditorExtensionErrCode::EXTENSION_CALLBACK_NULL;
         }
         iter->second->onGetEditStatusFunc(iter->second.get(), isEditing, isModified);
     }
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "isEditing:%{public}d, isModified:%{public}d",
         *isEditing, *isModified);
-    return ERR_OK;
+    return ObjectorEditorExtensionErrCode::EXTENSION_OK;
 }
 
 ErrCode ObjectEditorExtension::GetExtensionEditStatus(bool &isEditing)
@@ -398,7 +398,7 @@ ErrCode ObjectEditorExtension::GetExtensionEditStatus(bool &isEditing)
     isEditing = false;
     if (ceInstance_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is null");
-        return ERR_INVALID_VALUE;
+        return ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER;
     }
     std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
     for (const auto &iter : ceInstance_->objects) {
@@ -414,7 +414,7 @@ ErrCode ObjectEditorExtension::GetExtensionEditStatus(bool &isEditing)
             break;
         }
     }
-    return ERR_OK;
+    return ObjectorEditorExtensionErrCode::EXTENSION_OK;
 }
 
 ErrCode ObjectEditorExtension::GetCapability(const std::string &documentId, uint32_t *bitmask)
@@ -422,27 +422,27 @@ ErrCode ObjectEditorExtension::GetCapability(const std::string &documentId, uint
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "in");
     if (ceInstance_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is null");
-        return ERR_INVALID_VALUE;
+        return ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER;
     }
     if (bitmask == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "bitmask is null");
-        return ERR_INVALID_VALUE;
+        return ObjectorEditorExtensionErrCode::EXTENSION_PARAM_INVALID;
     }
     {
         std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
         auto iter = ceInstance_->objects.find(documentId);
         if (iter == ceInstance_->objects.end()) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId not found");
-            return ERR_INVALID_VALUE;
+            return ObjectorEditorExtensionErrCode::EXTENSION_DOCUMENT_NOT_FOUND;
         }
         if (iter->second == nullptr || iter->second->onGetCapabilityFunc == nullptr) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onGetCapabilityFunc is nullptr");
-            return ERR_INVALID_VALUE;
+            return ObjectorEditorExtensionErrCode::EXTENSION_CALLBACK_NULL;
         }
         iter->second->onGetCapabilityFunc(iter->second.get(), bitmask);
     }
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "bitmask: %{public}u", *bitmask);
-    return ERR_OK;
+    return ObjectorEditorExtensionErrCode::EXTENSION_OK;
 }
 
 ErrCode ObjectEditorExtension::Close(const std::string &documentId, bool &isAllObjectsRemoved)
@@ -450,24 +450,24 @@ ErrCode ObjectEditorExtension::Close(const std::string &documentId, bool &isAllO
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "documentId: %{private}s", documentId.c_str());
     if (ceInstance_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is null");
-        return ERR_INVALID_VALUE;
+        return ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER;
     }
     std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
     isAllObjectsRemoved = ceInstance_->objects.size() == 0;
     auto iter = ceInstance_->objects.find(documentId);
     if (iter == ceInstance_->objects.end()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId not found");
-        return ERR_INVALID_VALUE;
+        return ObjectorEditorExtensionErrCode::EXTENSION_DOCUMENT_NOT_FOUND;
     }
     if (iter->second == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "object is nullptr");
-        return ERR_INVALID_VALUE;
+        return ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER;
     }
-    ErrCode ret = ERR_INVALID_VALUE;
+    ErrCode ret = ObjectorEditorExtensionErrCode::EXTENSION_CALLBACK_NULL;
     if (ceInstance_->onObjectDetachFunc != nullptr) {
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "call onObjectDetachFunc");
         ceInstance_->onObjectDetachFunc(ceInstance_.get(), iter->second.get());
-        ret = ERR_OK;
+        ret = ObjectorEditorExtensionErrCode::EXTENSION_OK;
     }
     ceInstance_->objects.erase(iter);
     isAllObjectsRemoved = ceInstance_->objects.size() == 0;
@@ -517,7 +517,7 @@ ErrCode ObjectEditorExtension::CreateObject(std::unique_ptr<ObjectEditorDocument
     const sptr<IObjectEditorClientCallback> &clientCb)
 {
     if (document == nullptr || ceInstance_ == nullptr) {
-        return ERR_INVALID_VALUE;
+        return ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER;
     }
     std::string documentId = document->GetDocumentId();
     {
@@ -525,18 +525,18 @@ ErrCode ObjectEditorExtension::CreateObject(std::unique_ptr<ObjectEditorDocument
         auto iter = ceInstance_->objects.find(documentId);
         if (iter != ceInstance_->objects.end()) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId already initial");
-            return ERR_INVALID_VALUE;
+            return ObjectorEditorExtensionErrCode::EXTENSION_DOCUMENT_ALREADY_INITIAL;
         }
     }
     std::unique_ptr<ContentEmbed_Object> object = std::make_unique<struct ContentEmbed_Object>();
     if (object == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "create object failed");
-        return ERR_INVALID_VALUE;
+        return ObjectorEditorExtensionErrCode::EXTENSION_MEMORY_ALLOCATION_FAILED;
     }
     object->document = std::make_unique<struct ContentEmbed_Document>();
     if (object->document == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "create document failed");
-        return ERR_INVALID_VALUE;
+        return ObjectorEditorExtensionErrCode::EXTENSION_MEMORY_ALLOCATION_FAILED;
     }
     object->ceInstance = ceInstance_;
     object->document->oeid = document->GetOEid();
@@ -551,17 +551,16 @@ ErrCode ObjectEditorExtension::CreateObject(std::unique_ptr<ObjectEditorDocument
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "create document by file");
         if (iter->second->document->linking) {
             OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "create document by file linking");
-            return ERR_OK;
+            return ObjectorEditorExtensionErrCode::EXTENSION_OK;
         }
         if (iter->second->onWriteToDataStreamFunc == nullptr) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onWriteToDataStreamFunc is nullptr");
             ceInstance_->objects.erase(iter);
-            return ERR_INVALID_VALUE;
+            return ObjectorEditorExtensionErrCode::EXTENSION_CALLBACK_NULL;
         }
         iter->second->onWriteToDataStreamFunc(iter->second.get());
-        return ERR_OK;
     }
-    return ERR_OK;
+    return ObjectorEditorExtensionErrCode::EXTENSION_OK;
 }
 
 ErrCode ObjectEditorExtension::Initial(std::unique_ptr<ObjectEditorDocument> document,
@@ -570,23 +569,23 @@ ErrCode ObjectEditorExtension::Initial(std::unique_ptr<ObjectEditorDocument> doc
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "extension");
     if (document == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "document is nullptr");
-        return ERR_INVALID_VALUE;
+        return ObjectorEditorExtensionErrCode::EXTENSION_PARAM_INVALID;
     }
     if (clientCb == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "clientCb is nullptr");
-        return ERR_INVALID_VALUE;
+        return ObjectorEditorExtensionErrCode::EXTENSION_PARAM_INVALID;
     }
     if (!CheckFileValid(document)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "extension file invalid");
-        return ERR_INVALID_VALUE;
+        return ObjectorEditorExtensionErrCode::EXTENSION_PARAM_INVALID;
     }
     if (ceInstance_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is nullptr");
-        return ERR_INVALID_VALUE;
+        return ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER;
     }
     if (ceInstance_->onObjectAttachFunc == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onObjectAttachFunc is nullptr");
-        return ERR_INVALID_VALUE;
+        return ObjectorEditorExtensionErrCode::EXTENSION_CALLBACK_NULL;
     }
     document->RestoreStorage();
     document->FlushOEid();
@@ -595,13 +594,13 @@ ErrCode ObjectEditorExtension::Initial(std::unique_ptr<ObjectEditorDocument> doc
 
 int32_t ObjectEditorExtension::CallbackEnter([[maybe_unused]] uint32_t code)
 {
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "extension");
-    return ERR_OK;
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "extension code: %{public}u", code);
+    return ObjectorEditorExtensionErrCode::EXTENSION_OK;
 }
 
 int32_t ObjectEditorExtension::CallbackExit([[maybe_unused]] uint32_t code, [[maybe_unused]] int32_t result)
 {
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "extension");
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "extension code: %{public}u", code);
     return result;
 }
 
