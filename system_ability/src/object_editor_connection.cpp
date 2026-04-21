@@ -16,8 +16,10 @@
 #include "object_editor_connection.h"
 
 #include <ipc_skeleton.h>
+#include "object_editor_common.h"
 #include "object_editor_extension_proxy.h"
 #include "object_editor_event_manager.h"
+#include "object_editor_manager_system_ability.h"
 #include "user_mgr.h"
 #include "caller_info.h"
 
@@ -167,6 +169,8 @@ void ObjectEditorConnection::TimerThreadStopExtension()
                 timerNotify_.store(false);
                 continue;
             }
+            ObjectEditorManagerSystemAbility::GetInstance().RegisterExtensionStopReason(
+                extensionProxy_, ExtensionStopReason::SA_CLEAN_IDLE);
             StopConnect();
             break;
         }

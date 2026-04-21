@@ -67,6 +67,9 @@ public:
     ErrCode StartUIAbility(const std::unique_ptr<AAFwk::Want> &want,
         sptr<IRemoteObject> extensionToken, int32_t clientPid) override;
 
+    ErrCode QueryExtensionStopReason(const sptr<IRemoteObject> &oeExtensionRemoteObject,
+        ExtensionStopReason &stopReason) override;
+
 private:
     static inline BrokerDelegator<ObjectEditorManagerProxy> delegator_;
     const int32_t MAX_READ_COUNT = INT32_MAX;

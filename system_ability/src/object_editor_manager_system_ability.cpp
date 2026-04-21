@@ -66,6 +66,85 @@ std::condition_variable ObjectEditorManagerSystemAbility::cvTimer_;
 std::mutex ObjectEditorManagerSystemAbility::connectionMapMutex_;
 std::map<sptr<IRemoteObject>, sptr<ObjectEditorConnection>> ObjectEditorManagerSystemAbility::connectionMap_;
 std::string ObjectEditorManagerSystemAbility::permissionClient_("ohos.permission.CONNECT_OBJECTEDITOR_EXTENSION");
+std::mutex ObjectEditorManagerSystemAbility::extensionStopReasonMapMutex_;
+std::map<sptr<IRemoteObject>, std::shared_ptr<ExtensionStop>> ObjectEditorManagerSystemAbility::extensionStopReasonMap_;
+std::mutex ObjectEditorManagerSystemAbility::extensionStopCleanMutex_;
+std::condition_variable ObjectEditorManagerSystemAbility::cvExtensionStopClean_;
+std::atomic<bool> ObjectEditorManagerSystemAbility::extensionStopCleanRunning_{false};
+std::atomic<bool> ObjectEditorManagerSystemAbility::extensionStopCleanNotify_{false};
+
+void ObjectEditorManagerSystemAbility::RegisterExtensionStopReason(const sptr<IRemoteObject> &remoteObject,
+    ExtensionStopReason reason)
+{
+    if (remoteObject == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "remoteObject is null");
+        return;
+    }
+    std::unique_lock<std::mutex> lock(extensionStopReasonMapMutex_);
+    auto extensionStop = std::make_shared<ExtensionStop>();
+    extensionStop->reason = reason;
+    extensionStop->timestamp = static_cast<uint64_t>(
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count());
+    extensionStopReasonMap_[remoteObject] = extensionStop;
+    
+    bool expected = false;
+    if (extensionStopCleanRunning_.compare_exchange_strong(expected, true)) {
+        std::thread([this]() { TimerThreadCleanExtensionStopReason(); }).detach();
+    }
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "register extension stop reason: %{public}d", static_cast<int>(reason));
+}
+
+ErrCode ObjectEditorManagerSystemAbility::QueryExtensionStopReason(const sptr<IRemoteObject> &oeExtensionRemoteObject,
+    ExtensionStopReason &stopReason)
+{
+    if (oeExtensionRemoteObject == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "oeExtensionRemoteObject is null");
+        return ObjectEditorManagerErrCode::SA_INVALID_PARAMETER;
+    }
+    std::unique_lock<std::mutex> lock(extensionStopReasonMapMutex_);
+    auto it = extensionStopReasonMap_.find(oeExtensionRemoteObject);
+    if (it == extensionStopReasonMap_.end()) {
+        OBJECT_EDITOR_LOGW(ObjectEditorDomain::SA, "extension stop reason not found");
+        stopReason = ExtensionStopReason::UNKNOWN;
+        return ObjectEditorManagerErrCode::SA_OK;
+    }
+    stopReason = it->second->reason;
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "query extension stop reason: %{public}d", static_cast<int>(stopReason));
+    return ObjectEditorManagerErrCode::SA_OK;
+}
+
+void ObjectEditorManagerSystemAbility::TimerThreadCleanExtensionStopReason()
+{
+    constexpr int32_t CLEAN_INTERVAL_S = 60;
+    constexpr uint64_t CLEAN_THRESHOLD_MS = 60000;
+    while (true) {
+        std::unique_lock<std::mutex> lock(extensionStopCleanMutex_);
+        auto waitResult = cvExtensionStopClean_.wait_for(lock, std::chrono::seconds(CLEAN_INTERVAL_S),
+            []() { return extensionStopCleanNotify_.load(); });
+        if (waitResult) {
+            extensionStopCleanNotify_.store(false);
+            continue;
+        }
+        uint64_t nowMs = static_cast<uint64_t>(
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::steady_clock::now().time_since_epoch()).count());
+        std::unique_lock<std::mutex> lockMap(extensionStopReasonMapMutex_);
+        for (auto it = extensionStopReasonMap_.begin(); it != extensionStopReasonMap_.end();) {
+            if (nowMs - it->second->timestamp >= CLEAN_THRESHOLD_MS) {
+                OBJECT_EDITOR_LOGD(ObjectEditorDomain::SA, "clean extension stop reason for remoteObject");
+                it = extensionStopReasonMap_.erase(it);
+            } else {
+                ++it;
+            }
+        }
+        if (extensionStopReasonMap_.empty()) {
+            extensionStopCleanRunning_.store(false);
+            OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "extension stop reason map is empty, stop clean thread");
+            break;
+        }
+    }
+}
 
 ObjectEditorManagerSystemAbility::ObjectEditorManagerSystemAbility()
     : SystemAbility(OBJECT_EDITOR_SERVICE_SA_ID, true)
@@ -253,7 +332,8 @@ bool ObjectEditorManagerSystemAbility::CheckCallingPermission(uint32_t code)
         case IObjectEditorManagerIpcCode::COMMAND_STOP_OBJECT_EDITOR_EXTENSION: {
             return ObjectEditorPermissionUtils::CheckCallingPermission(permissionClient_);
         }
-        case IObjectEditorManagerIpcCode::COMMAND_START_UI_ABILITY: {
+        case IObjectEditorManagerIpcCode::COMMAND_START_UI_ABILITY:
+        case IObjectEditorManagerIpcCode::COMMAND_QUERY_EXTENSION_STOP_REASON: {
             return true;
         }
         default: {
@@ -361,18 +441,21 @@ ErrCode ObjectEditorManagerSystemAbility::StartObjectEditorExtension(
         return ObjectEditorManagerErrCode::SA_CONNECT_EXTENSION_PROXY_IS_NULL;
     }
     std::string documentId = document->GetDocumentId();
-    ErrCode proxyResult = objectEditorExtensionProxy->Initial(
-        std::move(document), objectEditorClientCallback);
-    if (proxyResult != ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "start object editor extension failed");
-        return ObjectEditorManagerErrCode::SA_EXTENSION_REMOTE_SEND_FAILED;
-    }
     sptr<IRemoteObject> clientRemote = objectEditorClientCallback->AsObject();
     auto clientDeathRecipient = sptr<ObjectEditorClientDeathRecipient>::MakeSptr(documentId,
         oeExtensionRemoteObject);
     if (clientRemote == nullptr ||
         !clientRemote->AddDeathRecipient(clientDeathRecipient)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "add client death recipient failed");
+    }
+    ErrCode proxyResult = objectEditorExtensionProxy->Initial(
+        std::move(document), objectEditorClientCallback);
+    if (proxyResult != ERR_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "start object editor extension failed");
+        if (clientRemote != nullptr) {
+            clientRemote->RemoveDeathRecipient(clientDeathRecipient);
+        }
+        return ObjectEditorManagerErrCode::SA_EXTENSION_REMOTE_SEND_FAILED;
     }
     return ObjectEditorManagerErrCode::SA_OK;
 }
@@ -493,7 +576,8 @@ ErrCode ObjectEditorManagerSystemAbility::StopObjectEditorExtension(
     const std::string &documentId,
     const sptr<IRemoteObject> &oeExtensionRemoteObject, const bool &isPackageExtension)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "in");
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "documentId:%{private}s package:%{public}d",
+        documentId.c_str(), isPackageExtension);
     if (oeExtensionRemoteObject == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "invalid parameter");
         return ObjectEditorManagerErrCode::SA_INVALID_PARAMETER;
@@ -504,11 +588,18 @@ ErrCode ObjectEditorManagerSystemAbility::StopObjectEditorExtension(
         return ObjectEditorManagerErrCode::SA_CONNECT_EXTENSION_PROXY_IS_NULL;
     }
     bool isAllObjectsRemoved = false;
-    objectEditorExtensionProxy->Close(documentId, isAllObjectsRemoved);
-    if (!isAllObjectsRemoved) {
+    auto proxyResult = objectEditorExtensionProxy->Close(documentId, isAllObjectsRemoved);
+    if (!isAllObjectsRemoved && proxyResult >= ObjectorEditorExtensionErrCode::EXTENSION_ERROR_START) {
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "not all objects removed");
         return ObjectEditorManagerErrCode::SA_OK;
     }
+    return StopObjectEditorExtension(oeExtensionRemoteObject);
+}
+
+ErrCode ObjectEditorManagerSystemAbility::StopObjectEditorExtension(
+    const sptr<IRemoteObject> &oeExtensionRemoteObject)
+{
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "in");
     std::lock_guard<std::mutex> lock(connectionMapMutex_);
     auto it = connectionMap_.find(oeExtensionRemoteObject);
     if (it == connectionMap_.end()) {
@@ -517,7 +608,7 @@ ErrCode ObjectEditorManagerSystemAbility::StopObjectEditorExtension(
     }
     auto connection = it->second;
     ErrCode errCode = ObjectEditorManagerErrCode::SA_OK;
-    if (connection != nullptr && !isPackageExtension) {
+    if (connection != nullptr) {
         errCode = connection->StopConnect();
         errCode = errCode != ObjectEditorManagerErrCode::SA_DISCONNECT_ABILITY_SUCCEED ?
             errCode : ObjectEditorManagerErrCode::SA_OK;
