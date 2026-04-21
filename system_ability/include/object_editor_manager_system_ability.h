@@ -25,6 +25,7 @@
 #include "object_editor_manager_stub.h"
 #include "object_editor_document.h"
 #include "object_editor_format.h"
+#include "object_editor_common.h"
 #include "object_editor_connection.h"
 #include "object_editor_client_death_recipient.h"
 #include "iobject_editor_connection_status_callback.h"
@@ -41,6 +42,11 @@ struct ContentEmbed_Diversion {
 enum class ServiceRunningState {
     STATE_NOT_START = 0,
     STATE_RUNNING = 1,
+};
+
+struct ExtensionStop {
+    ExtensionStopReason reason;
+    uint64_t timestamp;
 };
 
 class ObjectEditorManagerSystemAbilityConnectionStatusCallback : public IObjectEditorConnectionStatusCallback {
@@ -66,6 +72,7 @@ public:
         const std::string &documentId,
         const sptr<IRemoteObject> &oeExtensionRemoteObject,
         const bool &isPackageExtension) override;
+    ErrCode StopObjectEditorExtension(const sptr<IRemoteObject> &oeExtensionRemoteObject);
     ErrCode GetOEidByFileExtension(
         const std::string &oeid,
         std::string &fileExtension) override;
@@ -85,11 +92,18 @@ public:
         std::vector<std::unique_ptr<ObjectEditorFormat>> &formats) override;
     ErrCode StartUIAbility(const std::unique_ptr<AAFwk::Want> &want,
         sptr<IRemoteObject> extensionToken, int32_t clientPid) override;
+    ErrCode QueryExtensionStopReason(const sptr<IRemoteObject> &oeExtensionRemoteObject,
+        ExtensionStopReason &stopReason) override;
+
     int32_t CallbackEnter([[maybe_unused]] uint32_t code) override;
     int32_t CallbackExit([[maybe_unused]] uint32_t code, [[maybe_unused]] int32_t result) override;
 
     static std::mutex connectionMapMutex_;
     static std::map<sptr<IRemoteObject>, sptr<ObjectEditorConnection>> connectionMap_;
+
+    static std::mutex extensionStopReasonMapMutex_;
+    static std::map<sptr<IRemoteObject>, std::shared_ptr<ExtensionStop>> extensionStopReasonMap_;
+    void RegisterExtensionStopReason(const sptr<IRemoteObject> &remoteObject, ExtensionStopReason reason);
 
 protected:
     void OnStart() override;
@@ -133,12 +147,17 @@ private:
 
     void TimerThreadStopSA();
     void ResetStopSATimer();
+    void TimerThreadCleanExtensionStopReason();
     std::mutex mutexCallback_;
     static std::mutex mutexTimer_;
     static std::condition_variable cvTimer_;
     static std::atomic<bool> timerRunning_;
     static std::atomic<bool> timerNotify_;
     static std::string permissionClient_;
+    static std::mutex extensionStopCleanMutex_;
+    static std::condition_variable cvExtensionStopClean_;
+    static std::atomic<bool> extensionStopCleanRunning_;
+    static std::atomic<bool> extensionStopCleanNotify_;
 
     std::shared_ptr<ObjectEditorScreenChangeReceiver> screenChangedReceiver_;
 

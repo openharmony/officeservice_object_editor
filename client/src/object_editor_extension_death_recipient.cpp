@@ -14,6 +14,7 @@
  */
 
 #include "object_editor_extension_death_recipient.h"
+#include "iobject_editor_service.h"
 #include "object_editor_client.h"
 
 namespace OHOS {
@@ -34,6 +35,16 @@ void ObjectEditorExtensionDeathRecipient::OnRemoteDied(const OHOS::wptr<OHOS::IR
     if (proxy_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "proxy is null");
         return;
+    }
+    if (proxy_->objectEditorService != nullptr) {
+        sptr<IRemoteObject> oeExtensionRemoteObject = proxy_->objectEditorService->GetRemoteObject();
+        ExtensionStopReason stopReason = ExtensionStopReason::UNKNOWN;
+        ObjectEditorClient::GetInstance().QueryExtensionStopReason(oeExtensionRemoteObject, stopReason);
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "extension stop reason: %{public}d",
+            static_cast<int>(stopReason));
+        if (stopReason == ExtensionStopReason::SA_CLEAN_IDLE) {
+            return;
+        }
     }
     proxy_->onErrorFunc(proxy_, ContentEmbed_ErrorCode::CE_ERR_EXTENSION_ABNORMAL_EXIT);
 }

@@ -13,19 +13,21 @@
  * limitations under the License.
  */
 
-#include "object_editor_client_death_recipient.h"
-#include "object_editor_manager_system_ability.h"
-
-#include "object_editor_connection.h"
+#ifndef OHOS_OBJECT_EDITOR_COMMON_H
+#define OHOS_OBJECT_EDITOR_COMMON_H
 
 namespace OHOS {
 namespace ObjectEditor {
 
-void ObjectEditorClientDeathRecipient::OnRemoteDied(const OHOS::wptr<OHOS::IRemoteObject> &remoteObject)
-{
-    OBJECT_EDITOR_LOGW(ObjectEditorDomain::SA, "documentId:%{public}s", documentId_.c_str());
-    ObjectEditorManagerSystemAbility::GetInstance().StopObjectEditorExtension(oeExtensionRemoteObject_);
-}
+enum class ExtensionStopReason {
+    UNKNOWN = 0,
+    SA_CLEAN_IDLE = 1,
+    PROXY_STOP = 2,
+    EXTENSION_TERMINATED = 3,
+    EXTENSION_EXCEPTION_EXIT = 4
+};
 
 } // namespace ObjectEditor
 } // namespace OHOS
+
+#endif // OHOS_OBJECT_EDITOR_COMMON_H

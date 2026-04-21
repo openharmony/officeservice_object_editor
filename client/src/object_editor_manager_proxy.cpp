@@ -377,6 +377,46 @@ ErrCode ObjectEditorManagerProxy::StartUIAbility(const std::unique_ptr<AAFwk::Wa
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "succeed");
     return ERR_OK;
 }
+
+ErrCode ObjectEditorManagerProxy::QueryExtensionStopReason(const sptr<IRemoteObject> &oeExtensionRemoteObject,
+    ExtensionStopReason &stopReason)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(GetDescriptor())) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write descriptor fail");
+        return ERR_INVALID_VALUE;
+    }
+    if (oeExtensionRemoteObject == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "oeExtensionRemoteObject is null");
+        return ERR_INVALID_VALUE;
+    }
+    if (!data.WriteRemoteObject(oeExtensionRemoteObject)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write oeExtensionRemoteObject failed");
+        return ERR_INVALID_DATA;
+    }
+    sptr<IRemoteObject> remote = Remote();
+    if (remote == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "null remote");
+        return ERR_INVALID_DATA;
+    }
+    int32_t result = remote->SendRequest(
+        static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_QUERY_EXTENSION_STOP_REASON),
+        data, reply, option);
+    if (FAILED(result)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
+        return result;
+    }
+    ErrCode errCode = reply.ReadInt32();
+    if (FAILED(errCode)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "ReadInt32 failed");
+        return errCode;
+    }
+    stopReason = static_cast<ExtensionStopReason>(reply.ReadInt32());
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "succeed");
+    return ERR_OK;
+}
 // LCOV_EXCL_STOP
 } // namespace ObjectEditor
 } // namespace OHOS

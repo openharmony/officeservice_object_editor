@@ -20,6 +20,7 @@
 #include <iremote_broker.h>
 #include <string_ex.h>
 #include <vector>
+#include "object_editor_common.h"
 #include "object_editor_document.h"
 #include "object_editor_format.h"
 #include "iobject_editor_client_callback.h"
@@ -40,6 +41,7 @@ enum class IObjectEditorManagerIpcCode {
     COMMAND_GET_FORMATS_BY_LOCALE,
     COMMAND_STOP_OBJECT_EDITOR_EXTENSION,
     COMMAND_START_UI_ABILITY,
+    COMMAND_QUERY_EXTENSION_STOP_REASON,
 };
 
 class IObjectEditorManager : public IRemoteBroker {
@@ -69,6 +71,9 @@ public:
 
     virtual ErrCode StartUIAbility(const std::unique_ptr<AAFwk::Want> &want,
         sptr<IRemoteObject> extensionToken, int32_t clientPid) = 0;
+
+    virtual ErrCode QueryExtensionStopReason(const sptr<IRemoteObject> &oeExtensionRemoteObject,
+        ExtensionStopReason &stopReason) = 0;
 
 protected:
     const int VECTOR_MAX_SIZE = 102400;
