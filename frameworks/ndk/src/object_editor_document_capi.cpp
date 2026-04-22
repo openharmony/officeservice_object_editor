@@ -995,7 +995,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_Seek(ContentEmbed_Stream *stream, 
     }
     const uint64_t size = innerStream->Size();
     if (position > size) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "position exceeds size:%{public}llu", size);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "position exceeds size:%{public}" PRIu64, size);
         return CE_ERR_STREAM_OPERATION_FAILED;
     }
     innerStream->Seek(static_cast<uint64_t>(position));
