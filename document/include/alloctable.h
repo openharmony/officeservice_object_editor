@@ -69,6 +69,10 @@ public:
     void Debug() const;
     void Resize(size_t newSize)
     {
+        constexpr size_t MAX_CAPACITY = SIZE_MAX / sizeof(uint32_t);
+        if (newSize > MAX_CAPACITY) {
+            return;
+        }
         data_.resize(newSize, Avail);
     }
     void Set(size_t index, uint32_t val);
