@@ -467,7 +467,8 @@ ErrCode ObjectEditorClient::PrepareFiles(const std::unique_ptr<ObjectEditorDocum
             auto spaceInfo = fs::space(destPath.parent_path());
             std::uintmax_t freeSpace = spaceInfo.available;
             if (freeSpace < fileSize + METADATA_BUFFER_SIZE) {
-                OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "freeSpace: %{public}llu fileSize: %{public}llu",
+                OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,
+                    "freeSpace: %{public}" PRIu64 " fileSize: %{public}" PRIu64,
                     static_cast<uint64_t>(freeSpace), static_cast<uint64_t>(fileSize));
                 return ObjectEditorClientErrCode::CLIENT_COPY_FILE_FAILED;
             }
