@@ -54,7 +54,7 @@ private:
     int32_t watchDescriptor_ = -1;
     const std::string filepath_;
     const EventCallback callback_;
-    pthread_t watchThread_;
+    pthread_t watchThread_ = 0;
     std::atomic<bool> running_ {false};
     std::atomic<bool> threadCreated_ {false};
     std::mutex mutex_;
