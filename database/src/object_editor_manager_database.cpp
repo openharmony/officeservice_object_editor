@@ -425,7 +425,7 @@ bool ObjectEditorManagerDatabase::DoInsert(const std::vector<NativeRdb::ValuesBu
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "failed: %{public}d", result.first);
         return false;
     }
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "inserted: %{public}lld", result.second);
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "inserted: %{public}" PRId64, result.second);
     return true;
 }
 
