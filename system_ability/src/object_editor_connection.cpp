@@ -231,7 +231,16 @@ ObjectEditorManagerErrCode ObjectEditorConnection::DoConnect(
     want.SetModuleName(moduleName);
     want.SetElementName(bundleName, abilityName);
     want.SetParam("clientPid", clientPid);
-    auto ret = abilityManagerClient->ConnectExtensionAbility(want, this, UserMgr::GetInstance().GetUserId());
+    auto indirectCallerInfo = std::make_shared<AAFwk::IndirectCallerInfo>();
+    if (indirectCallerInfo == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "indirectCallerInfo is null");
+        return ObjectEditorManagerErrCode::SA_CONNECT_ABILITY_FAILED;
+    }
+    indirectCallerInfo->tokenId = IPCSkeleton::GetCallingTokenID();
+    indirectCallerInfo->callerUid = IPCSkeleton::GetCallingUid();
+    indirectCallerInfo->callerPid = IPCSkeleton::GetCallingPid();
+    auto ret = abilityManagerClient->ConnectAbilityWithIndirectCallerInfo(want, this, nullptr,
+        UserMgr::GetInstance().GetUserId(), AppExecFwk::ExtensionAbilityType::CONTENT_EMBED, indirectCallerInfo);
     if (ret != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "ConnectExtensionAbility failed: %{public}d", ret);
         return ObjectEditorManagerErrCode::SA_CONNECT_ABILITY_FAILED;
