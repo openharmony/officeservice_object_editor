@@ -51,6 +51,7 @@ constexpr uint64_t WINDOWS_TICK = 10000000ULL;
 constexpr uint64_t SEC_TO_UNIX_EPOCH = 11644473600ULL;
 constexpr uint64_t NANOS_PER_SEC = 1000000000ULL;
 constexpr uint32_t READ_U32_BUF_LEN = 4;
+constexpr uint32_t READ_U16_BUF_LEN = 2;
 
 inline uint64_t GetCurrentFileTime()
 {
@@ -77,8 +78,11 @@ inline uint32_t ReadUint32(const Byte *ptr, uint32_t size = READ_U32_BUF_LEN)
            (static_cast<uint32_t>(ptr[BYTE_INDEX_3]) << BYTE_SHIFT_3);
 }
 
-inline void WriteUint32(Byte *ptr, uint32_t data)
+inline void WriteUint32(Byte *ptr, uint32_t data, uint32_t size = READ_U32_BUF_LEN)
 {
+    if (size < READ_U32_BUF_LEN) {
+        return;
+    }
     ptr[BYTE_INDEX_0] = static_cast<Byte>(data & BYTE_MASK);
     ptr[BYTE_INDEX_1] = static_cast<Byte>((data >> BYTE_SHIFT_1) & BYTE_MASK);
     ptr[BYTE_INDEX_2] = static_cast<Byte>((data >> BYTE_SHIFT_2) & BYTE_MASK);
@@ -86,14 +90,20 @@ inline void WriteUint32(Byte *ptr, uint32_t data)
 }
 
 // 读取/写入 16 位、32 位整数
-inline uint16_t ReadUint16(const Byte *ptr)
+inline uint16_t ReadUint16(const Byte *ptr, uint32_t size = READ_U16_BUF_LEN)
 {
+    if (size < READ_U16_BUF_LEN) {
+        return 0;
+    }
     return static_cast<uint16_t>(ptr[BYTE_INDEX_0]) |
            (static_cast<uint16_t>(ptr[BYTE_INDEX_1]) << BYTE_SHIFT_1);
 }
 
-inline void WriteUint16(Byte *ptr, uint16_t data)
+inline void WriteUint16(Byte *ptr, uint16_t data, uint32_t size = READ_U16_BUF_LEN)
 {
+    if (size < READ_U16_BUF_LEN) {
+        return;
+    }
     ptr[BYTE_INDEX_0] = static_cast<Byte>(data & BYTE_MASK);
     ptr[BYTE_INDEX_1] = static_cast<Byte>((data >> BYTE_SHIFT_1) & BYTE_MASK);
 }

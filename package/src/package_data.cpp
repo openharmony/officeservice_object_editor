@@ -108,7 +108,7 @@ bool ReadStreamUint32(Stream *stream, uint64_t streamSize, StreamPos &offset, ui
 void WriteStreamUint32(std::vector<Byte> &buffer, const uint32_t &value)
 {
     Byte valueBuf[U32_BUF_LEN];
-    WriteUint32(valueBuf, value);
+    WriteUint32(valueBuf, value, U32_BUF_LEN);
     buffer.insert(buffer.end(), std::begin(valueBuf), std::end(valueBuf));
 }
 
@@ -191,7 +191,7 @@ bool PackageData::FormatOle10NativeStream(const std::string &tmpFilePath, std::v
     WriteStreamUint32(buffer, 0);
     // write marker 2 byte
     Byte marker[U16_BUF_LEN];
-    WriteUint16(marker, MARKER_VAL);
+    WriteUint16(marker, MARKER_VAL, U16_BUF_LEN);
     buffer.insert(buffer.end(), std::begin(marker), std::end(marker));
     // write filename terminated by null character
     WriteStreamString(buffer, filename_);
@@ -216,7 +216,7 @@ bool PackageData::FormatOle10NativeStream(const std::string &tmpFilePath, std::v
     }
     uint32_t fileSize = buffer.size() + dataSize;
     Byte fileSizeBuf[U32_BUF_LEN];
-    WriteUint32(fileSizeBuf, fileSize);
+    WriteUint32(fileSizeBuf, fileSize, U32_BUF_LEN);
     std::vector<Byte> newFileSizeBuf(fileSizeBuf, fileSizeBuf + U32_BUF_LEN);
     std::copy(newFileSizeBuf.begin(), newFileSizeBuf.end(), buffer.begin());
     withData = dataSize_ < BLOCK_SIZE;
