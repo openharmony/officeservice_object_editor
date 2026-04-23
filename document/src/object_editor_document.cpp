@@ -641,7 +641,13 @@ ObjectEditorDocument *ObjectEditorDocument::Unmarshalling(Parcel &parcel)
     doc->oriFileUri_ = parcel.ReadString();
     doc->snapshotUri_ = parcel.ReadString();
     doc->nativeFileUri_ = parcel.ReadString();
-    doc->operateType_ = static_cast<OperateType>(parcel.ReadInt32());
+    int32_t operateTypeValue = parcel.ReadInt32();
+    if (operateTypeValue < 0 || operateTypeValue > static_cast<int32_t>(OperateType::EDIT)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid operateTypeValue: %{public}d", operateTypeValue);
+        delete doc;
+        return nullptr;
+    }
+    doc->operateType_ = static_cast<OperateType>(operateTypeValue);
     doc->documentId_ = parcel.ReadString();
     return doc;
 }
