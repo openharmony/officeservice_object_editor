@@ -72,6 +72,13 @@ const std::map<int32_t, ContentEmbed_ErrorCode> ERROR_CODE_MAP {
     {ObjectEditorManagerErrCode::SA_CHECK_CLIENT_FILE_VALID_FAILED, CE_ERR_FILE_NOT_GRANT},
 // ObjectorEditorExtensionErrCode
     {ObjectorEditorExtensionErrCode::EXTENSION_CAPABILITY_NOT_SUPPORT, CE_ERR_EXTENSION_NOT_SUPPORT},
+    {ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER, CE_ERR_EXTENSION_ERROR},
+    {ObjectorEditorExtensionErrCode::EXTENSION_PARAM_INVALID, CE_ERR_EXTENSION_ERROR},
+    {ObjectorEditorExtensionErrCode::EXTENSION_DOCUMENT_NOT_FOUND, CE_ERR_EXTENSION_ERROR},
+    {ObjectorEditorExtensionErrCode::EXTENSION_CALLBACK_NULL, CE_ERR_EXTENSION_ERROR},
+    {ObjectorEditorExtensionErrCode::EXTENSION_DOCUMENT_ALREADY_INITIAL, CE_ERR_EXTENSION_ERROR},
+    {ObjectorEditorExtensionErrCode::EXTENSION_MEMORY_ALLOCATION_FAILED, CE_ERR_EXTENSION_ERROR},
+    {ObjectorEditorExtensionErrCode::EXTENSION_UNKNOWN_ERROR, CE_ERR_EXTENSION_ERROR},
 // ObjectEditorDocumentErrCode
     {ObjectEditorDocumentErrCode::DOCUMENT_FLUSH_ERROR, CE_ERR_FILE_OPERATION_FAILED},
 };
