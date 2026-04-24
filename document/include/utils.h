@@ -64,7 +64,7 @@ inline uint64_t GetCurrentFileTime()
     if (period.den != NANOS_PER_SEC) {
         OBJECT_EDITOR_LOGW(ObjectEditorDomain::CLIENT_NDK, "System clock resolution is not nanosecond-precise");
     }
-    return (secs * SEC_TO_UNIX_EPOCH) * WINDOWS_TICK + (nanos / 100ULL);
+    return (secs + SEC_TO_UNIX_EPOCH) * WINDOWS_TICK + (nanos / 100ULL);
 }
 
 inline uint32_t ReadUint32(const Byte *ptr, uint32_t size = READ_U32_BUF_LEN)
