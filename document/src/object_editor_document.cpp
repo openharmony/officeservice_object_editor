@@ -27,6 +27,8 @@
 #include <utility>
 #include <vector>
 
+#include "application_context.h"
+
 #include "dirtree.h"
 #include "object_editor_document.h"
 
@@ -37,6 +39,7 @@ namespace {
     constexpr std::size_t MAX_VISITS = 10000;
 }
 // LCOV_EXCL_START
+namespace fs = std::filesystem;
 
 ObjectEditorDocument::~ObjectEditorDocument()
 {
@@ -287,11 +290,26 @@ bool ObjectEditorDocument::Flush()
 
 bool AtomicReplaceFile(const std::string &tempPath, const std::string &targetPath)
 {
-    return std::rename(tempPath.c_str(), targetPath.c_str()) == 0;
+    return fs::copy_file(tempPath, targetPath, fs::copy_options::overwrite_existing);
 }
 
-std::string GenerateTempPath(const std::string &targetPath)
+std::string GenerateTempPath(const std::string &targetPath, const std::string documentId)
 {
+    std::string sandboxPath = "";
+    std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> context =
+        AbilityRuntime::Context::GetApplicationContext();
+    if (context == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "get context failed");
+        return sandboxPath;
+    }
+    std::string fileDirPath = context->GetTempDir();
+    if (fileDirPath.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "get sandboxPath failed");
+        return sandboxPath;
+    }
+    sandboxPath = fileDirPath + '/' + documentId;
+    fs::path targetDirPath(sandboxPath);
+    fs::create_directories(targetDirPath);
     thread_local std::random_device rd;
     thread_local std::mt19937 gen(rd());
     constexpr uint32_t PATH_LEN = 16;
@@ -299,7 +317,7 @@ std::string GenerateTempPath(const std::string &targetPath)
     static constexpr char kHex[] = "0123456789abcdef";
 
     std::ostringstream ss;
-    ss << targetPath << ".rebuilding.";
+    ss << sandboxPath << "/ole.bin.rebuilding.";
     for (uint32_t i = 0; i < PATH_LEN; ++i) {
         ss << kHex[dis(gen)];
     }
@@ -511,12 +529,12 @@ bool ObjectEditorDocument::CopyAllStreamsRecursively(Storage *src, Storage *dst,
     return CopyAllStreamRecursivelyImpl(src, dst, basePath, 0, visitCount);
 }
 
-std::string GenerateSafeTempPath(const std::string &targetPath)
+std::string GenerateSafeTempPath(const std::string &targetPath, const std::string &documentId)
 {
     constexpr uint32_t ATTEMPT_COUNT = 64;
     std::string tempPath;
     for (uint32_t attempt = 0; attempt < ATTEMPT_COUNT; ++attempt) {
-        tempPath = GenerateTempPath(targetPath);
+        tempPath = GenerateTempPath(targetPath, documentId);
         std::error_code existsEc;
         if (!std::filesystem::exists(tempPath, existsEc) && !existsEc) {
             return tempPath;
@@ -547,7 +565,7 @@ bool ObjectEditorDocument::RebuildAndFlush()
         return storage_ && storage_->Flush();
     }
     
-    std::string tempPath = GenerateSafeTempPath(targetPath);
+    std::string tempPath = GenerateSafeTempPath(targetPath, documentId_);
     if (tempPath.empty())
         return false;
 
