@@ -299,8 +299,11 @@ std::streamsize StreamImpl::Read(Byte *data, std::streamsize maxlen)
 std::streamsize StreamImpl::ReadBufferUntilNull(std::vector<Byte> &buffer)
 {
     Byte buf[CACHE_SIZE];
-    Read(buf, CACHE_SIZE);
-    for (int i = 0; i < CACHE_SIZE; i++) {
+    std::streamsize bytesRead = Read(buf, CACHE_SIZE);
+    if (bytesRead <= 0) {
+        return bytesRead;
+    }
+    for (int i = 0; i < bytesRead; i++) {
         if (buf[i] == '\0') {
             break;
         }
