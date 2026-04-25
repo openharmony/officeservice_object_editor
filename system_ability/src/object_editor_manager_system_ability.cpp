@@ -589,7 +589,9 @@ ErrCode ObjectEditorManagerSystemAbility::StopObjectEditorExtension(
     }
     bool isAllObjectsRemoved = false;
     auto proxyResult = objectEditorExtensionProxy->Close(documentId, isAllObjectsRemoved);
-    if (!isAllObjectsRemoved && proxyResult >= ObjectorEditorExtensionErrCode::EXTENSION_ERROR_START) {
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "close result:%{public}d", proxyResult);
+    if (!isAllObjectsRemoved && (proxyResult >= ObjectorEditorExtensionErrCode::EXTENSION_ERROR_START ||
+        proxyResult == ObjectorEditorExtensionErrCode::EXTENSION_OK)) {
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "not all objects removed");
         return ObjectEditorManagerErrCode::SA_OK;
     }

@@ -636,7 +636,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StartWork(ContentEmbed_ExtensionPro
         oeCallbackInner, proxy->objectEditorService, proxy->isPackageExtension);
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "errCode: %{public}d", errCode);
-        delete oeCallbackInner;
         return ConvertErrorToCode(errCode, CE_ERR_SYSTEM_ABNORMAL);
     }
     if (proxy->isPackageExtension) {
@@ -683,7 +682,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_DoEdit(ContentEmbed_ExtensionProxy 
     auto errCode = proxy->objectEditorService->DoEdit(proxy->ceDocument->oeDocumentInner->GetDocumentId());
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed: %{public}d", errCode);
-        return ConvertErrorToCode(errCode, CE_ERR_SYSTEM_ABNORMAL);
+        return ConvertErrorToCode(errCode, CE_ERR_EXTENSION_ERROR);
     }
     return CE_ERR_OK;
 }
@@ -795,7 +794,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetSnapshot(ContentEmbed_ExtensionP
         proxy->ceDocument->oeDocumentInner->GetDocumentId());
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed: %{public}d", errCode);
-        return ConvertErrorToCode(errCode, CE_ERR_SYSTEM_ABNORMAL);
+        return ConvertErrorToCode(errCode, CE_ERR_EXTENSION_ERROR);
     }
     std::string snapshotPath = proxy->ceDocument->oeDocumentInner->GetSnapshotPath();
     if (!std::filesystem::exists(snapshotPath) || std::filesystem::file_size(snapshotPath) == 0) {
