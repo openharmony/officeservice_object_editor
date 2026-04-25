@@ -1,5 +1,5 @@
 {
-    "name": "@ohos/object_editor_service",
+    "name": "@ohos/object_editor",
     "description": "The service for editing objects in the application files",
     "version": "1.0",
     "license": "Apache License 2.0",
@@ -10,6 +10,9 @@
     "component": {
         "name": "object_editor",
         "subsystem": "officeservice",
+        "syscap": [
+            "SystemCapability.ContentEmbed.ObjectEditor"
+        ],
         "features": [],
         "adapted_system_type": [ "standard" ],
         "rom": "",
