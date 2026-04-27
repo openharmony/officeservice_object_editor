@@ -1931,7 +1931,7 @@ bool StorageIO::AdvertiseFATSectorInDIFAT(uint32_t fatSector, uint32_t current, 
         }
         difatSectors_.push_back(newDifat);
         bbat_->Set(newDifat, AllocTable::MetaBat);
-        protectedBlocksDirty_ = true;
+        protectedBlocksCache_.insert(newDifat);
 
         if (difatSectors_.size() == 1) {
             header_->SetFirstDifat(newDifat);
@@ -1955,6 +1955,8 @@ void StorageIO::EnsureFatCapacity()
         return;
     }
     const uint32_t difatEntries = entriesPerSector > 0 ? static_cast<uint32_t>(entriesPerSector - 1) : 0;
+
+    RebuildProtectedBlocksCache();
     while (true) {
         const uint32_t entryCount = static_cast<uint32_t>(bbat_->Count());
         uint32_t required = (entryCount + entriesPerSector - 1) / entriesPerSector;
@@ -1973,7 +1975,7 @@ void StorageIO::EnsureFatCapacity()
         }
         fatSectors_.push_back(newFat);
         bbat_->Set(newFat, AllocTable::Bat);
-        protectedBlocksDirty_ = true;
+        protectedBlocksCache_.insert(newFat);
 
         if (!AdvertiseFATSectorInDIFAT(newFat, current, difatEntries)) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to advertise new FAT sector in DIFAT");
