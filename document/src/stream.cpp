@@ -178,6 +178,7 @@ std::streamsize StreamImpl::ReadBigBlocks(size_t pos, Byte *buffer, size_t allow
         return 0;
     }
     if (allowed > MAX_ALLOWED_2G) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "StreamImpl::ReadBigBlocks - exceeds 2 GB");
         return 0;
     }
     std::vector<Byte> buf(io_->BigBlockSize());
@@ -476,10 +477,10 @@ uint32_t StreamImpl::Write(const Byte *data, uint32_t maxlen)
         count = WriteBigBlocks(data, targetLen, bigBlockSize);
     }
 
-    if (count > INT32_MAX) {
+    if (count > UINT32_MAX) {
         return 0;
     }
-    pos_ += static_cast<int32_t>(count);
+    pos_ += static_cast<uint32_t>(count);
     return count;
 }
 // LCOV_EXCL_STOP
