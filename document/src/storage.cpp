@@ -2419,16 +2419,14 @@ bool StorageIO::SaveToFile(const char *filename, bool switchToFileMode)
     if (!Flush()) {
         return false;
     }
-    
+
     std::string canonicalFileName = NormalizeFilePath(filename);
     if (canonicalFileName.empty()) {
         return false;
     }
-
     if (!WriteBufferToFile(canonicalFileName)) {
         return false;
     }
-    
     if (switchToFileMode) {
         if (file_) {
             file_->close();

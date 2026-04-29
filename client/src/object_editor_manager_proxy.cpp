@@ -343,7 +343,7 @@ ErrCode ObjectEditorManagerProxy::StartUIAbility(const std::unique_ptr<AAFwk::Wa
         return ERR_INVALID_VALUE;
     }
     if (!data.WriteParcelable(want.get())) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write want failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write want fail");
         return ERR_INVALID_DATA;
     }
     if (!data.WriteInt32(clientPid)) {
