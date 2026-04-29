@@ -131,11 +131,9 @@ private:
     bool CopyAllStreamRecursivelyImpl(Storage *src, Storage *dst, const std::string& path,
         std::size_t depth, std::size_t &visitCount);
     bool CopyStreamData(Storage* src, Storage* dst, const std::string& path, uint64_t size);
-    bool HandleUserTempScenario();
     bool HandleTempFilePathScenario();
     void TraverseDirectory(const std::string &path, std::size_t depth,
         uint64_t &total, std::size_t &visitCount) const;
-    bool GenerateAndSaveUniqueFile();
 
     std::unique_ptr<Storage> storage_;
     std::string oriFileUri_;
