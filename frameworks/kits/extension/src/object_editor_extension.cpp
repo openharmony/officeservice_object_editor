@@ -252,11 +252,11 @@ sptr<IRemoteObject> ObjectEditorExtension::OnConnect(const AAFwk::Want &want)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "in");
     int32_t clientPid = want.GetParams().GetIntParam("clientPid", 0);
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "clientPid: %{public}d", clientPid);
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "clientPid:%{public}d", clientPid);
     if (oeContext_ != nullptr) {
         oeContext_->SetClientPid(clientPid);
     } else {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "oeContext_ is nullptr!");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "oeContext_ is nullptr");
     }
     Extension::OnConnect(want);
     auto remoteObj = this;
