@@ -42,7 +42,11 @@ constexpr const char* MEDIA_AUTHORITY = "media";
 // LCOV_EXCL_START
 uint64_t GetFileSize(const std::string &filePath)
 {
-    if (filePath.empty() || filePath.find("..") != std::string::npos || filePath.find("/") == 0) {
+    if (filePath.empty() ||
+        filePath.find("..") != std::string::npos ||
+        filePath.find("~") != std::string::npos ||
+        filePath.find("\\") != std::string::npos ||
+        filePath.find("/") == 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "File path is invalid");
         return 0;
     }
@@ -62,15 +66,13 @@ std::string ReadFile(const std::string &filePath)
     std::string directory = path.parent_path().string() + "/";
     std::string filename = path.filename().string();
 
-    char *canonicalDirPath = realpath(directory.c_str(), nullptr);
+    std::unique_ptr<char, decltype(&free)> canonicalDirPath(realpath(directory.c_str(), nullptr), &free);
     if (canonicalDirPath == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "canonical directory path is null");
         return "";
     }
 
-    std::string canonicalFilePath = std::string(canonicalDirPath) + "/" + filename;
-    free(canonicalDirPath);
-    canonicalDirPath = nullptr;
+    std::string canonicalFilePath = std::string(canonicalDirPath.get()) + "/" + filename;
 
     std::ifstream in(canonicalFilePath, std::ios::in | std::ios::binary);
     if (!in.is_open()) {
@@ -258,7 +260,7 @@ bool IsAppSandboxPath(const std::string &path)
 
 std::string GetSubstrByPrefix(const std::string &str, const std::string &prefix)
 {
-    size_t pos = str.rfind(prefix);
+    size_t pos = str.find(prefix);
     if ((pos == std::string::npos) || (pos == str.size() - prefix.size())) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "find value fail, str:%{private}s, prefix:%{private}s",
             str.c_str(), prefix.c_str());

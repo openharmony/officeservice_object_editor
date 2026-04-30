@@ -123,11 +123,10 @@ void ObjectEditorManagerDatabase::Init()
 
 void ObjectEditorManagerDatabase::HandleOpenDb()
 {
-    if (!(std::filesystem::exists(dbDir_) && std::filesystem::is_directory(dbDir_))) {
+    std::error_code ec;
+    if (!std::filesystem::exists(dbDir_, ec) || !std::filesystem::is_directory(dbDir_, ec)) {
         OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "dbDir not exist");
-        std::error_code ec;
-        std::filesystem::create_directories(dbDir_, ec);
-        if (ec) {
+        if (!std::filesystem::create_directories(dbDir_, ec) || ec) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "create_directories failed, ec: %{public}s",
                 ec.message().c_str());
             return;
@@ -279,8 +278,8 @@ void ObjectEditorManagerDatabase::AddBundle(const std::string &bundleName)
         return;
     }
     if (!ObjectEditorPermissionUtils::CheckRequestPermission(bundleName, PERMISSION_SERVER)) {
-        OBJECT_EDITOR_LOGE(
-            ObjectEditorDomain::DATABASE, "permission denid, bundleName:%{public}s", bundleName.c_str());
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "permission denied, bundleName:%{public}s",
+            bundleName.c_str());
         return;
     }
     std::vector<NativeRdb::ValuesBucket> buckets;
@@ -340,8 +339,8 @@ void ObjectEditorManagerDatabase::UpdateBundle(const std::string &bundleName)
         return;
     }
     if (!ObjectEditorPermissionUtils::CheckRequestPermission(bundleName, PERMISSION_SERVER)) {
-        OBJECT_EDITOR_LOGE(
-            ObjectEditorDomain::DATABASE, "permission denid, bundleName:%{public}s", bundleName.c_str());
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "permission denied, bundleName:%{public}s",
+            bundleName.c_str());
         return;
     }
     std::vector<NativeRdb::ValuesBucket> buckets;
