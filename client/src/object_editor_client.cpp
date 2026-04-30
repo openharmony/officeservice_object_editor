@@ -110,7 +110,7 @@ void ObjectEditorClient::UnsubscribeSystemAbility()
 void ObjectEditorAbilityListener::OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
-    std::lock_guard<std::mutex>(this->mutex_);
+    std::lock_guard<std::mutex> lock(this->mutex_);
     if (systemAbilityId == OBJECT_EDITOR_SERVICE_SA_ID) {
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "sa is added");
     }
@@ -119,7 +119,7 @@ void ObjectEditorAbilityListener::OnAddSystemAbility(int32_t systemAbilityId, co
 void ObjectEditorAbilityListener::OnRemoveSystemAbility(int32_t systemAbilityId, const std::string &deviceId)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
-    std::lock_guard<std::mutex>(this->mutex_);
+    std::lock_guard<std::mutex> lock(this->mutex_);
     if (systemAbilityId == OBJECT_EDITOR_SERVICE_SA_ID) {
         ObjectEditorClient::GetInstance().SARegCleanUp();
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "sa is removed");
@@ -396,8 +396,8 @@ std::string ObjectEditorClient::GenRandomUuid()
     static const int NIBBLE_SHIFT = 4;
     static const int NIBBLE_MASK = 0xF;
     for (auto it = uuid_.begin(); it != uuid_.end(); it++) {
-        tmp.push_back(hex[(*it >> NIBBLE_SHIFT) & NIBBLE_MASK]); // 右移4位
-        tmp.push_back(hex[*it & NIBBLE_MASK]); // 取低4位
+        tmp.push_back(hex[(*it >> NIBBLE_SHIFT) & NIBBLE_MASK]); // Right shift by 4 bits
+        tmp.push_back(hex[*it & NIBBLE_MASK]); // Take the lower 4 bits
     }
     ret = tmp.substr(0, UUID_HEAD_LEN) + "-" +
         tmp.substr(UUID_START_POS_1, UUID_OTHER_LEN) + "-" +

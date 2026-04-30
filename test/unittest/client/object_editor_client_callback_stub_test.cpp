@@ -57,7 +57,7 @@ namespace {
 
 /**
  * @tc.name onRemoteRequest_001
- * @tc.desc 测试onRemoteRequest方法
+ * @tc.desc Test onRemoteRequest method
  * @tc.type FUNC
  */
 
@@ -75,7 +75,7 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, onRemoteRequest_001, TestSize.Level
 
 /**
  * @tc.name onRemoteRequest_002
- * @tc.desc 测试onRemoteRequest方法
+ * @tc.desc Test onRemoteRequest method
  * @tc.type FUNC
  */
 
@@ -94,7 +94,7 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, onRemoteRequest_002, TestSize.Level
 
 /**
  * @tc.name onRemoteRequest_003
- * @tc.desc 测试onRemoteRequest方法
+ * @tc.desc Test onRemoteRequest method
  * @tc.type FUNC
  */
 
@@ -113,7 +113,7 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, onRemoteRequest_003, TestSize.Level
 
 /**
  * @tc.name onRemoteRequestInner_001
- * @tc.desc 测试onRemoteRequest方法
+ * @tc.desc Test onRemoteRequest method
  * @tc.type FUNC
  */
 
@@ -131,7 +131,7 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, onRemoteRequestInner_001, TestSize.
 
 /**
  * @tc.name onRemoteRequestInner_002
- * @tc.desc 测试onRemoteRequest方法
+ * @tc.desc Test onRemoteRequest method
  * @tc.type FUNC
  */
 
@@ -149,7 +149,7 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, onRemoteRequestInner_002, TestSize.
 
 /**
  * @tc.name HandleUpdate_001
- * @tc.desc 测试HandleUpdate方法
+ * @tc.desc Test HandleUpdate method
  * @tc.type FUNC
  */
 
@@ -164,7 +164,7 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, HandleUpdate_001, TestSize.Level1)
 
 /**
  * @tc.name HandleUpdate_002
- * @tc.desc 测试HandleUpdate方法
+ * @tc.desc Test HandleUpdate method
  * @tc.type FUNC
  */
 
@@ -181,7 +181,7 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, HandleUpdate_002, TestSize.Level1)
 
 /**
  * @tc.name HandleUpdate_003
- * @tc.desc 测试HandleUpdate方法
+ * @tc.desc Test HandleUpdate method
  * @tc.type FUNC
  */
 
@@ -200,7 +200,7 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, HandleUpdate_003, TestSize.Level1)
 
 /**
  * @tc.name HandleOnError_001
- * @tc.desc 测试HandleOnError方法
+ * @tc.desc Test HandleOnError method
  * @tc.type FUNC
  */
 
@@ -217,7 +217,7 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, HandleOnError_001, TestSize.Level1)
 
 /**
  * @tc.name HandleOnError_002
- * @tc.desc 测试HandleOnError方法
+ * @tc.desc Test HandleOnError method
  * @tc.type FUNC
  */
 
@@ -236,7 +236,7 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, HandleOnError_002, TestSize.Level1)
 
 /**
  * @tc.name HandleOnStopEdit_001
- * @tc.desc 测试HandleOnStopEdit方法
+ * @tc.desc Test HandleOnStopEdit method
  * @tc.type FUNC
  */
 
@@ -251,7 +251,7 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, HandleOnStopEdit_001, TestSize.Leve
 
 /**
  * @tc.name HandleOnStopEdit_002
- * @tc.desc 测试HandleOnStopEdit方法
+ * @tc.desc Test HandleOnStopEdit method
  * @tc.type FUNC
  */
 
@@ -270,7 +270,7 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, HandleOnStopEdit_002, TestSize.Leve
 
 /**
  * @tc.name HandleOnExtensionStopped_001
- * @tc.desc 测试HandleOnExtensionStopped方法
+ * @tc.desc Test HandleOnExtensionStopped method
  * @tc.type FUNC
  */
 
@@ -285,7 +285,7 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, HandleOnExtensionStopped_001, TestS
 
 /**
  * @tc.name HandleOnExtensionStopped_002
- * @tc.desc 测试HandleOnExtensionStopped方法
+ * @tc.desc Test HandleOnExtensionStopped method
  * @tc.type FUNC
  */
 

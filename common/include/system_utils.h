@@ -31,16 +31,16 @@ bool StringToLong(const char *input, long &num);
 bool StringToInt(const char *input, int &num);
 bool StringToFloat(const char *input, float &num);
 bool HasSQLWildcard(const std::string &str);
-/* fileExt仅允许包含字母、数字或'.' */
+/* fileExt only allows letters, digits or '.' */
 bool IsValidFileExt(const std::string &fileExt);
 bool FileExtsHasFileExt(const std::string &fileExts, const std::string &fileExt);
 std::string UTCToBeijingTime(int64_t timestamp);
 std::string GetUriFromPath(const std::string &path);
 std::string GetPathFromUri(const std::string &uri);
 bool IsAppSandboxPath(const std::string &path);
-/* str形如 "prefixabcdef"，返回"abcdef"*/
+/* str like "prefixabcdef", returns "abcdef" */
 std::string GetSubstrByPrefix(const std::string &str, const std::string &prefix);
-/* str形如 "prefix123456"，num返回"123456"*/
+/* str like "prefix123456", num returns "123456" */
 bool GetIntByPrefix(const std::string &str, const std::string &prefix, int &num);
 } // namespace SystemUtils
 } // namespace ObjectEditor

@@ -53,7 +53,7 @@ void AlloctableTest::TearDown()
 
 /**
  * @tc.name Set_001
- * @tc.desc 测试Set方法
+ * @tc.desc Test Set method
  * @tc.type FUNC
  */
 HWTEST_F(AllocatableTest, Set_001, TestSize.Level1)
@@ -65,7 +65,7 @@ HWTEST_F(AllocatableTest, Set_001, TestSize.Level1)
 
 /**
  * @tc.name SetChain_001
- * @tc.desc 测试SetChain方法
+ * @tc.desc Test SetChain method
  * @tc.type FUNC
  */
 HWTEST_F(AllocatableTest, SetChain_001, TestSize.Level1)
@@ -78,7 +78,7 @@ HWTEST_F(AllocatableTest, SetChain_001, TestSize.Level1)
 
 /**
  * @tc.name SetChain_002
- * @tc.desc 测试SetChain方法
+ * @tc.desc Test SetChain method
  * @tc.type FUNC
  */
 HWTEST_F(AllocatableTest, SetChain_002, TestSize.Level1)
@@ -91,7 +91,7 @@ HWTEST_F(AllocatableTest, SetChain_002, TestSize.Level1)
 
 /**
  * @tc.name Follow_001
- * @tc.desc 测试Follow方法
+ * @tc.desc Test Follow method
  * @tc.type FUNC
  */
 HWTEST_F(AllocatableTest, Follow_001, TestSize.Level1)
@@ -104,7 +104,7 @@ HWTEST_F(AllocatableTest, Follow_001, TestSize.Level1)
 
 /**
  * @tc.name Follow_002
- * @tc.desc 测试Follow方法
+ * @tc.desc Test Follow method
  * @tc.type FUNC
  */
 HWTEST_F(AllocatableTest, Follow_002, TestSize.Level1)
@@ -117,7 +117,7 @@ HWTEST_F(AllocatableTest, Follow_002, TestSize.Level1)
 
 /**
  * @tc.name Follow_003
- * @tc.desc 测试Follow方法
+ * @tc.desc Test Follow method
  * @tc.type FUNC
  */
 HWTEST_F(AllocatableTest, Follow_003, TestSize.Level1)
@@ -130,7 +130,7 @@ HWTEST_F(AllocatableTest, Follow_003, TestSize.Level1)
 
 /**
  * @tc.name Unused_001
- * @tc.desc 测试Unused方法
+ * @tc.desc Test Unused method
  * @tc.type FUNC
  */
 HWTEST_F(AllocatableTest, Unused_001, TestSize.Level1)
@@ -142,7 +142,7 @@ HWTEST_F(AllocatableTest, Unused_001, TestSize.Level1)
 
 /**
  * @tc.name Unused_002
- * @tc.desc 测试Unused方法
+ * @tc.desc Test Unused method
  * @tc.type FUNC
  */
 HWTEST_F(AllocatableTest, Unused_002, TestSize.Level1)
@@ -156,7 +156,7 @@ HWTEST_F(AllocatableTest, Unused_002, TestSize.Level1)
 
 /**
  * @tc.name Load_001
- * @tc.desc 测试Load方法
+ * @tc.desc Test Load method
  * @tc.type FUNC
  */
 HWTEST_F(AllocatableTest, Load_001, TestSize.Level1)
@@ -167,7 +167,7 @@ HWTEST_F(AllocatableTest, Load_001, TestSize.Level1)
 
 /**
  * @tc.name Load_002
- * @tc.desc 测试Load方法
+ * @tc.desc Test Load method
  * @tc.type FUNC
  */
 HWTEST_F(AllocatableTest, Load_002, TestSize.Level1)
@@ -178,7 +178,7 @@ HWTEST_F(AllocatableTest, Load_002, TestSize.Level1)
 
 /**
  * @tc.name Load_003
- * @tc.desc 测试Load方法
+ * @tc.desc Test Load method
  * @tc.type FUNC
  */
 HWTEST_F(AllocatableTest, Load_003, TestSize.Level1)
@@ -190,7 +190,7 @@ HWTEST_F(AllocatableTest, Load_003, TestSize.Level1)
 
 /**
  * @tc.name Save_001
- * @tc.desc 测试Save方法
+ * @tc.desc Test Save method
  * @tc.type FUNC
  */
 HWTEST_F(AllocatableTest, Save_001, TestSize.Level1)
@@ -202,7 +202,7 @@ HWTEST_F(AllocatableTest, Save_001, TestSize.Level1)
 
 /**
  * @tc.name Save_002
- * @tc.desc 测试Save方法
+ * @tc.desc Test Save method
  * @tc.type FUNC
  */
 HWTEST_F(AllocatableTest, Save_002, TestSize.Level1)
@@ -214,7 +214,7 @@ HWTEST_F(AllocatableTest, Save_002, TestSize.Level1)
 
 /**
  * @tc.name Save_003
- * @tc.desc 测试Save方法
+ * @tc.desc Test Save method
  * @tc.type FUNC
  */
 HWTEST_F(AllocatableTest, Save_003, TestSize.Level1)
@@ -227,7 +227,7 @@ HWTEST_F(AllocatableTest, Save_003, TestSize.Level1)
 
 /**
  * @tc.name Debug_001
- * @tc.desc 测试Debug方法
+ * @tc.desc Test Debug method
  * @tc.type FUNC
  */
 HWTEST_F(AllocatableTest, Debug_001, TestSize.Level1)

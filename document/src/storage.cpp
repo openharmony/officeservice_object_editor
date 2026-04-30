@@ -968,7 +968,7 @@ uint32_t StorageIO::SaveBlockToFile(uint64_t physicalOffset, const Byte *data, u
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to write block");
         return 0;
     }
-    // 只在必要时刷新
+    // Flush only when necessary
     writeBufferSize_ += len;
     if (writeBufferSize_ >= MAX_BUFFER_SIZE) {
         file_->flush();

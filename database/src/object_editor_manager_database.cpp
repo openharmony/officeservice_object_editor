@@ -51,7 +51,7 @@ std::vector<std::string> GetDefaultDbSql()
         "icon_id INTEGER NOT NULL, "
         "create_time INTEGER NOT NULL);"
     );
-    // 为oeid创建索引
+    // Create index for oeid
     defaultSqlList.emplace_back("CREATE INDEX IF NOT EXISTS idx_oeid ON object_editor_info(oeid);");
     return defaultSqlList;
 }
@@ -658,9 +658,9 @@ void ObjectEditorManagerDatabase::ParseExtensionInfos(const std::map<std::string
         auto it2 = dbBundles.find(extensionInfo.bundleName);
         if (it2 != dbBundles.end()) {
             if (bundleInfo.updateTime <= it2->second) {
-                continue; // bundle没有更新过，直接skip
+                continue; // Bundle not updated, skip directly
             } else {
-                oldBundles.emplace(extensionInfo.bundleName); // bundle比数据库更新，删除旧数据
+                oldBundles.emplace(extensionInfo.bundleName); // Bundle is newer than database, delete old data
             }
         }
         if (!BuildValuesBuckets(buckets, bundleInfo, extensionInfo)) {

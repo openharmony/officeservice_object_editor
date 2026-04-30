@@ -66,7 +66,7 @@ namespace {
 
 /**
  * @tc.name Result_001
- * @tc.desc 测试Result方法
+ * @tc.desc Test Result method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Result_001, TestSize.Level1)
@@ -77,7 +77,7 @@ HWTEST_F(PoleTest, Result_001, TestSize.Level1)
 
 /**
  * @tc.name Result_002
- * @tc.desc 测试Result方法
+ * @tc.desc Test Result method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Result_002, TestSize.Level1)
@@ -89,7 +89,7 @@ HWTEST_F(PoleTest, Result_002, TestSize.Level1)
 
 /**
  * @tc.name ListEntries_001
- * @tc.desc 测试ListEntries方法
+ * @tc.desc Test ListEntries method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, ListEntries_001, TestSize.Level1)
@@ -102,7 +102,7 @@ HWTEST_F(PoleTest, ListEntries_001, TestSize.Level1)
 
 /**
  * @tc.name ListEntries_002
- * @tc.desc 测试ListEntries方法
+ * @tc.desc Test ListEntries method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, ListEntries_002, TestSize.Level1)
@@ -114,7 +114,7 @@ HWTEST_F(PoleTest, ListEntries_002, TestSize.Level1)
 
 /**
  * @tc.name EnterDirectory_001
- * @tc.desc 测试EnterDirectory方法
+ * @tc.desc Test EnterDirectory method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, EnterDirectory_001, TestSize.Level1)
@@ -126,7 +126,7 @@ HWTEST_F(PoleTest, EnterDirectory_001, TestSize.Level1)
 
 /**
  * @tc.name EnterDirectory_002
- * @tc.desc 测试EnterDirectory方法
+ * @tc.desc Test EnterDirectory method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, EnterDirectory_002, TestSize.Level1)
@@ -137,7 +137,7 @@ HWTEST_F(PoleTest, EnterDirectory_002, TestSize.Level1)
 
 /**
  * @tc.name LeaveDirectory_001
- * @tc.desc 测试LeaveDirectory方法
+ * @tc.desc Test LeaveDirectory method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, LeaveDirectory_001, TestSize.Level1)
@@ -148,7 +148,7 @@ HWTEST_F(PoleTest, LeaveDirectory_001, TestSize.Level1)
 
 /**
  * @tc.name LeaveDirectory_002
- * @tc.desc 测试LeaveDirectory方法
+ * @tc.desc Test LeaveDirectory method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, LeaveDirectory_002, TestSize.Level1)
@@ -158,7 +158,7 @@ HWTEST_F(PoleTest, LeaveDirectory_002, TestSize.Level1)
 
 /**
  * @tc.name GetStorage_001
- * @tc.desc 测试GetStorage方法
+ * @tc.desc Test GetStorage method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, GetStorage_001, TestSize.Level1)
@@ -169,7 +169,7 @@ HWTEST_F(PoleTest, GetStorage_001, TestSize.Level1)
 
 /**
  * @tc.name GetStorage_002
- * @tc.desc 测试GetStorage方法
+ * @tc.desc Test GetStorage method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, GetStorage_002, TestSize.Level1)
@@ -181,7 +181,7 @@ HWTEST_F(PoleTest, GetStorage_002, TestSize.Level1)
 
 /**
  * @tc.name GetStorage_003
- * @tc.desc 测试GetStorage方法
+ * @tc.desc Test GetStorage method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, GetStorage_003, TestSize.Level1)
@@ -193,7 +193,7 @@ HWTEST_F(PoleTest, GetStorage_003, TestSize.Level1)
 
 /**
  * @tc.name GetStorage_004
- * @tc.desc 测试GetStorage方法
+ * @tc.desc Test GetStorage method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, GetStorage_004, TestSize.Level1)
@@ -204,7 +204,7 @@ HWTEST_F(PoleTest, GetStorage_004, TestSize.Level1)
 
 /**
  * @tc.name GetStorage_005
- * @tc.desc 测试GetStorage方法
+ * @tc.desc Test GetStorage method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, GetStorage_005, TestSize.Level1)
@@ -215,7 +215,7 @@ HWTEST_F(PoleTest, GetStorage_005, TestSize.Level1)
 
 /**
  * @tc.name GetStorage_006
- * @tc.desc 测试GetStorage方法
+ * @tc.desc Test GetStorage method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, GetStorage_006, TestSize.Level1)
@@ -226,7 +226,7 @@ HWTEST_F(PoleTest, GetStorage_006, TestSize.Level1)
 
 /**
  * @tc.name Path_001
- * @tc.desc 测试Path方法
+ * @tc.desc Test Path method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Path_001, TestSize.Level1)
@@ -239,7 +239,7 @@ HWTEST_F(PoleTest, Path_001, TestSize.Level1)
 
 /**
  * @tc.name Path_002
- * @tc.desc 测试Path方法
+ * @tc.desc Test Path method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Path_002, TestSize.Level1)
@@ -251,7 +251,7 @@ HWTEST_F(PoleTest, Path_002, TestSize.Level1)
 
 /**
  * @tc.name GetStream_001
- * @tc.desc 测试GetStream方法
+ * @tc.desc Test GetStream method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, GetStream_001, TestSize.Level1)
@@ -262,7 +262,7 @@ HWTEST_F(PoleTest, GetStream_001, TestSize.Level1)
 
 /**
  * @tc.name GetStream_002
- * @tc.desc 测试GetStream方法
+ * @tc.desc Test GetStream method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, GetStream_002, TestSize.Level1)
@@ -274,7 +274,7 @@ HWTEST_F(PoleTest, GetStream_002, TestSize.Level1)
 
 /**
  * @tc.name GetStream_003
- * @tc.desc 测试GetStream方法
+ * @tc.desc Test GetStream method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, GetStream_003, TestSize.Level1)
@@ -286,7 +286,7 @@ HWTEST_F(PoleTest, GetStream_003, TestSize.Level1)
 
 /**
  * @tc.name GetStream_004
- * @tc.desc 测试GetStream方法
+ * @tc.desc Test GetStream method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, GetStream_004, TestSize.Level1)
@@ -297,7 +297,7 @@ HWTEST_F(PoleTest, GetStream_004, TestSize.Level1)
 
 /**
  * @tc.name GetStream_005
- * @tc.desc 测试GetStream方法
+ * @tc.desc Test GetStream method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, GetStream_005, TestSize.Level1)
@@ -308,7 +308,7 @@ HWTEST_F(PoleTest, GetStream_005, TestSize.Level1)
 
 /**
  * @tc.name GetStream_006
- * @tc.desc 测试GetStream方法
+ * @tc.desc Test GetStream method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, GetStream_006, TestSize.Level1)
@@ -319,7 +319,7 @@ HWTEST_F(PoleTest, GetStream_006, TestSize.Level1)
 
 /**
  * @tc.name GetRootEntry_001
- * @tc.desc 测试GetRootEntry方法
+ * @tc.desc Test GetRootEntry method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, GetRootEntry_001, TestSize.Level1)
@@ -331,7 +331,7 @@ HWTEST_F(PoleTest, GetRootEntry_001, TestSize.Level1)
 
 /**
  * @tc.name GetRootEntry_002
- * @tc.desc 测试GetRootEntry方法
+ * @tc.desc Test GetRootEntry method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, GetRootEntry_002, TestSize.Level1)
@@ -342,7 +342,7 @@ HWTEST_F(PoleTest, GetRootEntry_002, TestSize.Level1)
 
 /**
  * @tc.name GetEntry_001
- * @tc.desc 测试GetEntry方法
+ * @tc.desc Test GetEntry method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, GetEntry_001, TestSize.Level1)
@@ -354,7 +354,7 @@ HWTEST_F(PoleTest, GetEntry_001, TestSize.Level1)
 
 /**
  * @tc.name GetEntry_002
- * @tc.desc 测试GetEntry方法
+ * @tc.desc Test GetEntry method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, GetEntry_002, TestSize.Level1)
@@ -365,7 +365,7 @@ HWTEST_F(PoleTest, GetEntry_002, TestSize.Level1)
 
 /**
  * @tc.name Flush_001
- * @tc.desc 测试Flush方法
+ * @tc.desc Test Flush method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Flush_001, TestSize.Level1)
@@ -377,7 +377,7 @@ HWTEST_F(PoleTest, Flush_001, TestSize.Level1)
 
 /**
  * @tc.name Flush_002
- * @tc.desc 测试Flush方法
+ * @tc.desc Test Flush method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Flush_002, TestSize.Level1)
@@ -388,7 +388,7 @@ HWTEST_F(PoleTest, Flush_002, TestSize.Level1)
 
 /**
  * @tc.name IsDirty_001
- * @tc.desc 测试IsDirty方法
+ * @tc.desc Test IsDirty method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, IsDirty_001, TestSize.Level1)
@@ -400,7 +400,7 @@ HWTEST_F(PoleTest, IsDirty_001, TestSize.Level1)
 
 /**
  * @tc.name IsDirty_002
- * @tc.desc 测试IsDirty方法
+ * @tc.desc Test IsDirty method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, IsDirty_002, TestSize.Level1)
@@ -411,7 +411,7 @@ HWTEST_F(PoleTest, IsDirty_002, TestSize.Level1)
 
 /**
  * @tc.name SaveToFile_001
- * @tc.desc 测试SaveToFile方法
+ * @tc.desc Test SaveToFile method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, SaveToFile_001, TestSize.Level1)
@@ -423,7 +423,7 @@ HWTEST_F(PoleTest, SaveToFile_001, TestSize.Level1)
 
 /**
  * @tc.name SaveToFile_002
- * @tc.desc 测试SaveToFile方法
+ * @tc.desc Test SaveToFile method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, SaveToFile_002, TestSize.Level1)
@@ -434,7 +434,7 @@ HWTEST_F(PoleTest, SaveToFile_002, TestSize.Level1)
 
 /**
  * @tc.name Debug_001
- * @tc.desc 测试Debug方法
+ * @tc.desc Test Debug method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Debug_001, TestSize.Level1)
@@ -445,7 +445,7 @@ HWTEST_F(PoleTest, Debug_001, TestSize.Level1)
 
 /**
  * @tc.name Debug_002
- * @tc.desc 测试Debug方法
+ * @tc.desc Test Debug method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Debug_002, TestSize.Level1)
@@ -455,7 +455,7 @@ HWTEST_F(PoleTest, Debug_002, TestSize.Level1)
 
 /**
  * @tc.name DeleteEntry_001
- * @tc.desc 测试DeleteEntry方法
+ * @tc.desc Test DeleteEntry method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, DeleteEntry_001, TestSize.Level1)
@@ -467,7 +467,7 @@ HWTEST_F(PoleTest, DeleteEntry_001, TestSize.Level1)
 
 /**
  * @tc.name DeleteEntry_002
- * @tc.desc 测试DeleteEntry方法
+ * @tc.desc Test DeleteEntry method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, DeleteEntry_002, TestSize.Level1)
@@ -478,7 +478,7 @@ HWTEST_F(PoleTest, DeleteEntry_002, TestSize.Level1)
 
 /**
  * @tc.name Clsid_001
- * @tc.desc 测试Clssid方法
+ * @tc.desc Test Clssid method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Clsid_001, TestSize.Level1)
@@ -490,7 +490,7 @@ HWTEST_F(PoleTest, Clsid_001, TestSize.Level1)
 
 /**
  * @tc.name Clsid_002
- * @tc.desc 测试Clssid方法
+ * @tc.desc Test Clssid method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Clsid_002, TestSize.Level1)
@@ -501,7 +501,7 @@ HWTEST_F(PoleTest, Clsid_002, TestSize.Level1)
 
 /**
  * @tc.name TransactionSignature_001
- * @tc.desc 测试TransactionSignature方法
+ * @tc.desc Test TransactionSignature method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, TransactionSignature_001, TestSize.Level1)
@@ -512,7 +512,7 @@ HWTEST_F(PoleTest, TransactionSignature_001, TestSize.Level1)
 
 /**
  * @tc.name TransactionSignature_002
- * @tc.desc 测试TransactionSignature方法
+ * @tc.desc Test TransactionSignature method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, TransactionSignature_002, TestSize.Level1)
@@ -522,7 +522,7 @@ HWTEST_F(PoleTest, TransactionSignature_002, TestSize.Level1)
 
 /**
  * @tc.name Path_001
- * @tc.desc 测试Path方法
+ * @tc.desc Test Path method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Path_001, TestSize.Level1)
@@ -533,7 +533,7 @@ HWTEST_F(PoleTest, Path_001, TestSize.Level1)
 
 /**
  * @tc.name Path_002
- * @tc.desc 测试Path方法
+ * @tc.desc Test Path method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Path_002, TestSize.Level1)
@@ -543,7 +543,7 @@ HWTEST_F(PoleTest, Path_002, TestSize.Level1)
 
 /**
  * @tc.name Tell_001
- * @tc.desc 测试Tell方法
+ * @tc.desc Test Tell method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Tell_001, TestSize.Level1)
@@ -554,7 +554,7 @@ HWTEST_F(PoleTest, Tell_001, TestSize.Level1)
 
 /**
  * @tc.name Tell_002
- * @tc.desc 测试Tell方法
+ * @tc.desc Test Tell method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Tell_002, TestSize.Level1)
@@ -564,7 +564,7 @@ HWTEST_F(PoleTest, Tell_002, TestSize.Level1)
 
 /**
  * @tc.name Eof_001
- * @tc.desc 测试Eof方法
+ * @tc.desc Test Eof method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Eof_001, TestSize.Level1)
@@ -575,7 +575,7 @@ HWTEST_F(PoleTest, Eof_001, TestSize.Level1)
 
 /**
  * @tc.name Eof_002
- * @tc.desc 测试Eof方法
+ * @tc.desc Test Eof method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Eof_002, TestSize.Level1)
@@ -585,7 +585,7 @@ HWTEST_F(PoleTest, Eof_002, TestSize.Level1)
 
 /**
  * @tc.name Fail_001
- * @tc.desc 测试Fail方法
+ * @tc.desc Test Fail method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Fail_001, TestSize.Level1)
@@ -596,7 +596,7 @@ HWTEST_F(PoleTest, Fail_001, TestSize.Level1)
 
 /**
  * @tc.name Fail_002
- * @tc.desc 测试Fail方法
+ * @tc.desc Test Fail method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Fail_002, TestSize.Level1)
@@ -606,7 +606,7 @@ HWTEST_F(PoleTest, Fail_002, TestSize.Level1)
 
 /**
  * @tc.name Seek_001
- * @tc.desc 测试Seek方法
+ * @tc.desc Test Seek method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Seek_001, TestSize.Level1)
@@ -616,7 +616,7 @@ HWTEST_F(PoleTest, Seek_001, TestSize.Level1)
 
 /**
  * @tc.name Size_001
- * @tc.desc 测试Size方法
+ * @tc.desc Test Size method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Size_001, TestSize.Level1)
@@ -627,7 +627,7 @@ HWTEST_F(PoleTest, Size_001, TestSize.Level1)
 
 /**
  * @tc.name Size_002
- * @tc.desc 测试Size方法
+ * @tc.desc Test Size method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Size_002, TestSize.Level1)
@@ -637,7 +637,7 @@ HWTEST_F(PoleTest, Size_002, TestSize.Level1)
 
 /**
  * @tc.name Getch_001
- * @tc.desc 测试Getch方法
+ * @tc.desc Test Getch method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Getch_001, TestSize.Level1)
@@ -648,7 +648,7 @@ HWTEST_F(PoleTest, Getch_001, TestSize.Level1)
 
 /**
  * @tc.name Getch_002
- * @tc.desc 测试Getch方法
+ * @tc.desc Test Getch method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Size_002, TestSize.Level1)
@@ -658,7 +658,7 @@ HWTEST_F(PoleTest, Size_002, TestSize.Level1)
 
 /**
  * @tc.name Read_001
- * @tc.desc 测试Read方法
+ * @tc.desc Test Read method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Read_001, TestSize.Level1)
@@ -669,7 +669,7 @@ HWTEST_F(PoleTest, Read_001, TestSize.Level1)
 
 /**
  * @tc.name Read_002
- * @tc.desc 测试Read方法
+ * @tc.desc Test Read method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Read_002, TestSize.Level1)
@@ -679,7 +679,7 @@ HWTEST_F(PoleTest, Read_002, TestSize.Level1)
 
 /**
  * @tc.name Read_003
- * @tc.desc 测试Read方法
+ * @tc.desc Test Read method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Read_003, TestSize.Level1)
@@ -689,7 +689,7 @@ HWTEST_F(PoleTest, Read_003, TestSize.Level1)
 
 /**
  * @tc.name Read_004
- * @tc.desc 测试Read方法
+ * @tc.desc Test Read method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Read_004, TestSize.Level1)
@@ -701,7 +701,7 @@ HWTEST_F(PoleTest, Read_004, TestSize.Level1)
 
 /**
  * @tc.name Read_005
- * @tc.desc 测试Read方法
+ * @tc.desc Test Read method
  * @tc.type FUNC
  */
 HWTEST_F(PoleTest, Read_005, TestSize.Level1)

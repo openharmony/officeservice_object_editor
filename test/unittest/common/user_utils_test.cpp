@@ -49,7 +49,7 @@ void UserMgrTest::TearDown()
 
 /**
  * @tc.name UserMgr_001
- * @tc.desc 测试UserMgr方法
+ * @tc.desc Test UserMgr method
  * @tc.type FUNC
  */
 HWTEST_F(UserMgrTest, UserMgr_001, TestSize.Level1)
@@ -61,7 +61,7 @@ HWTEST_F(UserMgrTest, UserMgr_001, TestSize.Level1)
 
 /**
  * @tc.name GetUserId_001
- * @tc.desc 测试GetUserId方法
+ * @tc.desc Test GetUserId method
  * @tc.type FUNC
  */
 HWTEST_F(UserMgrTest, GetUserId_001, TestSize.Level1)
@@ -73,7 +73,7 @@ HWTEST_F(UserMgrTest, GetUserId_001, TestSize.Level1)
 
 /**
  * @tc.name SetNewUserId_001
- * @tc.desc 测试SetNewUserId方法
+ * @tc.desc Test SetNewUserId method
  * @tc.type FUNC
  */
 HWTEST_F(UserMgrTest, SetNewUserId_001, TestSize.Level1)
@@ -87,7 +87,7 @@ HWTEST_F(UserMgrTest, SetNewUserId_001, TestSize.Level1)
 
 /**
  * @tc.name GetUserId_002
- * @tc.desc 测试GetUserId方法
+ * @tc.desc Test GetUserId method
  * @tc.type FUNC
  */
 HWTEST_F(UserMgrTest, GetUserId_002, TestSize.Level1)
@@ -99,7 +99,7 @@ HWTEST_F(UserMgrTest, GetUserId_002, TestSize.Level1)
 
 /**
  * @tc.name UserMgr_Thread_001
- * @tc.desc 测试UserMgr线程安全
+ * @tc.desc Test  UserMgr thread safety
  * @tc.type FUNC
  */
 HWTEST_F(UserMgrTest, UserMgr_Thread_001, TestSize.Level1)
@@ -118,7 +118,7 @@ HWTEST_F(UserMgrTest, UserMgr_Thread_001, TestSize.Level1)
 
 /**
  * @tc.name UserMgr_Thread_002
- * @tc.desc 测试UserMgr线程安全
+ * @tc.desc Test  UserMgr thread safety
  * @tc.type FUNC
  */
 HWTEST_F(UserMgrTest, UserMgr_Thread_002, TestSize.Level1)
