@@ -198,10 +198,13 @@ void ObjectEditorDocument::RestoreStorage()
     storage_ = std::make_unique<Storage>(GetTmpFilePath().c_str());
 }
 
-bool ObjectEditorDocument::HandleUserTempScenario()
+bool ObjectEditorDocument::Flush()
 {
     if (!storage_) {
         return false;
+    }
+    if (ShouldRebuild()) {
+        return RebuildAndFlush();
     }
     const bool hasUserTmp = !userTmpFilePath_.empty();
     std::string tmpFilePath = GetTmpFilePath();
@@ -227,17 +230,10 @@ bool ObjectEditorDocument::HandleUserTempScenario()
         return true;
     }
     if (hasTmpFilePath) {
-        if (std::filesystem::exists(std::filesystem::path(tmpFilePath)))
+        if (std::filesystem::exists(std::filesystem::path(tmpFilePath))) {
             return storage_->Flush();
+        }
         return storage_->SaveToFile(tmpFilePath.c_str());
-    }
-    return true;
-}
-
-bool ObjectEditorDocument::GenerateAndSaveUniqueFile()
-{
-    if (!storage_) {
-        return false;
     }
     const auto base = std::filesystem::current_path();
     std::random_device rd;
@@ -273,25 +269,12 @@ bool ObjectEditorDocument::GenerateAndSaveUniqueFile()
     return false;
 }
 
-bool ObjectEditorDocument::Flush()
-{
-    if (!storage_) {
-        return false;
-    }
-    if (ShouldRebuild()) {
-        return RebuildAndFlush();
-    }
-    if (HandleUserTempScenario()) {
-        return true;
-    }
-    return GenerateAndSaveUniqueFile();
-}
-
-
+namespace {
 bool AtomicReplaceFile(const std::string &tempPath, const std::string &targetPath)
 {
     return fs::copy_file(tempPath, targetPath, fs::copy_options::overwrite_existing);
 }
+} // namespace
 
 std::string GenerateTempPath(const std::string &targetPath, const std::string documentId)
 {
@@ -341,7 +324,7 @@ void ObjectEditorDocument::TraverseDirectory(const std::string &path, std::size_
         total = std::numeric_limits<uint64_t>::max();
         return;
     }
-    
+
     std::string savedPath;
     storage_->Path(savedPath);
     std::vector<const DirEntry *> entries;
@@ -523,8 +506,9 @@ bool ObjectEditorDocument::CopyAllStreamRecursivelyImpl(Storage *src, Storage *d
 
 bool ObjectEditorDocument::CopyAllStreamsRecursively(Storage *src, Storage *dst, const std::string &basePath)
 {
-    if (!src || !dst)
+    if (!src || !dst) {
         return false;
+    }
     std::size_t visitCount = 0;
     return CopyAllStreamRecursivelyImpl(src, dst, basePath, 0, visitCount);
 }
@@ -564,19 +548,20 @@ bool ObjectEditorDocument::RebuildAndFlush()
     if (targetPath.empty()) {
         return storage_ && storage_->Flush();
     }
-    
+
     std::string tempPath = GenerateSafeTempPath(targetPath, documentId_);
-    if (tempPath.empty())
+    if (tempPath.empty()) {
         return false;
-
+    }
     TempGuard guard{tempPath, true};
-
     auto newDoc = ObjectEditorDocument::CreateByOEid(GetOEid());
-    if (!newDoc)
+    if (!newDoc) {
         return false;
+    }
     Storage *newStorage = newDoc->GetRootStorage();
-    if (!newStorage)
+    if (!newStorage) {
         return false;
+    }
     if (!newStorage->SaveToFile(tempPath.c_str()))
         return false;
     if (!CopyAllStreamsRecursively(storage_.get(), newStorage, "/")) {
