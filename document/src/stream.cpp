@@ -480,7 +480,7 @@ uint32_t StreamImpl::Write(const Byte *data, uint32_t maxlen)
     if (count > UINT32_MAX) {
         return 0;
     }
-    pos_ += static_cast<uint32_t>(count);
+    pos_ += static_cast<std::streamsize>(count);
     return count;
 }
 // LCOV_EXCL_STOP

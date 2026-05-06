@@ -119,6 +119,29 @@ char **SplitToCStrings(const std::string &str, char pattern, uint32_t &count)
     }
     return result;
 }
+
+ContentEmbed_ErrorCode RegisterExtensionDeathRecipient(ContentEmbed_ExtensionProxy *proxy)
+{
+    auto extensionDeathRecipient = OHOS::sptr<OHOS::IRemoteObject::DeathRecipient>(
+        new (std::nothrow) ObjectEditorExtensionDeathRecipient(proxy));
+    if (extensionDeathRecipient == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "Memory allocation failed");
+        return CE_ERR_NULL_POINTER;
+    }
+    if (proxy->objectEditorService == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "Service pointer is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    auto oeExtensionRemoteObject = proxy->objectEditorService->GetRemoteObject();
+    proxy->deathRecipient = extensionDeathRecipient;
+    if (oeExtensionRemoteObject != nullptr &&
+        oeExtensionRemoteObject->IsProxyObject() &&
+        !oeExtensionRemoteObject->AddDeathRecipient(extensionDeathRecipient)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "Failed add death recipient to remote");
+        return CE_ERR_SYSTEM_ABNORMAL;
+    }
+    return CE_ERR_OK;
+}
 } // namespace
 
 ContentEmbed_Format::~ContentEmbed_Format()
@@ -490,6 +513,14 @@ ContentEmbed_ErrorCode OH_ContentEmbed_DestroyExtensionProxy(ContentEmbed_Extens
         delete proxy->ceDocument;
         proxy->ceDocument = nullptr;
     }
+    if (proxy->objectEditorService != nullptr) {
+        auto oeExtensionRemoteObject = proxy->objectEditorService->GetRemoteObject();
+        if (oeExtensionRemoteObject != nullptr && oeExtensionRemoteObject->IsProxyObject() &&
+            proxy->deathRecipient != nullptr) {
+            OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "remove death recipient");
+            oeExtensionRemoteObject->RemoveDeathRecipient(proxy->deathRecipient);
+        }
+    }
     delete proxy;
     proxy = nullptr;
     return CE_ERR_OK;
@@ -579,33 +610,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_RegisterOnExtensionStoppedFunc(Cont
     return CE_ERR_OK;
 }
 
-ContentEmbed_ErrorCode RegisterExtensionDeathRecipient(ContentEmbed_ExtensionProxy *proxy,
-    ObjectEditorClientCallback *oeCallbackInner)
-{
-    auto extensionDeathRecipient = OHOS::sptr<OHOS::IRemoteObject::DeathRecipient>(
-        new (std::nothrow) ObjectEditorExtensionDeathRecipient(proxy));
-    if (extensionDeathRecipient == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "Memory allocation failed");
-        delete oeCallbackInner;
-        return CE_ERR_NULL_POINTER;
-    }
-    if (proxy->objectEditorService == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "Service pointer is null");
-        delete oeCallbackInner;
-        return CE_ERR_PARAM_INVALID;
-    }
-    auto oeExtensionRemoteObject = proxy->objectEditorService->GetRemoteObject();
-    proxy->deathRecipient = extensionDeathRecipient;
-    if (oeExtensionRemoteObject != nullptr &&
-        oeExtensionRemoteObject->IsProxyObject() &&
-        !oeExtensionRemoteObject->AddDeathRecipient(extensionDeathRecipient)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "Failed add death recipient to remote");
-        delete oeCallbackInner;
-        return CE_ERR_SYSTEM_ABNORMAL;
-    }
-    return CE_ERR_OK;
-}
-
 ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StartWork(ContentEmbed_ExtensionProxy *proxy)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
@@ -642,7 +646,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StartWork(ContentEmbed_ExtensionPro
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT_NDK, "is package");
         return CE_ERR_OK;
     }
-    return RegisterExtensionDeathRecipient(proxy, oeCallbackInner);
+    return RegisterExtensionDeathRecipient(proxy);
 }
 
 ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_DoEdit(ContentEmbed_ExtensionProxy *proxy)
@@ -832,16 +836,20 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StopWork(ContentEmbed_ExtensionProx
         proxy->objectEditorService, proxy->isPackageExtension);
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed: %{public}d", errCode);
-        return CE_ERR_SYSTEM_ABNORMAL;
+        return ConvertErrorToCode(errCode, CE_ERR_SYSTEM_ABNORMAL);
     }
-    auto oeExtensionRemoteObject = proxy->objectEditorService->GetRemoteObject();
-    if (oeExtensionRemoteObject != nullptr &&
-        oeExtensionRemoteObject->IsProxyObject() &&
-        proxy->deathRecipient != nullptr &&
-        !oeExtensionRemoteObject->RemoveDeathRecipient(proxy->deathRecipient)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "Failed to remove death recipient from remote object");
-        return CE_ERR_SYSTEM_ABNORMAL;
+    if (proxy->objectEditorService) {
+        auto oeExtensionRemoteObject = proxy->objectEditorService->GetRemoteObject();
+        if (oeExtensionRemoteObject != nullptr &&
+            oeExtensionRemoteObject->IsProxyObject() &&
+            proxy->deathRecipient != nullptr &&
+            !oeExtensionRemoteObject->RemoveDeathRecipient(proxy->deathRecipient)) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK,
+                "Failed to remove death recipient from remote object");
+            return CE_ERR_SYSTEM_ABNORMAL;
+        }
     }
+    proxy->deathRecipient = nullptr;
     return CE_ERR_OK;
 }
 
