@@ -31,9 +31,11 @@ constexpr size_t INVALID_INDEX = static_cast<size_t>(-1);
 bool DirEntry::Valid() const
 {
     if ((type_ != EntryType::DIR) && (type_ != EntryType::FILE) && (type_ != EntryType::ROOT)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "type: %{public}d is invalid", type_);
         return false;
     }
     if (name_.empty() || name_.find('/') != std::string::npos) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "name: %{public}s is invalid", name_.c_str());
         return false;
     }
     return true;
@@ -47,6 +49,8 @@ const std::array<std::uint8_t, CLSID_SIZE> &DirEntry::Clsid() const
 void DirEntry::SetClsid(const std::array<std::uint8_t, CLSID_SIZE> &clsid, uint8_t size)
 {
     if (size != std::size(clsid)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "clsid size: %{public}d is invalid",
+            static_cast<int32_t>(size));
         return;
     }
     clsid_ = clsid;
@@ -61,8 +65,11 @@ void DirTree::Clear()
 
 const DirEntry *DirTree::Entry(size_t index) const
 {
-    if (index >= EntryCount())
+    if (index >= EntryCount()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "index: %{public}d is out of range",
+            static_cast<int32_t>(index));
         return NULL;
+    }
     return &entries_[index];
 }
 
@@ -73,8 +80,11 @@ DirEntry *DirTree::GetEntryAt(size_t index)
 
 DirEntry *DirTree::Entry(size_t index)
 {
-    if (index >= EntryCount())
+    if (index >= EntryCount()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "index: %{public}d is out of range",
+            static_cast<int32_t>(index));
         return NULL;
+    }
     return &entries_[index];
 }
 
@@ -94,8 +104,9 @@ size_t DirTree::Parent(size_t index) const
         std::vector<size_t> chi;
         Children(j, chi);
         for (size_t i = 0; i < chi.size(); i++)
-            if (chi[i] == index)
+            if (chi[i] == index) {
                 return j;
+            }
     }
     return INVALID_INDEX;
 }
@@ -108,13 +119,18 @@ void DirTree::FullName(size_t index, std::string &result) const
     }
 
     if (!Entry(index)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "index: %{public}d is out of range",
+            static_cast<int32_t>(index));
         return;
     }
     result = Entry(index)->Name();
     result.insert(0, "/");
     size_t p = Parent(index);
-    if (p == INVALID_INDEX)
+    if (p == INVALID_INDEX) {
+        OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "parent out of range for index: %{public}d",
+            static_cast<int32_t>(index));
         return;
+    }
     const DirEntry *entryPtr = nullptr;
     while (p > 0) {
         entryPtr = Entry(p);
@@ -185,10 +201,15 @@ DirEntry *DirTree::Entry(const std::string &name, bool create)
 
 DirEntry *DirTree::Entry(const std::string &name, bool create, int leafType)
 {
-    if (name.empty())
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "name: %{private}s, create: %{public}d, leafType: %{public}d",
+        name.c_str(), create, leafType);
+    if (name.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "name is empty");
         return NULL;
-    if (name == "/")
+    }
+    if (name == "/") {
         return &entries_[0];
+    }
     std::list<std::string> parts;
     SplitPath(name, parts);
     size_t index = (name[0] == '/') ? 0 : current_;
@@ -200,6 +221,8 @@ DirEntry *DirTree::Entry(const std::string &name, bool create, int leafType)
         const size_t child = FindChild(index, seg);
         if (child > 0) {
             if (!isLeaf && !entries_[child].IsDir()) {
+                OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+                    "child: %{public}d is not a directory", static_cast<int32_t>(child));
                 return nullptr;
             }
             index = child;
@@ -208,10 +231,12 @@ DirEntry *DirTree::Entry(const std::string &name, bool create, int leafType)
         }
 
         if (!create) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "name: %{public}s is not found", name.c_str());
             return nullptr;
         }
 
         if (index != 0 && !entries_[index].IsDir()) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "parent is not a directory");
             return nullptr;
         }
         const size_t parentIndex = index;
@@ -260,38 +285,47 @@ void DirTree::ListDirectory(std::vector<const DirEntry *> &result) const
 
 bool DirTree::EnterDirectory(const std::string &dir)
 {
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "dir: %{private}s", dir.c_str());
     const DirEntry *e = Entry(dir);
     if (!e || !e->Valid() || !e->IsDir()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-            "DirTree::EntryDirectory - entry is invalid");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "name: %{public}s is invalid", dir.c_str());
         return false;
     }
 
     size_t index = e->Index();
-    if (index == INVALID_INDEX)
+    if (index == INVALID_INDEX) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid index");
         return false;
+    }
     current_ = index;
     return true;
 }
 
 void DirTree::LeaveDirectory()
 {
-    if (current_ == 0)
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "current: %{public}zu", current_);
+    if (current_ == 0) {
         return;
+    }
     size_t p = Parent(current_);
-    if (p != INVALID_INDEX)
+    if (p != INVALID_INDEX) {
         current_ = p;
+    } else {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "no parent");
+    }
 }
 
 bool DirTree::Load(Byte *buffer, size_t size)
 {
-    if (buffer == nullptr && size > 0) [[unlikely]]
+    if (buffer == nullptr || size <= 0) [[unlikely]] {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "buffer is null");
         return false;
+    }
 
     entries_.clear();
     current_ = 0;
     size_t initCount = size / 128;
-
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "size: %{public}zu, initCount: %{public}zu", size, initCount);
     for (size_t i = 0; i < initCount; i++) {
         size_t p = i * 128;
         std::string name;
@@ -328,17 +362,23 @@ bool DirTree::Load(Byte *buffer, size_t size)
 bool DirTree::Save(Byte *buffer, size_t len)
 {
     size_t size = 128 * EntryCount();
-    if (len < size || buffer == nullptr) [[unlikely]]
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "len: %{public}zu, size: %{public}zu", len, size);
+    if (len < size || buffer == nullptr) [[unlikely]] {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "buffer too small or null");
         return false;
+    }
     auto ec = memset_s(buffer, len, 0, size);
     if (ec != EOK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "memset_s error: %{public}d", ec);
         return false;
     }
     for (size_t i = 0; i < EntryCount(); i++) {
         const DirEntry *e = Entry(i);
         const size_t maxNameLength = 32;
-        if (!e)
+        if (!e) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry %{public}zu is null", i);
             return false;
+        }
         std::string name = e->Name();
         if (name.length() > maxNameLength)
             name.erase(maxNameLength, name.length());
@@ -430,38 +470,54 @@ void DirTree::Debug()
 void DirTree::FindSiblings(std::vector<size_t> &result, uint32_t index) const
 {
     const DirEntry *e = Entry(index);
-    if (!e)
+    if (!e) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry %{public}u is null", index);
         return;
-    if (!e->Valid())
+    }
+    if (!e->Valid()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry %{public}u is invalid", index);
         return;
-    for (size_t i = 0; i < result.size(); i++)
-        if (result[i] == index)
+    }
+    for (size_t i = 0; i < result.size(); i++) {
+        if (result[i] == index) {
+            OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "entry %{public}u is already in result", index);
             return;
+        }
+    }
     result.push_back(index);
 
     uint32_t prev = e->Prev();
     if ((prev > 0) && (prev < EntryCount())) {
-        for (size_t i = 0; i < result.size(); i++)
-            if (result[i] == prev)
+        for (size_t i = 0; i < result.size(); i++) {
+            if (result[i] == prev) {
                 prev = 0;
-        if (prev)
+            }
+        }
+        if (prev) {
             FindSiblings(result, prev);
+        }
     }
     uint32_t next = e->Next();
     if ((next > 0) && (next < EntryCount())) {
-        for (size_t i = 0; i < result.size(); i++)
-            if (result[i] == next)
+        for (size_t i = 0; i < result.size(); i++) {
+            if (result[i] == next) {
                 next = 0;
-        if (next)
+            }
+        }
+        if (next) {
             FindSiblings(result, next);
+        }
     }
 }
 
 bool DirTree::CollectSubtreeEntries(const std::string &path, std::vector<DirEntry> &result) const
 {
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "path: %{private}s", path.c_str());
     const DirEntry *root = Entry(path);
-    if (!root || !root->Valid())
+    if (!root || !root->Valid()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "root entry invalid");
         return false;
+    }
     std::vector<bool> visited(EntryCount(), false);
     CollectSubtree(root->Index(), visited, result);
     return true;
@@ -470,48 +526,75 @@ bool DirTree::CollectSubtreeEntries(const std::string &path, std::vector<DirEntr
 void DirTree::CollectSubtree(size_t index, std::vector<bool> &visited,
     std::vector<DirEntry> &result) const
 {
-    if (index >= EntryCount())
+    if (index >= EntryCount()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "index: %{public}d is out of range",
+            static_cast<int32_t>(index));
         return;
+    }
     const DirEntry *node = Entry(index);
-    if (!node || !node->Valid())
+    if (!node || !node->Valid()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry %{public}d is invalid",
+            static_cast<int32_t>(index));
         return;
-    if (visited[index])
+    }
+    if (visited[index]) {
+        OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "entry %{public}d is already visited",
+            static_cast<int32_t>(index));
         return;
+    }
     visited[index] = true;
     result.push_back(*node);
-    if (node->IsDir() && node->Child() != DIR_ENTRY_END)
+    if (node->IsDir() && node->Child() != DIR_ENTRY_END) {
         CollectSiblingChain(node->Child(), visited, result);
+    }
 }
 
 void DirTree::CollectSiblingChain(uint32_t index, std::vector<bool> &visited,
     std::vector<DirEntry> &result) const
 {
-    if (index == DIR_ENTRY_END || index >= EntryCount())
+    if (index == DIR_ENTRY_END || index >= EntryCount()) {
+        OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "index: %{public}d is out of range",
+            static_cast<int32_t>(index));
         return;
-    if (visited[index])
+    }
+    if (visited[index]) {
+        OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "entry %{public}d is already visited",
+            static_cast<int32_t>(index));
         return;
+    }
     const DirEntry *node = Entry(index);
-    if (!node || !node->Valid())
+    if (!node || !node->Valid()) {
+        OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "entry %{public}d is invalid",
+            static_cast<int32_t>(index));
         return;
+    }
     CollectSubtree(index, visited, result);
-    if (node->Prev() != DIR_ENTRY_END)
+    if (node->Prev() != DIR_ENTRY_END) {
         CollectSiblingChain(node->Prev(), visited, result);
-    if (node->Next() != DIR_ENTRY_END)
+    }
+    if (node->Next() != DIR_ENTRY_END) {
         CollectSiblingChain(node->Next(), visited, result);
+    }
 }
 
 size_t DirTree::SearchPrevLink(size_t entryIndex)
 {
     size_t parIndex = Parent(entryIndex);
-    if (parIndex == INVALID_INDEX)
+    if (parIndex == INVALID_INDEX) {
+        OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT,
+            "parent %{public}d is invalid", static_cast<int32_t>(entryIndex));
         return INVALID_INDEX;
-    if (entries_[parIndex].Child() == entryIndex)
+    }
+    if (entries_[parIndex].Child() == entryIndex) {
         return parIndex;
-    else {
+    } else {
         std::vector<size_t> brothers;
         Children(parIndex, brothers);
-        if (brothers.size() == 0)
+        if (brothers.size() == 0) {
+            OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT,
+                "parent %{public}d has no siblings", static_cast<int32_t>(parIndex));
             return INVALID_INDEX;
+        }
         for (size_t ndx = 0; ndx < brothers.size(); ++ndx) {
             if (entries_[brothers[ndx]].Next() == entryIndex ||
                 entries_[brothers[ndx]].Prev() == entryIndex) {
@@ -525,33 +608,46 @@ size_t DirTree::SearchPrevLink(size_t entryIndex)
 bool DirTree::SetPrevLink(size_t prevLink, size_t entry, uint32_t value)
 {
     DirEntry *pl = Entry(prevLink);
-    if (!pl)
+    if (!pl) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "prev link %{public}d is null", static_cast<int32_t>(prevLink));
         return false;
-    if (pl->Prev() == entry)
+    }
+    if (pl->Prev() == entry) {
         pl->SetPrev(value);
-    if (pl->Next() == entry)
+    }
+    if (pl->Next() == entry) {
         pl->SetNext(value);
-    if (pl->Child() == entry)
+    }
+    if (pl->Child() == entry) {
         pl->SetChild(value);
+    }
     return true;
 }
 
 size_t DirTree::FindRightmostSibling(size_t sib)
 {
-    if (sib == INVALID_INDEX || sib == 0 || sib >= EntryCount())
+    if (sib == INVALID_INDEX || sib == 0 || sib >= EntryCount()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "sibling %{public}d is out of range", static_cast<int32_t>(sib));
         return INVALID_INDEX;
+    }
     size_t current = sib;
     size_t loopControl = 0;
     while (loopControl++ < EntryCount()) {
         DirEntry *entryPtr = Entry(current);
-        if (!entryPtr || !entryPtr->Valid())
+        if (!entryPtr || !entryPtr->Valid()) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+                "entry %{public}d is invalid", static_cast<int32_t>(current));
             return INVALID_INDEX;
-
+        }
         const uint32_t prev = entryPtr->Prev();
-        if (prev == DIR_ENTRY_END)
+        if (prev == DIR_ENTRY_END) {
             return entryPtr->Index();
-        if (prev == 0 || prev >= EntryCount())
+        }
+        if (prev == 0 || prev >= EntryCount()) {
             return INVALID_INDEX;
+        }
         current = static_cast<size_t>(prev);
     }
     return INVALID_INDEX;
@@ -586,15 +682,21 @@ bool DirTree::EnsureVisitedBuffer(std::vector<bool> *&visited)
 bool DirTree::DeleteChildrenRecursive(const std::string &path, DirEntry *e,
     int level, std::vector<bool> *visited)
 {
-    if (!e || e->Child() == DIR_ENTRY_END)
+    if (!e || e->Child() == DIR_ENTRY_END) {
+        OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "entry has no children");
         return true;
+    }
     DirEntry *child = Entry(e->Child());
-    if (!child)
+    if (!child) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "child %{public}d is null", e->Child());
         return false;
+    }
     const bool trailingSlash = !path.empty() && path.back() == '/';
     std::string childPath = trailingSlash ? path + child->Name() : MakeChildPath(path, child->Name());
-    if (!DeleteEntry(childPath, level + 1, visited))
+    if (!DeleteEntry(childPath, level + 1, visited)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "delete child %{private}s failed", childPath.c_str());
         return false;
+    }
     e->SetChild(DIR_ENTRY_END);
     return true;
 }
@@ -602,27 +704,36 @@ bool DirTree::DeleteChildrenRecursive(const std::string &path, DirEntry *e,
 bool DirTree::DeleteSiblingChain(const std::string &path, DirEntry *e,
     int level, std::vector<bool> *visited)
 {
-    if (level == 0 || !e)
+    if (level == 0 || !e) {
+        OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "entry is null");
         return true;
+    }
     auto DeleteOne = [&](uint32_t idx) -> bool {
-        if (idx == DIR_ENTRY_END)
+        if (idx == DIR_ENTRY_END) {
+            OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "sibling %{public}d is null", idx);
             return true;
+        }
         DirEntry *s = Entry(idx);
-        if (!s)
+        if (!s) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "sibling %{public}d is null", idx);
             return false;
+        }
         std::string childPath;
         const std::string::size_type pos = path.find_last_of("/");
-        if (pos != std::string::npos)
+        if (pos != std::string::npos) {
             childPath = path.substr(0, pos + 1) + s->Name();
-        else
+        } else {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "sibling path %{private}s is invalid", childPath.c_str());
             return false;
+        }
 
         const bool ok = DeleteEntry(childPath, level + 1, visited);
         if (ok) {
-            if (idx == e->Prev())
+            if (idx == e->Prev()) {
                 e->SetPrev(DIR_ENTRY_END);
-            else if (idx == e->Next())
+            } else if (idx == e->Next()) {
                 e->SetNext(DIR_ENTRY_END);
+            }
         }
         return ok;
     };
@@ -632,24 +743,35 @@ bool DirTree::DeleteSiblingChain(const std::string &path, DirEntry *e,
 
 bool DirTree::FixParentLinks(DirEntry *e, size_t prevLink)
 {
-    if (!e)
+    if (!e) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry is null");
         return false;
+    }
     const uint32_t prevIdx = e->Prev();
     const uint32_t nextIdx = e->Next();
-    if (nextIdx == DIR_ENTRY_END && prevIdx == DIR_ENTRY_END)
+    if (nextIdx == DIR_ENTRY_END && prevIdx == DIR_ENTRY_END) {
         return SetPrevLink(prevLink, e->Index(), DIR_ENTRY_END);
-    if (prevIdx == DIR_ENTRY_END)
+    }
+    if (prevIdx == DIR_ENTRY_END) {
         return SetPrevLink(prevLink, e->Index(), nextIdx);
-    if (nextIdx == DIR_ENTRY_END)
+    }
+    if (nextIdx == DIR_ENTRY_END) {
         return SetPrevLink(prevLink, e->Index(), prevIdx);
+    }
 
     size_t rightMost = FindRightmostSibling(nextIdx);
-    if (rightMost == INVALID_INDEX)
+    if (rightMost == INVALID_INDEX) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "right most sibling %{public}d is invalid", static_cast<int32_t>(rightMost));
         return false;
+    }
     DirEntry *rightMostEntry = Entry(rightMost);
     DirEntry *nextEntry = Entry(nextIdx);
-    if (!rightMostEntry || !nextEntry)
+    if (!rightMostEntry || !nextEntry) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "right most sibling %{public}d is null", static_cast<int32_t>(rightMost));
         return false;
+    }
     rightMostEntry->SetPrev(prevIdx);
     nextEntry->SetPrev(prevIdx);
 
@@ -658,37 +780,61 @@ bool DirTree::FixParentLinks(DirEntry *e, size_t prevLink)
 
 void DirTree::ClearDirEntry(DirEntry *e)
 {
-    if (!e)
+    if (!e) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry is null");
         return;
+    }
     e->Set("", 0, 0, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 0, 0, 0, true);
 }
 
 bool DirTree::DeleteEntry(const std::string &path, int level, std::vector<bool> *visited)
 {
-    if (path == "/")
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "path: %{private}s, level: %{public}d", path.c_str(), level);
+    if (path == "/") {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "cannot delete root");
         return false;
+    }
     DirEntry *e = Entry(path);
-    if (!e)
+    if (!e) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry not found, path: %{private}s", path.c_str());
         return false;
+    }
     EnsureVisitedBuffer(visited);
     const size_t idx = e->Index();
-    if (idx < visited->size() && (*visited)[idx])
+    if (idx < visited->size() && (*visited)[idx]) {
+        OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT,
+            "entry %{public}d is already visited", static_cast<int32_t>(idx));
         return true;
-    if (idx >= visited->size())
+    }
+    if (idx >= visited->size()) {
         visited->resize(EntryCount(), false);
+    }
     (*visited)[idx] = true;
-    if (e->Type() == 1 && !DeleteChildrenRecursive(path, e, level, visited))
+    if (e->Type() == 1 && !DeleteChildrenRecursive(path, e, level, visited)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "delete children recursive failed, path: %{private}s", path.c_str());
         return false;
-    if (!DeleteSiblingChain(path, e, level, visited))
+    }
+    if (!DeleteSiblingChain(path, e, level, visited)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "delete sibling chain failed, path: %{private}s", path.c_str());
         return false;
+    }
     if (level == 0) {
         size_t prevLink = SearchPrevLink(e->Index());
-        if (prevLink == INVALID_INDEX)
+        if (prevLink == INVALID_INDEX) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+                "search prev link failed, path: %{private}s", path.c_str());
             return false;
-        if (!FixParentLinks(e, prevLink))
+        }
+        if (!FixParentLinks(e, prevLink)) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+                "fix parent links failed, path: %{private}s", path.c_str());
             return false;
+        }
     }
     ClearDirEntry(e);
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DOCUMENT, "delete path: %{private}s", path.c_str());
     return true;
 }
 // LCOV_EXCL_STOP

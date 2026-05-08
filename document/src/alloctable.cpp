@@ -35,15 +35,18 @@ void AllocTable::Set(size_t index, uint32_t value)
     }
     data_[index] = value;
 }
+
 void AllocTable::SetBlockSize(uint32_t size)
 {
     blockSize_ = size;
     data_.clear();
     Resize(DEFAULT_BLOCK_SIZE);
 }
+
 void AllocTable::SetChain(const std::vector<uint32_t> &chain)
 {
     if (chain.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "chain is empty");
         return;
     }
     const auto maxIt = std::max_element(chain.begin(), chain.end());
@@ -61,9 +64,12 @@ void AllocTable::SetChain(const std::vector<uint32_t> &chain)
 bool AllocTable::Follow(uint32_t start, std::vector<uint32_t> &chain) const
 {
     if (start == Eof || start == Avail || start == MetaBat || start == Bat) {
+        OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "start: %{public}d is Eof, Avail, MetaBat, or Bat", start);
         return true;
     }
     if (start >= Count()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "start: %{public}d is out of range, count: %{public}zu",
+            start, Count());
         return false;
     }
 
@@ -71,6 +77,9 @@ bool AllocTable::Follow(uint32_t start, std::vector<uint32_t> &chain) const
     size_t loopControl = 0;
     while (p < Count()) {
         if (loopControl >= Count()) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+                "loopControl: %{public}zu, count: %{public}zu, start: %{public}u",
+                loopControl, Count(), start);
             return false;
         }
         chain.push_back(p);
@@ -79,6 +88,8 @@ bool AllocTable::Follow(uint32_t start, std::vector<uint32_t> &chain) const
     }
 
     if (p != Eof && p != Avail && p != Bat && p != MetaBat) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "p: %{public}d is not Eof, start: %{public}u",
+            p, start);
         return false;
     }
 
@@ -96,6 +107,7 @@ size_t AllocTable::Unused()
     }
 
     // If not found, expand the table
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "No unused block found");
     nextUnused_ = 0;
     size_t block = data_.size();
     Resize(data_.size() + kGrowStep);
@@ -106,12 +118,17 @@ size_t AllocTable::Unused()
 bool AllocTable::Load(const Byte *buffer, size_t len)
 {
     if ((len % FOUR_BYTE_SIZE != 0) || buffer == nullptr) [[unlikely]] {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid buffer or len: %{public}d",
+            static_cast<int32_t>(len));
         return false;
     }
     Resize(len / FOUR_BYTE_SIZE);
     size_t count = Count();
-    for (size_t i = 0; i < count; i++)
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "count: %{public}d len: %{public}d",
+        static_cast<int32_t>(count), static_cast<int32_t>(len));
+    for (size_t i = 0; i < count; i++) {
         Set(i, ReadUint32(buffer + i * FOUR_BYTE_SIZE));
+    }
     return true;
 }
 
@@ -120,6 +137,8 @@ bool AllocTable::Save(Byte *buffer, size_t len)
     size_t count = Count();
     const size_t required = FOUR_BYTE_SIZE * count;
     if (len < required || buffer == nullptr) [[unlikely]] {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid buffer or len: %{public}d",
+            static_cast<int32_t>(len));
         return false;
     }
 
