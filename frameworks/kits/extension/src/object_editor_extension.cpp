@@ -55,7 +55,7 @@ void ObjectEditorExtension::Init(const std::shared_ptr<AbilityLocalRecord> &reco
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "fail to create ceInstance");
         return;
     }
-    ceInstance_->extension = weak_from_this(); // 基类extension
+    ceInstance_->extension = weak_from_this(); // Base class extension
 
     ceContext_ = std::make_shared<struct ContentEmbed_ExtensionContext>();
     if (ceContext_ == nullptr) {
@@ -498,13 +498,13 @@ bool CheckFileValid(const std::unique_ptr<ObjectEditorDocument> &document)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "snapshotPath permission denied");
         return false;
     }
-    // 以现有文件方式插入需要校验nativeFileUri
+    // When inserting as existing file, need to validate nativeFileUri
     if (document->GetOperateType() == OperateType::CREATE_BY_FILE) {
         if (!CheckFilePermission(document->GetNativeFilePath())) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "nativeFilePath permission denied");
             return false;
         }
-        // 如果同时是linking的场景，需要多校验原始文件
+        // If it's also a linking scenario, need to additionally validate the original file
         if (document->GetLinking() && !CheckFilePermission(document->GetOriFilePath())) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "oriFilePath permission denied");
             return false;

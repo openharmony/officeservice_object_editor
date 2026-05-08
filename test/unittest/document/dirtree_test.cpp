@@ -55,7 +55,7 @@ void DirTreeTest::TearDown()
 
 /**
  * @tc.name DirEntry_001
- * @tc.desc 测试DirEntry方法
+ * @tc.desc Test DirEntry method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, DirEntry_001, TestSize.Level1)
@@ -66,7 +66,7 @@ HWTEST_F(DirTreeTest, DirEntry_001, TestSize.Level1)
 
 /**
  * @tc.name DirEntry_002
- * @tc.desc 测试DirEntry方法
+ * @tc.desc Test DirEntry method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, DirEntry_002, TestSize.Level1)
@@ -78,7 +78,7 @@ HWTEST_F(DirTreeTest, DirEntry_002, TestSize.Level1)
 
 /**
  * @tc.name DirEntry_003
- * @tc.desc 测试DirEntry方法
+ * @tc.desc Test DirEntry method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, DirEntry_003, TestSize.Level1)
@@ -90,7 +90,7 @@ HWTEST_F(DirTreeTest, DirEntry_003, TestSize.Level1)
 
 /**
  * @tc.name Clsid_001
- * @tc.desc 测试DirEntry方法
+ * @tc.desc Test DirEntry method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, Clsid_001, TestSize.Level1)
@@ -102,7 +102,7 @@ HWTEST_F(DirTreeTest, Clsid_001, TestSize.Level1)
 
 /**
  * @tc.name SetClsid_001
- * @tc.desc 测试DirEntry方法
+ * @tc.desc Test DirEntry method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, SetClsid_001, TestSize.Level1)
@@ -114,7 +114,7 @@ HWTEST_F(DirTreeTest, SetClsid_001, TestSize.Level1)
 
 /**
  * @tc.name Clear_001
- * @tc.desc 测试DirEntry方法
+ * @tc.desc Test DirEntry method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, Clear_001, TestSize.Level1)
@@ -125,7 +125,7 @@ HWTEST_F(DirTreeTest, Clear_001, TestSize.Level1)
 
 /**
  * @tc.name Entry_001
- * @tc.desc 测试DirEntry方法
+ * @tc.desc Test DirEntry method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, Entry_001, TestSize.Level1)
@@ -136,7 +136,7 @@ HWTEST_F(DirTreeTest, Entry_001, TestSize.Level1)
 
 /**
  * @tc.name Entry_002
- * @tc.desc 测试DirEntry方法
+ * @tc.desc Test DirEntry method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, Entry_002, TestSize.Level1)
@@ -147,7 +147,7 @@ HWTEST_F(DirTreeTest, Entry_002, TestSize.Level1)
 
 /**
  * @tc.name GetEntryAt_001
- * @tc.desc 测试GetEntryAt方法
+ * @tc.desc Test GetEntryAt method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, GetEntryAt_001, TestSize.Level1)
@@ -158,7 +158,7 @@ HWTEST_F(DirTreeTest, GetEntryAt_001, TestSize.Level1)
 
 /**
  * @tc.name IndexOf_001
- * @tc.desc 测试IndexOf方法
+ * @tc.desc Test IndexOf method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, IndexOf_001, TestSize.Level1)
@@ -169,7 +169,7 @@ HWTEST_F(DirTreeTest, IndexOf_001, TestSize.Level1)
 
 /**
  * @tc.name Parent_001
- * @tc.desc 测试Parent方法
+ * @tc.desc Test Parent method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, Parent_001, TestSize.Level1)
@@ -180,7 +180,7 @@ HWTEST_F(DirTreeTest, Parent_001, TestSize.Level1)
 
 /**
  * @tc.name FullName_001
- * @tc.desc 测试FullName方法
+ * @tc.desc Test FullName method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, FullName_001, TestSize.Level1)
@@ -193,7 +193,7 @@ HWTEST_F(DirTreeTest, FullName_001, TestSize.Level1)
 
 /**
  * @tc.name FullName_002
- * @tc.desc 测试FullName方法
+ * @tc.desc Test FullName method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, FullName_002, TestSize.Level1)
@@ -206,7 +206,7 @@ HWTEST_F(DirTreeTest, FullName_002, TestSize.Level1)
 
 /**
  * @tc.name SplitPath_001
- * @tc.desc 测试SplitPath方法
+ * @tc.desc Test SplitPath method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, SplitPath_001, TestSize.Level1)
@@ -220,7 +220,7 @@ HWTEST_F(DirTreeTest, SplitPath_001, TestSize.Level1)
 
 /**
  * @tc.name FindChild_001
- * @tc.desc 测试FindChild方法
+ * @tc.desc Test FindChild method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, FindChild_001, TestSize.Level1)
@@ -232,7 +232,7 @@ HWTEST_F(DirTreeTest, FindChild_001, TestSize.Level1)
 
 /**
  * @tc.name FindChild_001
- * @tc.desc 测试FindChild方法
+ * @tc.desc Test FindChild method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, FindChild_001, TestSize.Level1)
@@ -244,7 +244,7 @@ HWTEST_F(DirTreeTest, FindChild_001, TestSize.Level1)
 
 /**
  * @tc.name ReuseOrAppendSlot_001
- * @tc.desc 测试ReuseOrAppendSlot方法
+ * @tc.desc Test ReuseOrAppendSlot method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, ReuseOrAppendSlot_001, TestSize.Level1)
@@ -255,7 +255,7 @@ HWTEST_F(DirTreeTest, ReuseOrAppendSlot_001, TestSize.Level1)
 
 /**
  * @tc.name Entry2_001
- * @tc.desc 测试Entry2方法
+ * @tc.desc Test Entry2 method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, Entry2_001, TestSize.Level1)
@@ -267,7 +267,7 @@ HWTEST_F(DirTreeTest, Entry2_001, TestSize.Level1)
 
 /**
  * @tc.name Entry2_002
- * @tc.desc 测试Entry2方法
+ * @tc.desc Test Entry2 method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, Entry2_002, TestSize.Level1)
@@ -279,7 +279,7 @@ HWTEST_F(DirTreeTest, Entry2_002, TestSize.Level1)
 
 /**
  * @tc.name Entry2_003
- * @tc.desc 测试Entry2方法
+ * @tc.desc Test Entry2 method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, Entry2_003, TestSize.Level1)
@@ -291,7 +291,7 @@ HWTEST_F(DirTreeTest, Entry2_003, TestSize.Level1)
 
 /**
  * @tc.name Entry2_004
- * @tc.desc 测试Entry2方法
+ * @tc.desc Test Entry2 method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, Entry2_004, TestSize.Level1)
@@ -303,7 +303,7 @@ HWTEST_F(DirTreeTest, Entry2_004, TestSize.Level1)
 
 /**
  * @tc.name EnterDirectory_001
- * @tc.desc 测试EnterDirectory方法
+ * @tc.desc Test EnterDirectory method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, EnterDirectory_001, TestSize.Level1)
@@ -315,7 +315,7 @@ HWTEST_F(DirTreeTest, EnterDirectory_001, TestSize.Level1)
 
 /**
  * @tc.name EnterDirectory_002
- * @tc.desc 测试EnterDirectory方法
+ * @tc.desc Test EnterDirectory method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, EnterDirectory_002, TestSize.Level1)
@@ -327,7 +327,7 @@ HWTEST_F(DirTreeTest, EnterDirectory_002, TestSize.Level1)
 
 /**
  * @tc.name LeaveDirectory_001
- * @tc.desc 测试LeaveDirectory方法
+ * @tc.desc Test LeaveDirectory method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, LeaveDirectory_001, TestSize.Level1)
@@ -340,7 +340,7 @@ HWTEST_F(DirTreeTest, LeaveDirectory_001, TestSize.Level1)
 
 /**
  * @tc.name LeaveDirectory_002
- * @tc.desc 测试LeaveDirectory方法
+ * @tc.desc Test LeaveDirectory method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, LeaveDirectory_002, TestSize.Level1)
@@ -352,7 +352,7 @@ HWTEST_F(DirTreeTest, LeaveDirectory_002, TestSize.Level1)
 
 /**
  * @tc.name Load_001
- * @tc.desc 测试Load方法
+ * @tc.desc Test Load method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, Load_001, TestSize.Level1)
@@ -363,7 +363,7 @@ HWTEST_F(DirTreeTest, Load_001, TestSize.Level1)
 
 /**
  * @tc.name Load_002
- * @tc.desc 测试Load方法
+ * @tc.desc Test Load method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, Load_002, TestSize.Level1)
@@ -374,7 +374,7 @@ HWTEST_F(DirTreeTest, Load_002, TestSize.Level1)
 
 /**
  * @tc.name Load_003
- * @tc.desc 测试Load方法
+ * @tc.desc Test Load method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, Load_003, TestSize.Level1)
@@ -386,7 +386,7 @@ HWTEST_F(DirTreeTest, Load_003, TestSize.Level1)
 
 /**
  * @tc.name Load_004
- * @tc.desc 测试Load方法
+ * @tc.desc Test Load method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, Load_004, TestSize.Level1)
@@ -398,7 +398,7 @@ HWTEST_F(DirTreeTest, Load_004, TestSize.Level1)
 
 /**
  * @tc.name Save_001
- * @tc.desc 测试Save方法
+ * @tc.desc Test Save method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, Load_003, TestSize.Level1)
@@ -416,7 +416,7 @@ HWTEST_F(DirTreeTest, Load_003, TestSize.Level1)
 
 /**
  * @tc.name Save_002
- * @tc.desc 测试Save方法
+ * @tc.desc Test Save method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, Save_002, TestSize.Level1)
@@ -429,7 +429,7 @@ HWTEST_F(DirTreeTest, Save_002, TestSize.Level1)
 
 /**
  * @tc.name Save_003
- * @tc.desc 测试Save方法
+ * @tc.desc Test Save method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, Save_003, TestSize.Level1)
@@ -442,7 +442,7 @@ HWTEST_F(DirTreeTest, Save_003, TestSize.Level1)
 
 /**
  * @tc.name Debug_001
- * @tc.desc 测试Debug方法
+ * @tc.desc Test Debug method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, Debug_001, TestSize.Level1)
@@ -453,7 +453,7 @@ HWTEST_F(DirTreeTest, Debug_001, TestSize.Level1)
 
 /**
  * @tc.name FindSiblings_001
- * @tc.desc 测试FindSiblings方法
+ * @tc.desc Test FindSiblings method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, FindSiblings_001, TestSize.Level1)
@@ -467,7 +467,7 @@ HWTEST_F(DirTreeTest, FindSiblings_001, TestSize.Level1)
 
 /**
  * @tc.name FindSiblings_002
- * @tc.desc 测试FindSiblings方法
+ * @tc.desc Test FindSiblings method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, FindSiblings_002, TestSize.Level1)
@@ -481,7 +481,7 @@ HWTEST_F(DirTreeTest, FindSiblings_002, TestSize.Level1)
 
 /**
  * @tc.name FindSiblings_003
- * @tc.desc 测试FindSiblings方法
+ * @tc.desc Test FindSiblings method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, FindSiblings_003, TestSize.Level1)
@@ -496,7 +496,7 @@ HWTEST_F(DirTreeTest, FindSiblings_003, TestSize.Level1)
 
 /**
  * @tc.name FindSiblings_004
- * @tc.desc 测试FindSiblings方法
+ * @tc.desc Test FindSiblings method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, FindSiblings_004, TestSize.Level1)
@@ -514,7 +514,7 @@ HWTEST_F(DirTreeTest, FindSiblings_004, TestSize.Level1)
 
 /**
  * @tc.name CollectSubtreeEntries_001
- * @tc.desc 测试CollectSubtreeEntries方法
+ * @tc.desc Test CollectSubtreeEntries method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, CollectSubtreeEntries_001, TestSize.Level1)
@@ -527,7 +527,7 @@ HWTEST_F(DirTreeTest, CollectSubtreeEntries_001, TestSize.Level1)
 
 /**
  * @tc.name CollectSubtreeEntries_002
- * @tc.desc 测试CollectSubtreeEntries方法
+ * @tc.desc Test CollectSubtreeEntries method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, CollectSubtreeEntries_001, TestSize.Level1)
@@ -541,7 +541,7 @@ HWTEST_F(DirTreeTest, CollectSubtreeEntries_001, TestSize.Level1)
 
 /**
  * @tc.name CollectSubtree_001
- * @tc.desc 测试CollectSubtree方法
+ * @tc.desc Test CollectSubtree method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, CollectSubtree_001, TestSize.Level1)
@@ -555,7 +555,7 @@ HWTEST_F(DirTreeTest, CollectSubtree_001, TestSize.Level1)
 
 /**
  * @tc.name CollectSubtree_002
- * @tc.desc 测试CollectSubtree方法
+ * @tc.desc Test CollectSubtree method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, CollectSubtree_002, TestSize.Level1)
@@ -570,7 +570,7 @@ HWTEST_F(DirTreeTest, CollectSubtree_002, TestSize.Level1)
 
 /**
  * @tc.name CollectSubtree_003
- * @tc.desc 测试CollectSubtree方法
+ * @tc.desc Test CollectSubtree method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, CollectSubtree_003, TestSize.Level1)
@@ -585,7 +585,7 @@ HWTEST_F(DirTreeTest, CollectSubtree_003, TestSize.Level1)
 
 /**
  * @tc.name CollectSiblingChain_001
- * @tc.desc 测试CollectSiblingChain方法
+ * @tc.desc Test CollectSiblingChain method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, CollectSiblingChain_001, TestSize.Level1)
@@ -600,7 +600,7 @@ HWTEST_F(DirTreeTest, CollectSiblingChain_001, TestSize.Level1)
 
 /**
  * @tc.name CollectSiblingChain_002
- * @tc.desc 测试CollectSiblingChain方法
+ * @tc.desc Test CollectSiblingChain method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, CollectSiblingChain_002, TestSize.Level1)
@@ -615,7 +615,7 @@ HWTEST_F(DirTreeTest, CollectSiblingChain_002, TestSize.Level1)
 
 /**
  * @tc.name CollectSiblingChain_003
- * @tc.desc 测试CollectSiblingChain方法
+ * @tc.desc Test CollectSiblingChain method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, CollectSiblingChain_003, TestSize.Level1)
@@ -630,7 +630,7 @@ HWTEST_F(DirTreeTest, CollectSiblingChain_003, TestSize.Level1)
 
 /**
  * @tc.name CollectSiblingChain_004
- * @tc.desc 测试CollectSiblingChain方法
+ * @tc.desc Test CollectSiblingChain method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, CollectSiblingChain_004, TestSize.Level1)
@@ -645,7 +645,7 @@ HWTEST_F(DirTreeTest, CollectSiblingChain_004, TestSize.Level1)
 
 /**
  * @tc.name SearchPrevLink_001
- * @tc.desc 测试SearchPrevLink方法
+ * @tc.desc Test SearchPrevLink method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, SearchPrevLink_001, TestSize.Level1)
@@ -661,7 +661,7 @@ HWTEST_F(DirTreeTest, SearchPrevLink_001, TestSize.Level1)
 
 /**
  * @tc.name SearchPrevLink_002
- * @tc.desc 测试SearchPrevLink方法
+ * @tc.desc Test SearchPrevLink method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, SearchPrevLink_002, TestSize.Level1)
@@ -674,7 +674,7 @@ HWTEST_F(DirTreeTest, SearchPrevLink_002, TestSize.Level1)
 
 /**
  * @tc.name SetPrevLink_001
- * @tc.desc 测试SetPrevLink方法
+ * @tc.desc Test SetPrevLink method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, SetPrevLink_001, TestSize.Level1)
@@ -685,7 +685,7 @@ HWTEST_F(DirTreeTest, SetPrevLink_001, TestSize.Level1)
 
 /**
  * @tc.name FindRightmostSiblings_001
- * @tc.desc 测试FindRightmostSiblings方法
+ * @tc.desc Test FindRightmostSiblings method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, FindRightmostSiblings_001, TestSize.Level1)
@@ -696,7 +696,7 @@ HWTEST_F(DirTreeTest, FindRightmostSiblings_001, TestSize.Level1)
 
 /**
  * @tc.name FindRightmostSiblings_002
- * @tc.desc 测试FindRightmostSiblings方法
+ * @tc.desc Test FindRightmostSiblings method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, FindRightmostSiblings_002, TestSize.Level1)
@@ -707,7 +707,7 @@ HWTEST_F(DirTreeTest, FindRightmostSiblings_002, TestSize.Level1)
 
 /**
  * @tc.name FindRightmostSiblings_003
- * @tc.desc 测试FindRightmostSiblings方法
+ * @tc.desc Test FindRightmostSiblings method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, FindRightmostSiblings_003, TestSize.Level1)
@@ -718,7 +718,7 @@ HWTEST_F(DirTreeTest, FindRightmostSiblings_003, TestSize.Level1)
 
 /**
  * @tc.name FindRightmostSiblings_004
- * @tc.desc 测试FindRightmostSiblings方法
+ * @tc.desc Test FindRightmostSiblings method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, FindRightmostSiblings_004, TestSize.Level1)
@@ -730,7 +730,7 @@ HWTEST_F(DirTreeTest, FindRightmostSiblings_004, TestSize.Level1)
 
 /**
  * @tc.name EnsureVisitedBuffer_001
- * @tc.desc 测试EnsureVisitedBuffer方法
+ * @tc.desc Test EnsureVisitedBuffer method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, EnsureVisitedBuffer_001, TestSize.Level1)
@@ -742,7 +742,7 @@ HWTEST_F(DirTreeTest, EnsureVisitedBuffer_001, TestSize.Level1)
 
 /**
  * @tc.name DeleteChildrenRecursive_001
- * @tc.desc 测试DeleteChildrenRecursive方法
+ * @tc.desc Test DeleteChildrenRecursive method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, DeleteChildrenRecursive_001, TestSize.Level1)
@@ -756,7 +756,7 @@ HWTEST_F(DirTreeTest, DeleteChildrenRecursive_001, TestSize.Level1)
 
 /**
  * @tc.name DeleteChildrenRecursive_002
- * @tc.desc 测试DeleteChildrenRecursive方法
+ * @tc.desc Test DeleteChildrenRecursive method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, DeleteChildrenRecursive_002, TestSize.Level1)
@@ -768,7 +768,7 @@ HWTEST_F(DirTreeTest, DeleteChildrenRecursive_002, TestSize.Level1)
 
 /**
  * @tc.name DeleteChildrenRecursive_003
- * @tc.desc 测试DeleteChildrenRecursive方法
+ * @tc.desc Test DeleteChildrenRecursive method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, DeleteChildrenRecursive_003, TestSize.Level1)
@@ -780,7 +780,7 @@ HWTEST_F(DirTreeTest, DeleteChildrenRecursive_003, TestSize.Level1)
 
 /**
  * @tc.name DeleteChildrenRecursive_004
- * @tc.desc 测试DeleteChildrenRecursive方法
+ * @tc.desc Test DeleteChildrenRecursive method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, DeleteChildrenRecursive_004, TestSize.Level1)
@@ -794,7 +794,7 @@ HWTEST_F(DirTreeTest, DeleteChildrenRecursive_004, TestSize.Level1)
 
 /**
  * @tc.name DeleteSiblingChain_001
- * @tc.desc 测试DeleteSiblingChain方法
+ * @tc.desc Test DeleteSiblingChain method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, DeleteSiblingChain_001, TestSize.Level1)
@@ -808,7 +808,7 @@ HWTEST_F(DirTreeTest, DeleteSiblingChain_001, TestSize.Level1)
 
 /**
  * @tc.name DeleteSiblingChain_002
- * @tc.desc 测试DeleteSiblingChain方法
+ * @tc.desc Test DeleteSiblingChain method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, DeleteSiblingChain_002, TestSize.Level1)
@@ -820,7 +820,7 @@ HWTEST_F(DirTreeTest, DeleteSiblingChain_002, TestSize.Level1)
 
 /**
  * @tc.name DeleteSiblingChain_003
- * @tc.desc 测试DeleteSiblingChain方法
+ * @tc.desc Test DeleteSiblingChain method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, DeleteSiblingChain_003, TestSize.Level1)
@@ -832,7 +832,7 @@ HWTEST_F(DirTreeTest, DeleteSiblingChain_003, TestSize.Level1)
 
 /**
  * @tc.name DeleteSiblingChain_004
- * @tc.desc 测试DeleteSiblingChain方法
+ * @tc.desc Test DeleteSiblingChain method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, DeleteSiblingChain_004, TestSize.Level1)
@@ -846,7 +846,7 @@ HWTEST_F(DirTreeTest, DeleteSiblingChain_004, TestSize.Level1)
 
 /**
  * @tc.name FixParentLinks_001
- * @tc.desc 测试FixParentLinks方法
+ * @tc.desc Test FixParentLinks method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, FixParentLinks_001, TestSize.Level1)
@@ -858,7 +858,7 @@ HWTEST_F(DirTreeTest, FixParentLinks_001, TestSize.Level1)
 
 /**
  * @tc.name FixParentLinks_002
- * @tc.desc 测试FixParentLinks方法
+ * @tc.desc Test FixParentLinks method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, FixParentLinks_002, TestSize.Level1)
@@ -872,7 +872,7 @@ HWTEST_F(DirTreeTest, FixParentLinks_002, TestSize.Level1)
 
 /**
  * @tc.name ClearDirEntry_001
- * @tc.desc 测试ClearDirEntry方法
+ * @tc.desc Test ClearDirEntry method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, ClearDirEntry_001, TestSize.Level1)
@@ -882,7 +882,7 @@ HWTEST_F(DirTreeTest, ClearDirEntry_001, TestSize.Level1)
 
 /**
  * @tc.name ClearDirEntry_002
- * @tc.desc 测试ClearDirEntry方法
+ * @tc.desc Test ClearDirEntry method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, ClearDirEntry_002, TestSize.Level1)
@@ -894,7 +894,7 @@ HWTEST_F(DirTreeTest, ClearDirEntry_002, TestSize.Level1)
 
 /**
  * @tc.name DeleteEntry_001
- * @tc.desc 测试DeleteEntry方法
+ * @tc.desc Test DeleteEntry method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, DeleteEntry_001, TestSize.Level1)
@@ -906,7 +906,7 @@ HWTEST_F(DirTreeTest, DeleteEntry_001, TestSize.Level1)
 
 /**
  * @tc.name DeleteEntry_002
- * @tc.desc 测试DeleteEntry方法
+ * @tc.desc Test DeleteEntry method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, DeleteEntry_002, TestSize.Level1)
@@ -918,7 +918,7 @@ HWTEST_F(DirTreeTest, DeleteEntry_002, TestSize.Level1)
 
 /**
  * @tc.name DeleteEntry_003
- * @tc.desc 测试DeleteEntry方法
+ * @tc.desc Test DeleteEntry method
  * @tc.type FUNC
  */
 HWTEST_F(DirTreeTest, DeleteEntry_003, TestSize.Level1)

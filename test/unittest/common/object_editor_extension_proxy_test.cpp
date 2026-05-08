@@ -73,7 +73,7 @@ namespace {
 
 /**
  * @tc.name GetSnapshot_001
- * @tc.desc 测试GetSnapshot方法
+ * @tc.desc Test GetSnapshot method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, GetSnapshot_001, TestSize.Level1)
@@ -85,7 +85,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, GetSnapshot_001, TestSize.Level1)
 
 /**
  * @tc.name GetSnapshot_002
- * @tc.desc 测试GetSnapshot方法
+ * @tc.desc Test GetSnapshot method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, GetSnapshot_002, TestSize.Level1)
@@ -97,7 +97,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, GetSnapshot_002, TestSize.Level1)
 
 /**
  * @tc.name GetSnapshot_003
- * @tc.desc 测试GetSnapshot方法
+ * @tc.desc Test GetSnapshot method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, GetSnapshot_003, TestSize.Level1)
@@ -112,7 +112,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, GetSnapshot_003, TestSize.Level1)
 
 /**
  * @tc.name GetSnapshot_004
- * @tc.desc 测试GetSnapshot方法
+ * @tc.desc Test GetSnapshot method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, GetSnapshot_004, TestSize.Level1)
@@ -130,7 +130,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, GetSnapshot_004, TestSize.Level1)
 
 /**
  * @tc.name GetSnapshot_005
- * @tc.desc 测试GetSnapshot方法
+ * @tc.desc Test GetSnapshot method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, GetSnapshot_005, TestSize.Level1)
@@ -145,7 +145,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, GetSnapshot_005, TestSize.Level1)
 
 /**
  * @tc.name DoEdit_001
- * @tc.desc 测试DoEdit方法
+ * @tc.desc Test DoEdit method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, DoEdit_001, TestSize.Level1)
@@ -157,7 +157,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, DoEdit_001, TestSize.Level1)
 
 /**
  * @tc.name DoEdit_002
- * @tc.desc 测试DoEdit方法
+ * @tc.desc Test DoEdit method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, DoEdit_002, TestSize.Level1)
@@ -169,7 +169,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, DoEdit_002, TestSize.Level1)
 
 /**
  * @tc.name DoEdit_003
- * @tc.desc 测试DoEdit方法
+ * @tc.desc Test DoEdit method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, DoEdit_003, TestSize.Level1)
@@ -184,7 +184,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, DoEdit_003, TestSize.Level1)
 
 /**
  * @tc.name DoEdit_004
- * @tc.desc 测试DoEdit方法
+ * @tc.desc Test DoEdit method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, DoEdit_004, TestSize.Level1)
@@ -198,7 +198,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, DoEdit_004, TestSize.Level1)
 
 /**
  * @tc.name DoEdit_005
- * @tc.desc 测试DoEdit方法
+ * @tc.desc Test DoEdit method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, DoEdit_005, TestSize.Level1)
@@ -213,7 +213,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, DoEdit_005, TestSize.Level1)
 
 /**
  * @tc.name GetEditStatus_001
- * @tc.desc 测试GetEditStatus方法
+ * @tc.desc Test GetEditStatus method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, GetEditStatus_001, TestSize.Level1)
@@ -227,7 +227,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, GetEditStatus_001, TestSize.Level1)
 
 /**
  * @tc.name GetEditStatus_002
- * @tc.desc 测试GetEditStatus方法
+ * @tc.desc Test GetEditStatus method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, GetEditStatus_002, TestSize.Level1)
@@ -241,7 +241,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, GetEditStatus_002, TestSize.Level1)
 
 /**
  * @tc.name GetEditStatus_003
- * @tc.desc 测试GetEditStatus方法
+ * @tc.desc Test GetEditStatus method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, GetEditStatus_003, TestSize.Level1)
@@ -258,7 +258,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, GetEditStatus_003, TestSize.Level1)
 
 /**
  * @tc.name GetEditStatus_004
- * @tc.desc 测试GetEditStatus方法
+ * @tc.desc Test GetEditStatus method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, GetEditStatus_004, TestSize.Level1)
@@ -274,7 +274,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, GetEditStatus_004, TestSize.Level1)
 
 /**
  * @tc.name GetEditStatus_005
- * @tc.desc 测试GetEditStatus方法
+ * @tc.desc Test GetEditStatus method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, GetEditStatus_005, TestSize.Level1)
@@ -291,7 +291,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, GetEditStatus_005, TestSize.Level1)
 
 /**
  * @tc.name GetCapability_001
- * @tc.desc 测试GetCapability方法
+ * @tc.desc Test GetCapability method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, GetCapability_001, TestSize.Level1)
@@ -304,7 +304,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, GetCapability_001, TestSize.Level1)
 
 /**
  * @tc.name GetCapability_002
- * @tc.desc 测试GetCapability方法
+ * @tc.desc Test GetCapability method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, GetCapability_002, TestSize.Level1)
@@ -317,7 +317,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, GetCapability_002, TestSize.Level1)
 
 /**
  * @tc.name GetCapability_003
- * @tc.desc 测试GetCapability方法
+ * @tc.desc Test GetCapability method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, GetCapability_003, TestSize.Level1)
@@ -333,7 +333,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, GetCapability_003, TestSize.Level1)
 
 /**
  * @tc.name GetCapability_004
- * @tc.desc 测试GetCapability方法
+ * @tc.desc Test GetCapability method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, GetCapability_004, TestSize.Level1)
@@ -348,7 +348,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, GetCapability_004, TestSize.Level1)
 
 /**
  * @tc.name GetCapability_005
- * @tc.desc 测试GetCapability方法
+ * @tc.desc Test GetCapability method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, GetCapability_005, TestSize.Level1)
@@ -364,7 +364,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, GetCapability_005, TestSize.Level1)
 
 /**
  * @tc.name Close_001
- * @tc.desc 测试Close方法
+ * @tc.desc Test Close method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, Close_001, TestSize.Level1)
@@ -376,7 +376,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Close_001, TestSize.Level1)
 
 /**
  * @tc.name Close_002
- * @tc.desc 测试Close方法
+ * @tc.desc Test Close method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, Close_002, TestSize.Level1)
@@ -388,7 +388,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Close_002, TestSize.Level1)
 
 /**
  * @tc.name Close_003
- * @tc.desc 测试Close方法
+ * @tc.desc Test Close method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, Close_003, TestSize.Level1)
@@ -403,7 +403,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Close_003, TestSize.Level1)
 
 /**
  * @tc.name Close_004
- * @tc.desc 测试Close方法
+ * @tc.desc Test Close method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, Close_004, TestSize.Level1)
@@ -417,7 +417,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Close_004, TestSize.Level1)
 
 /**
  * @tc.name Close_005
- * @tc.desc 测试Close方法
+ * @tc.desc Test Close method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, Close_005, TestSize.Level1)
@@ -432,7 +432,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Close_005, TestSize.Level1)
 
 /**
  * @tc.name Initial_001
- * @tc.desc 测试Initial方法
+ * @tc.desc Test Initial method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, Initial_001, TestSize.Level1)
@@ -445,7 +445,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Initial_001, TestSize.Level1)
 
 /**
  * @tc.name Initial_002
- * @tc.desc 测试Initial方法
+ * @tc.desc Test Initial method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, Initial_002, TestSize.Level1)
@@ -457,7 +457,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Initial_002, TestSize.Level1)
 
 /**
  * @tc.name Initial_003
- * @tc.desc 测试Initial方法
+ * @tc.desc Test Initial method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, Initial_003, TestSize.Level1)
@@ -470,7 +470,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Initial_003, TestSize.Level1)
 
 /**
  * @tc.name Initial_004
- * @tc.desc 测试Initial方法
+ * @tc.desc Test Initial method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, Initial_004, TestSize.Level1)
@@ -483,7 +483,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Initial_004, TestSize.Level1)
 
 /**
  * @tc.name Initial_005
- * @tc.desc 测试Initial方法
+ * @tc.desc Test Initial method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, Initial_005, TestSize.Level1)
@@ -499,7 +499,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Initial_005, TestSize.Level1)
 
 /**
  * @tc.name Initial_006
- * @tc.desc 测试Initial方法
+ * @tc.desc Test Initial method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, Initial_006, TestSize.Level1)
@@ -514,7 +514,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Initial_006, TestSize.Level1)
 
 /**
  * @tc.name Initial_007
- * @tc.desc 测试Initial方法
+ * @tc.desc Test Initial method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorExtensionProxyTest, Initial_007, TestSize.Level1)

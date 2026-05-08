@@ -514,7 +514,7 @@ bool MockValidFail()
 
 /**
  * @tc.name StorageIO_001
- * @tc.desc 测试StorageIO方法
+ * @tc.desc Test StorageIO method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, StorageIO_001, TestSize.Level1)
@@ -524,7 +524,7 @@ HWTEST_F(StorageTest, StorageIO_001, TestSize.Level1)
 
 /**
  * @tc.name ConfigMinimalCd_001
- * @tc.desc 测试ConfigMinimalCd方法
+ * @tc.desc Test ConfigMinimalCd method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ConfigMinimalCd_001, TestSize.Level1)
@@ -539,7 +539,7 @@ HWTEST_F(StorageTest, ConfigMinimalCd_001, TestSize.Level1)
 
 /**
  * @tc.name ConfigMinimalCd_002
- * @tc.desc 测试ConfigMinimalCd方法
+ * @tc.desc Test ConfigMinimalCd method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ConfigMinimalCd_002, TestSize.Level1)
@@ -554,7 +554,7 @@ HWTEST_F(StorageTest, ConfigMinimalCd_002, TestSize.Level1)
 
 /**
  * @tc.name ConfigMinimalCd_003
- * @tc.desc 测试ConfigMinimalCd方法
+ * @tc.desc Test ConfigMinimalCd method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ConfigMinimalCd_003, TestSize.Level1)
@@ -569,7 +569,7 @@ HWTEST_F(StorageTest, ConfigMinimalCd_003, TestSize.Level1)
 
 /**
  * @tc.name ConfigMinimalCd_004
- * @tc.desc 测试ConfigMinimalCd方法
+ * @tc.desc Test ConfigMinimalCd method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ConfigMinimalCd_004, TestSize.Level1)
@@ -584,7 +584,7 @@ HWTEST_F(StorageTest, ConfigMinimalCd_004, TestSize.Level1)
 
 /**
  * @tc.name ConfigMinimalCd_005
- * @tc.desc 测试ConfigMinimalCd方法
+ * @tc.desc Test ConfigMinimalCd method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ConfigMinimalCd_005, TestSize.Level1)
@@ -599,7 +599,7 @@ HWTEST_F(StorageTest, ConfigMinimalCd_005, TestSize.Level1)
 
 /**
  * @tc.name SerializeToMemory_001
- * @tc.desc 测试SerializeToMemory方法
+ * @tc.desc Test SerializeToMemory method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, SerializeToMemory_001, TestSize.Level1)
@@ -614,7 +614,7 @@ HWTEST_F(StorageTest, SerializeToMemory_001, TestSize.Level1)
 
 /**
  * @tc.name SerializeToMemory_002
- * @tc.desc 测试SerializeToMemory方法
+ * @tc.desc Test SerializeToMemory method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, SerializeToMemory_002, TestSize.Level1)
@@ -629,7 +629,7 @@ HWTEST_F(StorageTest, SerializeToMemory_002, TestSize.Level1)
 
 /**
  * @tc.name SerializeToMemory_003
- * @tc.desc 测试SerializeToMemory方法
+ * @tc.desc Test SerializeToMemory method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, SerializeToMemory_003, TestSize.Level1)
@@ -644,7 +644,7 @@ HWTEST_F(StorageTest, SerializeToMemory_003, TestSize.Level1)
 
 /**
  * @tc.name SerializeToMemory_004
- * @tc.desc 测试SerializeToMemory方法
+ * @tc.desc Test SerializeToMemory method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, SerializeToMemory_004, TestSize.Level1)
@@ -659,7 +659,7 @@ HWTEST_F(StorageTest, SerializeToMemory_004, TestSize.Level1)
 
 /**
  * @tc.name SerializeToMemory_005
- * @tc.desc 测试SerializeToMemory方法
+ * @tc.desc Test SerializeToMemory method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, SerializeToMemory_005, TestSize.Level1)
@@ -676,7 +676,7 @@ HWTEST_F(StorageTest, SerializeToMemory_005, TestSize.Level1)
 
 /**
  * @tc.name Init_001
- * @tc.desc 测试Init方法
+ * @tc.desc Test Init method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, Init_001, TestSize.Level1)
@@ -687,7 +687,7 @@ HWTEST_F(StorageTest, Init_001, TestSize.Level1)
 
 /**
  * @tc.name IsValid_001
- * @tc.desc 测试IsValid方法
+ * @tc.desc Test IsValid method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, IsValid_001, TestSize.Level1)
@@ -698,7 +698,7 @@ HWTEST_F(StorageTest, IsValid_001, TestSize.Level1)
 
 /**
  * @tc.name IsDirty_001
- * @tc.desc 测试IsDirty方法
+ * @tc.desc Test IsDirty method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, IsDirty_001, TestSize.Level1)
@@ -709,7 +709,7 @@ HWTEST_F(StorageTest, IsDirty_001, TestSize.Level1)
 
 /**
  * @tc.name LastError_001
- * @tc.desc 测试LastError方法
+ * @tc.desc Test LastError method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LastError_001, TestSize.Level1)
@@ -720,7 +720,7 @@ HWTEST_F(StorageTest, LastError_001, TestSize.Level1)
 
 /**
  * @tc.name ErrorMessage_001
- * @tc.desc 测试ErrorMessage方法
+ * @tc.desc Test ErrorMessage method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ErrorMessage_001, TestSize.Level1)
@@ -733,7 +733,7 @@ HWTEST_F(StorageTest, ErrorMessage_001, TestSize.Level1)
 
 /**
  * @tc.name ErrorMessage_002
- * @tc.desc 测试ErrorMessage方法
+ * @tc.desc Test ErrorMessage method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ErrorMessage_002, TestSize.Level1)
@@ -747,7 +747,7 @@ HWTEST_F(StorageTest, ErrorMessage_002, TestSize.Level1)
 
 /**
  * @tc.name ErrorMessage_003
- * @tc.desc 测试ErrorMessage方法
+ * @tc.desc Test ErrorMessage method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ErrorMessage_003, TestSize.Level1)
@@ -761,7 +761,7 @@ HWTEST_F(StorageTest, ErrorMessage_003, TestSize.Level1)
 
 /**
  * @tc.name ErrorMessage_004
- * @tc.desc 测试ErrorMessage方法
+ * @tc.desc Test ErrorMessage method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ErrorMessage_004, TestSize.Level1)
@@ -775,7 +775,7 @@ HWTEST_F(StorageTest, ErrorMessage_004, TestSize.Level1)
 
 /**
  * @tc.name ErrorMessage_005
- * @tc.desc 测试ErrorMessage方法
+ * @tc.desc Test ErrorMessage method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ErrorMessage_005, TestSize.Level1)
@@ -789,7 +789,7 @@ HWTEST_F(StorageTest, ErrorMessage_005, TestSize.Level1)
 
 /**
  * @tc.name ErrorMessage_006
- * @tc.desc 测试ErrorMessage方法
+ * @tc.desc Test ErrorMessage method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ErrorMessage_006, TestSize.Level1)
@@ -803,7 +803,7 @@ HWTEST_F(StorageTest, ErrorMessage_006, TestSize.Level1)
 
 /**
  * @tc.name ErrorMessage_007
- * @tc.desc 测试ErrorMessage方法
+ * @tc.desc Test ErrorMessage method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ErrorMessage_007, TestSize.Level1)
@@ -817,7 +817,7 @@ HWTEST_F(StorageTest, ErrorMessage_007, TestSize.Level1)
 
 /**
  * @tc.name ErrorMessage_008
- * @tc.desc 测试ErrorMessage方法
+ * @tc.desc Test ErrorMessage method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ErrorMessage_008, TestSize.Level1)
@@ -831,7 +831,7 @@ HWTEST_F(StorageTest, ErrorMessage_008, TestSize.Level1)
 
 /**
  * @tc.name ErrorMessage_009
- * @tc.desc 测试ErrorMessage方法
+ * @tc.desc Test ErrorMessage method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ErrorMessage_009, TestSize.Level1)
@@ -845,7 +845,7 @@ HWTEST_F(StorageTest, ErrorMessage_009, TestSize.Level1)
 
 /**
  * @tc.name ErrorMessage_010
- * @tc.desc 测试ErrorMessage方法
+ * @tc.desc Test ErrorMessage method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ErrorMessage_010, TestSize.Level1)
@@ -859,7 +859,7 @@ HWTEST_F(StorageTest, ErrorMessage_010, TestSize.Level1)
 
 /**
  * @tc.name ClearError_001
- * @tc.desc 测试ClearError方法
+ * @tc.desc Test ClearError method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ClearError_001, TestSize.Level1)
@@ -870,7 +870,7 @@ HWTEST_F(StorageTest, ClearError_001, TestSize.Level1)
 
 /**
  * @tc.name SetError_001
- * @tc.desc 测试SetError方法
+ * @tc.desc Test SetError method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, SetError_001, TestSize.Level1)
@@ -884,7 +884,7 @@ HWTEST_F(StorageTest, SetError_001, TestSize.Level1)
 
 /**
  * @tc.name SetError_002
- * @tc.desc 测试SetError方法
+ * @tc.desc Test SetError method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, SetError_002, TestSize.Level1)
@@ -899,7 +899,7 @@ HWTEST_F(StorageTest, SetError_002, TestSize.Level1)
 
 /**
  * @tc.name SetError_003
- * @tc.desc 测试SetError方法
+ * @tc.desc Test SetError method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, SetError_003, TestSize.Level1)
@@ -913,7 +913,7 @@ HWTEST_F(StorageTest, SetError_003, TestSize.Level1)
 
 /**
  * @tc.name SetError_004
- * @tc.desc 测试SetError方法
+ * @tc.desc Test SetError method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, SetError_004, TestSize.Level1)
@@ -928,7 +928,7 @@ HWTEST_F(StorageTest, SetError_004, TestSize.Level1)
 
 /**
  * @tc.name Load_001
- * @tc.desc 测试Load方法
+ * @tc.desc Test Load method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, Load_001, TestSize.Level1)
@@ -939,7 +939,7 @@ HWTEST_F(StorageTest, Load_001, TestSize.Level1)
 
 /**
  * @tc.name Load_002
- * @tc.desc 测试Load方法
+ * @tc.desc Test Load method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, Load_002, TestSize.Level1)
@@ -954,7 +954,7 @@ HWTEST_F(StorageTest, Load_002, TestSize.Level1)
 
 /**
  * @tc.name Load_003
- * @tc.desc 测试Load方法
+ * @tc.desc Test Load method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, Load_003, TestSize.Level1)
@@ -969,7 +969,7 @@ HWTEST_F(StorageTest, Load_003, TestSize.Level1)
 
 /**
  * @tc.name Load_004
- * @tc.desc 测试Load方法
+ * @tc.desc Test Load method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, Load_004, TestSize.Level1)
@@ -984,7 +984,7 @@ HWTEST_F(StorageTest, Load_004, TestSize.Level1)
 
 /**
  * @tc.name Load_005
- * @tc.desc 测试Load方法
+ * @tc.desc Test Load method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, Load_005, TestSize.Level1)
@@ -999,7 +999,7 @@ HWTEST_F(StorageTest, Load_005, TestSize.Level1)
 
 /**
  * @tc.name Load_006
- * @tc.desc 测试Load方法
+ * @tc.desc Test Load method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, Load_006, TestSize.Level1)
@@ -1014,7 +1014,7 @@ HWTEST_F(StorageTest, Load_006, TestSize.Level1)
 
 /**
  * @tc.name ValidateHeader_001
- * @tc.desc 测试ValidateHeader方法
+ * @tc.desc Test ValidateHeader method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ValidateHeader_001, TestSize.Level1)
@@ -1026,7 +1026,7 @@ HWTEST_F(StorageTest, ValidateHeader_001, TestSize.Level1)
 
 /**
  * @tc.name ValidateHeader_002
- * @tc.desc 测试ValidateHeader方法
+ * @tc.desc Test ValidateHeader method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ValidateHeader_002, TestSize.Level1)
@@ -1038,7 +1038,7 @@ HWTEST_F(StorageTest, ValidateHeader_002, TestSize.Level1)
 
 /**
  * @tc.name ValidateHeader_003
- * @tc.desc 测试ValidateHeader方法
+ * @tc.desc Test ValidateHeader method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ValidateHeader_003, TestSize.Level1)
@@ -1050,7 +1050,7 @@ HWTEST_F(StorageTest, ValidateHeader_003, TestSize.Level1)
 
 /**
  * @tc.name ValidateHeader_004
- * @tc.desc 测试ValidateHeader方法
+ * @tc.desc Test ValidateHeader method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ValidateHeader_004, TestSize.Level1)
@@ -1061,7 +1061,7 @@ HWTEST_F(StorageTest, ValidateHeader_004, TestSize.Level1)
 
 /**
  * @tc.name ValidateHeader_005
- * @tc.desc 测试ValidateHeader方法
+ * @tc.desc Test ValidateHeader method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ValidateHeader_005, TestSize.Level1)
@@ -1074,7 +1074,7 @@ HWTEST_F(StorageTest, ValidateHeader_005, TestSize.Level1)
 
 /**
  * @tc.name LoadFatChain_001
- * @tc.desc 测试LoadFatChain方法
+ * @tc.desc Test LoadFatChain method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadFatChain_001, TestSize.Level1)
@@ -1085,7 +1085,7 @@ HWTEST_F(StorageTest, LoadFatChain_001, TestSize.Level1)
 
 /**
  * @tc.name LoadFatChain_002
- * @tc.desc 测试LoadFatChain方法
+ * @tc.desc Test LoadFatChain method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadFatChain_002, TestSize.Level1)
@@ -1098,7 +1098,7 @@ HWTEST_F(StorageTest, LoadFatChain_002, TestSize.Level1)
 
 /**
  * @tc.name LoadFatChain_003
- * @tc.desc 测试LoadFatChain方法
+ * @tc.desc Test LoadFatChain method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadFatChain_003, TestSize.Level1)
@@ -1111,7 +1111,7 @@ HWTEST_F(StorageTest, LoadFatChain_003, TestSize.Level1)
 
 /**
  * @tc.name LoadFatChain_004
- * @tc.desc 测试LoadFatChain方法
+ * @tc.desc Test LoadFatChain method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadFatChain_004, TestSize.Level1)
@@ -1125,7 +1125,7 @@ HWTEST_F(StorageTest, LoadFatChain_004, TestSize.Level1)
 
 /**
  * @tc.name ReadDifatSector_001
- * @tc.desc 测试ReadDifatSector方法
+ * @tc.desc Test ReadDifatSector method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadDifatSector_001, TestSize.Level1)
@@ -1141,7 +1141,7 @@ HWTEST_F(StorageTest, ReadDifatSector_001, TestSize.Level1)
 
 /**
  * @tc.name ReadDifatSector_002
- * @tc.desc 测试ReadDifatSector方法
+ * @tc.desc Test ReadDifatSector method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadDifatSector_002, TestSize.Level1)
@@ -1156,7 +1156,7 @@ HWTEST_F(StorageTest, ReadDifatSector_002, TestSize.Level1)
 
 /**
  * @tc.name ReadDifatSector_003
- * @tc.desc 测试ReadDifatSector方法
+ * @tc.desc Test ReadDifatSector method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadDifatSector_003, TestSize.Level1)
@@ -1172,7 +1172,7 @@ HWTEST_F(StorageTest, ReadDifatSector_003, TestSize.Level1)
 
 /**
  * @tc.name ReadDifatSector_004
- * @tc.desc 测试ReadDifatSector方法
+ * @tc.desc Test ReadDifatSector method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadDifatSector_004, TestSize.Level1)
@@ -1188,7 +1188,7 @@ HWTEST_F(StorageTest, ReadDifatSector_004, TestSize.Level1)
 
 /**
  * @tc.name ProcessDifatEntries_001
- * @tc.desc 测试ProcessDifatEntries方法
+ * @tc.desc Test ProcessDifatEntries method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ProcessDifatEntries_001, TestSize.Level1)
@@ -1214,7 +1214,7 @@ HWTEST_F(StorageTest, ProcessDifatEntries_001, TestSize.Level1)
 
 /**
  * @tc.name ProcessDifatEntries_002
- * @tc.desc 测试ProcessDifatEntries方法
+ * @tc.desc Test ProcessDifatEntries method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ProcessDifatEntries_002, TestSize.Level1)
@@ -1240,7 +1240,7 @@ HWTEST_F(StorageTest, ProcessDifatEntries_002, TestSize.Level1)
 
 /**
  * @tc.name LoadDifatChainBody_001
- * @tc.desc 测试LoadDifatChainBody方法
+ * @tc.desc Test LoadDifatChainBody method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadDifatChainBody_001, TestSize.Level1)
@@ -1257,7 +1257,7 @@ HWTEST_F(StorageTest, LoadDifatChainBody_001, TestSize.Level1)
 
 /**
  * @tc.name LoadDifatChainBody_002
- * @tc.desc 测试LoadDifatChainBody方法
+ * @tc.desc Test LoadDifatChainBody method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadDifatChainBody_002, TestSize.Level1)
@@ -1276,7 +1276,7 @@ HWTEST_F(StorageTest, LoadDifatChainBody_002, TestSize.Level1)
 
 /**
  * @tc.name LoadDifatChainBody_003
- * @tc.desc 测试LoadDifatChainBody方法
+ * @tc.desc Test LoadDifatChainBody method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadDifatChainBody_003, TestSize.Level1)
@@ -1296,7 +1296,7 @@ HWTEST_F(StorageTest, LoadDifatChainBody_003, TestSize.Level1)
 
 /**
  * @tc.name LoadDifatChainBody_004
- * @tc.desc 测试LoadDifatChainBody方法
+ * @tc.desc Test LoadDifatChainBody method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadDifatChainBody_004, TestSize.Level1)
@@ -1317,7 +1317,7 @@ HWTEST_F(StorageTest, LoadDifatChainBody_004, TestSize.Level1)
 
 /**
  * @tc.name LoadDifatChainBody_005
- * @tc.desc 测试LoadDifatChainBody方法
+ * @tc.desc Test LoadDifatChainBody method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadDifatChainBody_005, TestSize.Level1)
@@ -1338,7 +1338,7 @@ HWTEST_F(StorageTest, LoadDifatChainBody_005, TestSize.Level1)
 
 /**
  * @tc.name LoadDifatChainBody_006
- * @tc.desc 测试LoadDifatChainBody方法
+ * @tc.desc Test LoadDifatChainBody method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadDifatChainBody_006, TestSize.Level1)
@@ -1359,7 +1359,7 @@ HWTEST_F(StorageTest, LoadDifatChainBody_006, TestSize.Level1)
 
 /**
  * @tc.name LoadDifatChainBody_007
- * @tc.desc 测试LoadDifatChainBody方法
+ * @tc.desc Test LoadDifatChainBody method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadDifatChainBody_007, TestSize.Level1)
@@ -1380,7 +1380,7 @@ HWTEST_F(StorageTest, LoadDifatChainBody_007, TestSize.Level1)
 
 /**
  * @tc.name LoadDifatChainBody_008
- * @tc.desc 测试LoadDifatChainBody方法
+ * @tc.desc Test LoadDifatChainBody method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadDifatChainBody_008, TestSize.Level1)
@@ -1399,7 +1399,7 @@ HWTEST_F(StorageTest, LoadDifatChainBody_008, TestSize.Level1)
 
 /**
  * @tc.name LoadDifatChainBody_009
- * @tc.desc 测试LoadDifatChainBody方法
+ * @tc.desc Test LoadDifatChainBody method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadDifatChainBody_009, TestSize.Level1)
@@ -1418,7 +1418,7 @@ HWTEST_F(StorageTest, LoadDifatChainBody_009, TestSize.Level1)
 
 /**
  * @tc.name LoadDifatChain_001
- * @tc.desc 测试LoadDifatChain方法
+ * @tc.desc Test LoadDifatChain method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadDifatChain_001, TestSize.Level1)
@@ -1433,7 +1433,7 @@ HWTEST_F(StorageTest, LoadDifatChain_001, TestSize.Level1)
 
 /**
  * @tc.name LoadDifatChain_002
- * @tc.desc 测试LoadDifatChain方法
+ * @tc.desc Test LoadDifatChain method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadDifatChain_002, TestSize.Level1)
@@ -1447,7 +1447,7 @@ HWTEST_F(StorageTest, LoadDifatChain_002, TestSize.Level1)
 
 /**
  * @tc.name LoadDifatChain_003
- * @tc.desc 测试LoadDifatChain方法
+ * @tc.desc Test LoadDifatChain method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadDifatChain_003, TestSize.Level1)
@@ -1461,7 +1461,7 @@ HWTEST_F(StorageTest, LoadDifatChain_003, TestSize.Level1)
 
 /**
  * @tc.name LoadDirectoryTree_001
- * @tc.desc 测试LoadDirectoryTree方法
+ * @tc.desc Test LoadDirectoryTree method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadDirectoryTree_001, TestSize.Level1)
@@ -1475,7 +1475,7 @@ HWTEST_F(StorageTest, LoadDirectoryTree_001, TestSize.Level1)
 
 /**
  * @tc.name LoadDirectoryTree_002
- * @tc.desc 测试LoadDirectoryTree方法
+ * @tc.desc Test LoadDirectoryTree method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadDirectoryTree_002, TestSize.Level1)
@@ -1489,7 +1489,7 @@ HWTEST_F(StorageTest, LoadDirectoryTree_002, TestSize.Level1)
 
 /**
  * @tc.name LoadDirectoryTree_003
- * @tc.desc 测试LoadDirectoryTree方法
+ * @tc.desc Test LoadDirectoryTree method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadDirectoryTree_003, TestSize.Level1)
@@ -1503,7 +1503,7 @@ HWTEST_F(StorageTest, LoadDirectoryTree_003, TestSize.Level1)
 
 /**
  * @tc.name LoadDirectoryTree_004
- * @tc.desc 测试LoadDirectoryTree方法
+ * @tc.desc Test LoadDirectoryTree method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadDirectoryTree_004, TestSize.Level1)
@@ -1519,7 +1519,7 @@ HWTEST_F(StorageTest, LoadDirectoryTree_004, TestSize.Level1)
 
 /**
  * @tc.name LoadDirectoryTree_005
- * @tc.desc 测试LoadDirectoryTree方法
+ * @tc.desc Test LoadDirectoryTree method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadDirectoryTree_005, TestSize.Level1)
@@ -1537,7 +1537,7 @@ HWTEST_F(StorageTest, LoadDirectoryTree_005, TestSize.Level1)
 
 /**
  * @tc.name LoadDirectoryTree_006
- * @tc.desc 测试LoadDirectoryTree方法
+ * @tc.desc Test LoadDirectoryTree method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadDirectoryTree_006, TestSize.Level1)
@@ -1556,7 +1556,7 @@ HWTEST_F(StorageTest, LoadDirectoryTree_006, TestSize.Level1)
 
 /**
  * @tc.name LoadMiniFat_001
- * @tc.desc 测试LoadMiniFat方法
+ * @tc.desc Test LoadMiniFat method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadMiniFat_001, TestSize.Level1)
@@ -1570,7 +1570,7 @@ HWTEST_F(StorageTest, LoadMiniFat_001, TestSize.Level1)
 
 /**
  * @tc.name LoadMiniFat_002
- * @tc.desc 测试LoadMiniFat方法
+ * @tc.desc Test LoadMiniFat method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadMiniFat_002, TestSize.Level1)
@@ -1585,7 +1585,7 @@ HWTEST_F(StorageTest, LoadMiniFat_002, TestSize.Level1)
 
 /**
  * @tc.name LoadMiniFat_003
- * @tc.desc 测试LoadMiniFat方法
+ * @tc.desc Test LoadMiniFat method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadMiniFat_003, TestSize.Level1)
@@ -1601,7 +1601,7 @@ HWTEST_F(StorageTest, LoadMiniFat_003, TestSize.Level1)
 
 /**
  * @tc.name LoadMiniFat_004
- * @tc.desc 测试LoadMiniFat方法
+ * @tc.desc Test LoadMiniFat method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadMiniFat_004, TestSize.Level1)
@@ -1617,7 +1617,7 @@ HWTEST_F(StorageTest, LoadMiniFat_004, TestSize.Level1)
 
 /**
  * @tc.name LoadMiniFatBlocks_001
- * @tc.desc 测试LoadMiniFatBlocks方法
+ * @tc.desc Test LoadMiniFatBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadMiniFatBlocks_001, TestSize.Level1)
@@ -1631,7 +1631,7 @@ HWTEST_F(StorageTest, LoadMiniFatBlocks_001, TestSize.Level1)
 
 /**
  * @tc.name LoadMiniFatBlocks_002
- * @tc.desc 测试LoadMiniFatBlocks方法
+ * @tc.desc Test LoadMiniFatBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadMiniFatBlocks_002, TestSize.Level1)
@@ -1645,7 +1645,7 @@ HWTEST_F(StorageTest, LoadMiniFatBlocks_002, TestSize.Level1)
 
 /**
  * @tc.name LoadMiniFatBlocks_003
- * @tc.desc 测试LoadMiniFatBlocks方法
+ * @tc.desc Test LoadMiniFatBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadMiniFatBlocks_003, TestSize.Level1)
@@ -1662,7 +1662,7 @@ HWTEST_F(StorageTest, LoadMiniFatBlocks_003, TestSize.Level1)
 
 /**
  * @tc.name LoadMiniFatBlocks_004
- * @tc.desc 测试LoadMiniFatBlocks方法
+ * @tc.desc Test LoadMiniFatBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadMiniFatBlocks_004, TestSize.Level1)
@@ -1679,7 +1679,7 @@ HWTEST_F(StorageTest, LoadMiniFatBlocks_004, TestSize.Level1)
 
 /**
  * @tc.name LoadMiniFatBlocks_005
- * @tc.desc 测试LoadMiniFatBlocks方法
+ * @tc.desc Test LoadMiniFatBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadMiniFatBlocks_005, TestSize.Level1)
@@ -1698,7 +1698,7 @@ HWTEST_F(StorageTest, LoadMiniFatBlocks_005, TestSize.Level1)
 
 /**
  * @tc.name LoadMiniFatBlocks_006
- * @tc.desc 测试LoadMiniFatBlocks方法
+ * @tc.desc Test LoadMiniFatBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadMiniFatBlocks_006, TestSize.Level1)
@@ -1718,7 +1718,7 @@ HWTEST_F(StorageTest, LoadMiniFatBlocks_006, TestSize.Level1)
 
 /**
  * @tc.name LoadMiniFatBlocks_007
- * @tc.desc 测试LoadMiniFatBlocks方法
+ * @tc.desc Test LoadMiniFatBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadMiniFatBlocks_007, TestSize.Level1)
@@ -1739,7 +1739,7 @@ HWTEST_F(StorageTest, LoadMiniFatBlocks_007, TestSize.Level1)
 
 /**
  * @tc.name FollowMiniStream_001
- * @tc.desc 测试FollowMiniStream方法
+ * @tc.desc Test FollowMiniStream method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, FollowMiniStream_007, TestSize.Level1)
@@ -1751,7 +1751,7 @@ HWTEST_F(StorageTest, FollowMiniStream_007, TestSize.Level1)
 
 /**
  * @tc.name FollowMiniStream_002
- * @tc.desc 测试FollowMiniStream方法
+ * @tc.desc Test FollowMiniStream method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, FollowMiniStream_002, TestSize.Level1)
@@ -1765,7 +1765,7 @@ HWTEST_F(StorageTest, FollowMiniStream_002, TestSize.Level1)
 
 /**
  * @tc.name FollowMiniStream_003
- * @tc.desc 测试FollowMiniStream方法
+ * @tc.desc Test FollowMiniStream method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, FollowMiniStream_003, TestSize.Level1)
@@ -1779,7 +1779,7 @@ HWTEST_F(StorageTest, FollowMiniStream_003, TestSize.Level1)
 
 /**
  * @tc.name ValidateMiniFatEntries_001
- * @tc.desc 测试ValidateMiniFatEntries方法
+ * @tc.desc Test ValidateMiniFatEntries method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ValidateMiniFatEntries_001, TestSize.Level1)
@@ -1792,7 +1792,7 @@ HWTEST_F(StorageTest, ValidateMiniFatEntries_001, TestSize.Level1)
 
 /**
  * @tc.name ValidateMiniFatEntries_002
- * @tc.desc 测试ValidateMiniFatEntries方法
+ * @tc.desc Test ValidateMiniFatEntries method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ValidateMiniFatEntries_002, TestSize.Level1)
@@ -1805,7 +1805,7 @@ HWTEST_F(StorageTest, ValidateMiniFatEntries_002, TestSize.Level1)
 
 /**
  * @tc.name ValidateMiniRootCoverage_001
- * @tc.desc 测试ValidateMiniRootCoverage方法
+ * @tc.desc Test ValidateMiniRootCoverage method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ValidateMiniRootCoverage_001, TestSize.Level1)
@@ -1817,7 +1817,7 @@ HWTEST_F(StorageTest, ValidateMiniRootCoverage_001, TestSize.Level1)
 
 /**
  * @tc.name ValidateMiniRootCoverage_002
- * @tc.desc 测试ValidateMiniRootCoverage方法
+ * @tc.desc Test ValidateMiniRootCoverage method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ValidateMiniRootCoverage_002, TestSize.Level1)
@@ -1834,7 +1834,7 @@ HWTEST_F(StorageTest, ValidateMiniRootCoverage_002, TestSize.Level1)
 
 /**
  * @tc.name ValidateMiniRootCoverage_003
- * @tc.desc 测试ValidateMiniRootCoverage方法
+ * @tc.desc Test ValidateMiniRootCoverage method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ValidateMiniRootCoverage_003, TestSize.Level1)
@@ -1851,7 +1851,7 @@ HWTEST_F(StorageTest, ValidateMiniRootCoverage_003, TestSize.Level1)
 
 /**
  * @tc.name ValidateMiniRootCoverage_004
- * @tc.desc 测试ValidateMiniRootCoverage方法
+ * @tc.desc Test ValidateMiniRootCoverage method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ValidateMiniRootCoverage_004, TestSize.Level1)
@@ -1865,7 +1865,7 @@ HWTEST_F(StorageTest, ValidateMiniRootCoverage_004, TestSize.Level1)
 
 /**
  * @tc.name Create_001
- * @tc.desc 测试Create方法
+ * @tc.desc Test Create method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, Create_001, TestSize.Level1)
@@ -1877,7 +1877,7 @@ HWTEST_F(StorageTest, Create_001, TestSize.Level1)
 
 /**
  * @tc.name Create_002
- * @tc.desc 测试Create方法
+ * @tc.desc Test Create method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, Create_002, TestSize.Level1)
@@ -1889,7 +1889,7 @@ HWTEST_F(StorageTest, Create_002, TestSize.Level1)
 
 /**
  * @tc.name Create_003
- * @tc.desc 测试Create方法
+ * @tc.desc Test Create method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, Create_003, TestSize.Level1)
@@ -1901,7 +1901,7 @@ HWTEST_F(StorageTest, Create_003, TestSize.Level1)
 
 /**
  * @tc.name Close_001
- * @tc.desc 测试Close方法
+ * @tc.desc Test Close method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, Close_001, TestSize.Level1)
@@ -1914,7 +1914,7 @@ HWTEST_F(StorageTest, Close_001, TestSize.Level1)
 
 /**
  * @tc.name Close_002
- * @tc.desc 测试Close方法
+ * @tc.desc Test Close method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, Close_002, TestSize.Level1)
@@ -1927,7 +1927,7 @@ HWTEST_F(StorageTest, Close_002, TestSize.Level1)
 
 /**
  * @tc.name ReadBigBlocksFromMemory_001
- * @tc.desc 测试ReadBigBlocksFromMemory方法
+ * @tc.desc Test ReadBigBlocksFromMemory method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadBigBlocksFromMemory_001, TestSize.Level1)
@@ -1941,7 +1941,7 @@ HWTEST_F(StorageTest, ReadBigBlocksFromMemory_001, TestSize.Level1)
 
 /**
  * @tc.name ReadBigBlocksFromMemory_002
- * @tc.desc 测试ReadBigBlocksFromMemory方法
+ * @tc.desc Test ReadBigBlocksFromMemory method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadBigBlocksFromMemory_002, TestSize.Level1)
@@ -1955,7 +1955,7 @@ HWTEST_F(StorageTest, ReadBigBlocksFromMemory_002, TestSize.Level1)
 
 /**
  * @tc.name ReadBigBlocksFromMemory_003
- * @tc.desc 测试ReadBigBlocksFromMemory方法
+ * @tc.desc Test ReadBigBlocksFromMemory method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadBigBlocksFromMemory_003, TestSize.Level1)
@@ -1972,7 +1972,7 @@ HWTEST_F(StorageTest, ReadBigBlocksFromMemory_003, TestSize.Level1)
 
 /**
  * @tc.name ReadBigBlocksFromFile_001
- * @tc.desc 测试ReadBigBlocksFromFile方法
+ * @tc.desc Test ReadBigBlocksFromFile method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadBigBlocksFromFile_001, TestSize.Level1)
@@ -1991,7 +1991,7 @@ HWTEST_F(StorageTest, ReadBigBlocksFromFile_001, TestSize.Level1)
 
 /**
  * @tc.name ReadBigBlocksFromFile_002
- * @tc.desc 测试ReadBigBlocksFromFile方法
+ * @tc.desc Test ReadBigBlocksFromFile method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadBigBlocksFromFile_002, TestSize.Level1)
@@ -2008,7 +2008,7 @@ HWTEST_F(StorageTest, ReadBigBlocksFromFile_002, TestSize.Level1)
 
 /**
  * @tc.name ReadBigBlocksFromFile_003
- * @tc.desc 测试ReadBigBlocksFromFile方法
+ * @tc.desc Test ReadBigBlocksFromFile method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadBigBlocksFromFile_003, TestSize.Level1)
@@ -2027,7 +2027,7 @@ HWTEST_F(StorageTest, ReadBigBlocksFromFile_003, TestSize.Level1)
 
 /**
  * @tc.name ReadBigBlocksFromFile_004
- * @tc.desc 测试ReadBigBlocksFromFile方法
+ * @tc.desc Test ReadBigBlocksFromFile method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadBigBlocksFromFile_004, TestSize.Level1)
@@ -2046,7 +2046,7 @@ HWTEST_F(StorageTest, ReadBigBlocksFromFile_004, TestSize.Level1)
 
 /**
  * @tc.name ReadBigBlocksFromFile_005
- * @tc.desc 测试ReadBigBlocksFromFile方法
+ * @tc.desc Test ReadBigBlocksFromFile method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadBigBlocksFromFile_005, TestSize.Level1)
@@ -2064,7 +2064,7 @@ HWTEST_F(StorageTest, ReadBigBlocksFromFile_005, TestSize.Level1)
 
 /**
  * @tc.name ReadBigBlocksFromFile_006
- * @tc.desc 测试ReadBigBlocksFromFile方法
+ * @tc.desc Test ReadBigBlocksFromFile method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadBigBlocksFromFile_006, TestSize.Level1)
@@ -2083,7 +2083,7 @@ HWTEST_F(StorageTest, ReadBigBlocksFromFile_006, TestSize.Level1)
 
 /**
  * @tc.name LoadBigBlocks_001
- * @tc.desc 测试LoadBigBlocks方法
+ * @tc.desc Test LoadBigBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadBigBlocks_001, TestSize.Level1)
@@ -2101,7 +2101,7 @@ HWTEST_F(StorageTest, LoadBigBlocks_001, TestSize.Level1)
 
 /**
  * @tc.name LoadBigBlocks_002
- * @tc.desc 测试LoadBigBlocks方法
+ * @tc.desc Test LoadBigBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadBigBlocks_002, TestSize.Level1)
@@ -2120,7 +2120,7 @@ HWTEST_F(StorageTest, LoadBigBlocks_002, TestSize.Level1)
 
 /**
  * @tc.name LoadBigBlocks_003
- * @tc.desc 测试LoadBigBlocks方法
+ * @tc.desc Test LoadBigBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadBigBlocks_003, TestSize.Level1)
@@ -2135,7 +2135,7 @@ HWTEST_F(StorageTest, LoadBigBlocks_003, TestSize.Level1)
 
 /**
  * @tc.name LoadBigBlocks_004
- * @tc.desc 测试LoadBigBlocks方法
+ * @tc.desc Test LoadBigBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadBigBlocks_004, TestSize.Level1)
@@ -2151,7 +2151,7 @@ HWTEST_F(StorageTest, LoadBigBlocks_004, TestSize.Level1)
 
 /**
  * @tc.name LoadBigBlocks_005
- * @tc.desc 测试LoadBigBlocks方法
+ * @tc.desc Test LoadBigBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadBigBlocks_005, TestSize.Level1)
@@ -2166,7 +2166,7 @@ HWTEST_F(StorageTest, LoadBigBlocks_005, TestSize.Level1)
 
 /**
  * @tc.name LoadBigBlocks_006
- * @tc.desc 测试LoadBigBlocks方法
+ * @tc.desc Test LoadBigBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadBigBlocks_006, TestSize.Level1)
@@ -2182,7 +2182,7 @@ HWTEST_F(StorageTest, LoadBigBlocks_006, TestSize.Level1)
 
 /**
  * @tc.name LoadBigBlock_001
- * @tc.desc 测试LoadBigBlock方法
+ * @tc.desc Test LoadBigBlock method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadBigBlock_001, TestSize.Level1)
@@ -2199,7 +2199,7 @@ HWTEST_F(StorageTest, LoadBigBlock_001, TestSize.Level1)
 
 /**
  * @tc.name LoadBigBlock_002
- * @tc.desc 测试LoadBigBlock方法
+ * @tc.desc Test LoadBigBlock method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadBigBlock_002, TestSize.Level1)
@@ -2214,7 +2214,7 @@ HWTEST_F(StorageTest, LoadBigBlock_002, TestSize.Level1)
 
 /**
  * @tc.name ValidateMiniBLockAccess_001
- * @tc.desc 测试ValidateMiniBLockAccess方法
+ * @tc.desc Test ValidateMiniBLockAccess method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ValidateMiniBLockAccess_001, TestSize.Level1)
@@ -2230,7 +2230,7 @@ HWTEST_F(StorageTest, ValidateMiniBLockAccess_001, TestSize.Level1)
 
 /**
  * @tc.name ValidateMiniBLockAccess_002
- * @tc.desc 测试ValidateMiniBLockAccess方法
+ * @tc.desc Test ValidateMiniBLockAccess method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ValidateMiniBLockAccess_002, TestSize.Level1)
@@ -2245,7 +2245,7 @@ HWTEST_F(StorageTest, ValidateMiniBLockAccess_002, TestSize.Level1)
 
 /**
  * @tc.name ValidateMiniBLockAccess_003
- * @tc.desc 测试ValidateMiniBLockAccess方法
+ * @tc.desc Test ValidateMiniBLockAccess method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ValidateMiniBLockAccess_003, TestSize.Level1)
@@ -2260,7 +2260,7 @@ HWTEST_F(StorageTest, ValidateMiniBLockAccess_003, TestSize.Level1)
 
 /**
  * @tc.name ValidateMiniBLockAccess_004
- * @tc.desc 测试ValidateMiniBLockAccess方法
+ * @tc.desc Test ValidateMiniBLockAccess method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ValidateMiniBLockAccess_004, TestSize.Level1)
@@ -2276,7 +2276,7 @@ HWTEST_F(StorageTest, ValidateMiniBLockAccess_004, TestSize.Level1)
 
 /**
  * @tc.name ReadMiniBlock_001
- * @tc.desc 测试ReadMiniBlock方法
+ * @tc.desc Test ReadMiniBlock method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadMiniBlock_001, TestSize.Level1)
@@ -2297,7 +2297,7 @@ HWTEST_F(StorageTest, ReadMiniBlock_001, TestSize.Level1)
 
 /**
  * @tc.name ReadMiniBlock_002
- * @tc.desc 测试ReadMiniBlock方法
+ * @tc.desc Test ReadMiniBlock method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadMiniBlock_002, TestSize.Level1)
@@ -2320,7 +2320,7 @@ HWTEST_F(StorageTest, ReadMiniBlock_002, TestSize.Level1)
 
 /**
  * @tc.name ReadMiniBlock_003
- * @tc.desc 测试ReadMiniBlock方法
+ * @tc.desc Test ReadMiniBlock method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadMiniBlock_003, TestSize.Level1)
@@ -2343,7 +2343,7 @@ HWTEST_F(StorageTest, ReadMiniBlock_003, TestSize.Level1)
 
 /**
  * @tc.name ReadMiniBlock_004
- * @tc.desc 测试ReadMiniBlock方法
+ * @tc.desc Test ReadMiniBlock method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadMiniBlock_004, TestSize.Level1)
@@ -2366,7 +2366,7 @@ HWTEST_F(StorageTest, ReadMiniBlock_004, TestSize.Level1)
 
 /**
  * @tc.name ReadMiniBlocks_001
- * @tc.desc 测试ReadMiniBlocks方法
+ * @tc.desc Test ReadMiniBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadMiniBlocks_001, TestSize.Level1)
@@ -2379,7 +2379,7 @@ HWTEST_F(StorageTest, ReadMiniBlocks_001, TestSize.Level1)
 
 /**
  * @tc.name ReadMiniBlocks_002
- * @tc.desc 测试ReadMiniBlocks方法
+ * @tc.desc Test ReadMiniBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadMiniBlocks_002, TestSize.Level1)
@@ -2393,7 +2393,7 @@ HWTEST_F(StorageTest, ReadMiniBlocks_002, TestSize.Level1)
 
 /**
  * @tc.name ReadMiniBlocks_003
- * @tc.desc 测试ReadMiniBlocks方法
+ * @tc.desc Test ReadMiniBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadMiniBlocks_003, TestSize.Level1)
@@ -2407,7 +2407,7 @@ HWTEST_F(StorageTest, ReadMiniBlocks_003, TestSize.Level1)
 
 /**
  * @tc.name ReadMiniBlocks_004
- * @tc.desc 测试ReadMiniBlocks方法
+ * @tc.desc Test ReadMiniBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadMiniBlocks_004, TestSize.Level1)
@@ -2422,7 +2422,7 @@ HWTEST_F(StorageTest, ReadMiniBlocks_004, TestSize.Level1)
 
 /**
  * @tc.name ReadMiniBlocks_005
- * @tc.desc 测试ReadMiniBlocks方法
+ * @tc.desc Test ReadMiniBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadMiniBlocks_005, TestSize.Level1)
@@ -2437,7 +2437,7 @@ HWTEST_F(StorageTest, ReadMiniBlocks_005, TestSize.Level1)
 
 /**
  * @tc.name ReadMiniBlocks_006
- * @tc.desc 测试ReadMiniBlocks方法
+ * @tc.desc Test ReadMiniBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadMiniBlocks_006, TestSize.Level1)
@@ -2453,7 +2453,7 @@ HWTEST_F(StorageTest, ReadMiniBlocks_006, TestSize.Level1)
 
 /**
  * @tc.name ReadMiniBlocks_007
- * @tc.desc 测试ReadMiniBlocks方法
+ * @tc.desc Test ReadMiniBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadMiniBlocks_007, TestSize.Level1)
@@ -2470,7 +2470,7 @@ HWTEST_F(StorageTest, ReadMiniBlocks_007, TestSize.Level1)
 
 /**
  * @tc.name ReadMiniBlocks_008
- * @tc.desc 测试ReadMiniBlocks方法
+ * @tc.desc Test ReadMiniBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadMiniBlocks_008, TestSize.Level1)
@@ -2490,7 +2490,7 @@ HWTEST_F(StorageTest, ReadMiniBlocks_008, TestSize.Level1)
 
 /**
  * @tc.name ReadMiniBlocks_009
- * @tc.desc 测试ReadMiniBlocks方法
+ * @tc.desc Test ReadMiniBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ReadMiniBlocks_009, TestSize.Level1)
@@ -2510,7 +2510,7 @@ HWTEST_F(StorageTest, ReadMiniBlocks_009, TestSize.Level1)
 
 /**
  * @tc.name LoadSmallBlocks_001
- * @tc.desc 测试LoadSmallBlocks方法
+ * @tc.desc Test LoadSmallBlocks method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadSmallBlocks_001, TestSize.Level1)
@@ -2522,7 +2522,7 @@ HWTEST_F(StorageTest, LoadSmallBlocks_001, TestSize.Level1)
 
 /**
  * @tc.name LoadSmallBlock_001
- * @tc.desc 测试LoadSmallBlock方法
+ * @tc.desc Test LoadSmallBlock method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadSmallBlock_001, TestSize.Level1)
@@ -2535,7 +2535,7 @@ HWTEST_F(StorageTest, LoadSmallBlock_001, TestSize.Level1)
 
 /**
  * @tc.name LoadSmallBlock_002
- * @tc.desc 测试LoadSmallBlock方法
+ * @tc.desc Test LoadSmallBlock method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, LoadSmallBlock_002, TestSize.Level1)
@@ -2547,7 +2547,7 @@ HWTEST_F(StorageTest, LoadSmallBlock_002, TestSize.Level1)
 
 /**
  * @tc.name SaveBlockToFile_001
- * @tc.desc 测试SaveBlockToFile方法
+ * @tc.desc Test SaveBlockToFile method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, SaveBlockToFile_001, TestSize.Level1)
@@ -2562,7 +2562,7 @@ HWTEST_F(StorageTest, SaveBlockToFile_001, TestSize.Level1)
 
 /**
  * @tc.name SaveBlockToBuffer_001
- * @tc.desc 测试SaveBlockToBuffer方法
+ * @tc.desc Test SaveBlockToBuffer method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, SaveBlockToBuffer_001, TestSize.Level1)
@@ -2576,7 +2576,7 @@ HWTEST_F(StorageTest, SaveBlockToBuffer_001, TestSize.Level1)
 
 /**
  * @tc.name ListDirectory_001
- * @tc.desc 测试ListDirectory方法
+ * @tc.desc Test ListDirectory method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ListDirectory_001, TestSize.Level1)
@@ -2589,7 +2589,7 @@ HWTEST_F(StorageTest, ListDirectory_001, TestSize.Level1)
 
 /**
  * @tc.name ListDirectory_002
- * @tc.desc 测试ListDirectory方法
+ * @tc.desc Test ListDirectory method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ListDirectory_002, TestSize.Level1)
@@ -2602,7 +2602,7 @@ HWTEST_F(StorageTest, ListDirectory_002, TestSize.Level1)
 
 /**
  * @tc.name ListEntries_001
- * @tc.desc 测试ListEntries方法
+ * @tc.desc Test ListEntries method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ListEntries_001, TestSize.Level1)
@@ -2615,7 +2615,7 @@ HWTEST_F(StorageTest, ListEntries_001, TestSize.Level1)
 
 /**
  * @tc.name ListEntries_002
- * @tc.desc 测试ListEntries方法
+ * @tc.desc Test ListEntries method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, ListEntries_002, TestSize.Level1)
@@ -2628,7 +2628,7 @@ HWTEST_F(StorageTest, ListEntries_002, TestSize.Level1)
 
 /**
  * @tc.name Entry_001
- * @tc.desc 测试Entry方法
+ * @tc.desc Test Entry method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, Entry_001, TestSize.Level1)
@@ -2643,7 +2643,7 @@ HWTEST_F(StorageTest, Entry_001, TestSize.Level1)
 
 /**
  * @tc.name Entry_002
- * @tc.desc 测试Entry方法
+ * @tc.desc Test Entry method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, Entry_002, TestSize.Level1)
@@ -2658,7 +2658,7 @@ HWTEST_F(StorageTest, Entry_002, TestSize.Level1)
 
 /**
  * @tc.name Entry_003
- * @tc.desc 测试Entry方法
+ * @tc.desc Test Entry method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, Entry_003, TestSize.Level1)
@@ -2673,7 +2673,7 @@ HWTEST_F(StorageTest, Entry_003, TestSize.Level1)
 
 /**
  * @tc.name Entry_004
- * @tc.desc 测试Entry方法
+ * @tc.desc Test Entry method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, Entry_004, TestSize.Level1)
@@ -2688,7 +2688,7 @@ HWTEST_F(StorageTest, Entry_004, TestSize.Level1)
 
 /**
  * @tc.name GetRootEntry_001
- * @tc.desc 测试GetRootEntry方法
+ * @tc.desc Test GetRootEntry method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, GetRootEntry_001, TestSize.Level1)
@@ -2700,7 +2700,7 @@ HWTEST_F(StorageTest, GetRootEntry_001, TestSize.Level1)
 
 /**
  * @tc.name GetRootEntry_002
- * @tc.desc 测试GetRootEntry方法
+ * @tc.desc Test GetRootEntry method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, GetRootEntry_002, TestSize.Level1)
@@ -2712,7 +2712,7 @@ HWTEST_F(StorageTest, GetRootEntry_002, TestSize.Level1)
 
 /**
  * @tc.name SaveBlock_001
- * @tc.desc 测试SaveBlock方法
+ * @tc.desc Test SaveBlock method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, SaveBlock_001, TestSize.Level1)
@@ -2724,7 +2724,7 @@ HWTEST_F(StorageTest, SaveBlock_001, TestSize.Level1)
 
 /**
  * @tc.name SaveBlock_002
- * @tc.desc 测试SaveBlock方法
+ * @tc.desc Test SaveBlock method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, SaveBlock_002, TestSize.Level1)
@@ -2737,7 +2737,7 @@ HWTEST_F(StorageTest, SaveBlock_002, TestSize.Level1)
 
 /**
  * @tc.name SaveBlock_003
- * @tc.desc 测试SaveBlock方法
+ * @tc.desc Test SaveBlock method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, SaveBlock_003, TestSize.Level1)
@@ -2750,7 +2750,7 @@ HWTEST_F(StorageTest, SaveBlock_003, TestSize.Level1)
 
 /**
  * @tc.name SaveBlock_004
- * @tc.desc 测试SaveBlock方法
+ * @tc.desc Test SaveBlock method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, SaveBlock_004, TestSize.Level1)
@@ -2764,7 +2764,7 @@ HWTEST_F(StorageTest, SaveBlock_004, TestSize.Level1)
 
 /**
  * @tc.name SaveBlock_005
- * @tc.desc 测试SaveBlock方法
+ * @tc.desc Test SaveBlock method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, SaveBlock_005, TestSize.Level1)
@@ -2780,7 +2780,7 @@ HWTEST_F(StorageTest, SaveBlock_005, TestSize.Level1)
 
 /**
  * @tc.name SaveBlock_006
- * @tc.desc 测试SaveBlock方法
+ * @tc.desc Test SaveBlock method
  * @tc.type FUNC
  */
 HWTEST_F(StorageTest, SaveBlock_006, TestSize.Level1)

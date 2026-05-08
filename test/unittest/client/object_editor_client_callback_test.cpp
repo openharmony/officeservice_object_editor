@@ -74,7 +74,7 @@ namespace {
 
 /**
  * @tc.name CallbackEnter_001
- * @tc.desc 测试CallbackEnter方法
+ * @tc.desc Test CallbackEnter method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorClientCallbackTest, CallbackEnter_001, TestSize.Level1)
@@ -86,7 +86,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, CallbackEnter_001, TestSize.Level1)
 
 /**
  * @tc.name CallbackExit_001
- * @tc.desc 测试CallbackExit方法
+ * @tc.desc Test CallbackExit method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorClientCallbackTest, CallbackExit_001, TestSize.Level1)
@@ -99,7 +99,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, CallbackExit_001, TestSize.Level1)
 
 /**
  * @tc.name OnUpdate_001
- * @tc.desc 测试OnUpdate方法
+ * @tc.desc Test OnUpdate method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorClientCallbackTest, OnUpdate_001, TestSize.Level1)
@@ -112,7 +112,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnUpdate_001, TestSize.Level1)
 
 /**
  * @tc.name OnUpdate_002
- * @tc.desc 测试OnUpdate方法
+ * @tc.desc Test OnUpdate method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorClientCallbackTest, OnUpdate_002, TestSize.Level1)
@@ -128,7 +128,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnUpdate_002, TestSize.Level1)
 
 /**
  * @tc.name OnUpdate_003
- * @tc.desc 测试OnUpdate方法
+ * @tc.desc Test OnUpdate method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorClientCallbackTest, OnUpdate_003, TestSize.Level1)
@@ -143,7 +143,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnUpdate_003, TestSize.Level1)
 
 /**
  * @tc.name OnUpdate_004
- * @tc.desc 测试OnUpdate方法
+ * @tc.desc Test OnUpdate method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorClientCallbackTest, OnUpdate_004, TestSize.Level1)
@@ -159,7 +159,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnUpdate_004, TestSize.Level1)
 
 /**
  * @tc.name OnUpdate_005
- * @tc.desc 测试OnUpdate方法
+ * @tc.desc Test OnUpdate method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorClientCallbackTest, OnUpdate_005, TestSize.Level1)
@@ -175,7 +175,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnUpdate_005, TestSize.Level1)
 
 /**
  * @tc.name OnError_001
- * @tc.desc 测试OnError方法
+ * @tc.desc Test OnError method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorClientCallbackTest, OnError_001, TestSize.Level1)
@@ -188,7 +188,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnError_001, TestSize.Level1)
 
 /**
  * @tc.name OnError_002
- * @tc.desc 测试OnError方法
+ * @tc.desc Test OnError method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorClientCallbackTest, OnError_002, TestSize.Level1)
@@ -202,7 +202,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnError_002, TestSize.Level1)
 
 /**
  * @tc.name OnError_003
- * @tc.desc 测试OnError方法
+ * @tc.desc Test OnError method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorClientCallbackTest, OnError_003, TestSize.Level1)
@@ -216,7 +216,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnError_003, TestSize.Level1)
 
 /**
  * @tc.name OnStopEdit_001
- * @tc.desc 测试OnStopEdit方法
+ * @tc.desc Test OnStopEdit method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorClientCallbackTest, OnStopEdit_001, TestSize.Level1)
@@ -228,7 +228,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnStopEdit_001, TestSize.Level1)
 
 /**
  * @tc.name OnStopEdit_002
- * @tc.desc 测试OnStopEdit方法
+ * @tc.desc Test OnStopEdit method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorClientCallbackTest, OnStopEdit_002, TestSize.Level1)
@@ -241,7 +241,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnStopEdit_002, TestSize.Level1)
 
 /**
  * @tc.name OnStopEdit_003
- * @tc.desc 测试OnStopEdit方法
+ * @tc.desc Test OnStopEdit method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorClientCallbackTest, OnStopEdit_003, TestSize.Level1)
@@ -254,7 +254,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnStopEdit_003, TestSize.Level1)
 
 /**
  * @tc.name OnStopEdit_004
- * @tc.desc 测试OnStopEdit方法
+ * @tc.desc Test OnStopEdit method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorClientCallbackTest, OnStopEdit_004, TestSize.Level1)
@@ -270,7 +270,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnStopEdit_004, TestSize.Level1)
 
 /**
  * @tc.name OnStopEdit_005
- * @tc.desc 测试OnStopEdit方法
+ * @tc.desc Test OnStopEdit method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorClientCallbackTest, OnStopEdit_005, TestSize.Level1)
@@ -287,7 +287,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnStopEdit_005, TestSize.Level1)
 
 /**
  * @tc.name OnExtensionStopped_001
- * @tc.desc 测试OnExtensionStopped方法
+ * @tc.desc Test OnExtensionStopped method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorClientCallbackTest, OnExtensionStopped_001, TestSize.Level1)
@@ -299,7 +299,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnExtensionStopped_001, TestSize.Level1
 
 /**
  * @tc.name OnExtensionStopped_002
- * @tc.desc 测试OnExtensionStopped方法
+ * @tc.desc Test OnExtensionStopped method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorClientCallbackTest, OnExtensionStopped_002, TestSize.Level1)
@@ -312,7 +312,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnExtensionStopped_002, TestSize.Level1
 
 /**
  * @tc.name OnExtensionStoped_003
- * @tc.desc 测试OnExtensionStoped方法
+ * @tc.desc Test OnExtensionStoped method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorClientCallbackTest, OnExtensionStoped_003, TestSize.Level1)

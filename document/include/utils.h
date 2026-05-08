@@ -59,7 +59,7 @@ inline uint64_t GetCurrentFileTime()
     auto duration = now.time_since_epoch();
     uint64_t secs = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
     uint64_t nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count() % NANOS_PER_SEC;
-    // 检查系统时钟的分辨率
+    // Check system clock resolution
     auto period = std::chrono::high_resolution_clock::period();
     if (period.den != NANOS_PER_SEC) {
         OBJECT_EDITOR_LOGW(ObjectEditorDomain::CLIENT_NDK, "System clock resolution is not nanosecond-precise");
@@ -89,7 +89,7 @@ inline void WriteUint32(Byte *ptr, uint32_t data, uint32_t size = READ_U32_BUF_L
     ptr[BYTE_INDEX_3] = static_cast<Byte>((data >> BYTE_SHIFT_3) & BYTE_MASK);
 }
 
-// 读取/写入 16 位、32 位整数
+// Read/Write 16-bit and 32-bit integers
 inline uint16_t ReadUint16(const Byte *ptr, uint32_t size = READ_U16_BUF_LEN)
 {
     if (size < READ_U16_BUF_LEN) {

@@ -24,9 +24,10 @@
 namespace OHOS {
 namespace ObjectEditor {
 
-// Mock 类需要继承自 ObjectEditorDocument
-// 由于 ObjectEditorDocument 是 final 类，无法直接继承，因此需要使用友元类或其他方式
-// 这里假设 ObjectEditorDocument 允许 mock 类访问其私有成员
+// Mock class needs to inherit from ObjectEditorDocument
+// Since ObjectEditorDocument is a final class and cannot be directly inherited,
+// friend classes or other approaches are needed
+// Here we assume ObjectEditorDocument allows mock class to access its private members
 class MockObjectEditorDocument : public ObjectEditorDocument {
 public:
     MockObjectEditorDocument() = default;

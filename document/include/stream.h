@@ -95,7 +95,7 @@ public:
 
 private:
     void Init();
-    void RefreshBlocks();  // 扩容后刷新 FAT 块链，但不重置游标
+    void RefreshBlocks();  // Refresh FAT block chain after expansion, but don't reset cursor
     std::streamsize Read(size_t pos, Byte *data, std::streamsize maxlen);
     void UpdateCache();
     bool PrepareRead(size_t pos, Byte *buffer, std::streamsize maxlen, size_t &allowed, size_t &entrySizeT);
@@ -113,9 +113,9 @@ private:
     StreamPos cachedSize_{0};
     bool cachedUseBig_{false};
     std::vector<uint32_t> blocks_;
-    std::streamsize pos_ = 0;  // 读写位置
+    std::streamsize pos_ = 0;  // Read/write position
 
-    // 简单缓存，加速逐字节 Getch
+    // Simple cache to accelerate byte-by-byte Getch
     std::vector<Byte> cache_;
     std::streamsize cacheSize_;
     std::streamsize cachePos_;

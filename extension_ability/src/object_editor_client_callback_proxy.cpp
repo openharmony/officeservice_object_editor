@@ -21,6 +21,10 @@ namespace ObjectEditor {
 
 ErrCode ObjectEditorClientCallbackProxy::OnUpdate(std::unique_ptr<ObjectEditorDocument> &document)
 {
+    if (document == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "document is nullptr");
+        return ERR_INVALID_VALUE;
+    }
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);

@@ -110,7 +110,7 @@ void ObjectEditorClient::UnsubscribeSystemAbility()
 void ObjectEditorAbilityListener::OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
-    std::lock_guard<std::mutex>(this->mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     if (systemAbilityId == OBJECT_EDITOR_SERVICE_SA_ID) {
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "sa is added");
     }
@@ -119,7 +119,7 @@ void ObjectEditorAbilityListener::OnAddSystemAbility(int32_t systemAbilityId, co
 void ObjectEditorAbilityListener::OnRemoveSystemAbility(int32_t systemAbilityId, const std::string &deviceId)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
-    std::lock_guard<std::mutex>(this->mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     if (systemAbilityId == OBJECT_EDITOR_SERVICE_SA_ID) {
         ObjectEditorClient::GetInstance().SARegCleanUp();
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "sa is removed");
@@ -396,8 +396,8 @@ std::string ObjectEditorClient::GenRandomUuid()
     static const int NIBBLE_SHIFT = 4;
     static const int NIBBLE_MASK = 0xF;
     for (auto it = uuid_.begin(); it != uuid_.end(); it++) {
-        tmp.push_back(hex[(*it >> NIBBLE_SHIFT) & NIBBLE_MASK]); // 右移4位
-        tmp.push_back(hex[*it & NIBBLE_MASK]); // 取低4位
+        tmp.push_back(hex[(*it >> NIBBLE_SHIFT) & NIBBLE_MASK]); // Right shift by 4 bits
+        tmp.push_back(hex[*it & NIBBLE_MASK]); // Take the lower 4 bits
     }
     ret = tmp.substr(0, UUID_HEAD_LEN) + "-" +
         tmp.substr(UUID_START_POS_1, UUID_OTHER_LEN) + "-" +
@@ -407,6 +407,7 @@ std::string ObjectEditorClient::GenRandomUuid()
     return ret;
 }
 
+namespace {
 ErrCode FlushDocument(const std::unique_ptr<ObjectEditorDocument> &document)
 {
     if (document == nullptr || !document->Flush()) {
@@ -415,6 +416,7 @@ ErrCode FlushDocument(const std::unique_ptr<ObjectEditorDocument> &document)
     }
     return ObjectEditorClientErrCode::CLIENT_OK;
 }
+} // namespace
 
 std::string ObjectEditorClient::GetTempDir(const std::unique_ptr<ObjectEditorDocument> &document)
 {
@@ -446,9 +448,10 @@ ErrCode ObjectEditorClient::PrepareFiles(const std::unique_ptr<ObjectEditorDocum
         return ObjectEditorClientErrCode::CLIENT_GET_PATH_ERROR;
     }
     fs::path targetDirPath(sandboxPath);
-    bool result = fs::create_directories(targetDirPath);
-    if (!result) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "create sandboxPath failed");
+    std::error_code ec;
+    bool result = fs::create_directories(targetDirPath, ec);
+    if (!result || ec) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "create sandboxPath failed, ec: %{public}d", ec.value());
         return ObjectEditorClientErrCode::CLIENT_UNKNOWN_OPERATE;
     }
     if (document->GetOperateType() == OperateType::CREATE_BY_FILE) {
@@ -463,8 +466,16 @@ ErrCode ObjectEditorClient::PrepareFiles(const std::unique_ptr<ObjectEditorDocum
         } else {
             fs::path sourcePath(source);
             fs::path destPath = targetDirPath / sourcePath.filename().string();
-            std::uintmax_t fileSize = fs::file_size(sourcePath);
-            auto spaceInfo = fs::space(destPath.parent_path());
+            std::uintmax_t fileSize = fs::file_size(sourcePath, ec);
+            if (ec) {
+                OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "get file_size failed, ec: %{public}d", ec.value());
+                return ObjectEditorClientErrCode::CLIENT_COPY_FILE_FAILED;
+            }
+            auto spaceInfo = fs::space(destPath.parent_path(), ec);
+            if (ec) {
+                OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "get space failed, ec: %{public}d", ec.value());
+                return ObjectEditorClientErrCode::CLIENT_COPY_FILE_FAILED;
+            }
             std::uintmax_t freeSpace = spaceInfo.available;
             if (freeSpace < fileSize + METADATA_BUFFER_SIZE) {
                 OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,
@@ -472,9 +483,10 @@ ErrCode ObjectEditorClient::PrepareFiles(const std::unique_ptr<ObjectEditorDocum
                     static_cast<uint64_t>(freeSpace), static_cast<uint64_t>(fileSize));
                 return ObjectEditorClientErrCode::CLIENT_COPY_FILE_FAILED;
             }
-            result = fs::copy_file(sourcePath, destPath, fs::copy_options::overwrite_existing);
-            if (!result) {
-                OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "copy source to sandboxPath failed");
+            result = fs::copy_file(sourcePath, destPath, fs::copy_options::overwrite_existing, ec);
+            if (!result || ec) {
+                OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "copy source to sandboxPath failed, ec: %{public}d",
+                    ec.value());
                 return ObjectEditorClientErrCode::CLIENT_UNKNOWN_OPERATE;
             }
             document->SetNativeFileUri(SystemUtils::GetUriFromPath(destPath.string()));

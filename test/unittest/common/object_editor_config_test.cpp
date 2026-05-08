@@ -56,7 +56,7 @@ namespace {
 
 /**
  * @tc.name ObjectEditorConfig_001
- * @tc.desc 测试IsSupportObjectEditor方法
+ * @tc.desc Test IsSupportObjectEditor method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorConfigTest, ObjectEditorConfig_001, TestSize.Level1)
@@ -69,7 +69,7 @@ HWTEST_F(ObjectEditorConfigTest, ObjectEditorConfig_001, TestSize.Level1)
 
 /**
  * @tc.name ObjectEditorConfig_002
- * @tc.desc 测试IsSupportObjectEditor方法
+ * @tc.desc Test IsSupportObjectEditor method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorConfigTest, ObjectEditorConfig_002, TestSize.Level1)

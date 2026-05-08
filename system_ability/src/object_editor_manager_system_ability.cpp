@@ -310,7 +310,7 @@ bool ObjectEditorManagerSystemAbility::CheckRateLimitAdvanced()
     auto now = std::chrono::steady_clock::now();
     auto nowMs = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
     uint64_t windowStartMs = windowStartMs_.load();
-    if (nowMs - windowStartMs >= WINDOW_SIZE_MS) {
+    if (static_cast<uint64_t>(nowMs) - windowStartMs >= WINDOW_SIZE_MS) {
         if (windowStartMs_.compare_exchange_strong(windowStartMs, nowMs)) {
             requestCount_.store(1);
             return true;

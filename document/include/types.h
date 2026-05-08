@@ -26,12 +26,12 @@ constexpr uint32_t FOUR_BYTE_SIZE = 4;
 // Header info
 constexpr uint16_t DEFAULT_MINOR_VERSION  = 0x003Eu;
 constexpr uint16_t DEFAULT_MAJOR_VERSION  = 0x0003u;
-constexpr uint16_t DEFAULT_BYTE_ORDER = 0xFFFEu;         // 默认为小端
-constexpr uint16_t DEFAULT_SECTOR_SHIFT = 0x0009u;       // MAJOR_VERSION 3: 2^9 = 512 字节
-constexpr uint16_t DEFAULT_MINI_SECTOR_SHIFT = 0x0006u;  // 2^6 = 64 字节
-constexpr uint32_t MINI_STREAM_CUTOFF = 4096;            // Mini Stream 阈值
-constexpr size_t HEADER_FIXED_SIZE = 0x4C;               // 固定字段长度
-constexpr size_t HEADER_DIFAT_ARRAY_SIZE = 109;          // Header DIFAT 条目数
+constexpr uint16_t DEFAULT_BYTE_ORDER = 0xFFFEu;         // Default to little-endian
+constexpr uint16_t DEFAULT_SECTOR_SHIFT = 0x0009u;       // MAJOR_VERSION 3: 2^9 = 512 bytes
+constexpr uint16_t DEFAULT_MINI_SECTOR_SHIFT = 0x0006u;  // 2^6 = 64 bytes
+constexpr uint32_t MINI_STREAM_CUTOFF = 4096;            // Mini Stream threshold
+constexpr size_t HEADER_FIXED_SIZE = 0x4C;               // Fixed field length
+constexpr size_t HEADER_DIFAT_ARRAY_SIZE = 109;          // Number of Header DIFAT entries
 constexpr uint32_t CLSID_SIZE = 16;
 constexpr uint32_t FILE_SIGNATURE_SIZE = 8;
 
@@ -58,7 +58,7 @@ constexpr uint32_t HEADER_DIFAT_ARRAY_OFFSET = 0x4C;
 constexpr uint32_t DIR_ENTRY_END = static_cast<uint32_t>(-1);
 }
 
-// 固定宽度别名，用于 MS-CFB 底层结构与偏移计算。
+// Fixed-width aliases for MS-CFB underlying structures and offset calculations.
 using Byte = std::uint8_t;
 using SectorIndex = std::uint32_t;
 using StreamPos = uint64_t;

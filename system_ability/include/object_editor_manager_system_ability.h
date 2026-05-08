@@ -115,7 +115,7 @@ private:
         std::unique_ptr<ObjectEditorFormat> &format,
         sptr<IRemoteObject> &remoteObject,
         bool &isExceed);
-    // 校验客户端APP是否有沙箱临时文件权限
+    // Validate if client app has sandbox temp file permission
     bool CheckClientFileValid(const ObjectEditorDocument &document);
     bool GrantClientFileUriPermissionToServerExtension(const ObjectEditorDocument &document,
         const std::string &targetBundleName);

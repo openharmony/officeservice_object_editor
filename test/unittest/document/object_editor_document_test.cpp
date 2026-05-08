@@ -154,7 +154,7 @@ Stream *MockGetStream()
 
 /**
  * @tc.name CreateByHmid_001
- * @tc.desc 测试CreateByHmid方法
+ * @tc.desc Test CreateByHmid method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, CreateByHmid_001, TestSize.Level1)
@@ -168,7 +168,7 @@ HWTEST_F(ObjectEditorDocumentTest, CreateByHmid_001, TestSize.Level1)
 
 /**
  * @tc.name CreateByHmid_002
- * @tc.desc 测试CreateByHmid方法
+ * @tc.desc Test CreateByHmid method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, CreateByHmid_002, TestSize.Level1)
@@ -180,7 +180,7 @@ HWTEST_F(ObjectEditorDocumentTest, CreateByHmid_002, TestSize.Level1)
 
 /**
  * @tc.name CreateByFile_001
- * @tc.desc 测试CreateByFile方法
+ * @tc.desc Test CreateByFile method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, CreateByFile_001, TestSize.Level1)
@@ -193,7 +193,7 @@ HWTEST_F(ObjectEditorDocumentTest, CreateByFile_001, TestSize.Level1)
 
 /**
  * @tc.name CreateByFile_001
- * @tc.desc 测试CreateByFile方法
+ * @tc.desc Test CreateByFile method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, CreateByFile_001, TestSize.Level1)
@@ -208,7 +208,7 @@ HWTEST_F(ObjectEditorDocumentTest, CreateByFile_001, TestSize.Level1)
 
 /**
  * @tc.name LoadFromFile_001
- * @tc.desc 测试LoadFromFile方法
+ * @tc.desc Test LoadFromFile method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, LoadFromFile_001, TestSize.Level1)
@@ -222,7 +222,7 @@ HWTEST_F(ObjectEditorDocumentTest, LoadFromFile_001, TestSize.Level1)
 
 /**
  * @tc.name LoadFromFile_001
- * @tc.desc 测试LoadFromFile方法
+ * @tc.desc Test LoadFromFile method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, LoadFromFile_001, TestSize.Level1)
@@ -236,7 +236,7 @@ HWTEST_F(ObjectEditorDocumentTest, LoadFromFile_001, TestSize.Level1)
 
 /**
  * @tc.name LoadFromFile_002
- * @tc.desc 测试LoadFromFile方法
+ * @tc.desc Test LoadFromFile method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, LoadFromFile_002, TestSize.Level1)
@@ -250,7 +250,7 @@ HWTEST_F(ObjectEditorDocumentTest, LoadFromFile_002, TestSize.Level1)
 
 /**
  * @tc.name LoadFromFile_003
- * @tc.desc 测试LoadFromFile方法
+ * @tc.desc Test LoadFromFile method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, LoadFromFile_003, TestSize.Level1)
@@ -264,7 +264,7 @@ HWTEST_F(ObjectEditorDocumentTest, LoadFromFile_003, TestSize.Level1)
 
 /**
  * @tc.name GetHmid_001
- * @tc.desc 测试GetHmid方法
+ * @tc.desc Test GetHmid method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, GetHmid_001, TestSize.Level1)
@@ -275,7 +275,7 @@ HWTEST_F(ObjectEditorDocumentTest, GetHmid_001, TestSize.Level1)
 
 /**
  * @tc.name FlushHmid_001
- * @tc.desc 测试FlushHmid方法
+ * @tc.desc Test FlushHmid method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, FlushHmid_001, TestSize.Level1)
@@ -290,7 +290,7 @@ HWTEST_F(ObjectEditorDocumentTest, FlushHmid_001, TestSize.Level1)
 
 /**
  * @tc.name FlushHmid_002
- * @tc.desc 测试FlushHmid方法
+ * @tc.desc Test FlushHmid method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, FlushHmid_002, TestSize.Level1)
@@ -307,7 +307,7 @@ HWTEST_F(ObjectEditorDocumentTest, FlushHmid_002, TestSize.Level1)
 
 /**
  * @tc.name GetRootStorage_001
- * @tc.desc 测试GetRootStorage方法
+ * @tc.desc Test GetRootStorage method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, GetRootStorage_001, TestSize.Level1)
@@ -318,7 +318,7 @@ HWTEST_F(ObjectEditorDocumentTest, GetRootStorage_001, TestSize.Level1)
 
 /**
  * @tc.name GetOriFileUri_001
- * @tc.desc 测试GetOriFileUri方法
+ * @tc.desc Test GetOriFileUri method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, GetOriFileUri_001, TestSize.Level1)
@@ -329,7 +329,7 @@ HWTEST_F(ObjectEditorDocumentTest, GetOriFileUri_001, TestSize.Level1)
 
 /**
  * @tc.name GetOriFileUri_002
- * @tc.desc 测试GetOriFileUri方法
+ * @tc.desc Test GetOriFileUri method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, GetOriFileUri_002, TestSize.Level1)
@@ -341,7 +341,7 @@ HWTEST_F(ObjectEditorDocumentTest, GetOriFileUri_002, TestSize.Level1)
 
 /**
  * @tc.name SetOriFileUri_001
- * @tc.desc 测试SetOriFileUri方法
+ * @tc.desc Test SetOriFileUri method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, SetOriFileUri_001, TestSize.Level1)
@@ -353,7 +353,7 @@ HWTEST_F(ObjectEditorDocumentTest, SetOriFileUri_001, TestSize.Level1)
 
 /**
  * @tc.name GetTmpFileUri_001
- * @tc.desc 测试GetTmpFileUri方法
+ * @tc.desc Test GetTmpFileUri method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, GetTmpFileUri_001, TestSize.Level1)
@@ -364,7 +364,7 @@ HWTEST_F(ObjectEditorDocumentTest, GetTmpFileUri_001, TestSize.Level1)
 
 /**
  * @tc.name GetTmpFileUri_002
- * @tc.desc 测试GetTmpFileUri方法
+ * @tc.desc Test GetTmpFileUri method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, GetOriFileUri_002, TestSize.Level1)
@@ -376,7 +376,7 @@ HWTEST_F(ObjectEditorDocumentTest, GetOriFileUri_002, TestSize.Level1)
 
 /**
  * @tc.name SetTmpFileUri_001
- * @tc.desc 测试SetTmpFileUri方法
+ * @tc.desc Test SetTmpFileUri method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, SetTmpFileUri_001, TestSize.Level1)
@@ -388,7 +388,7 @@ HWTEST_F(ObjectEditorDocumentTest, SetTmpFileUri_001, TestSize.Level1)
 
 /**
  * @tc.name GetNativeFileUri_001
- * @tc.desc 测试GetNativeFileUri方法
+ * @tc.desc Test GetNativeFileUri method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, GetNativeFileUri_001, TestSize.Level1)
@@ -399,7 +399,7 @@ HWTEST_F(ObjectEditorDocumentTest, GetNativeFileUri_001, TestSize.Level1)
 
 /**
  * @tc.name GetNativeFileUri_002
- * @tc.desc 测试GetNativeFileUri方法
+ * @tc.desc Test GetNativeFileUri method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, GetNativeFileUri_002, TestSize.Level1)
@@ -411,7 +411,7 @@ HWTEST_F(ObjectEditorDocumentTest, GetNativeFileUri_002, TestSize.Level1)
 
 /**
  * @tc.name SetNativeFileUri_001
- * @tc.desc 测试SetNativeFileUri方法
+ * @tc.desc Test SetNativeFileUri method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, SetNativeFileUri_001, TestSize.Level1)
@@ -423,7 +423,7 @@ HWTEST_F(ObjectEditorDocumentTest, SetNativeFileUri_001, TestSize.Level1)
 
 /**
  * @tc.name RestoreStorage_001
- * @tc.desc 测试RestoreStorage方法
+ * @tc.desc Test RestoreStorage method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, RestoreStorage_001, TestSize.Level1)
@@ -436,7 +436,7 @@ HWTEST_F(ObjectEditorDocumentTest, RestoreStorage_001, TestSize.Level1)
 
 /**
  * @tc.name Flush_001
- * @tc.desc 测试Flush方法
+ * @tc.desc Test Flush method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, Flush_001, TestSize.Level1)
@@ -447,7 +447,7 @@ HWTEST_F(ObjectEditorDocumentTest, Flush_001, TestSize.Level1)
 
 /**
  * @tc.name Flush_002
- * @tc.desc 测试Flush方法
+ * @tc.desc Test Flush method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, Flush_002, TestSize.Level1)
@@ -463,7 +463,7 @@ HWTEST_F(ObjectEditorDocumentTest, Flush_002, TestSize.Level1)
 
 /**
  * @tc.name Flush_003
- * @tc.desc 测试Flush方法
+ * @tc.desc Test Flush method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, Flush_003, TestSize.Level1)
@@ -479,7 +479,7 @@ HWTEST_F(ObjectEditorDocumentTest, Flush_003, TestSize.Level1)
 
 /**
  * @tc.name Flush_004
- * @tc.desc 测试Flush方法
+ * @tc.desc Test Flush method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, Flush_004, TestSize.Level1)
@@ -495,7 +495,7 @@ HWTEST_F(ObjectEditorDocumentTest, Flush_004, TestSize.Level1)
 
 /**
  * @tc.name Flush_005
- * @tc.desc 测试Flush方法
+ * @tc.desc Test Flush method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, Flush_005, TestSize.Level1)
@@ -510,7 +510,7 @@ HWTEST_F(ObjectEditorDocumentTest, Flush_005, TestSize.Level1)
 
 /**
  * @tc.name GenerateTempPath_001
- * @tc.desc 测试GenerateTempPath方法
+ * @tc.desc Test GenerateTempPath method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, GenerateTempPath_001, TestSize.Level1)
@@ -521,7 +521,7 @@ HWTEST_F(ObjectEditorDocumentTest, GenerateTempPath_001, TestSize.Level1)
 
 /**
  * @tc.name ComputeLivaDataSize_001
- * @tc.desc 测试ComputeLivaDataSize方法
+ * @tc.desc Test ComputeLivaDataSize method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, ComputeLivaDataSize_001, TestSize.Level1)
@@ -533,7 +533,7 @@ HWTEST_F(ObjectEditorDocumentTest, ComputeLivaDataSize_001, TestSize.Level1)
 
 /**
  * @tc.name ComputeLivaDataSize_002
- * @tc.desc 测试ComputeLivaDataSize方法
+ * @tc.desc Test ComputeLivaDataSize method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, ComputeLivaDataSize_002, TestSize.Level1)
@@ -546,7 +546,7 @@ HWTEST_F(ObjectEditorDocumentTest, ComputeLivaDataSize_002, TestSize.Level1)
 
 /**
  * @tc.name ShouldRebuild_001
- * @tc.desc 测试ShouldRebuild方法
+ * @tc.desc Test ShouldRebuild method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, ShouldRebuild_001, TestSize.Level1)
@@ -558,7 +558,7 @@ HWTEST_F(ObjectEditorDocumentTest, ShouldRebuild_001, TestSize.Level1)
 
 /**
  * @tc.name ShouldRebuild_002
- * @tc.desc 测试ShouldRebuild方法
+ * @tc.desc Test ShouldRebuild method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, ShouldRebuild_002, TestSize.Level1)
@@ -573,7 +573,7 @@ HWTEST_F(ObjectEditorDocumentTest, ShouldRebuild_002, TestSize.Level1)
 
 /**
  * @tc.name ShouldRebuild_003
- * @tc.desc 测试ShouldRebuild方法
+ * @tc.desc Test ShouldRebuild method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, ShouldRebuild_003, TestSize.Level1)
@@ -589,7 +589,7 @@ HWTEST_F(ObjectEditorDocumentTest, ShouldRebuild_003, TestSize.Level1)
 
 /**
  * @tc.name ShouldRebuild_004
- * @tc.desc 测试ShouldRebuild方法
+ * @tc.desc Test ShouldRebuild method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, ShouldRebuild_004, TestSize.Level1)
@@ -606,7 +606,7 @@ HWTEST_F(ObjectEditorDocumentTest, ShouldRebuild_004, TestSize.Level1)
 
 /**
  * @tc.name ShouldRebuild_005
- * @tc.desc 测试ShouldRebuild方法
+ * @tc.desc Test ShouldRebuild method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, ShouldRebuild_005, TestSize.Level1)
@@ -623,7 +623,7 @@ HWTEST_F(ObjectEditorDocumentTest, ShouldRebuild_005, TestSize.Level1)
 
 /**
  * @tc.name CopyStreamData_001
- * @tc.desc 测试CopyStreamData方法
+ * @tc.desc Test CopyStreamData method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, CopyStreamData_001, TestSize.Level1)
@@ -638,7 +638,7 @@ HWTEST_F(ObjectEditorDocumentTest, CopyStreamData_001, TestSize.Level1)
 
 /**
  * @tc.name CopyStreamData_002
- * @tc.desc 测试CopyStreamData方法
+ * @tc.desc Test CopyStreamData method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, CopyStreamData_002, TestSize.Level1)
@@ -655,7 +655,7 @@ HWTEST_F(ObjectEditorDocumentTest, CopyStreamData_002, TestSize.Level1)
 
 /**
  * @tc.name CopyStreamData_003
- * @tc.desc 测试CopyStreamData方法
+ * @tc.desc Test CopyStreamData method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, CopyStreamData_003, TestSize.Level1)
@@ -673,7 +673,7 @@ HWTEST_F(ObjectEditorDocumentTest, CopyStreamData_003, TestSize.Level1)
 
 /**
  * @tc.name CopyAllStreamRecursively_001
- * @tc.desc 测试CopyAllStreamRecursively方法
+ * @tc.desc Test CopyAllStreamRecursively method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, CopyAllStreamRecursively_001, TestSize.Level1)
@@ -688,7 +688,7 @@ HWTEST_F(ObjectEditorDocumentTest, CopyAllStreamRecursively_001, TestSize.Level1
 
 /**
  * @tc.name CopyAllStreamRecursively_002
- * @tc.desc 测试CopyAllStreamRecursively方法
+ * @tc.desc Test CopyAllStreamRecursively method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, CopyAllStreamRecursively_002, TestSize.Level1)
@@ -703,7 +703,7 @@ HWTEST_F(ObjectEditorDocumentTest, CopyAllStreamRecursively_002, TestSize.Level1
 
 /**
  * @tc.name CopyAllStreamRecursively_003
- * @tc.desc 测试CopyAllStreamRecursively方法
+ * @tc.desc Test CopyAllStreamRecursively method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, CopyAllStreamRecursively_003, TestSize.Level1)
@@ -718,7 +718,7 @@ HWTEST_F(ObjectEditorDocumentTest, CopyAllStreamRecursively_003, TestSize.Level1
 
 /**
  * @tc.name CopyAllStreamRecursively_004
- * @tc.desc 测试CopyAllStreamRecursively方法
+ * @tc.desc Test CopyAllStreamRecursively method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, CopyAllStreamRecursively_004, TestSize.Level1)
@@ -733,7 +733,7 @@ HWTEST_F(ObjectEditorDocumentTest, CopyAllStreamRecursively_004, TestSize.Level1
 
 /**
  * @tc.name RebuildAndFlush_001
- * @tc.desc 测试RebuildAndFlush方法
+ * @tc.desc Test RebuildAndFlush method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, RebuildAndFlush_001, TestSize.Level1)
@@ -748,7 +748,7 @@ HWTEST_F(ObjectEditorDocumentTest, RebuildAndFlush_001, TestSize.Level1)
 
 /**
  * @tc.name RebuildAndFlush_002
- * @tc.desc 测试RebuildAndFlush方法
+ * @tc.desc Test RebuildAndFlush method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, RebuildAndFlush_002, TestSize.Level1)
@@ -761,7 +761,7 @@ HWTEST_F(ObjectEditorDocumentTest, RebuildAndFlush_002, TestSize.Level1)
 
 /**
  * @tc.name GetHmidInternal_001
- * @tc.desc 测试GetHmidInternal方法
+ * @tc.desc Test GetHmidInternal method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, GetHmidInternal_001, TestSize.Level1)
@@ -773,7 +773,7 @@ HWTEST_F(ObjectEditorDocumentTest, GetHmidInternal_001, TestSize.Level1)
 
 /**
  * @tc.name GetHmidInternal_002
- * @tc.desc 测试GetHmidInternal方法
+ * @tc.desc Test GetHmidInternal method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, GetHmidInternal_002, TestSize.Level1)
@@ -788,7 +788,7 @@ HWTEST_F(ObjectEditorDocumentTest, GetHmidInternal_002, TestSize.Level1)
 
 /**
  * @tc.name GetHmidInternal_003
- * @tc.desc 测试GetHmidInternal方法
+ * @tc.desc Test GetHmidInternal method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, GetHmidInternal_003, TestSize.Level1)
@@ -804,7 +804,7 @@ HWTEST_F(ObjectEditorDocumentTest, GetHmidInternal_003, TestSize.Level1)
 
 /**
  * @tc.name Marshalling_001
- * @tc.desc 测试Marshalling方法
+ * @tc.desc Test Marshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, Marshalling_001, TestSize.Level1)
@@ -819,7 +819,7 @@ HWTEST_F(ObjectEditorDocumentTest, Marshalling_001, TestSize.Level1)
 
 /**
  * @tc.name Marshalling_002
- * @tc.desc 测试Marshalling方法
+ * @tc.desc Test Marshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, Marshalling_002, TestSize.Level1)
@@ -834,7 +834,7 @@ HWTEST_F(ObjectEditorDocumentTest, Marshalling_002, TestSize.Level1)
 
 /**
  * @tc.name Marshalling_003
- * @tc.desc 测试Marshalling方法
+ * @tc.desc Test Marshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, Marshalling_003, TestSize.Level1)
@@ -848,7 +848,7 @@ HWTEST_F(ObjectEditorDocumentTest, Marshalling_003, TestSize.Level1)
 
 /**
  * @tc.name Marshalling_004
- * @tc.desc 测试Marshalling方法
+ * @tc.desc Test Marshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, Marshalling_004, TestSize.Level1)
@@ -860,7 +860,7 @@ HWTEST_F(ObjectEditorDocumentTest, Marshalling_004, TestSize.Level1)
 
 /**
  * @tc.name Unmarshalling_004
- * @tc.desc 测试Unmarshalling方法
+ * @tc.desc Test Unmarshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorDocumentTest, Unmarshalling_004, TestSize.Level1)
