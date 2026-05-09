@@ -35,6 +35,7 @@ Storage::~Storage() = default;
 int Storage::Result() const
 {
     if (!io_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null");
         return Storage::UnknownError;
     }
     return io_->Result();
@@ -43,6 +44,7 @@ int Storage::Result() const
 void Storage::ListEntries(std::vector<const DirEntry *> &result) const
 {
     if (!io_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null");
         return;
     }
     io_->ListEntries(result);
@@ -51,6 +53,7 @@ void Storage::ListEntries(std::vector<const DirEntry *> &result) const
 bool Storage::EnterDirectory(const std::string &directory)
 {
     if (!io_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null");
         return false;
     }
     return io_->EnterDirectory(directory);
@@ -59,6 +62,7 @@ bool Storage::EnterDirectory(const std::string &directory)
 void Storage::LeaveDirectory()
 {
     if (!io_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null");
         return;
     }
     io_->LeaveDirectory();
@@ -66,7 +70,10 @@ void Storage::LeaveDirectory()
 
 DirEntry *Storage::GetStorage(const std::string &path, bool create)
 {
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "path: %{private}s, create: %{public}d",
+        path.c_str(), create);
     if (!io_ || path.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null or path is empty");
         return nullptr;
     }
     std::string normalized = path;
@@ -87,6 +94,7 @@ DirEntry *Storage::GetStorage(const std::string &path, bool create)
     }
 
     if (!create) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "create is false, path: %{private}s", normalized.c_str());
         return nullptr;
     }
     const auto pos = normalized.find_last_of('/');
@@ -94,10 +102,12 @@ DirEntry *Storage::GetStorage(const std::string &path, bool create)
         normalized.substr(0, pos);
     DirEntry *parent = io_->Entry(parentPath, false);
     if (!parent || !parent->IsDir()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "parent is not dir, path: %{private}s", parentPath.c_str());
         return nullptr;
     }
     DirEntry *created = io_->Entry(normalized, true);
     if (!created) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "create entry failed, path: %{private}s", normalized.c_str());
         return nullptr;
     }
     created->SetType(1);
@@ -113,6 +123,7 @@ DirEntry *Storage::GetStorage(const std::string &path, bool create)
 void Storage::Path(std::string &result) const
 {
     if (!io_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null");
         return;
     }
     io_->Path(result);
@@ -120,7 +131,10 @@ void Storage::Path(std::string &result) const
 
 Stream *Storage::GetStream(const std::string &name, bool create, bool reuse)
 {
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "name: %{private}s, create: %{public}d, reuse: %{public}d",
+        name.c_str(), create, reuse);
     if (!io_ || !name.length()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null or name is empty");
         return nullptr;
     }
     std::string fullName = name;
@@ -146,6 +160,7 @@ Stream *Storage::GetStream(const std::string &name, bool create, bool reuse)
 
     DirEntry *entry = io_->Entry(fullName, create);
     if (!entry || !entry->IsFile()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry is not file, path: %{private}s", fullName.c_str());
         return nullptr;
     }
 
@@ -180,6 +195,7 @@ bool Storage::IsDirty() const
 bool Storage::ReadRawCd(size_t offset, uint8_t *buf, size_t len, size_t *outRead)
 {
     if (buf == nullptr || outRead == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "buf or outRead is null");
         return false;
     }
     return io_ ? io_->ReadRawCd(offset, buf, len, outRead) : false;
@@ -193,6 +209,7 @@ bool Storage::SaveToFile(const char *filename)
 void Storage::Debug()
 {
     if (!io_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null");
         return;
     }
     io_->Debug();
@@ -215,6 +232,7 @@ bool Storage::DeleteEntry(const std::string &path)
 const CLSID &Storage::Clsid() const
 {
     if (!io_ || io_->GetHeader() == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null or header is null");
         static CLSID empty{};
         return empty;
     }
@@ -224,6 +242,7 @@ const CLSID &Storage::Clsid() const
 uint32_t Storage::TransactionSignature() const
 {
     if (!io_ || io_->GetHeader() == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null or header is null");
         return 0;
     }
     return io_->GetHeader()->TransactionSignature();
@@ -274,6 +293,7 @@ int Stream::Getch()
 std::streamsize Stream::Read(Byte *data, std::streamsize maxlen)
 {
     if (!impl || !data || maxlen == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "impl or data or maxlen is null");
         return 0;
     }
     return impl->Read(data, maxlen);
@@ -282,6 +302,7 @@ std::streamsize Stream::Read(Byte *data, std::streamsize maxlen)
 std::streamsize Stream::ReadBufferUntilNull(std::vector<Byte> &buffer)
 {
     if (!impl) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "impl is null");
         return 0;
     }
     return impl->ReadBufferUntilNull(buffer);
