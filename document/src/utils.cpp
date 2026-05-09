@@ -18,6 +18,33 @@
 namespace OHOS {
 namespace ObjectEditor {
 // LCOV_EXCL_START
+bool IsValidOEid(const std::string &uuid)
+{
+    if (uuid.size() == LENGTH_HYPHEN) {
+        if (uuid[DASH_FIRST] != '-' || uuid[DASH_SECOND] != '-' || uuid[DASH_THREE] != '-' || uuid[DASH_FOUR] != '-') {
+            return false;
+        }
+        for (size_t i = 0; i < uuid.size(); i++) {
+            const char c = uuid[i];
+            if (c == '-') {
+                continue;
+            }
+            if (HexToNibble(c) < 0) {
+                return false;
+            }
+        }
+        return true;
+    } else if (uuid.size() == LENGTH) {
+        for (size_t i = 0; i < uuid.size(); i++) {
+            if (HexToNibble(uuid[i]) < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
 std::optional<CLSID> ParseOEidToClsid(const std::string &uuid)
 {
     std::array<char, LENGTH> hex{};
@@ -27,8 +54,9 @@ std::optional<CLSID> ParseOEidToClsid(const std::string &uuid)
         size_t j = 0;
         for (size_t i = 0; i < uuid.size(); i++) {
             const char c = uuid[i];
-            if (c == '-')
+            if (c == '-') {
                 continue;
+            }
             if (j >= hex.size())
                 return std::nullopt;
             hex[j++] = c;

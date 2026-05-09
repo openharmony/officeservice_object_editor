@@ -329,10 +329,9 @@ extern "C" {
 ContentEmbed_ErrorCode OH_ContentEmbed_CreateDocumentByOEid(const char *oeid, ContentEmbed_Document **document)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (document == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
@@ -366,10 +365,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_CreateDocumentByFile(const char *srcFileP
     bool isLinking, ContentEmbed_Document **document)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (document == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
@@ -403,10 +401,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_LoadDocumentFromFile(const char *srcFileP
     ContentEmbed_Document **document)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (document == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
@@ -437,10 +434,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_Read(uint8_t *buffer, size_t len
     size_t *readSize)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (document == nullptr || document->oeDocumentInner == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
@@ -487,10 +483,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetOEid(const ContentEmbed_Docum
     char *oeid)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (oeid == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid is null");
@@ -512,10 +507,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_IsLinking(const ContentEmbed_Doc
     bool *isLinking)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (document == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
@@ -533,10 +527,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetNativeFilePath(const ContentE
     char *nativeFilePath)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (document == nullptr || document->oeDocumentInner == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
@@ -558,10 +551,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetRootStorage(ContentEmbed_Docu
     ContentEmbed_Storage **storage)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (storage == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storage is null");
@@ -592,10 +584,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetRootStorage(ContentEmbed_Docu
 ContentEmbed_ErrorCode OH_ContentEmbed_Document_Flush(const ContentEmbed_Document *document)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (document == nullptr || document->oeDocumentInner == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
@@ -612,10 +603,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_CreateStorage(const ContentEmbed_
     const char *name, ContentEmbed_Storage **childStorage)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (childStorage == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "child storage is null");
@@ -662,10 +652,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetStorage(const ContentEmbed_Sto
     const char *name, ContentEmbed_Storage **childStorage)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (childStorage == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "child storage is null");
@@ -754,10 +743,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_CreateStream(ContentEmbed_Storage
     const char *name, ContentEmbed_Stream **childStream)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     return OH_ContentEmbed_Helper_GetStreamInternal(parentStorage, name, true, childStream);
 }
@@ -766,10 +754,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetStream(ContentEmbed_Storage *p
     const char *name, ContentEmbed_Stream **childStream)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     return OH_ContentEmbed_Helper_GetStreamInternal(parentStorage, name, false, childStream);
 }
@@ -778,10 +765,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_DeleteEntry(ContentEmbed_Storage 
     const char *name)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (!parentStorage) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "parentStorage is null");
@@ -817,10 +803,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_DeleteEntry(ContentEmbed_Storage 
 ContentEmbed_ErrorCode OH_ContentEmbed_Storage_DeleteAllEntry(ContentEmbed_Storage *storage)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (!storage) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storage is null");
@@ -860,10 +845,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_DeleteAllEntry(ContentEmbed_Stora
 ContentEmbed_ErrorCode OH_ContentEmbed_DestroyStorage(ContentEmbed_Storage *storage)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (!storage) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
@@ -878,10 +862,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_Read(ContentEmbed_Stream *stream,
     unsigned char **buffer, size_t length, size_t *num)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (buffer == nullptr || num == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "buffer or num is null");
@@ -927,10 +910,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_Write(ContentEmbed_Stream *stream,
     const unsigned char *data, size_t length, size_t *num)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (stream == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "stream is null");
@@ -974,10 +956,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_Write(ContentEmbed_Stream *stream,
 ContentEmbed_ErrorCode OH_ContentEmbed_Stream_Seek(ContentEmbed_Stream *stream, size_t position)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (stream == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "stream is null");
@@ -1010,10 +991,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_Seek(ContentEmbed_Stream *stream, 
 ContentEmbed_ErrorCode OH_ContentEmbed_Stream_GetPosition(ContentEmbed_Stream *stream, size_t *position)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (stream == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "stream is null");
@@ -1037,10 +1017,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_GetPosition(ContentEmbed_Stream *s
 ContentEmbed_ErrorCode OH_ContentEmbed_Stream_GetSize(ContentEmbed_Stream *stream, size_t *size)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (stream == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "stream is null");
@@ -1063,10 +1042,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_GetSize(ContentEmbed_Stream *strea
 ContentEmbed_ErrorCode OH_ContentEmbed_DestroyStream(ContentEmbed_Stream *stream)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (stream == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "stream is null");
@@ -1080,10 +1058,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_DestroyStream(ContentEmbed_Stream *stream
 ContentEmbed_ErrorCode OH_ContentEmbed_DestroyDocument(ContentEmbed_Document *document)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (document == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
@@ -1097,10 +1074,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_DestroyDocument(ContentEmbed_Document *do
 ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetOEid(ContentEmbed_Storage *storage, char *oeid, size_t oeidSize)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (storage == nullptr || storage->owner == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
@@ -1131,10 +1107,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetOEid(ContentEmbed_Storage *sto
 ContentEmbed_ErrorCode OH_ContentEmbed_Storage_SetOEid(ContentEmbed_Storage *storage, char *oeid, size_t oeidSize)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (storage == nullptr || storage->owner == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
@@ -1158,10 +1133,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_SetOEid(ContentEmbed_Storage *sto
 ContentEmbed_ErrorCode OH_ContentEmbed_StorageElements_Create(ContentEmbed_StorageElements **storageElements)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (storageElements == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storageElements is null");
@@ -1178,10 +1152,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_StorageElements_Create(ContentEmbed_Stora
 ContentEmbed_ErrorCode OH_ContentEmbed_StorageElements_Destroy(ContentEmbed_StorageElements *storageElements)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (storageElements == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storageElements is null");
@@ -1196,10 +1169,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetElements(const ContentEmbed_St
     ContentEmbed_StorageElements *storageElements)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (storage == nullptr || storage->owner == nullptr || storage->owner->oeDocumentInner == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storage is null");
@@ -1248,10 +1220,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_StorageElements_GetCount(
     const ContentEmbed_StorageElements *storageElements, size_t *count)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (storageElements == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storageElements is null");
@@ -1269,10 +1240,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_StorageElements_GetElement(const ContentE
     size_t index, ContentEmbed_StorageElement **storageElement)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (storageElements == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storageElements is null");
@@ -1294,10 +1264,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_StorageElement_GetName(
     const ContentEmbed_StorageElement *storageElement, char *name, size_t nameSize)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (storageElement == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storageElement is null");
@@ -1322,10 +1291,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_StorageElement_GetCTime(
     const ContentEmbed_StorageElement *storageElement, uint64_t *ctime)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (storageElement == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storageElement is null");
@@ -1343,10 +1311,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_StorageElement_GetMTime(
     const ContentEmbed_StorageElement *storageElement, uint64_t *mtime)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (storageElement == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storageElement is null");
@@ -1364,10 +1331,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_StorageElement_IsStorage(
     const ContentEmbed_StorageElement *storageElement, bool *isStorage)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (storageElement == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storageElement is null");
@@ -1385,10 +1351,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_StorageElement_IsStream(
     const ContentEmbed_StorageElement *storageElement, bool *isStream)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (storageElement == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storageElement is null");
@@ -1406,10 +1371,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_CopyTo(
     ContentEmbed_Storage *srcStorage, ContentEmbed_Storage *dstStorage)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (srcStorage == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "srcStorage is null");

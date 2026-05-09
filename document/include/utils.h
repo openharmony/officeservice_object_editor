@@ -123,6 +123,7 @@ namespace {
     constexpr uint32_t LENGTH = 32;
     constexpr uint32_t LENGTH_HYPHEN = 36;
 }
+bool IsValidOEid(const std::string &uuid);
 std::optional<CLSID> ParseOEidToClsid(const std::string &uuid);
 
 std::string FormatClsidToOEid(const CLSID &clsid);

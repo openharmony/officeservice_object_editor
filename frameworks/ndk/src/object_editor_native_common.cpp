@@ -40,7 +40,7 @@ const std::map<int32_t, ContentEmbed_ErrorCode> ERROR_CODE_MAP {
     {ObjectEditorManagerErrCode::SA_ALLOC_FAIL, CE_ERR_SYSTEM_ABNORMAL},
     {ObjectEditorManagerErrCode::SA_DB_ERR, CE_ERR_SYSTEM_ABNORMAL},
     {ObjectEditorManagerErrCode::SA_DB_QUERY_FAIL, CE_ERR_SYSTEM_ABNORMAL},
-    {ObjectEditorManagerErrCode::SA_DB_QUERY_EMPTY, CE_ERR_SYSTEM_ABNORMAL},
+    {ObjectEditorManagerErrCode::SA_DB_QUERY_EMPTY, CE_ERR_OK},
     {ObjectEditorManagerErrCode::SA_DB_INSERT_FAIL, CE_ERR_SYSTEM_ABNORMAL},
     {ObjectEditorManagerErrCode::SA_DB_DELETE_FAIL, CE_ERR_SYSTEM_ABNORMAL},
     {ObjectEditorManagerErrCode::SA_DB_PARSE_FAIL, CE_ERR_SYSTEM_ABNORMAL},

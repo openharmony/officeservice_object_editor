@@ -290,10 +290,6 @@ void ObjectEditorManagerSystemAbility::TimerThreadStopSA()
 int32_t ObjectEditorManagerSystemAbility::CallbackEnter([[maybe_unused]] uint32_t code)
 {
     ResetStopSATimer();
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "not supported");
-        return ObjectEditorManagerErrCode::SA_ERR_DEVICE_NOT_SUPPORT;
-    }
     if (!CheckCallingPermission(code)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "permission:%{public}s denied", permissionClient_.c_str());
         return ObjectEditorManagerErrCode::SA_PERMISSION_DENIED;
