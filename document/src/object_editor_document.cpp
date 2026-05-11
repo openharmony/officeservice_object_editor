@@ -481,7 +481,7 @@ bool ObjectEditorDocument::CopyStreamData(Storage *src, Storage *dst, const std:
         if (bytesRead <= 0 || bytesRead > static_cast<std::streamsize>(toRead)) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
                 "Read out of range, expected: %{public}u, actual: %{public}" PRIu64 ", path: %{private}s",
-                toRead, static_cast<uint64_t>(bytesRead), path.c_str());
+                static_cast<uint32_t>(toRead), static_cast<uint64_t>(bytesRead), path.c_str());
             return false;
         }
         dstStream->Write(buffer.data(), static_cast<std::uint32_t>(bytesRead));

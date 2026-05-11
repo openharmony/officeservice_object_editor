@@ -82,11 +82,11 @@ void ObjectEditorExtension::Init(const std::shared_ptr<AbilityLocalRecord> &reco
     std::string moduleName(Extension::abilityInfo_->moduleName);
     bundleModuleName.append("/").append(moduleName);
     std::string src = srcPath.substr(srcPath.find_last_of("/") + 1);
-    bool ret = NativeRuntime::LoadModule(bundleModuleName, src, abilityInfo_->name, *ceInstance_);
+    moduleLoaded_ = NativeRuntime::LoadModule(bundleModuleName, src, abilityInfo_->name, *ceInstance_);
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION,
                        "LoadModule, bundleModuleName: %{public}s, srcPath: %{public}s, "
                        "ret: %{public}d",
-                       bundleModuleName.c_str(), srcPath.c_str(), ret);
+                       bundleModuleName.c_str(), srcPath.c_str(), moduleLoaded_.load());
     handler_ = handler;
     ListenWindowManager();
 }
@@ -567,6 +567,10 @@ ErrCode ObjectEditorExtension::Initial(std::unique_ptr<ObjectEditorDocument> doc
     const sptr<IObjectEditorClientCallback> &clientCb)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "extension");
+    if (!moduleLoaded_.load()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "module load failed");
+        return ObjectorEditorExtensionErrCode::EXTENSION_MODULE_LOAD_FAILED;
+    }
     if (document == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "document is nullptr");
         return ObjectorEditorExtensionErrCode::EXTENSION_PARAM_INVALID;

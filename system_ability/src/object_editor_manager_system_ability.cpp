@@ -455,6 +455,10 @@ ErrCode ObjectEditorManagerSystemAbility::StartObjectEditorExtension(
         if (clientRemote != nullptr) {
             clientRemote->RemoveDeathRecipient(clientDeathRecipient);
         }
+        if (proxyResult == EXTENSION_MODULE_LOAD_FAILED) {
+            StopObjectEditorExtension(oeExtensionRemoteObject);
+            return ObjectEditorManagerErrCode::SA_CONNECT_LIMIT_EXCEED;
+        }
         return ObjectEditorManagerErrCode::SA_EXTENSION_REMOTE_SEND_FAILED;
     }
     return ObjectEditorManagerErrCode::SA_OK;
