@@ -54,6 +54,7 @@ constexpr const char* DIVERSION_MAP_JSON_PATH = "/system/etc/office_service/obje
 constexpr int32_t MAX_CONNECTION_COUNT = 2;
 constexpr int32_t MAX_REQUEST_COUNT = 50;
 constexpr int32_t WINDOW_SIZE_MS = 1000;
+constexpr int32_t APP_INDEX_MAIN = 0;
 }
 
 IMPLEMENT_SINGLE_INSTANCE(ObjectEditorManagerSystemAbility);
@@ -723,8 +724,11 @@ bool ObjectEditorManagerSystemAbility::GrantClientFileUriPermissionToServerExten
     }
     auto readAndWritePermission = Want::FLAG_AUTH_READ_URI_PERMISSION |
         Want::FLAG_AUTH_WRITE_URI_PERMISSION;
-    return UriPermissionManagerClient::GetInstance().GrantUriPermissionPrivileged(uriList,
-        readAndWritePermission, targetBundleName, 0) == ERR_OK;
+    uint32_t callerTokenId = IPCSkeleton::GetCallingTokenID();
+    int32_t ret = UriPermissionManagerClient::GetInstance().GrantUriPermission(uriList,
+        readAndWritePermission, targetBundleName, APP_INDEX_MAIN, callerTokenId);
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "GrantUriPermission ret:%{public}d", ret);
+    return ret == 0;
 }
 
 void ObjectEditorManagerSystemAbilityConnectionStatusCallback::OnConnectionStatusChanged(
