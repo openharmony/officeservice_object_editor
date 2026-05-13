@@ -38,7 +38,8 @@
                 "cJSON",
                 "udmf",
                 "app_file_service",
-                "common_event_service"
+                "common_event_service",
+                "icu"
             ],
             "third_party": []
         },
