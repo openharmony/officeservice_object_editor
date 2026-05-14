@@ -18,13 +18,15 @@
 #include <filesystem>
 #include <fstream>
 #include <random>
+#include <chrono>
 #include <sys/time.h>
 #include "application_context.h"
 #include "iservice_registry.h"
 #include "system_utils.h"
 #include "iobject_editor_extension.h"
 #include "object_editor_package.h"
-
+#include "object_editor_common.h"
+#include "hisysevent.h"
 namespace OHOS {
 namespace ObjectEditor {
 namespace {
@@ -320,6 +322,7 @@ ErrCode ObjectEditorClient::HandlePackage(
     const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
     sptr<IObjectEditorService> &oeExtensionRemoteObject)
 {
+    auto start = std::chrono::steady_clock::now();
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "in");
     if ((document->GetOperateType() == OperateType::CREATE_BY_FILE &&
          !document->GetNativeFileUri().has_value()) ||
@@ -359,6 +362,14 @@ ErrCode ObjectEditorClient::HandlePackage(
     }
     packageProxy->Initial(std::move(newDocument), objectEditorClientCallback);
     oeExtensionRemoteObject = packageProxy;
+    auto end = std::chrono::steady_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    if (document->GetOperateType() == OperateType::CREATE_BY_FILE) {
+        HiSysEventWrite(OBJECT_EDITOR, "CREATE_DOCUMENT", OHOS::HiviewDFX::HiSysEvent::EventType::STATISTIC,
+        "OEID", PACKAGE_OEID, "CREATEMODE", "CREATE_BY_FILE",
+        "FILEEXT",SystemUtils::GetFileSuffix(document->GetOriFileUri().value()),
+        "ISLINKING", document->GetLinking(), "ISPACKAGE", true, "DURATION", duration);
+    }
     return ERR_OK;
 }
 

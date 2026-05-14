@@ -22,7 +22,8 @@
 #include "object_editor_document.h"
 #include "pole.h"
 #include "dirtree.h"
-
+#include "object_editor_common.h"
+#include "hisysevent.h"
 using namespace OHOS::ObjectEditor;
 namespace {
 constexpr char PATH_SEPARATOR = '/';
@@ -350,6 +351,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_CreateDocumentByOEid(const char *oeid, Co
     auto doc = ObjectEditorDocument::CreateByOEid(oeidStr);
     if (doc == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create document failed");
+        HiSysEventWrite(OBJECT_EDITOR, "OPERATE_DOCUMENT_FAIL", OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+            "ERRORMSG", "create document by oeid failed", "ERRORCODE", CE_ERR_NULL_POINTER,
+            "OEID", oeid, "FAILTYPE", "CREATE_DOCUMENT_FAIL");
         return CE_ERR_NULL_POINTER;
     }
     auto *wrapper = new (std::nothrow) ContentEmbed_Document{oeid, {}, {}, {}, {}, {}, std::move(doc)};
@@ -382,6 +386,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_CreateDocumentByFile(const char *srcFileP
     auto doc = ObjectEditorDocument::CreateByFile(path, isLinking);
     if (doc == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create document failed");
+        HiSysEventWrite(OBJECT_EDITOR, "OPERATE_DOCUMENT_FAIL", OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+            "ERRORMSG", "create document by file failed", "ERRORCODE", CE_ERR_NULL_POINTER,
+            "OEID", "", "FAILTYPE", "CREATE_DOCUMENT_FAIL");
         return CE_ERR_NULL_POINTER;
     }
     if (isLinking && SystemUtils::IsAppSandboxPath(doc->GetOriFilePath())) {
@@ -418,6 +425,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_LoadDocumentFromFile(const char *srcFileP
     auto doc = ObjectEditorDocument::LoadFromFile(path);
     if (doc == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create document failed");
+        HiSysEventWrite(OBJECT_EDITOR, "OPERATE_DOCUMENT_FAIL", OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+            "ERRORMSG", "load document by file failed", "ERRORCODE", CE_ERR_NULL_POINTER,
+            "OEID", "", "FAILTYPE", "LOAD_DOCUMENT_FAIL");
         return CE_ERR_NULL_POINTER;
     }
     auto *wrapper = new (std::nothrow) ContentEmbed_Document{doc->GetOEid(), {}, {}, {}, {}, {}, std::move(doc)};
@@ -594,6 +604,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_Flush(const ContentEmbed_Documen
     }
     if (!document->oeDocumentInner->Flush()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "flush failed");
+        std::string oeid = document->oeDocumentInner == nullptr ? "" : document->oeDocumentInner->GetOEid();
+        HiSysEventWrite(OBJECT_EDITOR, "OPERATE_DOCUMENT_FAIL", OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+            "ERRORMSG", "file operation failed", "ERRORCODE", CE_ERR_FILE_OPERATION_FAILED,
+            "OEID", oeid, "FAILTYPE", "SAVE_DOCUMENT_FAIL");
         return CE_ERR_FILE_OPERATION_FAILED;
     }
     return CE_ERR_OK;

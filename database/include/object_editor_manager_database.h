@@ -77,6 +77,7 @@ private:
     ObjectEditorManagerErrCode PrepareRefreshDb(std::vector<NativeRdb::ValuesBucket> &buckets,
         std::set<std::string> &oldBundles) const;
     ObjectEditorManagerErrCode RefreshDb();
+    bool HasRegisteredOEFormat(const std::string &bundleName, std::string &oeid) const;
 
     void HandleOpenDb();
     void OnUserSwitched();

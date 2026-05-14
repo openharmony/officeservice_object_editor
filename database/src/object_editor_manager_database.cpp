@@ -23,6 +23,9 @@
 #include "user_mgr.h"
 #include "object_editor_permission_utils.h"
 #include "object_editor_config.h"
+#include "hisysevent.h"
+#include "object_editor_common.h"
+
 namespace OHOS {
 namespace ObjectEditor {
 // LCOV_EXCL_START
@@ -305,6 +308,29 @@ void ObjectEditorManagerDatabase::AddBundle(const std::string &bundleName)
         store_->RollBack();
         return;
     }
+    NativeRdb::ValueObject value;
+    buckets.back().GetObject("oeid", value);
+    std::string oeid;
+    value.GetString(oeid);
+    HiSysEventWrite(OBJECT_EDITOR, "REGISTER_EXTENSION", OHOS::HiviewDFX::HiSysEvent::EventType::STATISTIC,
+        "BUNDLENAME", bundleName, "OEID", oeid, "REGISTERTYPE", "install");
+}
+
+bool ObjectEditorManagerDatabase::HasRegisteredOEFormat(const std::string &bundleName, std::string &oeid) const
+{
+    std::shared_ptr<NativeRdb::AbsSharedResultSet> pResultSet = nullptr;
+    ObjectEditorManagerErrCode errCode = QueryBySql(
+        "SELECT oeid FROM object_editor_info WHERE bundle_name = ?", pResultSet, {bundleName});
+    if (errCode != ObjectEditorManagerErrCode::SA_OK || pResultSet == nullptr) {
+        return false;
+    }
+    NativeRdb::RowEntity rowEntity;
+    int32_t ret = pResultSet->GetRow(rowEntity);
+    if (ret != NativeRdb::E_OK) {
+        return false;
+    }
+    rowEntity.GetObject("oeid").GetString(oeid);
+    return oeid == "" ? false : true;
 }
 
 void ObjectEditorManagerDatabase::RemoveBundle(const std::string &bundleName)
@@ -314,6 +340,8 @@ void ObjectEditorManagerDatabase::RemoveBundle(const std::string &bundleName)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "store is null");
         return;
     }
+    std::string oeid;
+    bool isOERegistered = HasRegisteredOEFormat(bundleName, oeid);
     int32_t ret = store_->BeginTransaction();
     if (ret != NativeRdb::E_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "BeginTransaction failed, errCode: %{public}d", ret);
@@ -329,6 +357,10 @@ void ObjectEditorManagerDatabase::RemoveBundle(const std::string &bundleName)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "Commit failed, errCode: %{public}d", ret);
         store_->RollBack();
         return;
+    }
+    if (isOERegistered) {
+        HiSysEventWrite(OBJECT_EDITOR, "REGISTER_EXTENSION", OHOS::HiviewDFX::HiSysEvent::EventType::STATISTIC,
+            "BUNDLENAME", bundleName, "OEID", oeid, "REGISTERTYPE", "uninstall");
     }
 }
 
@@ -371,6 +403,12 @@ void ObjectEditorManagerDatabase::UpdateBundle(const std::string &bundleName)
         store_->RollBack();
         return;
     }
+    NativeRdb::ValueObject value;
+    buckets.back().GetObject("oeid", value);
+    std::string oeid;
+    value.GetString(oeid);
+    HiSysEventWrite(OBJECT_EDITOR, "REGISTER_EXTENSION", OHOS::HiviewDFX::HiSysEvent::EventType::STATISTIC,
+        "BUNDLENAME", bundleName, "OEID", oeid, "REGISTERTYPE", "install");
 }
 
 ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetBundleInfoValuesBuckets(

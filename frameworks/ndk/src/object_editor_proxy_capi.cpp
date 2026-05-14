@@ -27,6 +27,8 @@
 #include "object_editor_native_common.h"
 #include "system_utils.h"
 #include "utils.h"
+#include "object_editor_common.h"
+#include "hisysevent.h"
 
 using namespace OHOS::ObjectEditor;
 namespace {
@@ -598,6 +600,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StartWork(ContentEmbed_ExtensionPro
         oeCallbackInner, proxy->objectEditorService, proxy->isPackageExtension);
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "errCode: %{public}d", errCode);
+        std::string oeid = document->oeDocumentInner == nullptr ? "" : document->oeDocumentInner->GetOEid();
+        HiSysEventWrite(OBJECT_EDITOR, "OPERATE_DOCUMENT_FAIL", OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+            "ERRORMSG", "start work failed", "ERRORCODE", errCode,
+            "OEID", oeid, "FAILTYPE", "START_WORK_FAIL");
         return ConvertErrorToCode(errCode, CE_ERR_SYSTEM_ABNORMAL);
     }
     if (proxy->isPackageExtension) {
@@ -639,10 +645,26 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_DoEdit(ContentEmbed_ExtensionProxy 
         }
         proxy->objectEditorService->SetRemoteObject(contextSptr->GetToken());
     }
+    auto context = static_cast<std::weak_ptr<OHOS::AbilityRuntime::Context>*>(proxy->contextPtr);
+    if (context == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "context is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    auto contextSptr = context->lock();
+    if (contextSptr == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "contextSptr is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    std::string oeid = document->oeDocumentInner == nullptr ? "" : document->oeDocumentInner->GetOEid();
+    HiSysEventWrite(OBJECT_EDITOR, "EDIT_DOCUMENT", OHOS::HiviewDFX::HiSysEvent::EventType::STATISTIC,
+                    "OEID", oeid, "BUNDLENAME", contextSptr->GetBundleName());
 
     auto errCode = proxy->objectEditorService->DoEdit(proxy->ceDocument->oeDocumentInner->GetDocumentId());
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed: %{public}d", errCode);
+        HiSysEventWrite(OBJECT_EDITOR, "OPERATE_DOCUMENT_FAIL", OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+                    "ERRORMSG", "edit failed", "ERRORCODE", errCode,
+                    "OEID", oeid, "FAILTYPE", "EDIT_DOCUMENT_FAIL");
         return ConvertErrorToCode(errCode, CE_ERR_EXTENSION_ERROR);
     }
     return CE_ERR_OK;
