@@ -56,7 +56,8 @@ ohos_shared_library("content_embed_document") {
         "ability_runtime:app_context",
         "app_file_service:fileuri_native",
         "bundle_framework:appexecfwk_core",
-        "hilog:libhilog"
+        "hilog:libhilog",
+        "icu:shared_icuuc"
     ]
 
     part_name = "object_editor"
