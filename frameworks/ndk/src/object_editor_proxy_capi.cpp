@@ -222,7 +222,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_DestroyContentEmbedInfo(ContentEmbed_Info
     info = nullptr;
     return CE_ERR_OK;
 }
-// LCOV_EXCL_START
+// LCOV_EXCL_STOP
 
 ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedInfo(const char *locale, ContentEmbed_Info *info)
 {

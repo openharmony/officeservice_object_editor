@@ -97,7 +97,7 @@ bool Header::IsCompoundDocument() const
 
 bool Header::Load(const Byte *buffer, size_t len)
 {
-        const size_t required = HEADER_FIXED_SIZE + HEADER_DIFAT_ARRAY_SIZE * FOUR_BYTE_SIZE;
+    const size_t required = HEADER_FIXED_SIZE + HEADER_DIFAT_ARRAY_SIZE * FOUR_BYTE_SIZE;
     if (len < required || buffer == nullptr) [[unlikely]] {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
             "invalid buffer or len: %{public}zu, required: %{public}zu", len, required);

@@ -16,6 +16,7 @@
 #ifndef OHOS_OBJECT_EDITOR_OBJECT_EDITOR_EXTENSION_H
 #define OHOS_OBJECT_EDITOR_OBJECT_EDITOR_EXTENSION_H
 
+#include <atomic>
 #include "extension_base.h"
 #include "object_editor_extension_context.h"
 #include "runtime.h"
@@ -203,6 +204,7 @@ private:
     std::shared_ptr<struct ContentEmbed_ExtensionContext> ceContext_ = nullptr;
     std::shared_ptr<ObjectEditorExtensionContext> oeContext_ = nullptr;
     sptr<ObjectEditorExtensionDisplayListener> displayListener_ = nullptr;
+    std::atomic<bool> moduleLoaded_{false};
 };
 
 } // namespace AbilityRuntime
