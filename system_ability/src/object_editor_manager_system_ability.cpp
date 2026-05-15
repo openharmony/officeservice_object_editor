@@ -55,6 +55,7 @@ constexpr int32_t MAX_CONNECTION_COUNT = 2;
 constexpr int32_t MAX_REQUEST_COUNT = 50;
 constexpr int32_t WINDOW_SIZE_MS = 1000;
 constexpr int32_t APP_INDEX_MAIN = 0;
+constexpr int ILLEGAL_REQUEST_CODE = -1;
 }
 
 IMPLEMENT_SINGLE_INSTANCE(ObjectEditorManagerSystemAbility);
@@ -671,9 +672,15 @@ ErrCode ObjectEditorManagerSystemAbility::StartUIAbility(const std::unique_ptr<A
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "ability manager client is null");
         return ObjectEditorManagerErrCode::SA_START_UIABILITY_FAILED;
     }
-    std::string specifiedFlag = want->GetParams().GetStringParam("specifiedFlag");
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "specifiedFlag: %{public}s", specifiedFlag.c_str());
-    ErrCode err = abilityManagerClient->StartAbilityByOEExt(*want, extensionToken, clientPid, specifiedFlag);
+    bool isSameProc = want->GetBoolParam("ohos.contentEmbed.isRunningInContentEmbedProcess", true);
+    ErrCode err = ERR_OK;
+    if (isSameProc) {
+        std::string specifiedFlag = want->GetParams().GetStringParam("specifiedFlag");
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "specifiedFlag: %{public}s", specifiedFlag.c_str());
+        err = abilityManagerClient->StartAbilityByOEExt(*want, extensionToken, clientPid, specifiedFlag);
+    } else {
+        err = abilityManagerClient->StartAbility(*want, ILLEGAL_REQUEST_CODE, UserMgr::GetInstance().GetUserId());
+    }
     if (err != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "failed:%{public}d", err);
         return ObjectEditorManagerErrCode::SA_START_UIABILITY_FAILED;
