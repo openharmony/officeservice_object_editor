@@ -15,11 +15,6 @@
 group("unittest") {
   testonly = true
   deps = [
-    "client:client_unittest",
-    "common:common_unittest",
-    "document:document_unittest",
-    "extension_ability:extension_ability_unittest",
     "framework:framework_unittest",
-    "system_ability:system_ability_unittest",
   ]
 }
