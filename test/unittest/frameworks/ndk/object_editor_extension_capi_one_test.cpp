@@ -15,12 +15,10 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "stub.h"
 
 #define private public
 #include "content_embed_extension.h"
 #include "mock_object_editor_client_callback.h"
-#include "mock_object_editor_document.h"
 #include "native_object_editor_types.h"
 #include "object_editor_config.h"
 #include "object_editor_document.h"
@@ -58,7 +56,8 @@ void ObjectEditorExtensionCapiOneTest::TearDown() {}
  * @tc.desc: Test CallbackToOnUpdate when clientCb is null
  * @tc.type: FUNC
  */
-HWTEST_F(ObjectEditorExtensionCapiOneTest, OHContentEmbedExtensionCallbackToOnUpdate_CallbackNotRegistered, TestSize.Level1)
+HWTEST_F(ObjectEditorExtensionCapiOneTest,
+    OHContentEmbedExtensionCallbackToOnUpdate_CallbackNotRegistered, TestSize.Level1)
 {
     ContentEmbed_Object *object = new ContentEmbed_Object();
     object->document = std::make_unique<ContentEmbed_Document>();
@@ -98,7 +97,8 @@ HWTEST_F(ObjectEditorExtensionCapiOneTest, OHContentEmbedExtensionCallbackToOnUp
  * @tc.desc: Test CallbackToOnError when clientCb is null
  * @tc.type: FUNC
  */
-HWTEST_F(ObjectEditorExtensionCapiOneTest, OHContentEmbedExtensionCallbackToOnError_CallbackNotRegistered, TestSize.Level1)
+HWTEST_F(ObjectEditorExtensionCapiOneTest,
+    OHContentEmbedExtensionCallbackToOnError_CallbackNotRegistered, TestSize.Level1)
 {
     ContentEmbed_Object *object = new ContentEmbed_Object();
     object->clientCb = nullptr;
@@ -134,7 +134,8 @@ HWTEST_F(ObjectEditorExtensionCapiOneTest, OHContentEmbedExtensionCallbackToOnEr
  * @tc.desc: Test CallbackToOnEditingFinished when clientCb is null
  * @tc.type: FUNC
  */
-HWTEST_F(ObjectEditorExtensionCapiOneTest, OHContentEmbedExtensionCallbackToOnEditingFinished_CallbackNotRegistered, TestSize.Level1)
+HWTEST_F(ObjectEditorExtensionCapiOneTest,
+    OHContentEmbedExtensionCallbackToOnEditingFinished_CallbackNotRegistered, TestSize.Level1)
 {
     ContentEmbed_Object *object = new ContentEmbed_Object();
     object->clientCb = nullptr;
@@ -150,7 +151,8 @@ HWTEST_F(ObjectEditorExtensionCapiOneTest, OHContentEmbedExtensionCallbackToOnEd
  * @tc.desc: Test CallbackToOnEditingFinished when OnStopEdit returns error
  * @tc.type: FUNC
  */
-HWTEST_F(ObjectEditorExtensionCapiOneTest, OHContentEmbedExtensionCallbackToOnEditingFinished_CallbackFailed, TestSize.Level1)
+HWTEST_F(ObjectEditorExtensionCapiOneTest,
+    OHContentEmbedExtensionCallbackToOnEditingFinished_CallbackFailed, TestSize.Level1)
 {
     ContentEmbed_Object *object = new ContentEmbed_Object();
     
@@ -170,7 +172,8 @@ HWTEST_F(ObjectEditorExtensionCapiOneTest, OHContentEmbedExtensionCallbackToOnEd
  * @tc.desc: Test CallbackToOnExtensionStopped when object's clientCb is null
  * @tc.type: FUNC
  */
-HWTEST_F(ObjectEditorExtensionCapiOneTest, OHContentEmbedExtensionCallbackToOnExtensionStopped_CallbackNotRegistered, TestSize.Level1)
+HWTEST_F(ObjectEditorExtensionCapiOneTest,
+    OHContentEmbedExtensionCallbackToOnExtensionStopped_CallbackNotRegistered, TestSize.Level1)
 {
     ContentEmbed_ExtensionInstance *instance = new ContentEmbed_ExtensionInstance();
     
@@ -191,7 +194,8 @@ HWTEST_F(ObjectEditorExtensionCapiOneTest, OHContentEmbedExtensionCallbackToOnEx
  * @tc.desc: Test CallbackToOnExtensionStopped when OnExtensionStopped returns error
  * @tc.type: FUNC
  */
-HWTEST_F(ObjectEditorExtensionCapiOneTest, OHContentEmbedExtensionCallbackToOnExtensionStopped_CallbackFailed, TestSize.Level1)
+HWTEST_F(ObjectEditorExtensionCapiOneTest,
+    OHContentEmbedExtensionCallbackToOnExtensionStopped_CallbackFailed, TestSize.Level1)
 {
     ContentEmbed_ExtensionInstance *instance = new ContentEmbed_ExtensionInstance();
     

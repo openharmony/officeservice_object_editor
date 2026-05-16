@@ -15,6 +15,6 @@
 group("unittest") {
   testonly = true
   deps = [
-    "framework:framework_unittest",
+    "frameworks:framework_unittest",
   ]
 }

@@ -14,7 +14,7 @@
 
 import("//build/test.gni")
 import("//foundation/officeservice/object_editor/object_editor.gni")
-module_output_dir = "object_editor/unittest"
+module_out_path = "object_editor/unittest"
 
 config("ndk_test_config") {
   include_dirs = [
@@ -38,20 +38,8 @@ config("ndk_test_config") {
   ]
 }
 
-group("ndk_unittest") {
-  testonly = true
-
-  deps = [
-    ":object_editor_document_capi_one_test",
-    ":object_editor_extension_capi_one_test",
-    ":object_editor_proxy_capi_one_test",
-  ]
-}
-
 ohos_unittest("object_editor_document_capi_one_test") {
-  include_dirs = [
-    "${object_editor_path}/frameworks/ndk/include",
-  ]
+  module_out_path = module_out_path
 
   sources = [
     "object_editor_document_capi_one_test.cpp",
@@ -59,7 +47,7 @@ ohos_unittest("object_editor_document_capi_one_test") {
 
   deps = [
     "${object_editor_path}/document:content_embed_document",
-    "${object_editor_path}/ndk:content_embed_ndk",
+    "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
 
   configs = [
@@ -97,17 +85,14 @@ ohos_unittest("object_editor_document_capi_one_test") {
 }
 
 ohos_unittest("object_editor_extension_capi_one_test") {
-  include_dirs = [
-    "${object_editor_path}/frameworks/ndk/include",
-  ]
-
+  module_out_path = module_out_path
   sources = [
     "object_editor_extension_capi_one_test.cpp",
   ]
 
   deps = [
     "${object_editor_path}/document:content_embed_document",
-    "${object_editor_path}/ndk:content_embed_ndk",
+    "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
 
   configs = [
@@ -146,17 +131,15 @@ ohos_unittest("object_editor_extension_capi_one_test") {
 
 
 ohos_unittest("object_editor_proxy_capi_one_test") {
-  include_dirs = [
-    "${object_editor_path}/frameworks/ndk/include",
-  ]
-
+  module_out_path = module_out_path
   sources = [
     "object_editor_proxy_capi_one_test.cpp",
   ]
 
   deps = [
+    "${object_editor_path}/client:content_embed_client",
     "${object_editor_path}/document:content_embed_document",
-    "${object_editor_path}/ndk:content_embed_ndk",
+    "${object_editor_path}/frameworks/ndk:content_embed_ndk",
   ]
 
   configs = [
@@ -191,4 +174,14 @@ ohos_unittest("object_editor_proxy_capi_one_test") {
 
   part_name = "object_editor"
   subsystem_name = "officeservice"
+}
+
+group("ndk_unittest") {
+  testonly = true
+
+  deps = [
+    ":object_editor_document_capi_one_test",
+    ":object_editor_extension_capi_one_test",
+    ":object_editor_proxy_capi_one_test",
+  ]
 }
