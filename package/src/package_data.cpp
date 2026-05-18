@@ -89,7 +89,11 @@ std::unique_ptr<PackageData> PackageData::LoadFromDocument(std::shared_ptr<Objec
 
 bool ReadStreamUint32(Stream *stream, uint64_t streamSize, StreamPos &offset, uint32_t &value)
 {
-    if (streamSize > U32_BUF_LEN && offset > streamSize - U32_BUF_LEN) {
+    if (streamSize <= U32_BUF_LEN) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "stream size too small");
+        return false;
+    }
+    if (offset > streamSize - U32_BUF_LEN) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "Insufficient data for file size");
         return false;
     }

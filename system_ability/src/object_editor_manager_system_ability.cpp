@@ -647,7 +647,7 @@ ErrCode ObjectEditorManagerSystemAbility::GetFormatName(const std::string &oeid,
 ErrCode ObjectEditorManagerSystemAbility::GetObjectEditorFormatByOEidAndLocale(const std::string &oeid,
     const std::string &locale, std::unique_ptr<ObjectEditorFormat> &format)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "oeid: %{public}s, locale: %{public}s",
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "oeid: %{private}s, locale: %{private}s",
         oeid.c_str(), locale.c_str());
     return ObjectEditorManagerDatabase::GetInstance().GetObjectEditorFormatByOEidAndLocale(oeid,
         locale, format);
