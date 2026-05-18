@@ -531,7 +531,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByO
 ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatsByLocale(
     const std::string &locale, std::vector<std::unique_ptr<ObjectEditorFormat>> &formats) const
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "locale: %{public}s", locale.c_str());
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "locale: %{private}s", locale.c_str());
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
     ObjectEditorManagerErrCode errCode = QueryBySql("SELECT oeid, bundle_name, module_name, resource_path,"
         " hap_path, file_exts, name_id, description_id, icon_id from object_editor_info", resultSet);
