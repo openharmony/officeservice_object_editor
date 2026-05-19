@@ -17,6 +17,7 @@
 #include <iostream>
 #include <vector>
 #include <cerrno>
+#include <chrono>
 
 #include <cJSON.h>
 #include "accesstoken_kit.h"
@@ -43,6 +44,8 @@
 #include "object_editor_permission_utils.h"
 #include "system_utils.h"
 #include "user_mgr.h"
+#include "object_editor_common.h"
+#include "hisysevent.h"
 
 using namespace OHOS::AAFwk;
 
@@ -292,10 +295,6 @@ void ObjectEditorManagerSystemAbility::TimerThreadStopSA()
 int32_t ObjectEditorManagerSystemAbility::CallbackEnter([[maybe_unused]] uint32_t code)
 {
     ResetStopSATimer();
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "not supported");
-        return ObjectEditorManagerErrCode::SA_ERR_DEVICE_NOT_SUPPORT;
-    }
     if (!CheckCallingPermission(code)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "permission:%{public}s denied", permissionClient_.c_str());
         return ObjectEditorManagerErrCode::SA_PERMISSION_DENIED;
@@ -404,6 +403,7 @@ ErrCode ObjectEditorManagerSystemAbility::StartObjectEditorExtension(
     sptr<IRemoteObject> &oeExtensionRemoteObject,
     bool &isPackageExtension)
 {
+    auto start = std::chrono::steady_clock::now();
     if (document == nullptr || objectEditorClientCallback == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "invalid parameter");
         return ObjectEditorManagerErrCode::SA_INVALID_PARAMETER;
@@ -443,6 +443,11 @@ ErrCode ObjectEditorManagerSystemAbility::StartObjectEditorExtension(
         return ObjectEditorManagerErrCode::SA_CONNECT_EXTENSION_PROXY_IS_NULL;
     }
     std::string documentId = document->GetDocumentId();
+    auto operateType = document->GetOperateType();
+    std::string oeid = document->GetOEid();
+    bool islinking = document->GetLinking();
+    std::string oriFileUri = document->GetOriFileUri().value_or("");
+    std::string fileSuffix = SystemUtils::GetFileSuffix(oriFileUri);
     sptr<IRemoteObject> clientRemote = objectEditorClientCallback->AsObject();
     auto clientDeathRecipient = sptr<ObjectEditorClientDeathRecipient>::MakeSptr(documentId,
         oeExtensionRemoteObject);
@@ -462,6 +467,16 @@ ErrCode ObjectEditorManagerSystemAbility::StartObjectEditorExtension(
             return ObjectEditorManagerErrCode::SA_CONNECT_LIMIT_EXCEED;
         }
         return ObjectEditorManagerErrCode::SA_EXTENSION_REMOTE_SEND_FAILED;
+    }
+    auto end = std::chrono::steady_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    if (document->GetOperateType() == OperateType::CREATE_BY_FILE ||
+        document->GetOperateType() == OperateType::CREATE_BY_OEID) {
+        bool isFromFile = (operateType == OperateType::CREATE_BY_FILE);
+        HiSysEventWrite(OBJECT_EDITOR, "CREATE_DOCUMENT", OHOS::HiviewDFX::HiSysEvent::EventType::STATISTIC,
+                        "OEID", oeid, "CREATEMODE", isFromFile ? "CREATE_BY_FILE" : "CREATE_BY_OEID",
+                        "FILEEXT", fileSuffix, "ISLINKING", islinking,
+                        "ISPACKAGE", isPackageExtension, "DURATION", duration);
     }
     return ObjectEditorManagerErrCode::SA_OK;
 }

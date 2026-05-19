@@ -89,7 +89,8 @@ ohos_shared_library("content_embed_service") {
     "image_framework:image_native",
     "resource_management:global_resmgr",
     "access_token:libaccesstoken_sdk",
-    "common_event_service:cesfwk_innerkits"
+    "common_event_service:cesfwk_innerkits",
+    "hisysevent:libhisysevent"
   ]
   part_name = "object_editor"
   subsystem_name = "officeservice"

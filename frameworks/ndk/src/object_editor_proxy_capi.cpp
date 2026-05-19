@@ -26,6 +26,9 @@
 #include "object_editor_extension_death_recipient.h"
 #include "object_editor_native_common.h"
 #include "system_utils.h"
+#include "utils.h"
+#include "object_editor_common.h"
+#include "hisysevent.h"
 
 using namespace OHOS::ObjectEditor;
 namespace {
@@ -191,10 +194,6 @@ extern "C" {
 ContentEmbed_ErrorCode OH_ContentEmbed_CreateContentEmbedInfo(ContentEmbed_Info **info)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
     if (info == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "info is null");
         return CE_ERR_PARAM_INVALID;
@@ -210,10 +209,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_CreateContentEmbedInfo(ContentEmbed_Info 
 ContentEmbed_ErrorCode OH_ContentEmbed_DestroyContentEmbedInfo(ContentEmbed_Info *info)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
     if (info == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "info is null");
         return CE_ERR_PARAM_INVALID;
@@ -227,10 +222,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_DestroyContentEmbedInfo(ContentEmbed_Info
 ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedInfo(const char *locale, ContentEmbed_Info *info)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
     if (info == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "info is null");
         return CE_ERR_PARAM_INVALID;
@@ -256,10 +247,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedInfo(const char *locale, C
 ContentEmbed_ErrorCode OH_ContentEmbed_GetFormatCountFromInfo(const ContentEmbed_Info *info, uint32_t *count)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
     if (info == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "info is null");
         return CE_ERR_PARAM_INVALID;
@@ -276,10 +263,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetFormatFromInfo(const ContentEmbed_Info
     uint32_t index, ContentEmbed_Format **format)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
     if (info == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "info is null");
         return CE_ERR_PARAM_INVALID;
@@ -300,10 +283,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetFormatFromInfo(const ContentEmbed_Info
 ContentEmbed_ErrorCode OH_ContentEmbed_CreateContentEmbedFormat(ContentEmbed_Format **format)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
     if (format == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "format is null");
         return CE_ERR_PARAM_INVALID;
@@ -319,10 +298,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_CreateContentEmbedFormat(ContentEmbed_For
 ContentEmbed_ErrorCode OH_ContentEmbed_DestroyContentEmbedFormat(ContentEmbed_Format *format)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
     if (format == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "format is null");
         return CE_ERR_PARAM_INVALID;
@@ -337,10 +312,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedFormatByOEidAndLocale(cons
     ContentEmbed_Format *format)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
     if (oeid == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid is null");
         return CE_ERR_PARAM_INVALID;
@@ -349,9 +320,13 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedFormatByOEidAndLocale(cons
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "format is null");
         return CE_ERR_PARAM_INVALID;
     }
+    std::string oeidStr(oeid);
+    if (!IsValidOEid(oeidStr)) {
+        return CE_ERR_PARAM_INVALID;
+    }
     std::string strLocale = locale == nullptr ? "" : std::string(locale);
     std::unique_ptr<ObjectEditorFormat> oeFormat;
-    auto errCode = ObjectEditorClient::GetInstance().GetObjectEditorFormatByOEidAndLocale(std::string(oeid),
+    auto errCode = ObjectEditorClient::GetInstance().GetObjectEditorFormatByOEidAndLocale(oeidStr,
         strLocale, oeFormat);
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "GetFormat failed: %{public}d", errCode);
@@ -367,16 +342,16 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedFormatByOEidAndLocale(cons
 ContentEmbed_ErrorCode OH_ContentEmbed_GetOEidFromFormat(const ContentEmbed_Format *format, char *oeid)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
     if (format == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "format is null");
         return CE_ERR_PARAM_INVALID;
     }
     if (oeid == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (format->oeid == "") {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "format oeid is empty");
         return CE_ERR_PARAM_INVALID;
     }
     if (strcpy_s(oeid, MAX_OEID_LENGTH, format->oeid.c_str()) != 0) {
@@ -390,10 +365,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetNameAndDescriptionFromFormat(const Con
     char *name, char *description)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
     if (format == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "format is null");
         return CE_ERR_PARAM_INVALID;
@@ -404,6 +375,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetNameAndDescriptionFromFormat(const Con
     }
     if (description == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "description is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (format->name == "" || format->description == "") {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "format name or description is empty");
         return CE_ERR_PARAM_INVALID;
     }
     if (strcpy_s(name, MAX_NAME_LENGTH, format->name.c_str()) != 0) {
@@ -421,10 +396,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetIconFromFormat(const ContentEmbed_Form
     OH_PixelmapNative **icon)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return CE_ERR_DEVICE_NOT_SUPPORTED;
-    }
     if (format == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
         return CE_ERR_PARAM_INVALID;
@@ -449,10 +420,6 @@ char **OH_ContentEmbed_GetFileNameExtensionsFromFormat(const ContentEmbed_Format
     unsigned int *count)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported");
-        return nullptr;
-    }
     if (format == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "param is null");
         return nullptr;
@@ -470,10 +437,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_CreateExtensionProxy(ContentEmbed_Documen
                                                             void* contextPtr)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (ceDocument == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
@@ -500,10 +466,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_CreateExtensionProxy(ContentEmbed_Documen
 ContentEmbed_ErrorCode OH_ContentEmbed_DestroyExtensionProxy(ContentEmbed_ExtensionProxy *proxy)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (proxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is null");
@@ -530,10 +495,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_RegisterOnUpdateFunc(ContentEmbed_E
     OH_ContentEmbed_ClientCallbackOnUpdateFunc onUpdateFunc)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (proxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is null");
@@ -551,10 +515,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_RegisterOnErrorFunc(ContentEmbed_Ex
     OH_ContentEmbed_ClientCallbackOnErrorFunc onErrorFunc)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (proxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is null");
@@ -572,10 +535,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_RegisterOnEditingFinishedFunc(Conte
     OH_ContentEmbed_ClientCallbackOnEditingFinishedFunc onEditingFinishedFunc)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (proxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is null");
@@ -593,10 +555,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_RegisterOnExtensionStoppedFunc(Cont
     OH_ContentEmbed_ClientCallbackOnExtensionStoppedFunc onExtensionStoppedFunc)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (proxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is null");
@@ -613,11 +574,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_RegisterOnExtensionStoppedFunc(Cont
 ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StartWork(ContentEmbed_ExtensionProxy *proxy)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
-    }
     if (proxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is null");
         return CE_ERR_PARAM_INVALID;
@@ -631,6 +587,14 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StartWork(ContentEmbed_ExtensionPro
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "inner document is null");
         return CE_ERR_PARAM_INVALID;
     }
+    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "connections exceeds the limit");
+        return CE_ERR_CONNECT_LIMIT_EXCEED;
+    }
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
+    }
     auto oeCallbackInner = new (std::nothrow) ObjectEditorClientCallback(proxy);
     if (oeCallbackInner == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "alloc failed");
@@ -640,6 +604,11 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StartWork(ContentEmbed_ExtensionPro
         oeCallbackInner, proxy->objectEditorService, proxy->isPackageExtension);
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "errCode: %{public}d", errCode);
+        std::string oeid = proxy->ceDocument->oeDocumentInner == nullptr ? "" :
+                            proxy->ceDocument->oeDocumentInner->GetOEid();
+        HiSysEventWrite(OBJECT_EDITOR, "OPERATE_DOCUMENT_FAIL", OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+            "ERRORMSG", "start work failed", "ERRORCODE", errCode,
+            "OEID", oeid, "FAILTYPE", "START_WORK_FAIL");
         return ConvertErrorToCode(errCode, CE_ERR_SYSTEM_ABNORMAL);
     }
     if (proxy->isPackageExtension) {
@@ -652,10 +621,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StartWork(ContentEmbed_ExtensionPro
 ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_DoEdit(ContentEmbed_ExtensionProxy *proxy)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (proxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is invalid");
@@ -682,10 +650,27 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_DoEdit(ContentEmbed_ExtensionProxy 
         }
         proxy->objectEditorService->SetRemoteObject(contextSptr->GetToken());
     }
+    auto context = static_cast<std::weak_ptr<OHOS::AbilityRuntime::Context>*>(proxy->contextPtr);
+    if (context == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "context is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    auto contextSptr = context->lock();
+    if (contextSptr == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "contextSptr is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    std::string oeid = proxy->ceDocument->oeDocumentInner == nullptr ? "" :
+                        proxy->ceDocument->oeDocumentInner->GetOEid();
+    HiSysEventWrite(OBJECT_EDITOR, "EDIT_DOCUMENT", OHOS::HiviewDFX::HiSysEvent::EventType::STATISTIC,
+                    "OEID", oeid, "BUNDLENAME", contextSptr->GetBundleName());
 
     auto errCode = proxy->objectEditorService->DoEdit(proxy->ceDocument->oeDocumentInner->GetDocumentId());
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed: %{public}d", errCode);
+        HiSysEventWrite(OBJECT_EDITOR, "OPERATE_DOCUMENT_FAIL", OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+                        "ERRORMSG", "edit failed", "ERRORCODE", errCode,
+                        "OEID", oeid, "FAILTYPE", "EDIT_DOCUMENT_FAIL");
         return ConvertErrorToCode(errCode, CE_ERR_EXTENSION_ERROR);
     }
     return CE_ERR_OK;
@@ -695,10 +680,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetEditStatus(ContentEmbed_Extensio
                                                            bool *isEditing, bool *isModified)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (proxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is invalid");
@@ -734,10 +718,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetCapability(ContentEmbed_Extensio
     uint32_t *bitmask)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (proxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is invalid");
@@ -769,14 +752,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetSnapshot(ContentEmbed_ExtensionP
     OH_PixelmapNative **snapshot)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
-    }
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (proxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is invalid");
@@ -819,10 +797,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetSnapshot(ContentEmbed_ExtensionP
 ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StopWork(ContentEmbed_ExtensionProxy *proxy)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (proxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is null");
@@ -857,10 +834,9 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetDocument(ContentEmbed_ExtensionP
     ContentEmbed_Document **ceDocument)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
-    auto supported = ObjectEditorConfig::GetInstance().CheckIsSupported();
-    if (supported != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "not supported:%{public}d", supported);
-        return supported;
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
     }
     if (proxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is null");
