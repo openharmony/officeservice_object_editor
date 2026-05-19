@@ -58,10 +58,19 @@ ohos_unittest("object_editor_event_manager_test") {
   ]
 
   external_deps = [
-    "c_utils:utils",
-    "googletest:gmock",
-    "googletest:gtest_main",
     "hilog:libhilog",
+    "common_event_service:cesfwk_innerkits",
+    "safwk:system_ability_fwk",
+    "access_token:libaccesstoken_sdk",
+    "access_token:libtokenid_sdk",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "ipc:ipc_core",
+    "samgr:samgr_proxy",
+    "bundle_framework:bundle_napi_common",
+    "c_utils:utils",
+    "os_account:os_account_innerkits",
+    "googletest:gmock",
   ]
 
   defines = [
@@ -90,12 +99,19 @@ ohos_unittest("object_editor_screen_change_receiver_test") {
   ]
 
   external_deps = [
-    "ability_base:want",
-    "c_utils:utils",
-    "common_event_service:cesfwk_innerkits",
-    "googletest:gmock",
-    "googletest:gtest_main",
     "hilog:libhilog",
+    "common_event_service:cesfwk_innerkits",
+    "safwk:system_ability_fwk",
+    "access_token:libaccesstoken_sdk",
+    "access_token:libtokenid_sdk",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "ipc:ipc_core",
+    "samgr:samgr_proxy",
+    "bundle_framework:bundle_napi_common",
+    "c_utils:utils",
+    "os_account:os_account_innerkits",
+    "googletest:gmock",
   ]
 
   defines = [
@@ -124,16 +140,19 @@ ohos_unittest("object_editor_permission_utils_test") {
   ]
 
   external_deps = [
+    "hilog:libhilog",
+    "common_event_service:cesfwk_innerkits",
+    "safwk:system_ability_fwk",
     "access_token:libaccesstoken_sdk",
     "access_token:libtokenid_sdk",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
-    "c_utils:utils",
-    "googletest:gmock",
-    "googletest:gtest_main",
-    "hilog:libhilog",
     "ipc:ipc_core",
     "samgr:samgr_proxy",
+    "bundle_framework:bundle_napi_common",
+    "c_utils:utils",
+    "os_account:os_account_innerkits",
+    "googletest:gmock",
   ]
 
   defines = [
@@ -162,16 +181,19 @@ ohos_unittest("object_editor_bms_utils_test") {
   ]
 
   external_deps = [
-    "ability_base:want",
+    "hilog:libhilog",
+    "common_event_service:cesfwk_innerkits",
+    "safwk:system_ability_fwk",
+    "access_token:libaccesstoken_sdk",
+    "access_token:libtokenid_sdk",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
-    "bundle_framework:bundle_napi_common",
-    "c_utils:utils",
-    "googletest:gmock",
-    "googletest:gtest_main",
-    "hilog:libhilog",
     "ipc:ipc_core",
     "samgr:samgr_proxy",
+    "bundle_framework:bundle_napi_common",
+    "c_utils:utils",
+    "os_account:os_account_innerkits",
+    "googletest:gmock",
   ]
 
   defines = [

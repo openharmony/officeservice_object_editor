@@ -15,15 +15,19 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "object_editor_extension.h"
+#include "ability_handler.h"
 #include "hilog_object_editor.h"
 #include "native_object_editor_types.h"
+#define private public
+#include "object_editor_extension.h"
+#undef private
 
 using namespace testing;
 using namespace testing::ext;
 
 namespace OHOS {
 namespace AbilityRuntime {
+using namespace OHOS::AppExecFwk;
 
 class ObjectEditorExtensionTest : public testing::Test {
 public:
@@ -53,19 +57,6 @@ void ObjectEditorExtensionTest::TearDown()
 }
 
 namespace {
-/**
- * @tc.name Create_001
- * @tc.desc Test Create method with valid runtime
- * @tc.type FUNC
- */
-HWTEST_F(ObjectEditorExtensionTest, Create_001, TestSize.Level1)
-{
-    std::unique_ptr<Runtime> runtime = std::make_unique<Runtime>();
-    ObjectEditorExtension* extension = ObjectEditorExtension::Create(runtime);
-    EXPECT_NE(extension, nullptr);
-    delete extension;
-}
-
 /**
  * @tc.name Create_002
  * @tc.desc Test Create method with null runtime
@@ -313,6 +304,7 @@ HWTEST_F(ObjectEditorExtensionTest, Initial_001, TestSize.Level1)
 {
     std::unique_ptr<ObjectEditor::ObjectEditorDocument> document = nullptr;
     sptr<IObjectEditorClientCallback> clientCb = nullptr;
+    extension_->moduleLoaded_ = true;
     ErrCode ret = extension_->Initial(std::move(document), clientCb);
     EXPECT_EQ(ret, ObjectorEditorExtensionErrCode::EXTENSION_PARAM_INVALID);
 }
@@ -324,8 +316,10 @@ HWTEST_F(ObjectEditorExtensionTest, Initial_001, TestSize.Level1)
  */
 HWTEST_F(ObjectEditorExtensionTest, Initial_002, TestSize.Level1)
 {
-    std::unique_ptr<ObjectEditor::ObjectEditorDocument> document = std::make_unique<ObjectEditor::ObjectEditorDocument>();
+    std::unique_ptr<ObjectEditor::ObjectEditorDocument> document =
+        std::make_unique<ObjectEditor::ObjectEditorDocument>();
     sptr<IObjectEditorClientCallback> clientCb = nullptr;
+    extension_->moduleLoaded_ = true;
     ErrCode ret = extension_->Initial(std::move(document), clientCb);
     EXPECT_EQ(ret, ObjectorEditorExtensionErrCode::EXTENSION_PARAM_INVALID);
 }

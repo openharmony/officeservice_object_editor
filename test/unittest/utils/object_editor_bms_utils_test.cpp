@@ -13,11 +13,17 @@
  * limitations under the License.
  */
 
+#include "bundle_constants.h"
+#include "bundle_info.h"
+#include "bundle_mgr_interface.h"
+#include "iservice_registry.h"
+#include "system_ability_definition.h"
+#include "want.h"
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "object_editor_bms_utils.h"
 #include "hilog_object_editor.h"
-#include "want.h"
 
 using namespace testing;
 using namespace testing::ext;

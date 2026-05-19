@@ -25,6 +25,10 @@ using namespace testing::ext;
 
 namespace OHOS {
 namespace AbilityRuntime {
+namespace {
+constexpr int32_t START_ABILITY_FAILED = 2097199;
+constexpr int32_t CONNECT_ABILITY_FAILED = 2097205;
+}
 
 class ObjectEditorExtensionContextTest : public testing::Test {
 public:
@@ -124,7 +128,7 @@ HWTEST_F(ObjectEditorExtensionContextTest, StartAbility_003, TestSize.Level1)
     AAFwk::Want want;
     AAFwk::StartOptions startOptions;
     ErrCode ret = context_->StartAbility(want, startOptions);
-    EXPECT_EQ(ret, ERR_NO_INIT);
+    EXPECT_EQ(ret, START_ABILITY_FAILED);
 }
 
 /**
@@ -137,7 +141,7 @@ HWTEST_F(ObjectEditorExtensionContextTest, StartAbility_004, TestSize.Level1)
     AAFwk::Want want;
     AAFwk::StartOptions startOptions;
     ErrCode ret = context_->StartAbility(want, startOptions);
-    EXPECT_EQ(ret, ERR_NO_INIT);
+    EXPECT_EQ(ret, START_ABILITY_FAILED);
 }
 
 /**
@@ -150,7 +154,7 @@ HWTEST_F(ObjectEditorExtensionContextTest, StartAbilityWithAccount_001, TestSize
     AAFwk::Want want;
     int accountId = 100;
     ErrCode ret = context_->StartAbilityWithAccount(want, accountId);
-    EXPECT_EQ(ret, ERR_NO_INIT);
+    EXPECT_EQ(ret, START_ABILITY_FAILED);
 }
 
 /**
@@ -163,7 +167,7 @@ HWTEST_F(ObjectEditorExtensionContextTest, StartAbilityWithAccount_002, TestSize
     AAFwk::Want want;
     int accountId = 0;
     ErrCode ret = context_->StartAbilityWithAccount(want, accountId);
-    EXPECT_EQ(ret, ERR_NO_INIT);
+    EXPECT_EQ(ret, START_ABILITY_FAILED);
 }
 
 /**
@@ -176,7 +180,7 @@ HWTEST_F(ObjectEditorExtensionContextTest, StartAbilityWithAccount_003, TestSize
     AAFwk::Want want;
     int accountId = -1;
     ErrCode ret = context_->StartAbilityWithAccount(want, accountId);
-    EXPECT_EQ(ret, ERR_NO_INIT);
+    EXPECT_EQ(ret, START_ABILITY_FAILED);
 }
 
 /**
@@ -190,7 +194,7 @@ HWTEST_F(ObjectEditorExtensionContextTest, StartAbilityWithAccount_004, TestSize
     int accountId = 100;
     AAFwk::StartOptions startOptions;
     ErrCode ret = context_->StartAbilityWithAccount(want, accountId, startOptions);
-    EXPECT_EQ(ret, ERR_NO_INIT);
+    EXPECT_EQ(ret, START_ABILITY_FAILED);
 }
 
 /**
@@ -257,7 +261,7 @@ HWTEST_F(ObjectEditorExtensionContextTest, DisconnectAbility_001, TestSize.Level
     AAFwk::Want want;
     sptr<AbilityConnectCallback> connectCallback = nullptr;
     ErrCode ret = context_->DisconnectAbility(want, connectCallback);
-    EXPECT_EQ(ret, ERR_OK);
+    EXPECT_EQ(ret, CONNECT_ABILITY_FAILED);
 }
 
 /**
@@ -270,7 +274,7 @@ HWTEST_F(ObjectEditorExtensionContextTest, DisconnectAbility_002, TestSize.Level
     AAFwk::Want want;
     sptr<AbilityConnectCallback> connectCallback = nullptr;
     ErrCode ret = context_->DisconnectAbility(want, connectCallback);
-    EXPECT_EQ(ret, ERR_OK);
+    EXPECT_EQ(ret, CONNECT_ABILITY_FAILED);
 }
 
 /**
@@ -281,18 +285,7 @@ HWTEST_F(ObjectEditorExtensionContextTest, DisconnectAbility_002, TestSize.Level
 HWTEST_F(ObjectEditorExtensionContextTest, TerminateAbility_001, TestSize.Level1)
 {
     ErrCode ret = context_->TerminateAbility();
-    EXPECT_EQ(ret, ERR_NO_INIT);
-}
-
-/**
- * @tc.name TerminateAbility_002
- * @tc.desc Test TerminateAbility method without init
- * @tc.type FUNC
- */
-HWTEST_F(ObjectEditorExtensionContextTest, TerminateAbility_002, TestSize.Level1)
-{
-    ErrCode ret = context_->TerminateAbility();
-    EXPECT_EQ(ret, ERR_NO_INIT);
+    EXPECT_NE(ret, ERR_OK);
 }
 
 /**

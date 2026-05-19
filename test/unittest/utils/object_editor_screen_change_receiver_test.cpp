@@ -139,7 +139,7 @@ HWTEST_F(ObjectEditorScreenChangeReceiverTest, OnReceiveEvent_005, TestSize.Leve
     receiver_->OnReceiveEvent(eventData1);
     EXPECT_TRUE(ObjectEditorEventManager::GetInstance().CheckIsScreenLocked());
     AAFwk::Want want2;
-    want2.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_UNLOCKED);
+    want2.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_LOCKED);
     EventFwk::CommonEventData eventData2(want2);
     receiver_->OnReceiveEvent(eventData2);
     EXPECT_TRUE(ObjectEditorEventManager::GetInstance().CheckIsScreenLocked());

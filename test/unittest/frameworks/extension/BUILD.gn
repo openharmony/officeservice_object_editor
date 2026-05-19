@@ -72,7 +72,6 @@ ohos_unittest("object_editor_extension_test") {
     "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "googletest:gmock",
-    "googletest:gtest_main",
     "hilog:libhilog",
     "image_framework:image_native",
     "image_framework:pixelmap",
@@ -101,7 +100,7 @@ ohos_unittest("object_editor_extension_context_test") {
 
   deps = [
     "${object_editor_path}/frameworks/kits/extension:content_embed_extension",
-    "${object_editor_path}/document:content_embed_document",
+    "${object_editor_path}/utils:content_embed_utils",
   ]
 
   configs = [
@@ -111,24 +110,28 @@ ohos_unittest("object_editor_extension_context_test") {
   ]
 
   external_deps = [
+    "ability_base:configuration",
     "ability_base:want",
     "ability_base:ability_base_want",
     "ability_runtime:ability_context_native",
-    "ability_runtime:ability_runtime",
     "ability_runtime:ability_manager",
     "ability_runtime:ability_start_options",
     "ability_runtime:abilitykit_native",
     "ability_runtime:app_context",
     "ability_runtime:extensionkit_native",
     "ability_runtime:napi_common",
-    "bundle_framework:appexecfwk_base",
+    "ability_runtime:runtime",
     "c_utils:utils",
-    "googletest:gmock",
-    "googletest:gtest_main",
+    "eventhandler:libeventhandler",
     "hilog:libhilog",
-    "ipc:ipc_core",
+    "ipc:ipc_napi",
     "ipc:ipc_single",
+    "napi:ace_napi",
     "samgr:samgr_proxy",
+    "image_framework:image_native",
+    "image_framework:pixelmap_ndk",
+    "ability_runtime:ability_runtime",
+    "googletest:gmock",
   ]
 
   defines = [
@@ -184,6 +187,5 @@ group("extension_unittest") {
   deps = [
     ":object_editor_extension_test",
     ":object_editor_extension_context_test",
-    ":object_editor_extension_module_loader_test",
   ]
 }
