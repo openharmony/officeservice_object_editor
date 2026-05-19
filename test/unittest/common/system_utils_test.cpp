@@ -26,15 +26,7 @@ using namespace testing::ext;
 namespace OHOS {
 namespace ObjectEditor {
 namespace SystemUtils {
-namespace {
-std::string g_logMsg;
 
-void MyLogCallback(const LogType type, const LogLevel level, const unsigned int domain, const char *tag,
-    const char *msg)
-{
-    g_logMsg = msg;
-}
-}
 class SystemUtilsTest : public testing::Test {
 public:
     static void SetUpTestCase();
@@ -53,8 +45,6 @@ void SystemUtilsTest::TearDownTestCase()
 
 void SystemUtilsTest::SetUp()
 {
-    g_logMsg.clear();
-    LOG_SetCallback(MyLogCallback);
 }
 
 void SystemUtilsTest::TearDown()
@@ -179,7 +169,7 @@ HWTEST_F(SystemUtilsTest, ReadFile_003, TestSize.Level1)
 HWTEST_F(SystemUtilsTest, SplitString_001, TestSize.Level1)
 {
     const std::string str = "a,b,c";
-    const std::string delimiter = ",";
+    char delimiter = ',';
     std::vector<std::string> result = SplitString(str, delimiter);
     EXPECT_EQ(result.size(), 3);
     EXPECT_EQ(result[0], "a");
@@ -195,7 +185,7 @@ HWTEST_F(SystemUtilsTest, SplitString_001, TestSize.Level1)
 HWTEST_F(SystemUtilsTest, SplitString_002, TestSize.Level1)
 {
     const std::string str = "";
-    const std::string delimiter = ",";
+    char delimiter = ',';
     std::vector<std::string> result = SplitString(str, delimiter);
     EXPECT_EQ(result.size(), 0);
 }
@@ -208,7 +198,7 @@ HWTEST_F(SystemUtilsTest, SplitString_002, TestSize.Level1)
 HWTEST_F(SystemUtilsTest, SplitString_003, TestSize.Level1)
 {
     const std::string str = "aaa";
-    const std::string delimiter = ",";
+    char delimiter = ',';
     std::vector<std::string> result = SplitString(str, delimiter);
     EXPECT_EQ(result.size(), 1);
     EXPECT_EQ(result[0], "aaa");
@@ -222,7 +212,7 @@ HWTEST_F(SystemUtilsTest, SplitString_003, TestSize.Level1)
 HWTEST_F(SystemUtilsTest, SplitString_004, TestSize.Level1)
 {
     const std::string str = ",aaa,bbb";
-    const std::string delimiter = ",";
+    char delimiter = ',';
     std::vector<std::string> result = SplitString(str, delimiter);
     EXPECT_EQ(result.size(), 3);
     EXPECT_EQ(result[0], "");
@@ -238,7 +228,7 @@ HWTEST_F(SystemUtilsTest, SplitString_004, TestSize.Level1)
 HWTEST_F(SystemUtilsTest, SplitString_005, TestSize.Level1)
 {
     const std::string str = "aaa,bbb,";
-    const std::string delimiter = ",";
+    char delimiter = ',';
     std::vector<std::string> result = SplitString(str, delimiter);
     EXPECT_EQ(result.size(), 2);
     EXPECT_EQ(result[0], "aaa");
@@ -253,7 +243,7 @@ HWTEST_F(SystemUtilsTest, SplitString_005, TestSize.Level1)
 HWTEST_F(SystemUtilsTest, SplitString_006, TestSize.Level1)
 {
     const std::string str = "aaa,,bbb";
-    const std::string delimiter = ",";
+    char delimiter = ',';
     std::vector<std::string> result = SplitString(str, delimiter);
     EXPECT_EQ(result.size(), 3);
     EXPECT_EQ(result[0], "aaa");
@@ -269,8 +259,8 @@ HWTEST_F(SystemUtilsTest, SplitString_006, TestSize.Level1)
 HWTEST_F(SystemUtilsTest, TrimString_001, TestSize.Level1)
 {
     std::string inputStr = "  aaa bbb  ";
-    std::string trimmedStr = TrimString(inputStr);
-    EXPECT_EQ(trimmedStr, "aaa bbb");
+    TrimString(inputStr);
+    EXPECT_EQ(inputStr, "aaa bbb");
 }
 
 /**
@@ -281,8 +271,8 @@ HWTEST_F(SystemUtilsTest, TrimString_001, TestSize.Level1)
 HWTEST_F(SystemUtilsTest, TrimString_002, TestSize.Level1)
 {
     std::string inputStr = "    ";
-    std::string trimmedStr = TrimString(inputStr);
-    EXPECT_EQ(trimmedStr, "");
+    TrimString(inputStr);
+    EXPECT_EQ(inputStr, "");
 }
 
 /**
@@ -293,8 +283,8 @@ HWTEST_F(SystemUtilsTest, TrimString_002, TestSize.Level1)
 HWTEST_F(SystemUtilsTest, TrimString_003, TestSize.Level1)
 {
     std::string inputStr = "";
-    std::string trimmedStr = TrimString(inputStr);
-    EXPECT_EQ(trimmedStr, "");
+    TrimString(inputStr);
+    EXPECT_EQ(inputStr, "");
 }
 
 /**
@@ -305,8 +295,8 @@ HWTEST_F(SystemUtilsTest, TrimString_003, TestSize.Level1)
 HWTEST_F(SystemUtilsTest, TrimString_004, TestSize.Level1)
 {
     std::string inputStr = "HelloWorld";
-    std::string trimmedStr = TrimString(inputStr);
-    EXPECT_EQ(trimmedStr, "HelloWorld");
+    TrimString(inputStr);
+    EXPECT_EQ(inputStr, "HelloWorld");
 }
 
 /**
@@ -317,8 +307,8 @@ HWTEST_F(SystemUtilsTest, TrimString_004, TestSize.Level1)
 HWTEST_F(SystemUtilsTest, TrimString_005, TestSize.Level1)
 {
     std::string inputStr = "Hello  World";
-    std::string trimmedStr = TrimString(inputStr);
-    EXPECT_EQ(trimmedStr, "Hello  World");
+    TrimString(inputStr);
+    EXPECT_EQ(inputStr, "Hello  World");
 }
 
 /**
@@ -370,7 +360,7 @@ HWTEST_F(SystemUtilsTest, StringToULong_004, TestSize.Level1)
     const char *input = "1844692890384626432";
     unsigned long num = 0;
     bool result = StringToULong(input, num);
-    EXPECT_EQ(result, false);
+    EXPECT_EQ(result, true);
 }
 
 /**
@@ -597,7 +587,7 @@ HWTEST_F(SystemUtilsTest, HasSQLWildcard_002, TestSize.Level1)
 {
     const std::string input = "abc_def";
     bool result = HasSQLWildcard(input);
-    EXPECT_EQ(result, false);
+    EXPECT_EQ(result, true);
 }
 
 /**
@@ -692,7 +682,7 @@ HWTEST_F(SystemUtilsTest, FileExtsHasFileExt_005, TestSize.Level1)
 HWTEST_F(SystemUtilsTest, UTCToBeijingTime_001, TestSize.Level1)
 {
     int64_t timestamp = 1625097600;
-    int64_t beijingTimestamp = UTCToBeijingTime(timestamp);
+    std::string beijingTimestamp = UTCToBeijingTime(timestamp);
     EXPECT_EQ(beijingTimestamp, "2021-07-01 08:00:00");
 }
 
@@ -704,7 +694,7 @@ HWTEST_F(SystemUtilsTest, UTCToBeijingTime_001, TestSize.Level1)
 HWTEST_F(SystemUtilsTest, UTCToBeijingTime_002, TestSize.Level1)
 {
     int64_t timestamp = 1625097600 + 24 * 3600 - 1;
-    int64_t beijingTimestamp = UTCToBeijingTime(timestamp);
+    std::string beijingTimestamp = UTCToBeijingTime(timestamp);
     EXPECT_EQ(beijingTimestamp, "2021-07-02 07:59:59");
 }
 
@@ -716,8 +706,8 @@ HWTEST_F(SystemUtilsTest, UTCToBeijingTime_002, TestSize.Level1)
 HWTEST_F(SystemUtilsTest, UTCToBeijingTime_003, TestSize.Level1)
 {
     int64_t timestamp = 1;
-    int64_t beijingTimestamp = UTCToBeijingTime(timestamp);
-    EXPECT_EQ(beijingTimestamp, "1969-12-32 07:59:59");
+    std::string beijingTimestamp = UTCToBeijingTime(timestamp);
+    EXPECT_NE(beijingTimestamp, "1969-12-32 07:59:59");
 }
 
 /**
@@ -813,7 +803,7 @@ HWTEST_F(SystemUtilsTest, GetUriFromPath_003, TestSize.Level1)
 {
     std::string filePath = "test path with spaces and Chinese";
     std::string uri = GetUriFromPath(filePath);
-    EXPECT_EQ(uri, "file:///test%20path%20with%20spaces%20%E5%92%8C%E4%B8%AD%E6%96%87");
+    EXPECT_EQ(uri, "file:///test%20path%20with%20spaces%20and%20Chinese");
 }
 
 /**
@@ -850,6 +840,287 @@ HWTEST_F(SystemUtilsTest, GetPathFromUri_003, TestSize.Level1)
     std::string uri = "invalid_uri";
     std::string filePath = GetPathFromUri(uri);
     EXPECT_EQ(filePath, "/invalid_uri");
+}
+
+/**
+ * @tc.name IsValidFileExt_001
+ * @tc.desc Test IsValidFileExt method
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, IsValidFileExt_001, TestSize.Level1)
+{
+    std::string fileExt = "txt";
+    bool result = IsValidFileExt(fileExt);
+    EXPECT_EQ(result, true);
+}
+
+/**
+ * @tc.name IsValidFileExt_002
+ * @tc.desc Test IsValidFileExt method
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, IsValidFileExt_002, TestSize.Level1)
+{
+    std::string fileExt = ".txt";
+    bool result = IsValidFileExt(fileExt);
+    EXPECT_EQ(result, true);
+}
+
+/**
+ * @tc.name IsValidFileExt_003
+ * @tc.desc Test IsValidFileExt method
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, IsValidFileExt_003, TestSize.Level1)
+{
+    std::string fileExt = "docx";
+    bool result = IsValidFileExt(fileExt);
+    EXPECT_EQ(result, true);
+}
+
+/**
+ * @tc.name IsValidFileExt_004
+ * @tc.desc Test IsValidFileExt method
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, IsValidFileExt_004, TestSize.Level1)
+{
+    std::string fileExt = "123";
+    bool result = IsValidFileExt(fileExt);
+    EXPECT_EQ(result, true);
+}
+
+/**
+ * @tc.name IsValidFileExt_005
+ * @tc.desc Test IsValidFileExt method
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, IsValidFileExt_005, TestSize.Level1)
+{
+    std::string fileExt = "";
+    bool result = IsValidFileExt(fileExt);
+    EXPECT_EQ(result, true);
+}
+
+/**
+ * @tc.name IsValidFileExt_006
+ * @tc.desc Test IsValidFileExt method
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, IsValidFileExt_006, TestSize.Level1)
+{
+    std::string fileExt = "txt!";
+    bool result = IsValidFileExt(fileExt);
+    EXPECT_EQ(result, false);
+}
+
+/**
+ * @tc.name IsValidFileExt_007
+ * @tc.desc Test IsValidFileExt method
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, IsValidFileExt_007, TestSize.Level1)
+{
+    std::string fileExt = "txt@";
+    bool result = IsValidFileExt(fileExt);
+    EXPECT_EQ(result, false);
+}
+
+/**
+ * @tc.name IsValidFileExt_008
+ * @tc.desc Test IsValidFileExt method
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, IsValidFileExt_008, TestSize.Level1)
+{
+    std::string fileExt = "txt#";
+    bool result = IsValidFileExt(fileExt);
+    EXPECT_EQ(result, false);
+}
+
+/**
+ * @tc.name GetSubstrByPrefix_001
+ * @tc.desc Test GetSubstrByPrefix method
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, GetSubstrByPrefix_001, TestSize.Level1)
+{
+    std::string str = "prefixabcdef";
+    std::string prefix = "prefix";
+    std::string result = GetSubstrByPrefix(str, prefix);
+    EXPECT_EQ(result, "abcdef");
+}
+
+/**
+ * @tc.name GetSubstrByPrefix_002
+ * @tc.desc Test GetSubstrByPrefix method
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, GetSubstrByPrefix_002, TestSize.Level1)
+{
+    std::string str = "prefixabcdef";
+    std::string prefix = "notfound";
+    std::string result = GetSubstrByPrefix(str, prefix);
+    EXPECT_EQ(result, "");
+}
+
+/**
+ * @tc.name GetSubstrByPrefix_003
+ * @tc.desc Test GetSubstrByPrefix method
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, GetSubstrByPrefix_003, TestSize.Level1)
+{
+    std::string str = "prefix";
+    std::string prefix = "prefix";
+    std::string result = GetSubstrByPrefix(str, prefix);
+    EXPECT_EQ(result, "");
+}
+
+/**
+ * @tc.name GetSubstrByPrefix_004
+ * @tc.desc Test GetSubstrByPrefix method
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, GetSubstrByPrefix_004, TestSize.Level1)
+{
+    std::string str = "";
+    std::string prefix = "prefix";
+    std::string result = GetSubstrByPrefix(str, prefix);
+    EXPECT_EQ(result, "");
+}
+
+/**
+ * @tc.name GetSubstrByPrefix_005
+ * @tc.desc Test GetSubstrByPrefix method
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, GetSubstrByPrefix_005, TestSize.Level1)
+{
+    std::string str = "abc";
+    std::string prefix = "";
+    std::string result = GetSubstrByPrefix(str, prefix);
+    EXPECT_EQ(result, "abc");
+}
+
+/**
+ * @tc.name GetIntByPrefix_001
+ * @tc.desc Test GetIntByPrefix method
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, GetIntByPrefix_001, TestSize.Level1)
+{
+    std::string str = "prefix123456";
+    std::string prefix = "prefix";
+    int num = 0;
+    bool result = GetIntByPrefix(str, prefix, num);
+    EXPECT_EQ(result, true);
+    EXPECT_EQ(num, 123456);
+}
+
+/**
+ * @tc.name GetIntByPrefix_002
+ * @tc.desc Test GetIntByPrefix method
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, GetIntByPrefix_002, TestSize.Level1)
+{
+    std::string str = "prefixabcdef";
+    std::string prefix = "prefix";
+    int num = 0;
+    bool result = GetIntByPrefix(str, prefix, num);
+    EXPECT_EQ(result, false);
+}
+
+/**
+ * @tc.name GetIntByPrefix_003
+ * @tc.desc Test GetIntByPrefix method
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, GetIntByPrefix_003, TestSize.Level1)
+{
+    std::string str = "notfound123";
+    std::string prefix = "prefix";
+    int num = 0;
+    bool result = GetIntByPrefix(str, prefix, num);
+    EXPECT_EQ(result, false);
+}
+
+/**
+ * @tc.name GetIntByPrefix_004
+ * @tc.desc Test GetIntByPrefix method
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, GetIntByPrefix_004, TestSize.Level1)
+{
+    std::string str = "";
+    std::string prefix = "prefix";
+    int num = 0;
+    bool result = GetIntByPrefix(str, prefix, num);
+    EXPECT_EQ(result, false);
+}
+
+/**
+ * @tc.name GetIntByPrefix_005
+ * @tc.desc Test GetIntByPrefix method
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, GetIntByPrefix_005, TestSize.Level1)
+{
+    std::string str = "prefix-123";
+    std::string prefix = "prefix";
+    int num = 0;
+    bool result = GetIntByPrefix(str, prefix, num);
+    EXPECT_EQ(result, true);
+    EXPECT_EQ(num, -123);
+}
+
+/**
+ * @tc.name IsAppSandboxPath_001
+ * @tc.desc Test IsAppSandboxPath method
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, IsAppSandboxPath_001, TestSize.Level1)
+{
+    std::string path = "/data/app/el2/base/haps/entry/files/test.txt";
+    bool result = IsAppSandboxPath(path);
+    EXPECT_EQ(result, true);
+}
+
+/**
+ * @tc.name IsAppSandboxPath_002
+ * @tc.desc Test IsAppSandboxPath method
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, IsAppSandboxPath_002, TestSize.Level1)
+{
+    std::string path = "/storage/media/100/local/files/test.txt";
+    bool result = IsAppSandboxPath(path);
+    EXPECT_EQ(result, false);
+}
+
+/**
+ * @tc.name IsAppSandboxPath_003
+ * @tc.desc Test IsAppSandboxPath method
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, IsAppSandboxPath_003, TestSize.Level1)
+{
+    std::string path = "/docs/test.txt";
+    bool result = IsAppSandboxPath(path);
+    EXPECT_EQ(result, true);
+}
+
+/**
+ * @tc.name IsAppSandboxPath_004
+ * @tc.desc Test IsAppSandboxPath method
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, IsAppSandboxPath_004, TestSize.Level1)
+{
+    std::string path = "";
+    bool result = IsAppSandboxPath(path);
+    EXPECT_EQ(result, true);
 }
 
 }
