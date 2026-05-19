@@ -15,6 +15,7 @@
 group("framework_unittest") {
   testonly = true
   deps = [
+    "extension:extension_unittest",
     "ndk:ndk_unittest",
   ]
 }
