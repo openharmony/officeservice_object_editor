@@ -57,6 +57,8 @@ constexpr const char* DIVERSION_MAP_JSON_PATH = "/system/etc/office_service/obje
 constexpr int32_t MAX_CONNECTION_COUNT = 2;
 constexpr int32_t MAX_REQUEST_COUNT = 50;
 constexpr int32_t WINDOW_SIZE_MS = 1000;
+constexpr int32_t APP_INDEX_MAIN = 0;
+constexpr int ILLEGAL_REQUEST_CODE = -1;
 }
 
 IMPLEMENT_SINGLE_INSTANCE(ObjectEditorManagerSystemAbility);
@@ -309,7 +311,7 @@ bool ObjectEditorManagerSystemAbility::CheckRateLimitAdvanced()
     auto now = std::chrono::steady_clock::now();
     auto nowMs = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
     uint64_t windowStartMs = windowStartMs_.load();
-    if (nowMs - windowStartMs >= WINDOW_SIZE_MS) {
+    if (static_cast<uint64_t>(nowMs) - windowStartMs >= WINDOW_SIZE_MS) {
         if (windowStartMs_.compare_exchange_strong(windowStartMs, nowMs)) {
             requestCount_.store(1);
             return true;
@@ -460,15 +462,21 @@ ErrCode ObjectEditorManagerSystemAbility::StartObjectEditorExtension(
         if (clientRemote != nullptr) {
             clientRemote->RemoveDeathRecipient(clientDeathRecipient);
         }
+        if (proxyResult == EXTENSION_MODULE_LOAD_FAILED) {
+            StopObjectEditorExtension(oeExtensionRemoteObject);
+            return ObjectEditorManagerErrCode::SA_CONNECT_LIMIT_EXCEED;
+        }
         return ObjectEditorManagerErrCode::SA_EXTENSION_REMOTE_SEND_FAILED;
     }
     auto end = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    if (document->GetOperateType() == OperateType::CREATE_BY_FILE || document->GetOperateType() == OperateType::CREATE_BY_OEID) {
+    if (document->GetOperateType() == OperateType::CREATE_BY_FILE ||
+        document->GetOperateType() == OperateType::CREATE_BY_OEID) {
         bool isFromFile = (operateType == OperateType::CREATE_BY_FILE);
         HiSysEventWrite(OBJECT_EDITOR, "CREATE_DOCUMENT", OHOS::HiviewDFX::HiSysEvent::EventType::STATISTIC,
-        "OEID", oeid, "CREATEMODE", isFromFile ? "CREATE_BY_FILE" : "CREATE_BY_OEID",
-        "FILEEXT", fileSuffix, "ISLINKING", islinking, "ISPACKAGE", isPackageExtension, "DURATION", duration);
+                        "OEID", oeid, "CREATEMODE", isFromFile ? "CREATE_BY_FILE" : "CREATE_BY_OEID",
+                        "FILEEXT", fileSuffix, "ISLINKING", islinking,
+                        "ISPACKAGE", isPackageExtension, "DURATION", duration);
     }
     return ObjectEditorManagerErrCode::SA_OK;
 }
@@ -654,7 +662,7 @@ ErrCode ObjectEditorManagerSystemAbility::GetFormatName(const std::string &oeid,
 ErrCode ObjectEditorManagerSystemAbility::GetObjectEditorFormatByOEidAndLocale(const std::string &oeid,
     const std::string &locale, std::unique_ptr<ObjectEditorFormat> &format)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "oeid: %{public}s, locale: %{public}s",
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "oeid: %{private}s, locale: %{private}s",
         oeid.c_str(), locale.c_str());
     return ObjectEditorManagerDatabase::GetInstance().GetObjectEditorFormatByOEidAndLocale(oeid,
         locale, format);
@@ -679,9 +687,15 @@ ErrCode ObjectEditorManagerSystemAbility::StartUIAbility(const std::unique_ptr<A
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "ability manager client is null");
         return ObjectEditorManagerErrCode::SA_START_UIABILITY_FAILED;
     }
-    std::string specifiedFlag = want->GetParams().GetStringParam("specifiedFlag");
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "specifiedFlag: %{public}s", specifiedFlag.c_str());
-    ErrCode err = abilityManagerClient->StartAbilityByOEExt(*want, extensionToken, clientPid, specifiedFlag);
+    bool isSameProc = want->GetBoolParam("ohos.contentEmbed.isRunningInContentEmbedProcess", true);
+    ErrCode err = ERR_OK;
+    if (isSameProc) {
+        std::string specifiedFlag = want->GetParams().GetStringParam("specifiedFlag");
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "specifiedFlag: %{public}s", specifiedFlag.c_str());
+        err = abilityManagerClient->StartAbilityByOEExt(*want, extensionToken, clientPid, specifiedFlag);
+    } else {
+        err = abilityManagerClient->StartAbility(*want, ILLEGAL_REQUEST_CODE, UserMgr::GetInstance().GetUserId());
+    }
     if (err != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "failed:%{public}d", err);
         return ObjectEditorManagerErrCode::SA_START_UIABILITY_FAILED;
@@ -736,8 +750,11 @@ bool ObjectEditorManagerSystemAbility::GrantClientFileUriPermissionToServerExten
     }
     auto readAndWritePermission = Want::FLAG_AUTH_READ_URI_PERMISSION |
         Want::FLAG_AUTH_WRITE_URI_PERMISSION;
-    return UriPermissionManagerClient::GetInstance().GrantUriPermissionPrivileged(uriList,
-        readAndWritePermission, targetBundleName, 0) == ERR_OK;
+    uint32_t callerTokenId = IPCSkeleton::GetCallingTokenID();
+    int32_t ret = UriPermissionManagerClient::GetInstance().GrantUriPermission(uriList,
+        readAndWritePermission, targetBundleName, APP_INDEX_MAIN, callerTokenId);
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "GrantUriPermission ret:%{public}d", ret);
+    return ret == 0;
 }
 
 void ObjectEditorManagerSystemAbilityConnectionStatusCallback::OnConnectionStatusChanged(

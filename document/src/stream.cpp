@@ -14,6 +14,7 @@
  */
 
 #include <algorithm>
+#include <cinttypes>
 #include <cstring>
 #include <cstdlib>
 #include <iostream>
@@ -66,15 +67,18 @@ void StreamImpl::Init()
     cachedUseBig_ = false;
     cachedSize_ = 0;
     if (!entry_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry is null");
         return;
     }
     cachedStart_ = entry_->Start();
     cachedSize_ = entry_->Size();
     if (!io_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null");
         return;
     }
     cachedUseBig_ = io_->GetHeader() && cachedSize_ >= io_->GetHeader()->Threshold();
     if (cachedSize_ == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "cachedSize is 0");
         return;
     }
     if (cachedUseBig_) {
@@ -89,6 +93,7 @@ void StreamImpl::Init()
 bool StreamImpl::PrepareRead(size_t pos, Byte *buffer, std::streamsize maxlen, size_t &allowed, size_t &entrySizeT)
 {
     if (!entry_ || !buffer || maxlen <= 0) [[unlikely]] {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry, buffer, or maxlen is null");
         return false;
     }
 
@@ -97,6 +102,7 @@ bool StreamImpl::PrepareRead(size_t pos, Byte *buffer, std::streamsize maxlen, s
         std::numeric_limits<size_t>::max() : static_cast<size_t>(entrySize);
     if (entrySize > 0) {
         if (!io_) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null");
             return false;
         }
         const bool useBig = io_->GetHeader() && entrySize >= io_->GetHeader()->Threshold();
@@ -108,6 +114,7 @@ bool StreamImpl::PrepareRead(size_t pos, Byte *buffer, std::streamsize maxlen, s
 
     if (pos >= entrySizeT) {
         state_ |= EOF_FLAG;
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "pos exceed");
         return false;
     }
 
@@ -125,10 +132,12 @@ bool StreamImpl::PrepareRead(size_t pos, Byte *buffer, std::streamsize maxlen, s
 std::streamsize StreamImpl::ReadSmallBlocks(size_t pos, Byte *buffer, size_t allowed)
 {
     if (!io_ || io_->SmallBlockSize() == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null or SmallBlockSize is 0");
         return 0;
     }
     size_t index = pos / io_->SmallBlockSize();
     if (index >= blocks_.size()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "index exceed blocks size");
         return 0;
     }
 
@@ -136,6 +145,7 @@ std::streamsize StreamImpl::ReadSmallBlocks(size_t pos, Byte *buffer, size_t all
     size_t offset = pos % io_->SmallBlockSize();
     std::streamsize totalbytes = 0;
     if (allowed > MAX_ALLOWED_2G) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "size is too large");
         return 0;
     }
     while (totalbytes < static_cast<std::streamsize>(allowed)) {
@@ -227,15 +237,18 @@ void StreamImpl::RefreshBlocks()
     cachedSize_ = 0;
     cachedUseBig_ = false;
     if (!entry_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry is null");
         return;
     }
     cachedStart_ = entry_->Start();
     cachedSize_ = entry_->Size();
     if (!io_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null");
         return;
     }
     cachedUseBig_ = io_->GetHeader() && cachedSize_ >= io_->GetHeader()->Threshold();
     if (cachedSize_ == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "cachedSize is 0");
         return;
     }
     if (cachedUseBig_) {
@@ -254,15 +267,18 @@ void StreamImpl::RefreshBlocks()
 int StreamImpl::Getch()
 {
     if (!entry_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry is null");
         return 0;
     }
     if (pos_ > static_cast<std::streamsize>(entry_->Size())) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "pos exceed");
         return -1;
     }
     if (!cacheSize_ || (pos_ < cachePos_) || (pos_ >= cachePos_ + cacheSize_)) {
         UpdateCache();
     }
     if (!cacheSize_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "cacheSize is 0");
         return -1;
     }
     int data = cache_[pos_ - cachePos_];
@@ -275,13 +291,16 @@ std::streamsize StreamImpl::Read(size_t pos, Byte *buffer, std::streamsize maxle
     size_t allowed = 0;
     size_t entrySizeT = 0;
     if (!PrepareRead(pos, buffer, maxlen, allowed, entrySizeT)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "PrepareRead failed");
         return 0;
     }
     const StreamPos entrySize = entry_->Size();
     if (!io_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null");
         return 0;
     }
     if (io_->GetHeader() && entrySize < io_->GetHeader()->Threshold()) {
+        OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "less than threshold");
         return ReadSmallBlocks(pos, buffer, allowed);
     }
     return ReadBigBlocks(pos, buffer, allowed, entrySize);
@@ -289,10 +308,13 @@ std::streamsize StreamImpl::Read(size_t pos, Byte *buffer, std::streamsize maxle
 
 std::streamsize StreamImpl::Read(Byte *data, std::streamsize maxlen)
 {
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "maxlen: %{public}" PRIu64, static_cast<uint64_t>(maxlen));
     std::streamsize bytes = Read(Tell(), data, maxlen);
     pos_ += bytes;
     if (entry_ && pos_ >= 0 && static_cast<StreamPos>(pos_) == entry_->Size()) {
         state_ |= EOF_FLAG;
+        OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "reach EOF, pos: %{public}" PRIu64 ", size: %{public}" PRIu64,
+            static_cast<uint64_t>(pos_), static_cast<uint64_t>(entry_->Size()));
     }
     return bytes;
 }
@@ -316,9 +338,11 @@ std::streamsize StreamImpl::ReadBufferUntilNull(std::vector<Byte> &buffer)
 void StreamImpl::UpdateCache()
 {
     if (!entry_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry is null");
         return;
     }
     if (cache_.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "cache is empty");
         return;
     }
     if (cacheSize_ == 0) {
@@ -338,12 +362,14 @@ void StreamImpl::UpdateCache()
 bool StreamImpl::PrepareWrite(const Byte *data, uint32_t &maxlen)
 {
     if (!entry_ || !data || maxlen == 0) [[unlikely]] {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry, data, or maxlen is null");
         return false;
     }
 
     const StreamPos entrySize = entry_->Size();
     if (entrySize > 0) {
         if (!io_) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null");
             return false;
         }
         const bool useBig = io_->GetHeader() && entrySize >= io_->GetHeader()->Threshold();
@@ -358,12 +384,21 @@ bool StreamImpl::PrepareWrite(const Byte *data, uint32_t &maxlen)
 
 bool StreamImpl::EnsureWriteCapacity(uint32_t &targetLen)
 {
+    if (entry_ == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry is null");
+        return false;
+    }
     const StreamPos currentPos = pos_ < 0 ? 0 : static_cast<StreamPos>(pos_);
     const StreamPos desiredSize = currentPos + static_cast<StreamPos>(targetLen);
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "currentPos:%{public}" PRIu64 ", desiredSize:%{public}" PRIu64,
+        static_cast<uint64_t>(currentPos), static_cast<uint64_t>(desiredSize));
     if (desiredSize <= entry_->Size()) {
+        OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "no need to extend currentSize: %{public}" PRIu64,
+            static_cast<uint64_t>(entry_->Size()));
         return true;
     }
     if (!io_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null");
         return false;
     }
     if (!io_->ExtendEntry(entry_, desiredSize)) {
@@ -372,6 +407,9 @@ bool StreamImpl::EnsureWriteCapacity(uint32_t &targetLen)
         targetLen = static_cast<uint32_t>(std::min<StreamPos>(trimmed,
             static_cast<StreamPos>(std::numeric_limits<uint32_t>::max())));
         state_ |= (EOF_FLAG | BAD_FLAG);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "ExtendEntry failed trimmed: %{public}" PRIu64 ", state: %{public}u",
+            static_cast<uint64_t>(trimmed), state_);
     } else {
         RefreshBlocks();
     }
@@ -381,18 +419,26 @@ bool StreamImpl::EnsureWriteCapacity(uint32_t &targetLen)
 uint32_t StreamImpl::WriteMiniBlocks(const Byte *data, uint32_t targetLen,
     uint64_t smallBlockSize, uint64_t bigBlockSize)
 {
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "targetLen: %{public}u, pos: %{public}" PRIu64,
+        targetLen, static_cast<uint64_t>(pos_));
     if (smallBlockSize == 0 || bigBlockSize == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "smallBlockSize or bigBlockSize is 0");
         return 0;
     }
     if (!io_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null");
         return 0;
     }
     std::vector<uint32_t> sbrootEntry = io_->SbBlocks();
     if (pos_ < 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "pos is invalid");
         return 0;
     }
     size_t index = static_cast<size_t>(pos_ / static_cast<std::streamsize>(smallBlockSize));
     if (index > sbrootEntry.size()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "index exceed root Entry size, index: %{public}zu, size: %{public}zu",
+            index, sbrootEntry.size());
         return 0;
     }
     uint64_t offset = static_cast<uint64_t>(pos_ % static_cast<std::streamsize>(smallBlockSize));
@@ -415,6 +461,9 @@ uint32_t StreamImpl::WriteMiniBlocks(const Byte *data, uint32_t targetLen,
         const uint32_t written = io_->SaveBlock(physicalOffset, data + count, canWrite);
         if (written < canWrite) {
             state_ |= BAD_FLAG;
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+                "write block incomplete, expected: %{public}u, actual: %{public}u, physicalOffset: %{public}" PRIu64,
+                canWrite, written, static_cast<uint64_t>(physicalOffset));
             return count;
         }
         count += written;
@@ -425,11 +474,17 @@ uint32_t StreamImpl::WriteMiniBlocks(const Byte *data, uint32_t targetLen,
 
 uint32_t StreamImpl::WriteBigBlocks(const Byte *data, uint32_t targetLen, uint64_t bigBlockSize)
 {
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "targetLen: %{public}u, pos: %{public}" PRIu64,
+        targetLen, static_cast<uint64_t>(pos_));
     if (bigBlockSize == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "bigBlockSize is 0");
         return 0;
     }
     size_t index = static_cast<size_t>(pos_ / static_cast<std::streamsize>(bigBlockSize));
     if (index > blocks_.size()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "index exceed blocks size, index: %{public}zu, blocks: %{public}zu",
+            index, blocks_.size());
         return 0;
     }
     
@@ -442,11 +497,15 @@ uint32_t StreamImpl::WriteBigBlocks(const Byte *data, uint32_t targetLen, uint64
         const uint32_t canWrite = static_cast<uint32_t>(
             std::min<uint64_t>(canWrite64, static_cast<uint64_t>(targetLen - count)));
         if (!io_) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null in write loop");
             return 0;
         }
         const uint32_t written = io_->SaveBlock(physicalOffset, data + count, canWrite);
         if (written < canWrite) {
             state_ |= BAD_FLAG;
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+                "write block incomplete, expected:%{public}u, actual:%{public}u, physicalOffset:%{public}" PRIu64,
+                canWrite, written, static_cast<uint64_t>(physicalOffset));
             return count;
         }
         count += written;
@@ -457,13 +516,19 @@ uint32_t StreamImpl::WriteBigBlocks(const Byte *data, uint32_t targetLen, uint64
 
 uint32_t StreamImpl::Write(const Byte *data, uint32_t maxlen)
 {
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "maxlen: %{public}u", maxlen);
     if (!PrepareWrite(data, maxlen)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "PrepareWrite failed");
         return 0;
     }
     if (!EnsureWriteCapacity(maxlen)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "EnsureWriteCapacity failed, maxlen: %{public}u, pos: %{public}" PRIu64,
+            maxlen, static_cast<uint64_t>(pos_));
         return 0;
     }
     if (!io_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null");
         return 0;
     }
     const uint32_t targetLen = maxlen;
@@ -480,7 +545,9 @@ uint32_t StreamImpl::Write(const Byte *data, uint32_t maxlen)
     if (count > UINT32_MAX) {
         return 0;
     }
-    pos_ += static_cast<uint32_t>(count);
+    pos_ += static_cast<std::streamsize>(count);
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "success count: %{public}u, pos: %{public}" PRIu64,
+        count, static_cast<uint64_t>(pos_));
     return count;
 }
 // LCOV_EXCL_STOP

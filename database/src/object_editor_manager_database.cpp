@@ -54,7 +54,7 @@ std::vector<std::string> GetDefaultDbSql()
         "icon_id INTEGER NOT NULL, "
         "create_time INTEGER NOT NULL);"
     );
-    // 为oeid创建索引
+    // Create index for oeid
     defaultSqlList.emplace_back("CREATE INDEX IF NOT EXISTS idx_oeid ON object_editor_info(oeid);");
     return defaultSqlList;
 }
@@ -126,11 +126,10 @@ void ObjectEditorManagerDatabase::Init()
 
 void ObjectEditorManagerDatabase::HandleOpenDb()
 {
-    if (!(std::filesystem::exists(dbDir_) && std::filesystem::is_directory(dbDir_))) {
+    std::error_code ec;
+    if (!std::filesystem::exists(dbDir_, ec) || !std::filesystem::is_directory(dbDir_, ec)) {
         OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "dbDir not exist");
-        std::error_code ec;
-        std::filesystem::create_directories(dbDir_, ec);
-        if (ec) {
+        if (!std::filesystem::create_directories(dbDir_, ec) || ec) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "create_directories failed, ec: %{public}s",
                 ec.message().c_str());
             return;
@@ -282,8 +281,8 @@ void ObjectEditorManagerDatabase::AddBundle(const std::string &bundleName)
         return;
     }
     if (!ObjectEditorPermissionUtils::CheckRequestPermission(bundleName, PERMISSION_SERVER)) {
-        OBJECT_EDITOR_LOGE(
-            ObjectEditorDomain::DATABASE, "permission denid, bundleName:%{public}s", bundleName.c_str());
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "permission denied, bundleName:%{public}s",
+            bundleName.c_str());
         return;
     }
     std::vector<NativeRdb::ValuesBucket> buckets;
@@ -329,7 +328,7 @@ bool ObjectEditorManagerDatabase::HasRegisteredOEFormat(const std::string &bundl
     if (ret != NativeRdb::E_OK) {
         return false;
     }
-    rowEntity.GetObject("oeid").GetString(oeid);
+    rowEntity.Get("oeid").GetString(oeid);
     return oeid == "" ? false : true;
 }
 
@@ -372,8 +371,8 @@ void ObjectEditorManagerDatabase::UpdateBundle(const std::string &bundleName)
         return;
     }
     if (!ObjectEditorPermissionUtils::CheckRequestPermission(bundleName, PERMISSION_SERVER)) {
-        OBJECT_EDITOR_LOGE(
-            ObjectEditorDomain::DATABASE, "permission denid, bundleName:%{public}s", bundleName.c_str());
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "permission denied, bundleName:%{public}s",
+            bundleName.c_str());
         return;
     }
     std::vector<NativeRdb::ValuesBucket> buckets;
@@ -543,7 +542,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByO
 ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByOEidAndLocale(
     const std::string &oeid, const std::string &locale, std::unique_ptr<ObjectEditorFormat> &format) const
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "oeid: %{public}s, locale: %{public}s",
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "oeid: %{private}s, locale: %{private}s",
         oeid.c_str(), locale.c_str());
     if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
         return ObjectEditorManagerErrCode::SA_DB_QUERY_EMPTY;
@@ -573,7 +572,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByO
 ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatsByLocale(
     const std::string &locale, std::vector<std::unique_ptr<ObjectEditorFormat>> &formats) const
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "locale: %{public}s", locale.c_str());
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "locale: %{private}s", locale.c_str());
     if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
         return ObjectEditorManagerErrCode::SA_DB_QUERY_EMPTY;
     }
@@ -702,9 +701,9 @@ void ObjectEditorManagerDatabase::ParseExtensionInfos(const std::map<std::string
         auto it2 = dbBundles.find(extensionInfo.bundleName);
         if (it2 != dbBundles.end()) {
             if (bundleInfo.updateTime <= it2->second) {
-                continue; // bundle没有更新过，直接skip
+                continue; // Bundle not updated, skip directly
             } else {
-                oldBundles.emplace(extensionInfo.bundleName); // bundle比数据库更新，删除旧数据
+                oldBundles.emplace(extensionInfo.bundleName); // Bundle is newer than database, delete old data
             }
         }
         if (!BuildValuesBuckets(buckets, bundleInfo, extensionInfo)) {

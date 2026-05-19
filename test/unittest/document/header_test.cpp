@@ -59,7 +59,7 @@ constexpr int32_t MAX_SECTOR_SHIFT_SIZE = 31;
 static const Byte g_cdMagic[] = {0xD0u, 0xCFu, 0x11u, 0xE0u, 0xA1u, 0xB1u, 0x1Au, 0xE1u};
 /**
  * @tc.name Valid_001
- * @tc.desc 测试Valid方法
+ * @tc.desc Test Valid method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, Valid_001, TestSize.Level1)
@@ -74,7 +74,7 @@ HWTEST_F(HeaderTest, Valid_001, TestSize.Level1)
 
 /**
  * @tc.name Valid_002
- * @tc.desc 测试Valid方法
+ * @tc.desc Test Valid method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, Valid_002, TestSize.Level1)
@@ -89,7 +89,7 @@ HWTEST_F(HeaderTest, Valid_002, TestSize.Level1)
 
 /**
  * @tc.name Valid_003
- * @tc.desc 测试Valid方法
+ * @tc.desc Test Valid method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, Valid_003, TestSize.Level1)
@@ -104,7 +104,7 @@ HWTEST_F(HeaderTest, Valid_003, TestSize.Level1)
 
 /**
  * @tc.name Valid_004
- * @tc.desc 测试Valid方法
+ * @tc.desc Test Valid method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, Valid_004, TestSize.Level1)
@@ -119,7 +119,7 @@ HWTEST_F(HeaderTest, Valid_004, TestSize.Level1)
 
 /**
  * @tc.name Valid_005
- * @tc.desc 测试Valid方法
+ * @tc.desc Test Valid method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, Valid_005, TestSize.Level1)
@@ -134,7 +134,7 @@ HWTEST_F(HeaderTest, Valid_005, TestSize.Level1)
 
 /**
  * @tc.name Valid_006
- * @tc.desc 测试Valid方法
+ * @tc.desc Test Valid method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, Valid_006, TestSize.Level1)
@@ -149,7 +149,7 @@ HWTEST_F(HeaderTest, Valid_006, TestSize.Level1)
 
 /**
  * @tc.name Valid_007
- * @tc.desc 测试Valid方法
+ * @tc.desc Test Valid method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, Valid_007, TestSize.Level1)
@@ -174,7 +174,7 @@ HWTEST_F(HeaderTest, Valid_007, TestSize.Level1)
 
 /**
  * @tc.name Valid_008
- * @tc.desc 测试Valid方法
+ * @tc.desc Test Valid method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, Valid_008, TestSize.Level1)
@@ -189,7 +189,7 @@ HWTEST_F(HeaderTest, Valid_008, TestSize.Level1)
 
 /**
  * @tc.name IsCompoundDocument_001
- * @tc.desc 测试IsCompoundDocument方法
+ * @tc.desc Test IsCompoundDocument method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, IsCompoundDocument_001, TestSize.Level1)
@@ -202,7 +202,7 @@ HWTEST_F(HeaderTest, IsCompoundDocument_001, TestSize.Level1)
 
 /**
  * @tc.name IsCompoundDocument_002
- * @tc.desc 测试IsCompoundDocument方法
+ * @tc.desc Test IsCompoundDocument method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, IsCompoundDocument_002, TestSize.Level1)
@@ -216,7 +216,7 @@ HWTEST_F(HeaderTest, IsCompoundDocument_002, TestSize.Level1)
 
 /**
  * @tc.name IsCompoundDocument_003
- * @tc.desc 测试IsCompoundDocument方法
+ * @tc.desc Test IsCompoundDocument method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, IsCompoundDocument_003, TestSize.Level1)
@@ -229,7 +229,7 @@ HWTEST_F(HeaderTest, IsCompoundDocument_003, TestSize.Level1)
 
 /**
  * @tc.name Load_001
- * @tc.desc 测试Load方法
+ * @tc.desc Test Load method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, Load_001, TestSize.Level1)
@@ -248,7 +248,7 @@ HWTEST_F(HeaderTest, Load_001, TestSize.Level1)
 
 /**
  * @tc.name Load_002
- * @tc.desc 测试Load方法
+ * @tc.desc Test Load method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, Load_002, TestSize.Level1)
@@ -260,7 +260,7 @@ HWTEST_F(HeaderTest, Load_002, TestSize.Level1)
 
 /**
  * @tc.name Load_003
- * @tc.desc 测试Load方法
+ * @tc.desc Test Load method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, Load_003, TestSize.Level1)
@@ -270,7 +270,7 @@ HWTEST_F(HeaderTest, Load_003, TestSize.Level1)
 
 /**
  * @tc.name Load_004
- * @tc.desc 测试Load方法
+ * @tc.desc Test Load method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, Load_004, TestSize.Level1)
@@ -282,7 +282,7 @@ HWTEST_F(HeaderTest, Load_004, TestSize.Level1)
 
 /**
  * @tc.name Load_005
- * @tc.desc 测试Load方法
+ * @tc.desc Test Load method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, Load_005, TestSize.Level1)
@@ -310,7 +310,7 @@ HWTEST_F(HeaderTest, Load_005, TestSize.Level1)
 
 /**
  * @tc.name Load_006
- * @tc.desc 测试Load方法
+ * @tc.desc Test Load method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, Load_006, TestSize.Level1)
@@ -338,7 +338,7 @@ HWTEST_F(HeaderTest, Load_006, TestSize.Level1)
 
 /**
  * @tc.name Save_001
- * @tc.desc 测试Save方法
+ * @tc.desc Test Save method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, Save_001, TestSize.Level1)
@@ -369,7 +369,7 @@ HWTEST_F(HeaderTest, Save_001, TestSize.Level1)
 
 /**
  * @tc.name Save_002
- * @tc.desc 测试Save方法
+ * @tc.desc Test Save method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, Save_002, TestSize.Level1)
@@ -381,7 +381,7 @@ HWTEST_F(HeaderTest, Save_002, TestSize.Level1)
 
 /**
  * @tc.name Save_003
- * @tc.desc 测试Save方法
+ * @tc.desc Test Save method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, Save_003, TestSize.Level1)
@@ -391,7 +391,7 @@ HWTEST_F(HeaderTest, Save_003, TestSize.Level1)
 
 /**
  * @tc.name Save_004
- * @tc.desc 测试Save方法
+ * @tc.desc Test Save method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, Save_004, TestSize.Level1)
@@ -405,7 +405,7 @@ HWTEST_F(HeaderTest, Save_004, TestSize.Level1)
 
 /**
  * @tc.name Save_005
- * @tc.desc 测试Save方法
+ * @tc.desc Test Save method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, Save_005, TestSize.Level1)
@@ -424,7 +424,7 @@ HWTEST_F(HeaderTest, Save_005, TestSize.Level1)
 
 /**
  * @tc.name Debug
- * @tc.desc 测试Save方法
+ * @tc.desc Test Save method
  * @tc.type FUNC
  */
 HWTEST_F(HeaderTest, Debug, TestSize.Level1)

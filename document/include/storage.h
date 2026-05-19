@@ -51,31 +51,31 @@ public:
 public:
     explicit StorageIO(const char *filename);
     explicit StorageIO(std::iostream *stream);
-    // 依据 OEID（32 位十六进制）构造内存态 CD 存储
+    // Construct memory-mode CD storage based on OEID (32-bit hex)
     explicit StorageIO(const std::string &oeid);
     ~StorageIO();
 
 public:
-    // @deprecated 改用 LastError()
+    // @deprecated Use LastError() instead
     [[nodiscard]] int Result() const
     {
         return static_cast<int>(error_);
     }
 
-    // 新版错误接口
+    // New error interface
     [[nodiscard]] bool IsValid() const noexcept;
     [[nodiscard]] ErrorCode LastError() const noexcept;
     [[nodiscard]] const char *ErrorMessage() const noexcept;
     void ClearError() noexcept;
 
-    // 获取已解析的 Header；初始化失败时返回 nullptr
+    // Get parsed Header; returns nullptr if initialization failed
     [[nodiscard]] const Header *GetHeader() const
     {
         return header_ ? header_.get() : nullptr;
     }
-    // 获取指定路径的 DirEntry；可按需创建
+    // Get DirEntry for specified path; can create if needed
     [[nodiscard]] DirEntry *Entry(const std::string &path, bool create = false);
-    // 获取只读 DirEntry
+    // Get read-only DirEntry
     [[nodiscard]] const DirEntry *Entry(const std::string &path) const
     {
         return dirtree_ ? dirtree_->Entry(path) : nullptr;
@@ -115,7 +115,7 @@ public:
         return sbBlocks_;
     }
 
-    // 访问 FAT 表条目
+    // Access FAT table entries
     [[nodiscard]] size_t BbatCount() const
     {
         return bbat_ ? bbat_->Count() : 0;
@@ -125,7 +125,7 @@ public:
         return bbat_ ? (*bbat_)[index] : 0;
     }
 
-    // 访问 MiniFAT 表条目
+    // Access MiniFAT table entries
     [[nodiscard]] size_t SbatCount() const
     {
         return sbat_ ? sbat_->Count() : 0;
@@ -179,44 +179,44 @@ public:
     [[nodiscard]] uint32_t LoadSmallBlock(uint32_t block, Byte *buffer, uint32_t maxlen);
     [[nodiscard]] uint32_t LoadBigBlock(uint32_t block, Byte *buffer, uint32_t maxlen);
     [[nodiscard]] uint32_t SaveBlock(uint64_t physicalOffset, const Byte *buffer, uint32_t maxlen);
-    // 获取 Root Entry（索引 0）
+    // Get Root Entry (index 0)
     [[nodiscard]] DirEntry *GetRootEntry();
-    // 删除路径对应 Entry，并可由 Flush 持久化
+    // Delete Entry for path, can be persisted by Flush
     [[nodiscard]] bool DeleteEntry(const std::string &path);
-    // 写入时动态扩展，按需分配块并更新 FAT/Entry
+    // Dynamically expand on write, allocate blocks as needed and update FAT/Entry
     [[nodiscard]] bool ExtendEntry(DirEntry *entry, uint64_t newSize);
 
-    // MiniFAT 支持：扩展 Root Stream 容量以容纳 mini blocks
+    // MiniFAT support: expand Root Stream capacity to hold mini blocks
     [[nodiscard]] bool ExtendRootStream(uint32_t requiredMiniBlocks);
-    // Flush 时持久化 MiniFAT
+    // Persist MiniFAT on Flush
     [[nodiscard]] bool SaveMiniFat();
-    // Flush 时持久化 DIFAT
+    // Persist DIFAT on Flush
     [[nodiscard]] bool SaveDifat();
-    // DIFAT 保护块分配/缓存
+    // DIFAT protected block allocation/cache
     [[nodiscard]] uint32_t AllocateProtectedSector(uint32_t markerType);
     void RebuildProtectedBlocksCache();
 
-    // 持久化 FAT
+    // Persist FAT
     [[nodiscard]] bool SaveFat();
     void EnsureFatCapacity();
-    // 持久化所有修改（事务式）
+    // Persist all modifications (transactional)
     [[nodiscard]] bool Flush();
 
-    // 内存态持久化：当 `memoryBuffer_` 存在时，将整段内存 CD 写入 `filename`。
-    // 可选切换为文件模式：用新开的 fstream 替换内部 `stream_`。
-    // 成功返回 true，失败（包含非内存模式下调用）返回 false。
+    // Memory-mode persistence: when `memoryBuffer_` exists, write entire memory CD to `filename`.
+    // Optionally switch to file mode: replace internal `stream_` with newly opened fstream.
+    // Returns true on success, false on failure (including calling in non-memory mode).
     [[nodiscard]] bool SaveToFile(const char *filename, bool switchToFileMode = false);
 
-    // 从底层 compound document 文件按偏移读取原始字节；仅支持 file-backed 模式。
+    // Read raw bytes from underlying compound document file by offset; only supports file-backed mode.
     bool ReadRawCd(size_t offset, uint8_t *buf, size_t len, size_t *outRead);
 
 private:
-    // 默认常量（避免魔法数）
-    static constexpr uint32_t kDefaultSectorSize = 512;  // 标准 CFB Sector
-    static constexpr uint32_t kHeaderSize = 512;         // 固定 CD Header 大小
-    static constexpr size_t kDirectoryEntrySize = 128;   // 序列化 DirEntry 大小
+    // Default constants (avoid magic numbers)
+    static constexpr uint32_t kDefaultSectorSize = 512;  // Standard CFB Sector
+    static constexpr uint32_t kHeaderSize = 512;         // Fixed CD Header size
+    static constexpr size_t kDirectoryEntrySize = 128;   // Serialized DirEntry size
 
-    // 计算 Sector/Block 的物理偏移（含 512 字节 Header）
+    // Calculate physical offset of Sector/Block (including 512-byte Header)
     static inline uint64_t BlockToOffset(uint32_t blockIndex, uint64_t blockSize)
     {
         return (static_cast<uint64_t>(blockIndex) + 1) * blockSize;
@@ -226,37 +226,37 @@ private:
     [[nodiscard]] bool Load();
     void Close();
 
-    // 统一设置错误码/信息
+    // Unified error code/message setting
     void SetError(ErrorCode code, const std::string &message = "", bool invalidate = true);
 
-    // 构造最小 CD 结构（用于 OEID 内存态）
+    // Construct minimal CD structure (for OEID memory mode)
     bool ConfigMinimalCd(const std::string &oeid);
-    // 序列化 Header/DirTree/AllocTable 到内存流
+    // Serialize Header/DirTree/AllocTable to memory stream
     [[nodiscard]] bool SerializeToMemory();
-    // 校验 Header 声明与布局（MS-CFB 偏移/阈值）
+    // Validate Header declarations and layout (MS-CFB offsets/thresholds)
     [[nodiscard]] bool ValidateHeader(uint64_t fileSize);
     [[nodiscard]] bool ReadAndLoadHeader();
     [[nodiscard]] bool ValidateSectorSizes(uint32_t &sectorSize);
     [[nodiscard]] bool CheckClaimedTableSizes(uint64_t fileSize, uint32_t sectorSize);
     [[nodiscard]] bool ValidateHeaderSectorIndex(uint32_t sectorIdx, uint32_t sectorSize, const char *name,
                                                  uint64_t fileSize);
-    // 收集 Header 直接声明的 FAT Sectors
+    // Collect FAT Sectors declared directly in Header
     [[nodiscard]] bool LoadFatChain(uint32_t sectorSize, std::vector<uint32_t> &fatBlocks);
-    // 读取 DIFAT 链，补全 FAT 列表并反序列化 FAT
+    // Read DIFAT chain, complete FAT list and deserialize FAT
     [[nodiscard]] bool LoadDifatChain(uint32_t sectorSize, std::vector<uint32_t> &fatBlocks);
-    // 加载目录流，返回 Root Stream 起始 Sector
+    // Load directory stream, return Root Stream starting Sector
     [[nodiscard]] bool LoadDirectoryTree(SectorIndex &sbStart);
-    // 加载 MiniFAT 并校验 mini stream 范围
+    // Load MiniFAT and validate mini stream range
     [[nodiscard]] bool LoadMiniFat(SectorIndex sbStart);
-    // 写回 Header
+    // Write back Header
     [[nodiscard]] bool FlushHeader();
-    // 写回 FAT
+    // Write back FAT
     [[nodiscard]] bool FlushFatChain();
-    // 写回 DIFAT
+    // Write back DIFAT
     [[nodiscard]] bool FlushDifatChain();
-    // 写回 Directory
+    // Write back Directory
     [[nodiscard]] bool FlushDirectoryTree(std::vector<uint32_t> &blocks, size_t neededBlocks, size_t blockSize);
-    // 写回 MiniFAT
+    // Write back MiniFAT
     [[nodiscard]] bool FlushMiniFat();
 
     [[nodiscard]] uint32_t LoadSmallBlocks(const std::vector<uint32_t> &blocks, Byte *buffer, uint32_t maxlen);
@@ -388,36 +388,36 @@ private:
     bool ExtendAndFetchSbatChain(std::vector<uint32_t> &chain, uint32_t &neededBlocks);
     bool WriteBufferToFile(const std::string &filename);
 
-    // 所有权模型：
-    // - stream_：非拥有型观察指针，指向当前活跃的文件流；内存模式下为空
-    // - file_：通过 unique_ptr 拥有 fstream 句柄
-    // - memoryBuffer_：通过 unique_ptr 拥有内存态 CD 缓冲
+    // Ownership model:
+    // - stream_: non-owning observer pointer, points to current active file stream; empty in memory mode
+    // - file_: owns fstream handle via unique_ptr
+    // - memoryBuffer_: owns memory-mode CD buffer via unique_ptr
     std::iostream *stream_ = nullptr;
     std::unique_ptr<std::fstream> file_;
-    std::unique_ptr<std::vector<uint8_t>> memoryBuffer_;  // 内存态 CD 缓冲
-    // Flush 事务阶段可选的写入重定向缓冲
+    std::unique_ptr<std::vector<uint8_t>> memoryBuffer_;  // Memory-mode CD buffer
+    // Optional write redirect buffer during Flush transaction phase
     std::vector<uint8_t> *flushWriteBuffer_ = nullptr;
-    std::streamoff size_ = 0;                         // 逻辑存储大小
-    ErrorCode error_ = ErrorCode::Ok;                 // 取代旧版 _result
-    std::string errorMsg_;                            // 人类可读的错误信息
-    bool isValid_ = false;                            // 对象有效性标记
-    std::list<std::unique_ptr<StreamImpl>> streams_;  // 当前打开的 Stream
-    std::vector<uint32_t> sbBlocks_;                  // mini stream 的大块列表
+    std::streamoff size_ = 0;                         // Logical storage size
+    ErrorCode error_ = ErrorCode::Ok;                 // Replaces legacy _result
+    std::string errorMsg_;                            // Human-readable error message
+    bool isValid_ = false;                            // Object validity flag
+    std::list<std::unique_ptr<StreamImpl>> streams_;  // Currently open Streams
+    std::vector<uint32_t> sbBlocks_;                  // Big block list for mini stream
 
-    std::unique_ptr<Header> header_;    // Header 所有权
-    std::unique_ptr<DirTree> dirtree_;  // 目录树所有权
-    std::unique_ptr<AllocTable> bbat_;  // 大块 FAT 表（所有权）
-    std::unique_ptr<AllocTable> sbat_;  // 小块 MiniFAT 表（所有权）
+    std::unique_ptr<Header> header_;    // Header ownership
+    std::unique_ptr<DirTree> dirtree_;  // Directory tree ownership
+    std::unique_ptr<AllocTable> bbat_;  // Big block FAT table (ownership)
+    std::unique_ptr<AllocTable> sbat_;  // Small block MiniFAT table (ownership)
     bool dtModified_ = false;
-    // DIFAT 统一架构
-    std::vector<uint32_t> fatSectors_;         // 所有 FAT block 编号（权威来源）
-    std::vector<uint32_t> difatSectors_;       // 所有 DIFAT block 编号
-    std::set<uint32_t> protectedBlocksCache_;  // 保护块缓存（避免重复构建）
-    bool protectedBlocksDirty_ = true;         // 缓存失效标志
-    uint32_t writeBufferSize_ = 0;             // 已缓冲的字节数
-    static constexpr uint32_t MAX_BUFFER_SIZE = 16 * 1024 * 1024;  // 16M 缓冲区
+    // DIFAT unified architecture
+    std::vector<uint32_t> fatSectors_;         // All FAT block numbers (authoritative source)
+    std::vector<uint32_t> difatSectors_;       // All DIFAT block numbers
+    std::set<uint32_t> protectedBlocksCache_;  // Protected block cache (avoid repeated construction)
+    bool protectedBlocksDirty_ = true;         // Cache invalidation flag
+    uint32_t writeBufferSize_ = 0;             // Buffered bytes count
+    static constexpr uint32_t MAX_BUFFER_SIZE = 16 * 1024 * 1024;  // 16M buffer
 
-    // 禁止拷贝与赋值
+    // Disable copy and assignment
     StorageIO(const StorageIO &) = delete;
     StorageIO &operator=(const StorageIO &) = delete;
 };

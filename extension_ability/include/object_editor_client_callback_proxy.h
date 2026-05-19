@@ -26,7 +26,7 @@ class ObjectEditorClientCallbackProxy : public IRemoteProxy<IObjectEditorClientC
 public:
     explicit ObjectEditorClientCallbackProxy(const sptr<IRemoteObject> &remote)
         : IRemoteProxy<IObjectEditorClientCallback>(remote) {}
-    virtual ~ObjectEditorClientCallbackProxy() {}
+    ~ObjectEditorClientCallbackProxy() override = default;
     ErrCode OnUpdate(std::unique_ptr<ObjectEditorDocument> &document) override;
     ErrCode OnError(ContentEmbed_ErrorCode error) override;
     ErrCode OnStopEdit(bool dataModified) override;

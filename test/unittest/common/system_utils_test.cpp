@@ -63,7 +63,7 @@ void SystemUtilsTest::TearDown()
 
 /**
  * @tc.name GetFileSize_001
- * @tc.desc 测试GetFileSize方法
+ * @tc.desc Test GetFileSize method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, GetFileSize_001, TestSize.Level1)
@@ -75,7 +75,7 @@ HWTEST_F(SystemUtilsTest, GetFileSize_001, TestSize.Level1)
 
 /**
  * @tc.name GetFileSize_002
- * @tc.desc 测试GetFileSize方法
+ * @tc.desc Test GetFileSize method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, GetFileSize_002, TestSize.Level1)
@@ -87,7 +87,7 @@ HWTEST_F(SystemUtilsTest, GetFileSize_002, TestSize.Level1)
 
 /**
  * @tc.name GetFileSize_003
- * @tc.desc 测试GetFileSize方法
+ * @tc.desc Test GetFileSize method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, GetFileSize_003, TestSize.Level1)
@@ -99,7 +99,7 @@ HWTEST_F(SystemUtilsTest, GetFileSize_003, TestSize.Level1)
 
 /**
  * @tc.name GetFileSize_004
- * @tc.desc 测试GetFileSize方法
+ * @tc.desc Test GetFileSize method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, GetFileSize_004, TestSize.Level1)
@@ -111,7 +111,7 @@ HWTEST_F(SystemUtilsTest, GetFileSize_004, TestSize.Level1)
 
 /**
  * @tc.name GetFileSize_005
- * @tc.desc 测试GetFileSize方法
+ * @tc.desc Test GetFileSize method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, GetFileSize_005, TestSize.Level1)
@@ -128,7 +128,7 @@ HWTEST_F(SystemUtilsTest, GetFileSize_005, TestSize.Level1)
 
 /**
  * @tc.name ReadFile_001
- * @tc.desc 测试ReadFile方法
+ * @tc.desc Test ReadFile method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, ReadFile_001, TestSize.Level1)
@@ -145,7 +145,7 @@ HWTEST_F(SystemUtilsTest, ReadFile_001, TestSize.Level1)
 
 /**
  * @tc.name ReadFile_002
- * @tc.desc 测试ReadFile方法
+ * @tc.desc Test ReadFile method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, ReadFile_002, TestSize.Level1)
@@ -157,7 +157,7 @@ HWTEST_F(SystemUtilsTest, ReadFile_002, TestSize.Level1)
 
 /**
  * @tc.name ReadFile_003
- * @tc.desc 测试ReadFile方法
+ * @tc.desc Test ReadFile method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, ReadFile_003, TestSize.Level1)
@@ -173,7 +173,7 @@ HWTEST_F(SystemUtilsTest, ReadFile_003, TestSize.Level1)
 
 /**
  * @tc.name SplitString_001
- * @tc.desc 测试SplitString方法
+ * @tc.desc Test SplitString method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, SplitString_001, TestSize.Level1)
@@ -189,7 +189,7 @@ HWTEST_F(SystemUtilsTest, SplitString_001, TestSize.Level1)
 
 /**
  * @tc.name SplitString_002
- * @tc.desc 测试SplitString方法
+ * @tc.desc Test SplitString method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, SplitString_002, TestSize.Level1)
@@ -202,7 +202,7 @@ HWTEST_F(SystemUtilsTest, SplitString_002, TestSize.Level1)
 
 /**
  * @tc.name SplitString_003
- * @tc.desc 测试SplitString方法
+ * @tc.desc Test SplitString method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, SplitString_003, TestSize.Level1)
@@ -216,7 +216,7 @@ HWTEST_F(SystemUtilsTest, SplitString_003, TestSize.Level1)
 
 /**
  * @tc.name SplitString_004
- * @tc.desc 测试SplitString方法
+ * @tc.desc Test SplitString method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, SplitString_004, TestSize.Level1)
@@ -232,7 +232,7 @@ HWTEST_F(SystemUtilsTest, SplitString_004, TestSize.Level1)
 
 /**
  * @tc.name SplitString_005
- * @tc.desc 测试SplitString方法
+ * @tc.desc Test SplitString method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, SplitString_005, TestSize.Level1)
@@ -247,7 +247,7 @@ HWTEST_F(SystemUtilsTest, SplitString_005, TestSize.Level1)
 
 /**
  * @tc.name SplitString_006
- * @tc.desc 测试SplitString方法
+ * @tc.desc Test SplitString method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, SplitString_006, TestSize.Level1)
@@ -263,7 +263,7 @@ HWTEST_F(SystemUtilsTest, SplitString_006, TestSize.Level1)
 
 /**
  * @tc.name TrimString_001
- * @tc.desc 测试TrimString方法
+ * @tc.desc Test TrimString method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, TrimString_001, TestSize.Level1)
@@ -275,7 +275,7 @@ HWTEST_F(SystemUtilsTest, TrimString_001, TestSize.Level1)
 
 /**
  * @tc.name TrimString_002
- * @tc.desc 测试TrimString方法
+ * @tc.desc Test TrimString method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, TrimString_002, TestSize.Level1)
@@ -287,7 +287,7 @@ HWTEST_F(SystemUtilsTest, TrimString_002, TestSize.Level1)
 
 /**
  * @tc.name TrimString_003
- * @tc.desc 测试TrimString方法
+ * @tc.desc Test TrimString method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, TrimString_003, TestSize.Level1)
@@ -299,7 +299,7 @@ HWTEST_F(SystemUtilsTest, TrimString_003, TestSize.Level1)
 
 /**
  * @tc.name TrimString_004
- * @tc.desc 测试TrimString方法
+ * @tc.desc Test TrimString method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, TrimString_004, TestSize.Level1)
@@ -311,7 +311,7 @@ HWTEST_F(SystemUtilsTest, TrimString_004, TestSize.Level1)
 
 /**
  * @tc.name TrimString_005
- * @tc.desc 测试TrimString方法
+ * @tc.desc Test TrimString method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, TrimString_005, TestSize.Level1)
@@ -323,7 +323,7 @@ HWTEST_F(SystemUtilsTest, TrimString_005, TestSize.Level1)
 
 /**
  * @tc.name StringToULong_001
- * @tc.desc 测试StringToULong方法
+ * @tc.desc Test StringToULong method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, StringToULong_001, TestSize.Level1)
@@ -336,7 +336,7 @@ HWTEST_F(SystemUtilsTest, StringToULong_001, TestSize.Level1)
 
 /**
  * @tc.name StringToULong_002
- * @tc.desc 测试StringToULong方法
+ * @tc.desc Test StringToULong method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, StringToULong_002, TestSize.Level1)
@@ -349,7 +349,7 @@ HWTEST_F(SystemUtilsTest, StringToULong_002, TestSize.Level1)
 
 /**
  * @tc.name StringToULong_003
- * @tc.desc 测试StringToULong方法
+ * @tc.desc Test StringToULong method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, StringToULong_003, TestSize.Level1)
@@ -362,7 +362,7 @@ HWTEST_F(SystemUtilsTest, StringToULong_003, TestSize.Level1)
 
 /**
  * @tc.name StringToULong_004
- * @tc.desc 测试StringToULong方法
+ * @tc.desc Test StringToULong method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, StringToULong_004, TestSize.Level1)
@@ -375,7 +375,7 @@ HWTEST_F(SystemUtilsTest, StringToULong_004, TestSize.Level1)
 
 /**
  * @tc.name StringToULong_005
- * @tc.desc 测试StringToULong方法
+ * @tc.desc Test StringToULong method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, StringToULong_005, TestSize.Level1)
@@ -389,7 +389,7 @@ HWTEST_F(SystemUtilsTest, StringToULong_005, TestSize.Level1)
 
 /**
  * @tc.name StringToULong_006
- * @tc.desc 测试StringToULong方法
+ * @tc.desc Test StringToULong method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, StringToULong_006, TestSize.Level1)
@@ -403,7 +403,7 @@ HWTEST_F(SystemUtilsTest, StringToULong_006, TestSize.Level1)
 
 /**
  * @tc.name StringToLong_001
- * @tc.desc 测试StringToULong方法
+ * @tc.desc Test StringToULong method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, StringToLong_001, TestSize.Level1)
@@ -415,7 +415,7 @@ HWTEST_F(SystemUtilsTest, StringToLong_001, TestSize.Level1)
 
 /**
  * @tc.name StringToLong_002
- * @tc.desc 测试StringToULong方法
+ * @tc.desc Test StringToULong method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, StringToLong_002, TestSize.Level1)
@@ -427,7 +427,7 @@ HWTEST_F(SystemUtilsTest, StringToLong_002, TestSize.Level1)
 
 /**
  * @tc.name StringToLong_003
- * @tc.desc 测试StringToULong方法
+ * @tc.desc Test StringToULong method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, StringToLong_003, TestSize.Level1)
@@ -440,7 +440,7 @@ HWTEST_F(SystemUtilsTest, StringToLong_003, TestSize.Level1)
 
 /**
  * @tc.name StringToLong_004
- * @tc.desc 测试StringToULong方法
+ * @tc.desc Test StringToULong method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, StringToLong_004, TestSize.Level1)
@@ -452,7 +452,7 @@ HWTEST_F(SystemUtilsTest, StringToLong_004, TestSize.Level1)
 
 /**
  * @tc.name StringToLong_005
- * @tc.desc 测试StringToULong方法
+ * @tc.desc Test StringToULong method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, StringToLong_005, TestSize.Level1)
@@ -464,7 +464,7 @@ HWTEST_F(SystemUtilsTest, StringToLong_005, TestSize.Level1)
 
 /**
  * @tc.name StringToLong_006
- * @tc.desc 测试StringToULong方法
+ * @tc.desc Test StringToULong method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, StringToLong_006, TestSize.Level1)
@@ -476,7 +476,7 @@ HWTEST_F(SystemUtilsTest, StringToLong_006, TestSize.Level1)
 
 /**
  * @tc.name StringToFloat_001
- * @tc.desc 测试StringToFloat方法
+ * @tc.desc Test StringToFloat method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, StringToFloat_001, TestSize.Level1)
@@ -488,7 +488,7 @@ HWTEST_F(SystemUtilsTest, StringToFloat_001, TestSize.Level1)
 
 /**
  * @tc.name StringToFloat_002
- * @tc.desc 测试StringToFloat方法
+ * @tc.desc Test StringToFloat method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, StringToFloat_002, TestSize.Level1)
@@ -500,7 +500,7 @@ HWTEST_F(SystemUtilsTest, StringToFloat_002, TestSize.Level1)
 
 /**
  * @tc.name StringToFloat_003
- * @tc.desc 测试StringToFloat方法
+ * @tc.desc Test StringToFloat method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, StringToFloat_003, TestSize.Level1)
@@ -512,7 +512,7 @@ HWTEST_F(SystemUtilsTest, StringToFloat_003, TestSize.Level1)
 
 /**
  * @tc.name StringToFloat_004
- * @tc.desc 测试StringToFloat方法
+ * @tc.desc Test StringToFloat method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, StringToFloat_004, TestSize.Level1)
@@ -525,7 +525,7 @@ HWTEST_F(SystemUtilsTest, StringToFloat_004, TestSize.Level1)
 
 /**
  * @tc.name StringToInt_001
- * @tc.desc 测试StringToInt方法
+ * @tc.desc Test StringToInt method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, StringToInt_001, TestSize.Level1)
@@ -539,7 +539,7 @@ HWTEST_F(SystemUtilsTest, StringToInt_001, TestSize.Level1)
 
 /**
  * @tc.name StringToInt_002
- * @tc.desc 测试StringToInt方法
+ * @tc.desc Test StringToInt method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, StringToInt_002, TestSize.Level1)
@@ -552,7 +552,7 @@ HWTEST_F(SystemUtilsTest, StringToInt_002, TestSize.Level1)
 
 /**
  * @tc.name StringToInt_003
- * @tc.desc 测试StringToInt方法
+ * @tc.desc Test StringToInt method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, StringToInt_003, TestSize.Level1)
@@ -565,7 +565,7 @@ HWTEST_F(SystemUtilsTest, StringToInt_003, TestSize.Level1)
 
 /**
  * @tc.name StringToInt_004
- * @tc.desc 测试StringToInt方法
+ * @tc.desc Test StringToInt method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, StringToInt_004, TestSize.Level1)
@@ -578,7 +578,7 @@ HWTEST_F(SystemUtilsTest, StringToInt_004, TestSize.Level1)
 
 /**
  * @tc.name HasSQLWildcard_001
- * @tc.desc 测试HasSQLWildcard方法
+ * @tc.desc Test HasSQLWildcard method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, HasSQLWildcard_001, TestSize.Level1)
@@ -590,7 +590,7 @@ HWTEST_F(SystemUtilsTest, HasSQLWildcard_001, TestSize.Level1)
 
 /**
  * @tc.name HasSQLWildcard_002
- * @tc.desc 测试HasSQLWildcard方法
+ * @tc.desc Test HasSQLWildcard method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, HasSQLWildcard_002, TestSize.Level1)
@@ -602,7 +602,7 @@ HWTEST_F(SystemUtilsTest, HasSQLWildcard_002, TestSize.Level1)
 
 /**
  * @tc.name HasSQLWildcard_003
- * @tc.desc 测试HasSQLWildcard方法
+ * @tc.desc Test HasSQLWildcard method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, HasSQLWildcard_003, TestSize.Level1)
@@ -614,7 +614,7 @@ HWTEST_F(SystemUtilsTest, HasSQLWildcard_003, TestSize.Level1)
 
 /**
  * @tc.name HasSQLWildcard_004
- * @tc.desc 测试HasSQLWildcard方法
+ * @tc.desc Test HasSQLWildcard method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, HasSQLWildcard_004, TestSize.Level1)
@@ -626,7 +626,7 @@ HWTEST_F(SystemUtilsTest, HasSQLWildcard_004, TestSize.Level1)
 
 /**
  * @tc.name FileExtsHasFileExt_001
- * @tc.desc 测试FileExtsHasFileExt方法
+ * @tc.desc Test FileExtsHasFileExt method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, FileExtsHasFileExt_001, TestSize.Level1)
@@ -638,7 +638,7 @@ HWTEST_F(SystemUtilsTest, FileExtsHasFileExt_001, TestSize.Level1)
 
 /**
  * @tc.name FileExtsHasFileExt_002
- * @tc.desc 测试FileExtsHasFileExt方法
+ * @tc.desc Test FileExtsHasFileExt method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, FileExtsHasFileExt_002, TestSize.Level1)
@@ -650,7 +650,7 @@ HWTEST_F(SystemUtilsTest, FileExtsHasFileExt_002, TestSize.Level1)
 
 /**
  * @tc.name FileExtsHasFileExt_003
- * @tc.desc 测试FileExtsHasFileExt方法
+ * @tc.desc Test FileExtsHasFileExt method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, FileExtsHasFileExt_003, TestSize.Level1)
@@ -662,7 +662,7 @@ HWTEST_F(SystemUtilsTest, FileExtsHasFileExt_003, TestSize.Level1)
 
 /**
  * @tc.name FileExtsHasFileExt_004
- * @tc.desc 测试FileExtsHasFileExt方法
+ * @tc.desc Test FileExtsHasFileExt method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, FileExtsHasFileExt_004, TestSize.Level1)
@@ -674,7 +674,7 @@ HWTEST_F(SystemUtilsTest, FileExtsHasFileExt_004, TestSize.Level1)
 
 /**
  * @tc.name FileExtsHasFileExt_005
- * @tc.desc 测试FileExtsHasFileExt方法
+ * @tc.desc Test FileExtsHasFileExt method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, FileExtsHasFileExt_005, TestSize.Level1)
@@ -686,7 +686,7 @@ HWTEST_F(SystemUtilsTest, FileExtsHasFileExt_005, TestSize.Level1)
 
 /**
  * @tc.name UTCToBeijingTime_001
- * @tc.desc 测试UTCToBeijingTime方法
+ * @tc.desc Test UTCToBeijingTime method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, UTCToBeijingTime_001, TestSize.Level1)
@@ -698,7 +698,7 @@ HWTEST_F(SystemUtilsTest, UTCToBeijingTime_001, TestSize.Level1)
 
 /**
  * @tc.name UTCToBeijingTime_002
- * @tc.desc 测试UTCToBeijingTime方法
+ * @tc.desc Test UTCToBeijingTime method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, UTCToBeijingTime_002, TestSize.Level1)
@@ -710,7 +710,7 @@ HWTEST_F(SystemUtilsTest, UTCToBeijingTime_002, TestSize.Level1)
 
 /**
  * @tc.name UTCToBeijingTime_003
- * @tc.desc 测试UTCToBeijingTime方法
+ * @tc.desc Test UTCToBeijingTime method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, UTCToBeijingTime_003, TestSize.Level1)
@@ -722,7 +722,7 @@ HWTEST_F(SystemUtilsTest, UTCToBeijingTime_003, TestSize.Level1)
 
 /**
  * @tc.name GetFileSuffix_001
- * @tc.desc 测试GetFileSuffix方法
+ * @tc.desc Test GetFileSuffix method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, GetFileSuffix_001, TestSize.Level1)
@@ -734,7 +734,7 @@ HWTEST_F(SystemUtilsTest, GetFileSuffix_001, TestSize.Level1)
 
 /**
  * @tc.name GetFileSuffix_002
- * @tc.desc 测试GetFileSuffix方法
+ * @tc.desc Test GetFileSuffix method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, GetFileSuffix_002, TestSize.Level1)
@@ -746,7 +746,7 @@ HWTEST_F(SystemUtilsTest, GetFileSuffix_002, TestSize.Level1)
 
 /**
  * @tc.name GetFileSuffix_003
- * @tc.desc 测试GetFileSuffix方法
+ * @tc.desc Test GetFileSuffix method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, GetFileSuffix_003, TestSize.Level1)
@@ -758,7 +758,7 @@ HWTEST_F(SystemUtilsTest, GetFileSuffix_003, TestSize.Level1)
 
 /**
  * @tc.name GetFileSuffix_004
- * @tc.desc 测试GetFileSuffix方法
+ * @tc.desc Test GetFileSuffix method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, GetFileSuffix_004, TestSize.Level1)
@@ -770,7 +770,7 @@ HWTEST_F(SystemUtilsTest, GetFileSuffix_004, TestSize.Level1)
 
 /**
  * @tc.name GetFileSuffix_005
- * @tc.desc 测试GetFileSuffix方法
+ * @tc.desc Test GetFileSuffix method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, GetFileSuffix_005, TestSize.Level1)
@@ -782,7 +782,7 @@ HWTEST_F(SystemUtilsTest, GetFileSuffix_005, TestSize.Level1)
 
 /**
  * @tc.name GetUriFromPath_001
- * @tc.desc 测试GetUriFromPath方法
+ * @tc.desc Test GetUriFromPath method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, GetUriFromPath_001, TestSize.Level1)
@@ -794,7 +794,7 @@ HWTEST_F(SystemUtilsTest, GetUriFromPath_001, TestSize.Level1)
 
 /**
  * @tc.name GetUriFromPath_002
- * @tc.desc 测试GetUriFromPath方法
+ * @tc.desc Test GetUriFromPath method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, GetUriFromPath_002, TestSize.Level1)
@@ -806,19 +806,19 @@ HWTEST_F(SystemUtilsTest, GetUriFromPath_002, TestSize.Level1)
 
 /**
  * @tc.name GetUriFromPath_003
- * @tc.desc 测试GetUriFromPath方法
+ * @tc.desc Test GetUriFromPath method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, GetUriFromPath_003, TestSize.Level1)
 {
-    std::string filePath = "test path with spaces 和中文";
+    std::string filePath = "test path with spaces and Chinese";
     std::string uri = GetUriFromPath(filePath);
     EXPECT_EQ(uri, "file:///test%20path%20with%20spaces%20%E5%92%8C%E4%B8%AD%E6%96%87");
 }
 
 /**
  * @tc.name GetPathFromUri_001
- * @tc.desc 测试GetPathFromUri方法
+ * @tc.desc Test GetPathFromUri method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, GetPathFromUri_001, TestSize.Level1)
@@ -830,7 +830,7 @@ HWTEST_F(SystemUtilsTest, GetPathFromUri_001, TestSize.Level1)
 
 /**
  * @tc.name GetPathFromUri_002
- * @tc.desc 测试GetPathFromUri方法
+ * @tc.desc Test GetPathFromUri method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, GetPathFromUri_002, TestSize.Level1)
@@ -842,7 +842,7 @@ HWTEST_F(SystemUtilsTest, GetPathFromUri_002, TestSize.Level1)
 
 /**
  * @tc.name GetPathFromUri_003
- * @tc.desc 测试GetPathFromUri方法
+ * @tc.desc Test GetPathFromUri method
  * @tc.type FUNC
  */
 HWTEST_F(SystemUtilsTest, GetPathFromUri_003, TestSize.Level1)

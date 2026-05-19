@@ -23,7 +23,7 @@ namespace ObjectEditor {
 
 static constexpr unsigned int OBJECT_EDITOR_HILOG_DOMAIN = 0xD005118;
 
-// 设置Domain ID，新加模块，加到UNDEFINED前
+// Set Domain ID, add new modules before UNDEFINED
 enum class ObjectEditorDomain {
     COMMON,
     UTILS,
@@ -38,7 +38,7 @@ enum class ObjectEditorDomain {
     UNDEFINED,
 };
 
-// 设置Domain Tag，新加模块，加到 OBJECT_EDITOR_MAKE_TAG(UNDEFINED) 前
+// Set Domain Tag, add new modules before OBJECT_EDITOR_MAKE_TAG(UNDEFINED)
 #define OBJECT_EDITOR_MAKE_STR(name) #name
 #define OBJECT_EDITOR_MAKE_TAG(name) OBJECT_EDITOR_MAKE_STR(CE_##name)
 static constexpr const char* logTags[] = {
@@ -65,7 +65,7 @@ static inline const char* GetHiLogTag(OHOS::ObjectEditor::ObjectEditorDomain dom
     size_t index = static_cast<size_t>(domain) -
         static_cast<size_t>(OHOS::ObjectEditor::ObjectEditorDomain::COMMON);
     if (index >= sizeof(logTags) / sizeof(logTags[0])) {
-        return "UNDEFINED"; // 返回默认tag
+        return "UNDEFINED"; // Return default tag
     }
     return logTags[index];
 }

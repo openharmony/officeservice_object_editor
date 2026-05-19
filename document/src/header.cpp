@@ -59,6 +59,7 @@ bool Header::Valid() const
     constexpr int32_t MAX_SECTOR_SHIFT_SIZE = 31;
     if (threshold_ != MINI_STREAM_CUTOFF || numBat_ == 0 || bigBlockShift_ <= DEFAULT_MINI_SECTOR_SHIFT ||
         bigBlockShift_ >= MAX_SECTOR_SHIFT_SIZE || miniBlockShift_ >= bigBlockShift_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid header");
         return false;
     }
     if (numBat_ > HEADER_DIFAT_ARRAY_SIZE) {
@@ -66,15 +67,18 @@ bool Header::Valid() const
         const uint32_t entriesPerSector = sectorSize / static_cast<uint32_t>(sizeof(uint32_t));
         const uint32_t difatEntries = entriesPerSector > 0 ? entriesPerSector - 1 : 0;
         if (difatEntries == 0) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid DIFAT");
             return false;
         }
         const uint32_t extraNeeded = numBat_ - HEADER_DIFAT_ARRAY_SIZE;
         const uint32_t difatSectorsNeeded = (extraNeeded + difatEntries - 1) / difatEntries;
         if (numDifat_ < difatSectorsNeeded) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid number of DIFAT sectors");
             return false;
         }
     }
     if ((numBat_ < HEADER_DIFAT_ARRAY_SIZE) && (numDifat_ != 0)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid numBat");
         return false;
     }
     return true;
@@ -84,6 +88,7 @@ bool Header::IsCompoundDocument() const
 {
     for (size_t i = 0; i < FILE_SIGNATURE_SIZE; i++) {
         if (id_[i] != g_cdMagic[i]) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid file signature");
             return false;
         }
     }
@@ -94,6 +99,8 @@ bool Header::Load(const Byte *buffer, size_t len)
 {
     const size_t required = HEADER_FIXED_SIZE + HEADER_DIFAT_ARRAY_SIZE * FOUR_BYTE_SIZE;
     if (len < required || buffer == nullptr) [[unlikely]] {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "invalid buffer or len: %{public}zu, required: %{public}zu", len, required);
         return false;
     }
 
@@ -102,7 +109,7 @@ bool Header::Load(const Byte *buffer, size_t len)
     }
 
     if (memcpy_s(clsid_.data(), clsid_.size(), buffer + 0x08, clsid_.size()) != EOK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Header::Load - memcpy_s failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "memcpy_s failed");
         return false;
     }
     bigBlockShift_ = ReadUint16(buffer + HEADER_SECTOR_SHIFT_OFFSET);
@@ -112,6 +119,9 @@ bool Header::Load(const Byte *buffer, size_t len)
     transactionSignature_ = ReadUint32(buffer + HEADER_TRANSACTION_SIGNATURE_OFFSET);
     threshold_ = ReadUint32(buffer + HEADER_MINI_STREAM_CUTOFF_OFFSET);
     if (threshold_ != MINI_STREAM_CUTOFF) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "invalid threshold: %{public}u, expected: %{public}u",
+            threshold_, MINI_STREAM_CUTOFF);
         return false;
     }
     sbatStart_ = ReadUint32(buffer + HEADER_FIRST_MINI_FAT_SECTOR_OFFSET);
@@ -128,22 +138,24 @@ bool Header::Save(Byte *buffer, size_t len)
 {
     const size_t required = HEADER_FIXED_SIZE + HEADER_DIFAT_ARRAY_SIZE * FOUR_BYTE_SIZE;
     if (len < required || buffer == nullptr) [[unlikely]] {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid buffer or len: %{public}zu, required: %{public}zu",
+            len, required);
         return false;
     }
 
     auto ec = memset_s(buffer, len, 0, HEADER_FIXED_SIZE);
     if (ec != EOK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Header::Save - memset_s failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "memset_s fixed size failed, error: %{public}d", ec);
         return false;
     }
     ec = memcpy_s(buffer, len, g_cdMagic, FILE_SIGNATURE_SIZE);
     if (ec != EOK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Header::Save - magic data memcpy_s failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "memcpy_s file signature size failed: %{public}d", ec);
         return false;
     }
     ec = memcpy_s(buffer + FILE_SIGNATURE_SIZE, len - FILE_SIGNATURE_SIZE, clsid_.data(), clsid_.size());
     if (ec != EOK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Header::Save - signature memcpy_s failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "memcpy_s clsid size failed, error: %{public}d", ec);
         return false;
     }
 
@@ -183,7 +195,7 @@ void Header::Debug()
         return v == ENDOFCHAIN ? std::string("[NONE]") : std::to_string(v);
     };
     constexpr uint32_t PRINT_WIDTH = 16;
-    oss << "==================== OLE HEADER ====================" << std::endl;
+    oss << "==================== HEADER ====================" << std::endl;
     oss << std::left << std::setw(PRINT_WIDTH) << "Block Shift:" << std::right << bigBlockShift_ << " (2^"
         << bigBlockShift_ << " = " << (1u << bigBlockShift_) << " bytes)" << std::endl;
     oss << std::left << std::setw(PRINT_WIDTH) << "Mini Shift:" << std::right << miniBlockShift_ << " (2^"

@@ -67,7 +67,7 @@ namespace {
 
 /**
  * @tc.name Marshalling_001
- * @tc.desc 测试Marshalling方法
+ * @tc.desc Test Marshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Marshalling_001, TestSize.Level1)
@@ -84,7 +84,7 @@ HWTEST_F(ObjectEditorFormatTest, Marshalling_001, TestSize.Level1)
 
 /**
  * @tc.name Marshalling_002
- * @tc.desc 测试Marshalling方法
+ * @tc.desc Test Marshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Marshalling_002, TestSize.Level1)
@@ -101,7 +101,7 @@ HWTEST_F(ObjectEditorFormatTest, Marshalling_002, TestSize.Level1)
 
 /**
  * @tc.name Marshalling_003
- * @tc.desc 测试Marshalling方法
+ * @tc.desc Test Marshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Marshalling_003, TestSize.Level1)
@@ -118,7 +118,7 @@ HWTEST_F(ObjectEditorFormatTest, Marshalling_003, TestSize.Level1)
 
 /**
  * @tc.name Marshalling_004
- * @tc.desc 测试Marshalling方法
+ * @tc.desc Test Marshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Marshalling_004, TestSize.Level1)
@@ -135,7 +135,7 @@ HWTEST_F(ObjectEditorFormatTest, Marshalling_004, TestSize.Level1)
 
 /**
  * @tc.name Marshalling_005
- * @tc.desc 测试Marshalling方法
+ * @tc.desc Test Marshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Marshalling_005, TestSize.Level1)
@@ -152,7 +152,7 @@ HWTEST_F(ObjectEditorFormatTest, Marshalling_005, TestSize.Level1)
 
 /**
  * @tc.name Marshalling_006
- * @tc.desc 测试Marshalling方法
+ * @tc.desc Test Marshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Marshalling_006, TestSize.Level1)
@@ -169,7 +169,7 @@ HWTEST_F(ObjectEditorFormatTest, Marshalling_006, TestSize.Level1)
 
 /**
  * @tc.name Marshalling_007
- * @tc.desc 测试Marshalling方法
+ * @tc.desc Test Marshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Marshalling_007, TestSize.Level1)
@@ -186,7 +186,7 @@ HWTEST_F(ObjectEditorFormatTest, Marshalling_007, TestSize.Level1)
 
 /**
  * @tc.name Marshalling_008
- * @tc.desc 测试Marshalling方法
+ * @tc.desc Test Marshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Marshalling_008, TestSize.Level1)
@@ -203,7 +203,7 @@ HWTEST_F(ObjectEditorFormatTest, Marshalling_008, TestSize.Level1)
 
 /**
  * @tc.name Marshalling_009
- * @tc.desc 测试Marshalling方法
+ * @tc.desc Test Marshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Marshalling_009, TestSize.Level1)
@@ -220,7 +220,7 @@ HWTEST_F(ObjectEditorFormatTest, Marshalling_009, TestSize.Level1)
 
 /**
  * @tc.name Marshalling_010
- * @tc.desc 测试Marshalling方法
+ * @tc.desc Test Marshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Marshalling_010, TestSize.Level1)
@@ -234,7 +234,7 @@ HWTEST_F(ObjectEditorFormatTest, Marshalling_010, TestSize.Level1)
 
 /**
  * @tc.name Marshalling_011
- * @tc.desc 测试Marshalling方法
+ * @tc.desc Test Marshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Marshalling_011, TestSize.Level1)
@@ -248,7 +248,7 @@ HWTEST_F(ObjectEditorFormatTest, Marshalling_011, TestSize.Level1)
 
 /**
  * @tc.name Marshalling_012
- * @tc.desc 测试Marshalling方法
+ * @tc.desc Test Marshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Marshalling_012, TestSize.Level1)
@@ -263,7 +263,7 @@ HWTEST_F(ObjectEditorFormatTest, Marshalling_012, TestSize.Level1)
 
 /**
  * @tc.name Marshalling_013
- * @tc.desc 测试Marshalling方法
+ * @tc.desc Test Marshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Marshalling_013, TestSize.Level1)
@@ -276,7 +276,7 @@ HWTEST_F(ObjectEditorFormatTest, Marshalling_013, TestSize.Level1)
 
 /**
  * @tc.name Unmarshalling_001
- * @tc.desc 测试Unmarshalling方法
+ * @tc.desc Test Unmarshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Unmarshalling_001, TestSize.Level1)
@@ -292,7 +292,7 @@ HWTEST_F(ObjectEditorFormatTest, Unmarshalling_001, TestSize.Level1)
 
 /**
  * @tc.name Unmarshalling_002
- * @tc.desc 测试Unmarshalling方法
+ * @tc.desc Test Unmarshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Unmarshalling_002, TestSize.Level1)
@@ -308,7 +308,7 @@ HWTEST_F(ObjectEditorFormatTest, Unmarshalling_002, TestSize.Level1)
 
 /**
  * @tc.name Unmarshalling_003
- * @tc.desc 测试Unmarshalling方法
+ * @tc.desc Test Unmarshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Unmarshalling_003, TestSize.Level1)
@@ -324,7 +324,7 @@ HWTEST_F(ObjectEditorFormatTest, Unmarshalling_003, TestSize.Level1)
 
 /**
  * @tc.name Unmarshalling_004
- * @tc.desc 测试Unmarshalling方法
+ * @tc.desc Test Unmarshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Unmarshalling_004, TestSize.Level1)
@@ -340,7 +340,7 @@ HWTEST_F(ObjectEditorFormatTest, Unmarshalling_004, TestSize.Level1)
 
 /**
  * @tc.name Unmarshalling_005
- * @tc.desc 测试Unmarshalling方法
+ * @tc.desc Test Unmarshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Unmarshalling_005, TestSize.Level1)
@@ -356,7 +356,7 @@ HWTEST_F(ObjectEditorFormatTest, Unmarshalling_005, TestSize.Level1)
 
 /**
  * @tc.name Unmarshalling_006
- * @tc.desc 测试Unmarshalling方法
+ * @tc.desc Test Unmarshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Unmarshalling_006, TestSize.Level1)
@@ -371,7 +371,7 @@ HWTEST_F(ObjectEditorFormatTest, Unmarshalling_006, TestSize.Level1)
 
 /**
  * @tc.name Unmarshalling_007
- * @tc.desc 测试Unmarshalling方法
+ * @tc.desc Test Unmarshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Unmarshalling_007, TestSize.Level1)
@@ -387,7 +387,7 @@ HWTEST_F(ObjectEditorFormatTest, Unmarshalling_007, TestSize.Level1)
 
 /**
  * @tc.name Unmarshalling_008
- * @tc.desc 测试Unmarshalling方法
+ * @tc.desc Test Unmarshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Unmarshalling_008, TestSize.Level1)
@@ -403,7 +403,7 @@ HWTEST_F(ObjectEditorFormatTest, Unmarshalling_008, TestSize.Level1)
 
 /**
  * @tc.name Unmarshalling_009
- * @tc.desc 测试Unmarshalling方法
+ * @tc.desc Test Unmarshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Unmarshalling_009, TestSize.Level1)
@@ -419,7 +419,7 @@ HWTEST_F(ObjectEditorFormatTest, Unmarshalling_009, TestSize.Level1)
 
 /**
  * @tc.name Unmarshalling_010
- * @tc.desc 测试Unmarshalling方法
+ * @tc.desc Test Unmarshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Unmarshalling_010, TestSize.Level1)
@@ -433,7 +433,7 @@ HWTEST_F(ObjectEditorFormatTest, Unmarshalling_010, TestSize.Level1)
 
 /**
  * @tc.name Unmarshalling_011
- * @tc.desc 测试Unmarshalling方法
+ * @tc.desc Test Unmarshalling method
  * @tc.type FUNC
  */
 HWTEST_F(ObjectEditorFormatTest, Unmarshalling_011, TestSize.Level1)

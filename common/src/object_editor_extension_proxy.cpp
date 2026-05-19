@@ -20,6 +20,10 @@ namespace ObjectEditor {
 // LCOV_EXCL_START
 ErrCode ObjectEditorExtensionProxy::GetSnapshot(const std::string &documentId)
 {
+    if (documentId.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId is empty");
+        return ERR_INVALID_VALUE;
+    }
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -53,6 +57,10 @@ ErrCode ObjectEditorExtensionProxy::GetSnapshot(const std::string &documentId)
 
 ErrCode ObjectEditorExtensionProxy::DoEdit(const std::string &documentId)
 {
+    if (documentId.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId is empty");
+        return ERR_INVALID_VALUE;
+    }
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -86,6 +94,10 @@ ErrCode ObjectEditorExtensionProxy::DoEdit(const std::string &documentId)
 
 ErrCode ObjectEditorExtensionProxy::GetEditStatus(const std::string &documentId, bool *isEditing, bool *isModified)
 {
+    if (documentId.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId is empty");
+        return ERR_INVALID_VALUE;
+    }
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -155,6 +167,10 @@ ErrCode ObjectEditorExtensionProxy::GetExtensionEditStatus(bool &isEditing)
 
 ErrCode ObjectEditorExtensionProxy::GetCapability(const std::string &documentId, uint32_t *bitmask)
 {
+    if (documentId.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId is empty");
+        return ERR_INVALID_VALUE;
+    }
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -193,6 +209,10 @@ ErrCode ObjectEditorExtensionProxy::GetCapability(const std::string &documentId,
 
 ErrCode ObjectEditorExtensionProxy::Close(const std::string &documentId, bool &isAllObjectsRemoved)
 {
+    if (documentId.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId is empty");
+        return ERR_INVALID_VALUE;
+    }
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);

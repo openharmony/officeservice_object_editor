@@ -1097,7 +1097,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetOEid(ContentEmbed_Storage *sto
         return CE_ERR_PARAM_INVALID;
     }
     if (oeid == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid or oeidSize is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid is null");
         return CE_ERR_PARAM_INVALID;
     }
     OHOS::ObjectEditor::Storage *root = nullptr;
@@ -1130,7 +1130,16 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_SetOEid(ContentEmbed_Storage *sto
         return CE_ERR_PARAM_INVALID;
     }
     if (oeid == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid or oeidSize is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (oeidSize < OEID_LEN) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid size is invalid");
+        return CE_ERR_PARAM_INVALID;
+    }
+    std::string oeidStr(oeid);
+    if (!(oeidStr.size() == OEID_LEN || oeidStr.size() == OEID_MAX_LEN)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid length is invalid");
         return CE_ERR_PARAM_INVALID;
     }
     OHOS::ObjectEditor::Storage *root = nullptr;
@@ -1139,7 +1148,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_SetOEid(ContentEmbed_Storage *sto
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "require storage entry failed");
         return ret;
     }
-    std::string oeidStr(oeid, oeidSize);
     storage->owner->oeid = oeidStr;
     return CE_ERR_OK;
 }

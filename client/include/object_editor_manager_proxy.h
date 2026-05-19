@@ -72,7 +72,7 @@ public:
 
 private:
     static inline BrokerDelegator<ObjectEditorManagerProxy> delegator_;
-    const int32_t MAX_READ_COUNT = INT32_MAX;
+    static constexpr int32_t MAX_READ_COUNT = 10000;  // Reasonable limit for format count
 };
 } // namespace ObjectEditor
 } // namespace OHOS

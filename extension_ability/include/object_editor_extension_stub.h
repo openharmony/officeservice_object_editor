@@ -25,6 +25,7 @@ namespace ObjectEditor {
 class ObjectEditorExtensionStub : public IRemoteStub<IObjectEditorExtension> {
 public:
     ObjectEditorExtensionStub(bool serialInvokeFlag = false) : IRemoteStub(serialInvokeFlag) {}
+    virtual ~ObjectEditorExtensionStub() = default;
     int32_t OnRemoteRequest(uint32_t code, MessageParcel &data,
         MessageParcel &reply, MessageOption &option) override;
     virtual int32_t CallbackEnter([[maybe_unused]] uint32_t code) = 0;

@@ -44,6 +44,7 @@ StorageIO::StorageIO(const char *filename)
         filename, std::ios::binary | std::ios::in | std::ios::out);
     if (!f || f->fail()) {
         SetError(ErrorCode::OpenFailed, "Failed to open file for read/write");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to open file: %{private}s", filename);
         return;
     }
     file_ = std::move(f);
@@ -60,6 +61,7 @@ StorageIO::StorageIO(std::iostream *stream)
     Init();
     if (!stream) {
         SetError(ErrorCode::OpenFailed, "Invalid input stream");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Invalid input stream");
         return;
     }
     stream_ = stream;
@@ -75,12 +77,15 @@ StorageIO::StorageIO(const std::string &oeid)
     dtModified_ = false;
     Init();
     if (!ConfigMinimalCd(oeid)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "ConfigMinimalCd failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "ConfigMinimalCd failed oeid: %{public}s",
+            oeid.c_str());
         return;
     }
 
     if (!SerializeToMemory()) {
-        SetError(ErrorCode::BadOLE, "Failed to serialize the minimal in-memory OLE from OEID");
+        SetError(ErrorCode::BadOLE, "Failed to serialize the minimal in-memory");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to serialize the minimal oeid: %{public}s",
+            oeid.c_str());
         return;
     }
     ClearError();
@@ -89,6 +94,7 @@ StorageIO::StorageIO(const std::string &oeid)
 bool StorageIO::ConfigMinimalCd(const std::string &oeid)
 {
     if (!dirtree_ || !header_ || !bbat_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "dirtree or header or bbat is null");
         return false;
     }
     if (dirtree_) {
@@ -143,6 +149,7 @@ bool StorageIO::ConfigMinimalCd(const std::string &oeid)
 bool StorageIO::SerializeToMemory()
 {
     if (!dirtree_ || !header_ || !bbat_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "dirtree or header or bbat is null");
         return false;
     }
     const size_t sector = kHeaderSize;
@@ -150,6 +157,7 @@ bool StorageIO::SerializeToMemory()
     std::vector<Byte> oleData(sector * sectorCount, 0);
     Byte *oleBytes = oleData.data();
     if (!header_->Save(oleBytes, sector)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to save header");
         return false;
     }
 
@@ -157,16 +165,19 @@ bool StorageIO::SerializeToMemory()
     Byte *dirSector = oleData.data() + sector * 2;
     std::fill_n(dirSector, sector, 0x00);
     if (!dirtree_->Save(dirSector, sector)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to save dirtree");
         return false;
     }
     Byte *fatSector = oleData.data() + sector * 3;
     std::fill_n(fatSector, sector, 0xFF);
     if (!bbat_->Save(fatSector, sectorCount * bbat_->Count())) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to save bbat");
         return false;
     }
 
     memoryBuffer_ = std::make_unique<std::vector<uint8_t>>(std::move(oleData));
     if (!memoryBuffer_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to create memory buffer");
         return false;
     }
     std::stringstream tempStream(std::string(reinterpret_cast<char *>(
@@ -314,8 +325,10 @@ bool StorageIO::IsValidReadParams(size_t offset, uint8_t *buf, size_t len, size_
 
 bool StorageIO::ReadRawCd(size_t offset, uint8_t *buf, size_t len, size_t *outRead)
 {
-    if (!IsValidReadParams(offset, buf, len, outRead))
+    if (!IsValidReadParams(offset, buf, len, outRead)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Invalid parameters");
         return false;
+    }
 
     const uint64_t fileSize = static_cast<uint64_t>(size_);
     const uint64_t offset64 = static_cast<uint64_t>(offset);
@@ -371,21 +384,26 @@ bool StorageIO::Load()
     const uint64_t fileSize = size_ >= 0 ? static_cast<uint64_t>(size_) : 0;
 
     if (!ValidateHeader(fileSize)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to validate header");
         return false;
     }
     const uint32_t sectorSize = BigBlockSize();
     std::vector<uint32_t> fatBlocks;
     if (!LoadDifatChain(sectorSize, fatBlocks)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to load DIFAT chain");
         return false;
     }
     if (!LoadFatChain(sectorSize, fatBlocks)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to load FAT");
         return false;
     }
     SectorIndex sbStart = 0;
     if (!LoadDirectoryTree(sbStart)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to load directory tree");
         return false;
     }
     if (!LoadMiniFat(sbStart)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to load mini FAT");
         return false;
     }
     ClearError();
@@ -395,25 +413,32 @@ bool StorageIO::Load()
 bool StorageIO::ValidateHeader(uint64_t fileSize)
 {
     if (!ReadAndLoadHeader()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to read header");
         return false;
     }
     uint32_t sectorSize = 0;
     if (!ValidateSectorSizes(sectorSize)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to validate sector sizes");
         return false;
     }
     if (!CheckClaimedTableSizes(fileSize, sectorSize)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to check claimed table sizes");
         return false;
     }
     if (!header_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "header is null");
         return false;
     }
     if (!ValidateHeaderSectorIndex(header_->DirentStart(), sectorSize, "dirent_start", fileSize)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to validate dirent_start");
         return false;
     }
     if (!ValidateHeaderSectorIndex(header_->SbatStart(), sectorSize, "sbat_start", fileSize)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to validate sbat_start");
         return false;
     }
     if (!ValidateHeaderSectorIndex(header_->DifatStart(), sectorSize, "difatStart", fileSize)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to validate difatStart");
         return false;
     }
     return true;
@@ -479,6 +504,7 @@ bool StorageIO::LoadDifatChainBody(uint32_t sectorSize, uint32_t expectedFromDif
 {
     const uint32_t entriesPerSector = sectorSize / static_cast<uint32_t>(sizeof(uint32_t));
     if (!header_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "header is null");
         return false;
     }
     uint32_t difatSector = header_->DifatStart();
@@ -498,10 +524,12 @@ bool StorageIO::LoadDifatChainBody(uint32_t sectorSize, uint32_t expectedFromDif
 
         std::vector<uint8_t> difatBuf;
         if (!ReadDifatSector(sectorSize, difatSector, difatBuf)) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to load DIFAT sector");
             return false;
         }
         if (!ProcessDifatEntries(entriesPerSector, expectedFromDifat,
             expectedMaxSectors, loadedFromDifat, difatBuf, fatBlocks)) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to process DIFAT entries");
             return false;
         }
         uint32_t nextDifat = (entriesPerSector > 0)
@@ -534,6 +562,7 @@ bool StorageIO::LoadDifatChain(uint32_t sectorSize, std::vector<uint32_t> &fatBl
 {
     fatBlocks.clear();
     if (!header_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "header is null");
         return false;
     }
     const BlockCount numBat = header_->NumBat();
@@ -556,6 +585,7 @@ bool StorageIO::LoadDifatChain(uint32_t sectorSize, std::vector<uint32_t> &fatBl
     if (numBat > headerFatCount) {
         const uint32_t expectedFromDifat = numBat - headerFatCount;
         if (!LoadDifatChainBody(sectorSize, expectedFromDifat, expectedMaxSectors, fatBlocks)) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to load DIFAT chain body");
             return false;
         }
     }
@@ -567,6 +597,7 @@ bool StorageIO::LoadDirectoryTree(SectorIndex &sbStart)
 {
     std::vector<uint32_t> blocks;
     if (!bbat_ || !header_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "header is null");
         return false;
     }
     if (!bbat_->Follow(header_->DirentStart(), blocks)) {
@@ -585,6 +616,7 @@ bool StorageIO::LoadDirectoryTree(SectorIndex &sbStart)
         return false;
     }
     if (!dirtree_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "dirtree is null");
         return false;
     }
     bool dirtreeLoaded = dirtree_->Load(buffer.data(), buffer.size());
@@ -602,13 +634,16 @@ bool StorageIO::LoadMiniFat(SectorIndex sbStart)
     std::vector<uint32_t> blocks;
     std::vector<Byte> buffer;
     if (!LoadMiniFatBlocks(blocks, buffer)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to load mini FAT blocks");
         return false;
     }
     if (!FollowMiniStream(sbStart)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to follow mini FAT chain");
         return false;
     }
     size_t highestUsed = 0;
     if (!ValidateMiniFatEntries(highestUsed)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to validate mini FAT entries");
         return false;
     }
     return ValidateMiniRootCoverage(highestUsed);
@@ -617,6 +652,7 @@ bool StorageIO::LoadMiniFat(SectorIndex sbStart)
 bool StorageIO::LoadMiniFatBlocks(std::vector<uint32_t> &blocks, std::vector<Byte> &buffer)
 {
     if (!bbat_ || !header_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "header is null");
         return false;
     }
     if (!bbat_->Follow(header_->SbatStart(), blocks)) {
@@ -636,6 +672,7 @@ bool StorageIO::LoadMiniFatBlocks(std::vector<uint32_t> &blocks, std::vector<Byt
         return false;
     }
     if (!sbat_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "sbat is null");
         return false;
     }
     sbat_->Load(buffer.data(), buffer.size());
@@ -645,6 +682,7 @@ bool StorageIO::LoadMiniFatBlocks(std::vector<uint32_t> &blocks, std::vector<Byt
 bool StorageIO::FollowMiniStream(SectorIndex sbStart)
 {
     if (!bbat_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "bbat is null");
         return false;
     }
     if (!bbat_->Follow(sbStart, sbBlocks_)) {
@@ -659,6 +697,7 @@ bool StorageIO::ValidateMiniFatEntries(size_t &highestUsed)
 {
     highestUsed = 0;
     if (!sbat_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "sbat is null");
         return false;
     }
     const size_t miniEntries = sbat_->Count();
@@ -731,6 +770,7 @@ uint32_t StorageIO::ReadBigBlocksFromMemory(const std::vector<uint32_t> &blocks,
     Byte *data, uint32_t maxlen)
 {
     if (!memoryBuffer_ || !bbat_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "memoryBuffer or bbat is null");
         return 0;
     }
     const uint32_t blockSize32 = bbat_->BlockSize();
@@ -764,6 +804,7 @@ uint32_t StorageIO::ReadBigBlocksFromFile(const std::vector<uint32_t> &blocks,
     Byte *data, uint32_t maxlen)
 {
     if (!stream_ || !stream_->good() || maxlen == 0 || blocks.empty() || !bbat_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "stream or bbat is null");
         return 0;
     }
     const uint32_t blockSize32 = bbat_->BlockSize();
@@ -814,6 +855,7 @@ uint32_t StorageIO::LoadBigBlocks(const std::vector<uint32_t> &blocks,
     Byte *data, uint32_t maxlen)
 {
     if (!data || maxlen == 0 || blocks.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Invalid data or maxlen");
         return 0;
     }
     const uint32_t blockSize32 = bbat_ ? bbat_->BlockSize() : 0;
@@ -829,6 +871,7 @@ uint32_t StorageIO::LoadBigBlocks(const std::vector<uint32_t> &blocks,
 uint32_t StorageIO::LoadBigBlock(uint32_t block, Byte *data, uint32_t maxlen)
 {
     if (!data) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Invalid data");
         return 0;
     }
     std::vector<uint32_t> blocks;
@@ -866,6 +909,7 @@ bool StorageIO::ReadMiniBlock(uint32_t block, uint64_t pos64, uint64_t miniStrea
     copied = 0;
     uint32_t bbindex = 0;
     if (!ValidateMiniBlockAccess(block, pos64, miniStreamSize, bigBlockSz, bbindex)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Invalid mini block access");
         return false;
     }
     std::vector<Byte> buf(bigBlockSz);
@@ -907,6 +951,7 @@ bool StorageIO::ReadMiniBlock(uint32_t block, uint64_t pos64, uint64_t miniStrea
 uint32_t StorageIO::ReadMiniBlocks(const std::vector<uint32_t> &blocks, Byte *data, uint32_t maxlen)
 {
     if (!data || maxlen == 0 || blocks.empty() || !bbat_ || !sbat_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Invalid data or maxlen");
         return 0;
     }
     const uint32_t bigBlockSz = bbat_->BlockSize();
@@ -942,6 +987,7 @@ uint32_t StorageIO::LoadSmallBlocks(const std::vector<uint32_t> &blocks, Byte *d
 uint32_t StorageIO::LoadSmallBlock(uint32_t block, Byte *data, uint32_t maxlen)
 {
     if (!data) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Invalid data");
         return 0;
     }
     std::vector<uint32_t> blocks;
@@ -953,6 +999,7 @@ uint32_t StorageIO::LoadSmallBlock(uint32_t block, Byte *data, uint32_t maxlen)
 uint32_t StorageIO::SaveBlockToFile(uint64_t physicalOffset, const Byte *data, uint32_t len)
 {
     if (!file_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "file is null");
         return 0;
     }
     const uint64_t maxStreamOff = static_cast<uint64_t>(std::numeric_limits<std::streamoff>::max());
@@ -968,11 +1015,12 @@ uint32_t StorageIO::SaveBlockToFile(uint64_t physicalOffset, const Byte *data, u
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to write block");
         return 0;
     }
-    // 只在必要时刷新
+    // Flush only when necessary
     writeBufferSize_ += len;
     if (writeBufferSize_ >= MAX_BUFFER_SIZE) {
         file_->flush();
         if (!file_->good()) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to flush file");
             return 0;
         }
         if (auto *buf = file_->rdbuf()) {
@@ -986,10 +1034,12 @@ uint32_t StorageIO::SaveBlockToFile(uint64_t physicalOffset, const Byte *data, u
     }
     const auto endPos = file_->tellp();
     if (endPos == static_cast<std::streampos>(-1)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to tellp");
         return 0;
     }
     file_->seekg(endPos);
     if (!file_->good()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to seek to end of file");
         return 0;
     }
     const uint64_t newEnd64 = physicalOffset + static_cast<uint64_t>(len);
@@ -1005,14 +1055,17 @@ uint32_t StorageIO::SaveBlockToBuffer(uint64_t physicalOffset, const Byte *data,
 {
     const uint64_t requiredSize = physicalOffset + static_cast<uint64_t>(len);
     if (requiredSize > buffer.max_size()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "buffer size exceeds max_size");
         return 0;
     }
     if (requiredSize > buffer.size()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "buffer size overflow");
         buffer.resize(static_cast<size_t>(requiredSize), 0);
     }
     const size_t offset = static_cast<size_t>(physicalOffset);
     auto ec = memcpy_s(buffer.data() + offset, buffer.size() - offset, data, len);
     if (ec != EOK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to memcpy data to buffer");
         return 0;
     }
     return len;
@@ -1021,6 +1074,7 @@ uint32_t StorageIO::SaveBlockToBuffer(uint64_t physicalOffset, const Byte *data,
 void StorageIO::ListDirectory(std::list<std::string> &result) const
 {
     if (!dirtree_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "dirtree is null");
         return;
     }
     std::vector<const DirEntry *> entries;
@@ -1035,6 +1089,7 @@ void StorageIO::ListDirectory(std::list<std::string> &result) const
 void StorageIO::ListEntries(std::vector<const DirEntry *> &result) const
 {
     if (!dirtree_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "dirtree is null");
         return;
     }
     dirtree_->ListDirectory(result);
@@ -1057,6 +1112,7 @@ DirEntry *StorageIO::GetRootEntry()
 uint32_t StorageIO::SaveBlock(uint64_t physicalOffset, const Byte *data, uint32_t len)
 {
     if (!data || len == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Invalid data or len");
         return 0;
     }
     const uint64_t maxStreamOff = static_cast<uint64_t>(std::numeric_limits<std::streamoff>::max());
@@ -1136,6 +1192,7 @@ bool StorageIO::ReadMiniStream(DirEntry *entry, uint64_t oldSize, std::vector<ui
     std::vector<Byte> &smallBuffer)
 {
     if (!entry) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Invalid entry");
         return false;
     }
     if (!FollowSmallBlockTable(entry->Start(), oldBlocks)) {
@@ -1161,6 +1218,7 @@ bool StorageIO::ReadMiniStream(DirEntry *entry, uint64_t oldSize, std::vector<ui
 bool StorageIO::ComputeBlocksNeeded(uint64_t newSize, uint32_t blockSize, uint32_t &blocksNeeded)
 {
     if (blockSize == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Invalid block size");
         return false;
     }
     uint64_t blocksNeeded64 = (newSize + blockSize - 1) / blockSize;
@@ -1178,6 +1236,7 @@ bool StorageIO::ComputeBlocksNeeded(uint64_t newSize, uint32_t blockSize, uint32
 bool StorageIO::AllocateBigBlocksForConvert(uint32_t blocksNeeded, std::vector<uint32_t> &newBlocks)
 {
     if (!bbat_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "bbat is null");
         return false;
     }
     newBlocks.reserve(static_cast<size_t>(blocksNeeded));
@@ -1281,6 +1340,7 @@ bool StorageIO::CopyDataToBigBlocks(const std::vector<uint32_t> &blocks, const s
 void StorageIO::ReleaseMiniBlocks(const std::vector<uint32_t> &oldBlocks)
 {
     if (!sbat_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "sbat is null");
         return;
     }
     for (uint32_t block : oldBlocks) {
@@ -1295,22 +1355,27 @@ bool StorageIO::ConvertSmallToBig(DirEntry *entry, uint64_t newSize)
     uint32_t threshold = 0;
 
     if (!ValidateConvertInputs(entry, newSize, oldSize, blockSize, threshold)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to validate convert inputs");
         return false;
     }
     std::vector<uint32_t> oldBlocks;
     std::vector<Byte> smallBuffer;
     if (!ReadMiniStream(entry, oldSize, oldBlocks, smallBuffer)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to read mini stream");
         return false;
     }
     uint32_t blocksNeeded = 0;
     if (!ComputeBlocksNeeded(newSize, blockSize, blocksNeeded)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to compute blocks needed");
         return false;
     }
     std::vector<uint32_t> newBlocks;
     if (!AllocateBigBlocksForConvert(blocksNeeded, newBlocks)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to allocate big blocks for convert");
         return false;
     }
     if (!bbat_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "bbat is null");
         return false;
     }
     auto releaseNewBlocks = [&]() {
@@ -1320,9 +1385,11 @@ bool StorageIO::ConvertSmallToBig(DirEntry *entry, uint64_t newSize)
     };
     if (!CopyDataToBigBlocks(newBlocks, smallBuffer, newSize, blockSize)) {
         releaseNewBlocks();
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to copy data to big blocks");
         return false;
     }
     if (!entry) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Invalid entry");
         return false;
     }
     ReleaseMiniBlocks(oldBlocks);
@@ -1356,6 +1423,7 @@ bool StorageIO::PrepareDirectoryBlocks(size_t blockSize, size_t dirEntries, std:
     size_t &neededBlocks)
 {
     if (blockSize == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Invalid block size");
         return false;
     }
     const size_t neededBytes = dirEntries * kDirectoryEntrySize;
@@ -1364,6 +1432,7 @@ bool StorageIO::PrepareDirectoryBlocks(size_t blockSize, size_t dirEntries, std:
         neededBlocks = 1;
     }
     if (!bbat_ || !header_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Invalid inputs");
         return false;
     }
     if (!bbat_->Follow(header_->DirentStart(), blocks)) {
@@ -1382,6 +1451,7 @@ bool StorageIO::PrepareDirectoryBlocks(size_t blockSize, size_t dirEntries, std:
 void StorageIO::BackupFlushState(FlushSnapshot &snap)
 {
     if (header_ == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "header is null");
         return;
     }
     snap.headerBackup = *header_;
@@ -1393,6 +1463,7 @@ void StorageIO::BackupFlushState(FlushSnapshot &snap)
     snap.sizeBackup = size_;
     snap.prevFlushWriteBuffer = flushWriteBuffer_;
     if (bbat_ == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "bbat is null");
         return;
     }
     snap.bbatSnapshot.reserve(bbat_->Count());
@@ -1433,15 +1504,19 @@ bool StorageIO::SetupStagingBuffer(bool memoryMode, FlushSnapshot &snap)
 bool StorageIO::ExecuteFlushSequence(std::vector<uint32_t> &blocks, size_t neededBlocks, size_t blockSize)
 {
     if (!FlushDirectoryTree(blocks, neededBlocks, blockSize)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to flush directory tree");
         return false;
     }
     if (!FlushMiniFat()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to flush mini fat");
         return false;
     }
     if (!FlushFatChain()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to flush fat chain");
         return false;
     }
     if (!FlushDifatChain()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to flush difat chain");
         return false;
     }
     return FlushHeader();
@@ -1451,6 +1526,7 @@ bool StorageIO::FinalizeFlush(bool memoryMode, FlushSnapshot &snap, size_t block
 {
     size_t maxUsedBlock = 0;
     if (bbat_ == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "bbat is null");
         return false;
     }
     for (size_t i = 0; i < bbat_->Count(); i++) {
@@ -1506,12 +1582,13 @@ bool StorageIO::ValidateDeletePreconditions(uint32_t &threshold, uint32_t &miniB
 bool StorageIO::CollectDeleteTargets(const std::string &path, std::vector<DirEntry> &targets)
 {
     if (!dirtree_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "dirtree is null");
         return false;
     }
     if (dirtree_->CollectSubtreeEntries(path, targets)) {
         return true;
     }
-    OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Invalid path");
+    OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Invalid path: %{private}s", path.c_str());
     return false;
 }
 
@@ -1520,6 +1597,7 @@ bool StorageIO::CollectChainForEntry(const DirEntry &entry, bool useBig, uint32_
 {
     AllocTable *table = useBig ? bbat_.get() : sbat_.get();
     if (table == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "bbat or sbat is null");
         SetError(ErrorCode::InvalidOperation, "Cannot delete: storage not initialized", false);
         return false;
     }
@@ -1530,13 +1608,15 @@ bool StorageIO::CollectChainForEntry(const DirEntry &entry, bool useBig, uint32_
     }
     if (start >= table->Count()) {
         SetError(ErrorCode::Corruption, "Cannot delete: start block out of range");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "start block out of range");
         return false;
     }
     if ((*table)[start] == AllocTable::Avail) {
         return true;
     }
     if (!table->Follow(start, out)) {
-        SetError(ErrorCode::Corruption, "Cannot delete: failed to follow allocation chain");
+        SetError(ErrorCode::Corruption, "Failed to follow allocation chain");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "failed to follow allocation chain");
         return false;
     }
     if (out.empty()) {
@@ -1545,6 +1625,7 @@ bool StorageIO::CollectChainForEntry(const DirEntry &entry, bool useBig, uint32_
     const uint32_t blockSize = useBig ? bigBlockSize : miniBlockSize;
     if (blockSize == 0) {
         SetError(ErrorCode::InvalidOperation, "Cannot delete: block size is 0", false);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "block size is 0");
         return false;
     }
     if (entry.Size() && (static_cast<uint64_t>(out.size()) * blockSize) < entry.Size()) {
@@ -1576,6 +1657,7 @@ bool StorageIO::BuildReleasePlan(const std::vector<DirEntry> &targets,
         const bool useBig = !(entry.Size() < threshold);
         std::vector<uint32_t> blocks;
         if (!CollectChainForEntry(entry, useBig, miniBlockSize, bigBlockSize, blocks)) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to collect chain");
             return false;
         }
         if (!blocks.empty()) {
@@ -1603,23 +1685,28 @@ bool StorageIO::DeleteEntry(const std::string &path)
     uint32_t miniBlockSize = 0;
     uint32_t bigBlockSize = 0;
     if (!ValidateDeletePreconditions(threshold, miniBlockSize, bigBlockSize)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to validate delete preconditions");
         return false;
     }
     std::vector<DirEntry> targets;
     if (!CollectDeleteTargets(path, targets)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to collect delete targets");
         return false;
     }
     RebuildProtectedBlocksCache();
 
     std::vector<std::pair<bool, std::vector<uint32_t>>> plan;
     if (!BuildReleasePlan(targets, threshold, miniBlockSize, bigBlockSize, plan)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to build release plan");
         return false;
     }
     if (dirtree_ == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "dirtree is null");
         return false;
     }
     if (!dirtree_->DeleteEntry(path)) {
         SetError(ErrorCode::InvalidOperation, "Cannot delete: failed to delete entry", false);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "failed to delete entry");
         return false;
     }
     ExecuteBlockRelease(plan);
@@ -1631,11 +1718,13 @@ bool StorageIO::ValidateExtendPreconditions(DirEntry *entry)
 {
     if (!IsValid()) {
         SetError(ErrorCode::InvalidOperation, "Cannot extend: storage not initialized", false);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "storage not initialized");
         return false;
     }
 
     if (!entry || !bbat_ || !header_ || !sbat_) {
         SetError(ErrorCode::InvalidOperation, "Cannot extend: entry or alloc table is null", false);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry or alloc table is null");
         return false;
     }
     return true;
@@ -1651,12 +1740,14 @@ bool StorageIO::ValidateAndFetchExistingChain(DirEntry *entry, bool useBig,
 {
     if (entry == nullptr) {
         SetError(ErrorCode::InvalidOperation, "Cannot extend: entry is null", false);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry is null");
         return false;
     }
     if (useBig) {
         if (!FollowBigBlockTable(entry->Start(), existingBlocks)) {
             SetError(ErrorCode::Corruption,
                 "Cannot extend: failed to follow big block chain");
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "failed to follow big block chain");
             return false;
         }
         return true;
@@ -1664,6 +1755,7 @@ bool StorageIO::ValidateAndFetchExistingChain(DirEntry *entry, bool useBig,
     if (!FollowSmallBlockTable(entry->Start(), existingBlocks)) {
         SetError(ErrorCode::Corruption,
             "Cannot extend: failed to follow small block chain");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "failed to follow small block chain");
         return false;
     }
     return true;
@@ -1686,6 +1778,7 @@ bool StorageIO::ExtendSameTypeChain(DirEntry *entry, uint64_t oldSize, uint64_t 
     AllocTable *allocTable = useBig ? bbat_.get() : sbat_.get();
     if (blockSize == 0 || allocTable == nullptr) {
         SetError(ErrorCode::InvalidOperation, "Cannot extend: alloc table is null", false);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "alloc table is null");
         return false;
     }
     const uint64_t blockSize64 = blockSize;
@@ -1694,11 +1787,13 @@ bool StorageIO::ExtendSameTypeChain(DirEntry *entry, uint64_t oldSize, uint64_t 
     const uint64_t maxBlocks = static_cast<uint64_t>(std::numeric_limits<uint32_t>::max());
     if (oldBlocksNeeded64 > maxBlocks || newBlocksNeeded64 > maxBlocks) {
         SetError(ErrorCode::InvalidOperation, "Cannot extend: requested size exceeds FAT addressing range");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "requested size exceeds FAT addressing range");
         return false;
     }
     const uint32_t oldBlocksNeeded = static_cast<uint32_t>(oldBlocksNeeded64);
     const uint32_t newBlocksNeeded = static_cast<uint32_t>(newBlocksNeeded64);
     if (entry == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry is null");
         return false;
     }
     if (newBlocksNeeded <= oldBlocksNeeded) {
@@ -1710,15 +1805,18 @@ bool StorageIO::ExtendSameTypeChain(DirEntry *entry, uint64_t oldSize, uint64_t 
 
     std::vector<uint32_t> existingBlocks;
     if (!ValidateAndFetchExistingChain(entry, useBig, existingBlocks)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to validate existing chain");
         return false;
     }
     if (existingBlocks.empty()) {
         SetError(ErrorCode::Corruption, "Cannot extend: existing block chain is empty");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "existing block chain is empty");
         return false;
     }
     if (existingBlocks.size() < oldBlocksNeeded) {
         SetError(ErrorCode::Corruption, "Cannot extend: existing block chain is shorter than expected (expected " +
             std::to_string(oldBlocksNeeded) + ", got " + std::to_string(existingBlocks.size()) + ")");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "existing block chain is shorter than expected");
         return false;
     }
     const uint32_t additionalBlocks = newBlocksNeeded - oldBlocksNeeded;
@@ -1726,6 +1824,7 @@ bool StorageIO::ExtendSameTypeChain(DirEntry *entry, uint64_t oldSize, uint64_t 
     if (!useBig) {
         uint64_t highestMiniBlock = 0;
         if (sbat_ == nullptr) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "sbat is null");
             return false;
         }
         for (size_t i = 0; i < sbat_->Count(); ++i) {
@@ -1736,10 +1835,12 @@ bool StorageIO::ExtendSameTypeChain(DirEntry *entry, uint64_t oldSize, uint64_t 
         highestMiniBlock += additionalBlocks;
         if (highestMiniBlock > std::numeric_limits<uint32_t>::max()) {
             SetError(ErrorCode::InvalidOperation, "Cannot extend: block count overflow");
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "block count overflow");
             return false;
         }
         if (!EnsureRootForMiniGrowth(static_cast<uint32_t>(highestMiniBlock),
             "Failed to extend root stream when growing small stream")) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to extend root stream");
             return false;
         }
     }
@@ -1762,6 +1863,7 @@ bool StorageIO::AllocateFreshChain(DirEntry *entry, uint64_t newSize, bool useBi
     AllocTable *allocTable = useBig ? bbat_.get() : sbat_.get();
     if (blockSize == 0 || allocTable == nullptr) {
         SetError(ErrorCode::InvalidOperation, "Cannot extend: invalid block size", false);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid block size");
         return false;
     }
     uint64_t blocksNeeded64 = (newSize + blockSize - 1) / blockSize;
@@ -1769,6 +1871,7 @@ bool StorageIO::AllocateFreshChain(DirEntry *entry, uint64_t newSize, bool useBi
         blocksNeeded64 = 1;
     if (blocksNeeded64 > static_cast<uint64_t>(std::numeric_limits<uint32_t>::max())) {
         SetError(ErrorCode::InvalidOperation, "Cannot allocate: block count overflow");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "block count overflow");
         return false;
     }
     const uint32_t blocksNeeded = static_cast<uint32_t>(blocksNeeded64);
@@ -1782,10 +1885,12 @@ bool StorageIO::AllocateFreshChain(DirEntry *entry, uint64_t newSize, bool useBi
         totalMiniBlocks += blocksNeeded;
         if (totalMiniBlocks > std::numeric_limits<uint32_t>::max()) {
             SetError(ErrorCode::InvalidOperation, "Cannot extend: block count overflow");
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "block count overflow");
             return false;
         }
         if (!EnsureRootForMiniGrowth(static_cast<uint32_t>(totalMiniBlocks),
             "Failed to extend root stream for " + std::to_string(blocksNeeded) + " mini blocks")) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to extend root stream");
             return false;
         }
     }
@@ -1799,10 +1904,13 @@ bool StorageIO::AllocateFreshChain(DirEntry *entry, uint64_t newSize, bool useBi
     allocTable->SetChain(blocks);
     if (blocks.empty()) {
         SetError(ErrorCode::AllocationFailed, "Cannot allocate: no more free blocks");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "no more free blocks");
         return false;
     }
-    if (entry == nullptr)
+    if (entry == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry is null");
         return false;
+    }
     entry->SetStart(blocks[0]);
     entry->SetSize(newSize);
     dtModified_ = true;
@@ -1813,14 +1921,19 @@ bool StorageIO::AllocateFreshChain(DirEntry *entry, uint64_t newSize, bool useBi
 bool StorageIO::ExtendEntry(DirEntry *entry, uint64_t newSize)
 {
     if (!ValidateExtendPreconditions(entry)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to validate extend preconditions");
         return false;
     }
     const uint64_t oldSize = entry->Size();
     const bool isFirstAllocation = (oldSize == 0);
     const bool oldUseBigBlocks = NeedsBigBlocks(oldSize);
     const bool newUseBigBlocks = NeedsBigBlocks(newSize);
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT,
+        "ExtendEntry state, isFirstAllocation: %{public}d, oldUseBigBlocks: %{public}d, newUseBigBlocks: %{public}d",
+        isFirstAllocation, oldUseBigBlocks, newUseBigBlocks);
     if (!isFirstAllocation && (oldUseBigBlocks != newUseBigBlocks)) {
         if (!oldUseBigBlocks && newUseBigBlocks) {
+            OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "Convert from small to big blocks");
             const bool converted = ConvertSmallToBig(entry, newSize);
             if (converted) {
                 ClearError();
@@ -1839,6 +1952,7 @@ bool StorageIO::ExtendEntry(DirEntry *entry, uint64_t newSize)
 void StorageIO::AddBlocksFromChain(uint32_t start)
 {
     if (bbat_ == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "BBAT is null");
         return;
     }
     std::vector<uint32_t> chain;
@@ -1851,11 +1965,14 @@ void StorageIO::AddBlocksFromChain(uint32_t start)
 
 void StorageIO::RebuildProtectedBlocksCache()
 {
-    if (!protectedBlocksDirty_)
+    if (!protectedBlocksDirty_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "protectedBlocks");
         return;
+    }
     std::set<uint32_t> carry = protectedBlocksCache_;
     protectedBlocksCache_.clear();
     if (!bbat_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "BBAT is not initialized");
         protectedBlocksDirty_ = false;
         return;
     }
@@ -1911,6 +2028,7 @@ uint32_t StorageIO::AllocateProtectedSector(uint32_t markerType)
 bool StorageIO::AdvertiseFATSectorInDIFAT(uint32_t fatSector, uint32_t current, uint32_t difatEntries)
 {
     if (!header_ || !bbat_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "header or BBAT is null initialized");
         return false;
     }
     if (current < HEADER_DIFAT_ARRAY_SIZE) {
@@ -1943,15 +2061,18 @@ bool StorageIO::AdvertiseFATSectorInDIFAT(uint32_t fatSector, uint32_t current, 
 void StorageIO::EnsureFatCapacity()
 {
     if (!bbat_ || !header_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "BBAT or header is null initialized");
         return;
     }
 
     const uint32_t sectorSize = BigBlockSize();
     if (sectorSize == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid block size");
         return;
     }
     const uint32_t entriesPerSector = sectorSize / static_cast<uint32_t>(sizeof(uint32_t));
     if (entriesPerSector == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid block size");
         return;
     }
     const uint32_t difatEntries = entriesPerSector > 0 ? static_cast<uint32_t>(entriesPerSector - 1) : 0;
@@ -1990,6 +2111,7 @@ bool StorageIO::ExtendChainWithZeros(std::vector<uint32_t> &chain,
     uint32_t &neededBigBlocks, uint32_t &bigBlockSize)
 {
     if (bbat_ == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "BBAT is null");
         return false;
     }
     while (chain.size() < neededBigBlocks) {
@@ -2020,42 +2142,55 @@ bool StorageIO::ExtendChainWithZeros(std::vector<uint32_t> &chain,
 
 bool StorageIO::ExtendRootStream(uint32_t requiredMiniBlocks)
 {
-    if (!bbat_ || !header_)
+    if (!bbat_ || !header_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "BBAT or header is null initialized");
         return false;
+    }
     DirEntry *root = GetRootEntry();
-    if (!root)
+    if (!root) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "root entry is null");
         return false;
-    
+    }
+
     uint32_t bigBlockSize = BigBlockSize();
     const uint32_t smallBlockSize = SmallBlockSize();
-    if (smallBlockSize == 0 || bigBlockSize == 0)
+    if (smallBlockSize == 0 || bigBlockSize == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid block size");
         return false;
+    }
     const uint32_t miniBlocksPerBigBlock = bigBlockSize / smallBlockSize;
     if (miniBlocksPerBigBlock == 0) {
         SetError(ErrorCode::InvalidOperation, "Big block size is not divisible by small block size", false);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Big block size is not divisible by small block size");
         return false;
     }
     uint64_t neededBigBlocks64 = (static_cast<uint64_t>(requiredMiniBlocks) +
         static_cast<uint64_t>(miniBlocksPerBigBlock) - 1) / static_cast<uint64_t>(miniBlocksPerBigBlock);
     if (neededBigBlocks64 > static_cast<uint64_t>(std::numeric_limits<uint32_t>::max())) {
         SetError(ErrorCode::InvalidOperation, "Required big blocks count exceeds uint32_t max value");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Required big blocks count exceeds uint32_t max value");
         return false;
     }
     uint32_t neededBigBlocks = static_cast<uint32_t>(neededBigBlocks64);
     std::vector<uint32_t> chain;
     const uint32_t rootStart = root->Start();
     if (rootStart != DIR_ENTRY_END && rootStart != AllocTable::Eof) {
-        if (!bbat_->Follow(root->Start(), chain))
+        if (!bbat_->Follow(root->Start(), chain)) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to follow BBAT chain");
             return false;
+        }
     }
 
     if (chain.size() < neededBigBlocks) {
-        if (!ExtendChainWithZeros(chain, neededBigBlocks, bigBlockSize))
+        if (!ExtendChainWithZeros(chain, neededBigBlocks, bigBlockSize)) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to extend BBAT chain");
             return false;
+        }
     }
 
-    if ((rootStart == DIR_ENTRY_END || rootStart == AllocTable::Eof) && !chain.empty())
+    if ((rootStart == DIR_ENTRY_END || rootStart == AllocTable::Eof) && !chain.empty()) {
         root->SetStart(chain.front());
+    }
 
     const uint64_t miniStreamSize = static_cast<uint64_t>(requiredMiniBlocks) *
         static_cast<uint64_t>(smallBlockSize);
@@ -2068,6 +2203,7 @@ bool StorageIO::ExtendRootStream(uint32_t requiredMiniBlocks)
 bool StorageIO::ExtendAndFetchSbatChain(std::vector<uint32_t> &chain, uint32_t &neededBlocks)
 {
     if (bbat_ == nullptr || header_ == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "BBAT or header is null initialized");
         return false;
     }
     uint32_t currentStart = header_->SbatStart();
@@ -2095,8 +2231,10 @@ bool StorageIO::ExtendAndFetchSbatChain(std::vector<uint32_t> &chain, uint32_t &
 
 bool StorageIO::SaveMiniFat()
 {
-    if (!sbat_ || !bbat_ || !header_)
+    if (!sbat_ || !bbat_ || !header_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "SBAT, BBAT, or header is null initialized");
         return false;
+    }
     size_t highestUsed = 0;
     for (size_t i = 0; i < sbat_->Count(); ++i) {
         if ((*sbat_)[i] != AllocTable::Avail) {
@@ -2113,6 +2251,7 @@ bool StorageIO::SaveMiniFat()
     const size_t entryCount = sbat_->Count();
     const uint32_t blockSize = BigBlockSize();
     if (blockSize == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid block size");
         return false;
     }
     const size_t bytesNeeded = entryCount * sizeof(uint32_t);
@@ -2123,6 +2262,7 @@ bool StorageIO::SaveMiniFat()
     std::vector<uint32_t> chain;
 
     if (!ExtendAndFetchSbatChain(chain, neededBlocks)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to extend SBAT chain");
         return false;
     }
     const size_t buflen = chain.size() * blockSize;
@@ -2136,6 +2276,7 @@ bool StorageIO::SaveMiniFat()
         const uint64_t physicalOffset = BlockToOffset(block, blockSize);
         const std::string context = "MiniFAT sector " + std::to_string(block);
         if (!WriteBlockChecked(physicalOffset, buffer.data() + (i * blockSize), blockSize, context)) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to write MiniFAT sector");
             return false;
         }
     }
@@ -2147,14 +2288,17 @@ bool StorageIO::SaveMiniFat()
 bool StorageIO::SaveDifat()
 {
     if (!header_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "header is null initialized");
         return false;
     }
     const uint32_t sectorSize = BigBlockSize();
     if (sectorSize == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid block size");
         return false;
     }
     const uint32_t entriesPerSector = sectorSize / static_cast<uint32_t>(sizeof(uint32_t));
     if (entriesPerSector == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid sector size");
         return false;
     }
     const uint32_t difatEntries = entriesPerSector > 0 ? static_cast<uint32_t>(entriesPerSector - 1) : 0;
@@ -2195,20 +2339,24 @@ bool StorageIO::SaveDifat()
 bool StorageIO::SaveFat()
 {
     if (!bbat_ || !header_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "BBAT or header is null initialized");
         return false;
     }
     if (fatSectors_.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "fatSectors_ is empty");
         return true;
     }
     const uint32_t blockSize = BigBlockSize();
     if (blockSize == 0) {
         SetError(ErrorCode::InvalidOperation, "Invalid block size");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid block size");
         return false;
     }
     const uint32_t buflen = static_cast<uint32_t>(fatSectors_.size()) * blockSize;
     std::vector<Byte> buffer(buflen);
     if (!bbat_->Save(buffer.data(), buflen)) {
         SetError(ErrorCode::IOError, "Failed to save FAT");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to save FAT");
         return false;
     }
     for (size_t i = 0; i < fatSectors_.size(); ++i) {
@@ -2216,6 +2364,7 @@ bool StorageIO::SaveFat()
         const uint64_t physicalOffset = BlockToOffset(sector, blockSize);
         const std::string context = "FAT sector " + std::to_string(sector);
         if (!WriteBlockChecked(physicalOffset, buffer.data() + (i * blockSize), blockSize, context)) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to write FAT sector");
             return false;
         }
     }
@@ -2224,36 +2373,44 @@ bool StorageIO::SaveFat()
 
 bool StorageIO::Flush()
 {
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "modified_: %{public}d", dtModified_);
     bool memoryMode = false;
     size_t blockSize = 0;
     if (!ValidateFlushState(memoryMode, blockSize)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to validate flush state");
         return false;
     }
     if (!dtModified_) {
+        OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "no modification, skip flush");
         ClearError();
         return true;
     }
     std::vector<uint32_t> blocks;
     size_t neededBlocks = 0;
     if (dirtree_ && !PrepareDirectoryBlocks(blockSize, dirtree_->EntryCount(), blocks, neededBlocks)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to prepare directory blocks");
         return false;
     }
     FlushSnapshot snap;
     BackupFlushState(snap);
     if (!SetupStagingBuffer(memoryMode, snap)) {
         RestoreFlushState(snap);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to setup staging buffer");
         return false;
     }
 
     auto fail = [&]() {
         RestoreFlushState(snap);
         dtModified_ = true;
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Flush failed");
         return false;
     };
     if (!ExecuteFlushSequence(blocks, neededBlocks, blockSize)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to execute flush sequence");
         return fail();
     }
     if (!FinalizeFlush(memoryMode, snap, blockSize)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to finalize flush");
         return fail();
     }
     dtModified_ = false;
@@ -2265,6 +2422,7 @@ bool StorageIO::FlushDirectoryTree(std::vector<uint32_t> &blocks, size_t neededB
 {
     while (blocks.size() < neededBlocks) {
         if (bbat_ == nullptr) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "BBAT is null");
             return false;
         }
         uint32_t newBlock = static_cast<uint32_t>(bbat_->Unused());
@@ -2289,6 +2447,7 @@ bool StorageIO::FlushDirectoryTree(std::vector<uint32_t> &blocks, size_t neededB
         return false;
     }
     if (dirtree_ == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "dirtree_ is null");
         return false;
     }
     if (!dirtree_->Save(buffer.data(), bufflen)) {
@@ -2347,10 +2506,12 @@ bool StorageIO::FlushHeader()
 {
     Byte headerBuf[kHeaderSize];
     if (!header_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "header is null");
         return false;
     }
     if (header_->Save(headerBuf, kHeaderSize)) {
         if (!WriteBlockChecked(0, headerBuf, kHeaderSize, "storage header")) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to write header");
             return false;
         }
     } else {
@@ -2412,22 +2573,28 @@ bool StorageIO::WriteBufferToFile(const std::string &filename)
 
 bool StorageIO::SaveToFile(const char *filename, bool switchToFileMode)
 {
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "filename: %{private}s, switchToFileMode: %{public}d",
+        filename, switchToFileMode);
     if (!memoryBuffer_) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "memoryBuffer is null");
         return false;
     }
     if (!Flush()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Flush failed");
         return false;
     }
 
     std::string canonicalFileName = NormalizeFilePath(filename);
     if (canonicalFileName.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "NormalizeFilePath failed");
         return false;
     }
     if (!WriteBufferToFile(canonicalFileName)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "WriteBufferToFile failed");
         return false;
     }
     if (switchToFileMode) {
+        OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "Switching to file mode");
         if (file_) {
             file_->close();
             file_.reset();
@@ -2456,6 +2623,7 @@ bool StorageIO::ReadAndLoadHeader()
 {
     std::array<Byte, kHeaderSize> headerBuffer{};
     if (stream_ == nullptr || !header_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "stream or header is null");
         return false;
     }
     stream_->seekg(0);
@@ -2466,11 +2634,13 @@ bool StorageIO::ReadAndLoadHeader()
         return false;
     }
     if (!header_->IsCompoundDocument()) {
-        SetError(ErrorCode::NotOLE, "Not a valid OLE file signature");
+        SetError(ErrorCode::NotOLE, "Not a valid file signature");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid file signature");
         return false;
     }
     if (!header_->Valid()) {
-        SetError(ErrorCode::BadOLE, "OLE header failed validation");
+        SetError(ErrorCode::BadOLE, "header failed validation");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "header failed validation");
         return false;
     }
     return true;
@@ -2479,6 +2649,7 @@ bool StorageIO::ReadAndLoadHeader()
 bool StorageIO::ValidateSectorSizes(uint32_t &sectorSize)
 {
     if (bbat_ == nullptr || sbat_ == nullptr || header_ == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "BBAT, SBAT, or header is null");
         return false;
     }
     bbat_->SetBlockSize(1 << header_->BigBlockShift());
@@ -2499,16 +2670,19 @@ bool StorageIO::ValidateSectorSizes(uint32_t &sectorSize)
 bool StorageIO::CheckClaimedTableSizes(uint64_t fileSize, uint32_t sectorSize)
 {
     if (header_ == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "header is null");
         return false;
     }
     const uint64_t claimedFatBytes = static_cast<uint64_t>(header_->NumBat()) * sectorSize;
     const uint64_t claimedDifatBytes = static_cast<uint64_t>(header_->NumDifat()) * sectorSize;
     if (claimedFatBytes > fileSize) {
         SetError(ErrorCode::BadOLE, "FAT size exceeds file size");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "FAT size exceeds file size");
         return false;
     }
     if (claimedDifatBytes > fileSize) {
         SetError(ErrorCode::BadOLE, "DIFAT size exceeds file size");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "DIFAT size exceeds file size");
         return false;
     }
     return true;
@@ -2523,6 +2697,7 @@ bool StorageIO::ValidateHeaderSectorIndex(uint32_t sectorIdx, uint32_t sectorSiz
     const uint64_t sectorOffset = BlockToOffset(sectorIdx, sectorSize);
     if (sectorOffset >= fileSize) {
         SetError(ErrorCode::BadOLE, "Header references sector index exceeds file size");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Header references sector index exceeds file size");
         return false;
     }
     return true;

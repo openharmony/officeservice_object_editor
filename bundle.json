@@ -39,6 +39,7 @@
                 "udmf",
                 "app_file_service",
                 "common_event_service",
+                "icu",
                 "hisysevent"
             ],
             "third_party": []
