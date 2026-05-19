@@ -27,15 +27,23 @@ using namespace testing::ext;
 namespace OHOS {
 namespace ObjectEditor {
 namespace {
-std::string g_logMsg;
-
+static bool g_isExiting = false;
+std::string& GetLogMsg()
+{
+    static std::string logMsg;
+    return logMsg;
+}
 void MyLogCallback(const LogType type, const LogLevel level, const unsigned int domain, const char *tag,
     const char *msg)
 {
-    g_logMsg = msg;
+    if (level == LOG_DEBUG || g_isExiting) {
+        return;
+    }
+    GetLogMsg() = std::string(msg);
 }
 int32_t stringErrorCount = -1;
 }
+
 class ObjectEditorFormatTest : public testing::Test {
 public:
     static void SetUpTestCase();
@@ -50,11 +58,12 @@ void ObjectEditorFormatTest::SetUpTestCase()
 
 void ObjectEditorFormatTest::TearDownTestCase()
 {
+    g_isExiting = true;
 }
 
 void ObjectEditorFormatTest::SetUp()
 {
-    g_logMsg.clear();
+    GetLogMsg().clear();
     LOG_SetCallback(MyLogCallback);
     MockMessageParcel::ClearAllErrorFlag();
 }
@@ -76,7 +85,7 @@ HWTEST_F(ObjectEditorFormatTest, Marshalling_001, TestSize.Level1)
     MockMessageParcel::SetWriteStringErrorFlag(stringErrorCount);
     MockMessageParcel::SetWriteStringErrorFlag(true);
     ObjectEditorFormat format;
-    format.hmid = "test";
+    format.oeid = "test";
     Parcel parcel;
     bool ret = format.Marshalling(parcel);
     EXPECT_EQ(ret, false);
@@ -282,12 +291,12 @@ HWTEST_F(ObjectEditorFormatTest, Marshalling_013, TestSize.Level1)
 HWTEST_F(ObjectEditorFormatTest, Unmarshalling_001, TestSize.Level1)
 {
     stringErrorCount = 0;
-    MockMessageParcel::SetReadStringErrorFlag(stringErrorCount);
+    MockMessageParcel::SetReadStringErrorCount(stringErrorCount);
     MockMessageParcel::SetReadStringErrorFlag(true);
     Parcel parcel;
-    auto ret = format.Unmarshalling(parcel);
-    EXPECT_EQ(ret, nullptr);
-    EXPECT_TRUE(g_logMsg.find("read hmid fail") != string::npos);
+    auto format = ObjectEditorFormat::Unmarshalling(parcel);
+    EXPECT_EQ(format, nullptr);
+    EXPECT_TRUE(GetLogMsg().find("read oeid fail") != string::npos);
 }
 
 /**
@@ -298,12 +307,12 @@ HWTEST_F(ObjectEditorFormatTest, Unmarshalling_001, TestSize.Level1)
 HWTEST_F(ObjectEditorFormatTest, Unmarshalling_002, TestSize.Level1)
 {
     stringErrorCount++;
-    MockMessageParcel::SetReadStringErrorFlag(stringErrorCount);
+    MockMessageParcel::SetReadStringErrorCount(stringErrorCount);
     MockMessageParcel::SetReadStringErrorFlag(true);
     Parcel parcel;
-    auto ret = format.Unmarshalling(parcel);
-    EXPECT_EQ(ret, nullptr);
-    EXPECT_TRUE(g_logMsg.find("read bundleName fail") != string::npos);
+    auto format = ObjectEditorFormat::Unmarshalling(parcel);
+    EXPECT_EQ(format, nullptr);
+    EXPECT_TRUE(GetLogMsg().find("read bundleName fail") != string::npos);
 }
 
 /**
@@ -314,12 +323,12 @@ HWTEST_F(ObjectEditorFormatTest, Unmarshalling_002, TestSize.Level1)
 HWTEST_F(ObjectEditorFormatTest, Unmarshalling_003, TestSize.Level1)
 {
     stringErrorCount++;
-    MockMessageParcel::SetReadStringErrorFlag(stringErrorCount);
+    MockMessageParcel::SetReadStringErrorCount(stringErrorCount);
     MockMessageParcel::SetReadStringErrorFlag(true);
     Parcel parcel;
-    auto ret = format.Unmarshalling(parcel);
-    EXPECT_EQ(ret, nullptr);
-    EXPECT_TRUE(g_logMsg.find("read moduleName fail") != string::npos);
+    auto format = ObjectEditorFormat::Unmarshalling(parcel);
+    EXPECT_EQ(format, nullptr);
+    EXPECT_TRUE(GetLogMsg().find("read moduleName fail") != string::npos);
 }
 
 /**
@@ -330,12 +339,12 @@ HWTEST_F(ObjectEditorFormatTest, Unmarshalling_003, TestSize.Level1)
 HWTEST_F(ObjectEditorFormatTest, Unmarshalling_004, TestSize.Level1)
 {
     stringErrorCount++;
-    MockMessageParcel::SetReadStringErrorFlag(stringErrorCount);
+    MockMessageParcel::SetReadStringErrorCount(stringErrorCount);
     MockMessageParcel::SetReadStringErrorFlag(true);
     Parcel parcel;
-    auto ret = format.Unmarshalling(parcel);
-    EXPECT_EQ(ret, nullptr);
-    EXPECT_TRUE(g_logMsg.find("read abilityName fail") != string::npos);
+    auto format = ObjectEditorFormat::Unmarshalling(parcel);
+    EXPECT_EQ(format, nullptr);
+    EXPECT_TRUE(GetLogMsg().find("read abilityName fail") != string::npos);
 }
 
 /**
@@ -346,12 +355,12 @@ HWTEST_F(ObjectEditorFormatTest, Unmarshalling_004, TestSize.Level1)
 HWTEST_F(ObjectEditorFormatTest, Unmarshalling_005, TestSize.Level1)
 {
     stringErrorCount++;
-    MockMessageParcel::SetReadStringErrorFlag(stringErrorCount);
+    MockMessageParcel::SetReadStringErrorCount(stringErrorCount);
     MockMessageParcel::SetReadStringErrorFlag(true);
     Parcel parcel;
-    auto ret = format.Unmarshalling(parcel);
-    EXPECT_EQ(ret, nullptr);
-    EXPECT_TRUE(g_logMsg.find("read version fail") != string::npos);
+    auto format = ObjectEditorFormat::Unmarshalling(parcel);
+    EXPECT_EQ(format, nullptr);
+    EXPECT_TRUE(GetLogMsg().find("read version fail") != string::npos);
 }
 
 /**
@@ -362,11 +371,11 @@ HWTEST_F(ObjectEditorFormatTest, Unmarshalling_005, TestSize.Level1)
 HWTEST_F(ObjectEditorFormatTest, Unmarshalling_006, TestSize.Level1)
 {
     stringErrorCount++;
-    MockMessageParcel::SetReadStringErrorFlag(stringErrorCount);
+    MockMessageParcel::SetReadStringErrorCount(stringErrorCount);
     MockMessageParcel::SetReadStringErrorFlag(true);
     Parcel parcel;
-    auto ret = format.Unmarshalling(parcel);
-    EXPECT_EQ(ret, nullptr);
+    auto format = ObjectEditorFormat::Unmarshalling(parcel);
+    EXPECT_EQ(format, nullptr);
 }
 
 /**
@@ -377,12 +386,12 @@ HWTEST_F(ObjectEditorFormatTest, Unmarshalling_006, TestSize.Level1)
 HWTEST_F(ObjectEditorFormatTest, Unmarshalling_007, TestSize.Level1)
 {
     stringErrorCount++;
-    MockMessageParcel::SetReadStringErrorFlag(stringErrorCount);
+    MockMessageParcel::SetReadStringErrorCount(stringErrorCount);
     MockMessageParcel::SetReadStringErrorFlag(true);
     Parcel parcel;
-    auto ret = format.Unmarshalling(parcel);
-    EXPECT_EQ(ret, nullptr);
-    EXPECT_TRUE(g_logMsg.find("read formatName fail") != string::npos);
+    auto format = ObjectEditorFormat::Unmarshalling(parcel);
+    EXPECT_EQ(format, nullptr);
+    EXPECT_TRUE(GetLogMsg().find("read formatName fail") != string::npos);
 }
 
 /**
@@ -393,12 +402,12 @@ HWTEST_F(ObjectEditorFormatTest, Unmarshalling_007, TestSize.Level1)
 HWTEST_F(ObjectEditorFormatTest, Unmarshalling_008, TestSize.Level1)
 {
     stringErrorCount++;
-    MockMessageParcel::SetReadStringErrorFlag(stringErrorCount);
+    MockMessageParcel::SetReadStringErrorCount(stringErrorCount);
     MockMessageParcel::SetReadStringErrorFlag(true);
     Parcel parcel;
-    auto ret = format.Unmarshalling(parcel);
-    EXPECT_EQ(ret, nullptr);
-    EXPECT_TRUE(g_logMsg.find("read description fail") != string::npos);
+    auto format = ObjectEditorFormat::Unmarshalling(parcel);
+    EXPECT_EQ(format, nullptr);
+    EXPECT_TRUE(GetLogMsg().find("read description fail") != string::npos);
 }
 
 /**
@@ -409,12 +418,12 @@ HWTEST_F(ObjectEditorFormatTest, Unmarshalling_008, TestSize.Level1)
 HWTEST_F(ObjectEditorFormatTest, Unmarshalling_009, TestSize.Level1)
 {
     stringErrorCount++;
-    MockMessageParcel::SetReadStringErrorFlag(stringErrorCount);
+    MockMessageParcel::SetReadStringErrorCount(stringErrorCount);
     MockMessageParcel::SetReadStringErrorFlag(true);
     Parcel parcel;
-    auto ret = format.Unmarshalling(parcel);
-    EXPECT_EQ(ret, nullptr);
-    EXPECT_TRUE(g_logMsg.find("read fileExts fail") != string::npos);
+    auto format = ObjectEditorFormat::Unmarshalling(parcel);
+    EXPECT_EQ(format, nullptr);
+    EXPECT_TRUE(GetLogMsg().find("read fileExts fail") != string::npos);
 }
 
 /**
@@ -426,9 +435,9 @@ HWTEST_F(ObjectEditorFormatTest, Unmarshalling_010, TestSize.Level1)
 {
     MockMessageParcel::SetReadInt64ErrorFlag(true);
     Parcel parcel;
-    auto ret = format.Unmarshalling(parcel);
-    EXPECT_EQ(ret, nullptr);
-    EXPECT_TRUE(g_logMsg.find("read createTime fail") != string::npos);
+    auto format = ObjectEditorFormat::Unmarshalling(parcel);
+    EXPECT_EQ(format, nullptr);
+    EXPECT_TRUE(GetLogMsg().find("read createTime fail") != string::npos);
 }
 
 /**
@@ -439,8 +448,8 @@ HWTEST_F(ObjectEditorFormatTest, Unmarshalling_010, TestSize.Level1)
 HWTEST_F(ObjectEditorFormatTest, Unmarshalling_011, TestSize.Level1)
 {
     Parcel parcel;
-    auto ret = format.Unmarshalling(parcel);
-    EXPECT_NE(ret, nullptr);
+    auto format = ObjectEditorFormat::Unmarshalling(parcel);
+    EXPECT_NE(format, nullptr);
 }
 }
 }

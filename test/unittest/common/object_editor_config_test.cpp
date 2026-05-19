@@ -64,7 +64,7 @@ HWTEST_F(ObjectEditorConfigTest, ObjectEditorConfig_001, TestSize.Level1)
     bool expect = system::GetBoolParameter(IS_SUPPORT_OBJECT_EDITOR, false);
     EXPECT_EQ(config_.IsSupportObjectEditor(), expect);
     EXPECT_TRUE(config_.isSupportObjectEditor_.isLoaded);
-    EXPECT_EQ(config_.IsSupportObjectEditor_.value, expect);
+    EXPECT_EQ(config_.isSupportObjectEditor_.value, expect);
 }
 
 /**
@@ -77,6 +77,86 @@ HWTEST_F(ObjectEditorConfigTest, ObjectEditorConfig_002, TestSize.Level1)
     config_.isSupportObjectEditor_.isLoaded = true;
     config_.isSupportObjectEditor_.value = true;
     EXPECT_TRUE(config_.IsSupportObjectEditor());
+}
+
+/**
+ * @tc.name CheckIsInDlp_001
+ * @tc.desc Test CheckIsInDlp method
+ * @tc.type FUNC
+ */
+HWTEST_F(ObjectEditorConfigTest, CheckIsInDlp_001, TestSize.Level1)
+{
+    bool result = config_.CheckIsInDlp();
+    EXPECT_EQ(result, false);
+}
+
+/**
+ * @tc.name CheckIsSupported_001
+ * @tc.desc Test CheckIsSupported method
+ * @tc.type FUNC
+ */
+HWTEST_F(ObjectEditorConfigTest, CheckIsSupported_001, TestSize.Level1)
+{
+    config_.isSupportObjectEditor_.isLoaded = true;
+    config_.isSupportObjectEditor_.value = false;
+    ContentEmbed_ErrorCode result = config_.CheckIsSupported();
+    EXPECT_EQ(result, CE_ERR_DEVICE_NOT_SUPPORTED);
+}
+
+/**
+ * @tc.name CheckIsSupported_002
+ * @tc.desc Test CheckIsSupported method
+ * @tc.type FUNC
+ */
+HWTEST_F(ObjectEditorConfigTest, CheckIsSupported_002, TestSize.Level1)
+{
+    config_.isSupportObjectEditor_.isLoaded = true;
+    config_.isSupportObjectEditor_.value = true;
+    ContentEmbed_ErrorCode result = config_.CheckIsSupported();
+    EXPECT_EQ(result, CE_ERR_OK);
+}
+
+/**
+ * @tc.name CheckIsSupported_003
+ * @tc.desc Test CheckIsSupported method with isLoaded false
+ * @tc.type FUNC
+ */
+HWTEST_F(ObjectEditorConfigTest, CheckIsSupported_003, TestSize.Level1)
+{
+    config_.isSupportObjectEditor_.isLoaded = false;
+    bool expect = system::GetBoolParameter(IS_SUPPORT_OBJECT_EDITOR, false);
+    ContentEmbed_ErrorCode result = config_.CheckIsSupported();
+    if (expect) {
+        EXPECT_EQ(result, CE_ERR_OK);
+    } else {
+        EXPECT_EQ(result, CE_ERR_DEVICE_NOT_SUPPORTED);
+    }
+}
+
+/**
+ * @tc.name IsSupportObjectEditor_003
+ * @tc.desc Test IsSupportObjectEditor method multiple calls
+ * @tc.type FUNC
+ */
+HWTEST_F(ObjectEditorConfigTest, IsSupportObjectEditor_003, TestSize.Level1)
+{
+    config_.isSupportObjectEditor_.isLoaded = false;
+    bool result1 = config_.IsSupportObjectEditor();
+    bool result2 = config_.IsSupportObjectEditor();
+    EXPECT_EQ(result1, result2);
+    EXPECT_TRUE(config_.isSupportObjectEditor_.isLoaded);
+}
+
+/**
+ * @tc.name IsSupportObjectEditor_004
+ * @tc.desc Test IsSupportObjectEditor method with value false
+ * @tc.type FUNC
+ */
+HWTEST_F(ObjectEditorConfigTest, IsSupportObjectEditor_004, TestSize.Level1)
+{
+    config_.isSupportObjectEditor_.isLoaded = true;
+    config_.isSupportObjectEditor_.value = false;
+    EXPECT_FALSE(config_.IsSupportObjectEditor());
 }
 
 }
