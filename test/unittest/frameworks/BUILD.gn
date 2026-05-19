@@ -12,9 +12,9 @@
 # limitations under the License.
 # Description: oe service test build.gn file
 
-group("unittest") {
+group("framework_unittest") {
   testonly = true
   deps = [
-    "frameworks:framework_unittest",
+    "ndk:ndk_unittest",
   ]
 }
