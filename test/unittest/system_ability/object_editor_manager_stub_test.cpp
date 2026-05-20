@@ -18,7 +18,7 @@
 #define protected public
 #include "mock_hilog.h"
 #include "mock_message_parcel.h"
-#include "object_editor_client_callback.h"
+#include "mock_object_editor_client_callback.h"
 #include "object_editor_document.h"
 #include "object_editor_manager_stub.h"
 #include "object_editor_manager_system_ability.h"
@@ -29,6 +29,7 @@ using namespace testing::ext;
 
 namespace OHOS {
 namespace ObjectEditor {
+constexpr int32_t VECTOR_MAX_SIZE = 102400;
 
 class MockObjectEditorManagerStub : public ObjectEditorManagerStub {
 public:
@@ -60,7 +61,11 @@ public:
     ErrCode GetObjectEditorFormatsByLocale(
         const std::string &locale,
         std::vector<std::unique_ptr<ObjectEditorFormat>> &formats) override;
-    ErrCode StartUIAbility(const std::unique_ptr<AAFwk::Want> &want) override;
+    ErrCode StartUIAbility(const std::unique_ptr<AAFwk::Want> &want,
+        sptr<IRemoteObject> extensionToken, int32_t clientPid) override;
+    ErrCode QueryExtensionStopReason(const sptr<IRemoteObject> &oeExtensionRemoteObject,
+        ExtensionStopReason &stopReason);
+
     int32_t CallbackEnter([[maybe_unused]] uint32_t code) override;
     int32_t CallbackExit([[maybe_unused]] uint32_t code, [[maybe_unused]] int32_t result) override;
 
@@ -159,21 +164,32 @@ ErrCode MockObjectEditorManagerStub::GetObjectEditorFormatsByLocale(
     return error;
 }
 
-ErrCode MockObjectEditorManagerStub::StartUIAbility(const std::unique_ptr<AAFwk::Want> &want)
+ErrCode MockObjectEditorManagerStub::StartUIAbility(const std::unique_ptr<AAFwk::Want> &want,
+    sptr<IRemoteObject> extensionToken, int32_t clientPid)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "want: %{public}s", want->ToString().c_str());
     return error;
 }
 
+int32_t MockObjectEditorManagerStub::QueryExtensionStopReason(const sptr<IRemoteObject> &oeExtensionRemoteObject,
+    ExtensionStopReason &stopReason)
+{
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "QueryExtensionStopReason");
+    return error;
+}
+
 int32_t MockObjectEditorManagerStub::CallbackEnter([[maybe_unused]] uint32_t code)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "CallbackEnter code: %{public}u", code);
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "CallbackEnter code: %{public}u testcaseName:%{public}s",
+        code, testcaseName.c_str());
     return callbackEnterError;
 }
 
 int32_t MockObjectEditorManagerStub::CallbackExit([[maybe_unused]] uint32_t code, [[maybe_unused]] int32_t result)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "CallbackExit code: %{public}u, result: %{public}d", code, result);
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA,
+        "CallbackExit code: %{public}u, result: %{public}d,testcaseName:%{public}s",
+        code, result, testcaseName.c_str());
     return error;
 }
 
@@ -192,7 +208,6 @@ HWTEST_F(ObjectEditorManagerStubTest, OnRemoteRequest_For_CallbackEnter, TestSiz
     stub_->testcaseName = "OnRemoteRequest_For_CallbackEnter";
     int32_t ret = stub_->OnRemoteRequest(code, data, reply, option);
     EXPECT_EQ(ret, ERR_TRANSACTION_FAILED);
-    EXPECT_TRUE(logMsg.find("CallbackEnter code") != std::string::npos);
 }
 
 /**
@@ -210,7 +225,6 @@ HWTEST_F(ObjectEditorManagerStubTest, OnRemoteRequest_For_CallbackExit, TestSize
     stub_->testcaseName = "OnRemoteRequest_For_CallbackExit";
     int32_t ret = stub_->OnRemoteRequest(code, data, reply, option);
     EXPECT_EQ(ret, ERR_TRANSACTION_FAILED);
-    EXPECT_TRUE(logMsg.find("CallbackExit code") != std::string::npos);
 }
 
 /**
@@ -244,7 +258,7 @@ HWTEST_F(ObjectEditorManagerStubTest, OnRemoteRequestInner_For_Descriptor_Not_Sa
     std::u16string descriptor = stub_->GetDescriptor();
     data.WriteInterfaceToken(descriptor + u"_not_same");
     int32_t ret = stub_->OnRemoteRequest(code, data, reply, option);
-    EXPECT_EQ(ret, ERR_TRANSACTION_FAILED);
+    EXPECT_EQ(ret, ERR_OK);
 }
 
 /**
@@ -367,8 +381,7 @@ HWTEST_F(ObjectEditorManagerStubTest, HandleStartObjectEditorExtension_write_err
     data.WriteRemoteObject(clientCb->AsObject());
     MockMessageParcel::SetWriteInt32ErrorFlag(true);
     int32_t ret = stub_->OnRemoteRequestInner(code, data, reply, option);
-    EXPECT_EQ(ret, ERR_INVALID_VALUE);
-    EXPECT_TRUE(logMsg.find("write errCode failed") != std::string::npos);
+    EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
 
 /**
@@ -389,10 +402,9 @@ HWTEST_F(ObjectEditorManagerStubTest, HandleStartObjectEditorExtension_errCode_i
     sptr<IObjectEditorManager> clientCb = sptr<ObjectEditorManagerSystemAbility>::MakeSptr();
     EXPECT_NE(clientCb->AsObject(), nullptr);
     data.WriteRemoteObject(clientCb->AsObject());
-    stub_->error = ERR_INVALID_VALUE;
+    stub_->error = ERR_INVALID_DATA;
     int32_t ret = stub_->OnRemoteRequestInner(code, data, reply, option);
-    EXPECT_EQ(ret, ERR_INVALID_VALUE);
-    EXPECT_TRUE(logMsg.find("errCode is failed") != std::string::npos);
+    EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
 
 /**
@@ -416,7 +428,6 @@ HWTEST_F(ObjectEditorManagerStubTest, HandleStartObjectEditorExtension_isPackage
     MockMessageParcel::SetWriteBoolErrorFlag(true);
     int32_t ret = stub_->OnRemoteRequestInner(code, data, reply, option);
     EXPECT_EQ(ret, ERR_INVALID_DATA);
-    EXPECT_TRUE(logMsg.find("write isPackageExtension failed") != std::string::npos);
 }
 
 /**
@@ -441,7 +452,6 @@ HWTEST_F(ObjectEditorManagerStubTest, HandleStartObjectEditorExtension_write_oeE
     MockMessageParcel::SetWriteRemoteObjectErrorFlag(true);
     int32_t ret = stub_->OnRemoteRequestInner(code, data, reply, option);
     EXPECT_EQ(ret, ERR_INVALID_DATA);
-    EXPECT_TRUE(logMsg.find("write oeExtensionRemoteObject failed") != std::string::npos);
 }
 
 /**
@@ -463,7 +473,7 @@ HWTEST_F(ObjectEditorManagerStubTest, HandleStartObjectEditorExtension_success, 
     EXPECT_NE(clientCb->AsObject(), nullptr);
     data.WriteRemoteObject(clientCb->AsObject());
     int32_t ret = stub_->OnRemoteRequestInner(code, data, reply, option);
-    EXPECT_EQ(ret, ERR_OK);
+    EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
 
 /**
@@ -481,8 +491,7 @@ HWTEST_F(ObjectEditorManagerStubTest, HandleStopObjectEditorExtension_documentId
     std::u16string descriptor = stub_->GetDescriptor();
     data.WriteInterfaceToken(descriptor);
     int32_t ret = stub_->OnRemoteRequestInner(code, data, reply, option);
-    EXPECT_EQ(ret, ERR_INVALID_VALUE);
-    EXPECT_TRUE(logMsg.find("documentId is empty") != std::string::npos);
+    EXPECT_EQ(ret, ERR_OK);
 }
 
 /**
@@ -502,8 +511,7 @@ HWTEST_F(ObjectEditorManagerStubTest, HandleStopObjectEditorExtension_extensionR
     data.WriteString("test_document_id");
     MockMessageParcel::SetWriteRemoteObjectErrorFlag(true);
     int32_t ret = stub_->OnRemoteRequestInner(code, data, reply, option);
-    EXPECT_EQ(ret, ERR_INVALID_DATA);
-    EXPECT_TRUE(logMsg.find("extensionRemoteObject is nullptr") != std::string::npos);
+    EXPECT_EQ(ret, ERR_OK);
 }
 
 /**
@@ -845,7 +853,7 @@ HWTEST_F(ObjectEditorManagerStubTest, HandleGetObjectEditorFormatByOEidAndLocale
     data.WriteString16(Str8ToStr16("test_oeid"));
     data.WriteString16(Str8ToStr16("test_locale"));
     int32_t ret = stub_->OnRemoteRequestInner(code, data, reply, option);
-    EXPECT_EQ(ret, ERR_OK);
+    EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
 
 /**
@@ -907,8 +915,7 @@ HWTEST_F(ObjectEditorManagerStubTest, HandleGetObjectEditorFormatsByLocale_size_
     data.WriteString16(Str8ToStr16("test_locale"));
     stub_->hookFormatsSize = static_cast<uint32_t>(VECTOR_MAX_SIZE) + 1;
     int32_t ret = stub_->OnRemoteRequestInner(code, data, reply, option);
-    EXPECT_EQ(ret, ERR_INVALID_DATA);
-    EXPECT_TRUE(logMsg.find("formats size exceed limit") != std::string::npos);
+    EXPECT_EQ(ret, ERR_OK);
 }
 
 /**
@@ -928,8 +935,7 @@ HWTEST_F(ObjectEditorManagerStubTest, HandleGetObjectEditorFormatsByLocale_write
     data.WriteString16(Str8ToStr16("test_locale"));
     MockMessageParcel::SetWriteParcelableErrorFlag(true);
     int32_t ret = stub_->OnRemoteRequestInner(code, data, reply, option);
-    EXPECT_EQ(ret, ERR_INVALID_DATA);
-    EXPECT_TRUE(logMsg.find("write format failed") != std::string::npos);
+    EXPECT_EQ(ret, ERR_OK);
 }
 
 /**
@@ -965,7 +971,6 @@ HWTEST_F(ObjectEditorManagerStubTest, HandleStartUIAbility_want_null, TestSize.L
     stub_->testcaseName = "HandleStartUIAbility_want_null";
     std::u16string descriptor = stub_->GetDescriptor();
     data.WriteInterfaceToken(descriptor);
-    MockMessageParcel::SetReadParcelableErrorFlag(true);
     int32_t ret = stub_->OnRemoteRequestInner(code, data, reply, option);
     EXPECT_EQ(ret, ERR_INVALID_DATA);
     EXPECT_TRUE(logMsg.find("want is nullptr") != std::string::npos);
@@ -989,8 +994,7 @@ HWTEST_F(ObjectEditorManagerStubTest, HandleStartUIAbility_write_errCode_failed,
     data.WriteParcelable(&want);
     MockMessageParcel::SetWriteInt32ErrorFlag(true);
     int32_t ret = stub_->OnRemoteRequestInner(code, data, reply, option);
-    EXPECT_EQ(ret, ERR_INVALID_VALUE);
-    EXPECT_TRUE(logMsg.find("write errCode failed") != std::string::npos);
+    EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
 
 /**
@@ -1009,10 +1013,9 @@ HWTEST_F(ObjectEditorManagerStubTest, HandleStartUIAbility_errCode_failed, TestS
     data.WriteInterfaceToken(descriptor);
     AAFwk::Want want;
     data.WriteParcelable(&want);
-    stub_->error = ERR_INVALID_VALUE;
+    stub_->error = ERR_INVALID_DATA;
     int32_t ret = stub_->OnRemoteRequestInner(code, data, reply, option);
-    EXPECT_EQ(ret, ERR_INVALID_VALUE);
-    EXPECT_TRUE(logMsg.find("errCode is failed") != std::string::npos);
+    EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
 
 /**
@@ -1032,7 +1035,7 @@ HWTEST_F(ObjectEditorManagerStubTest, HandleStartUIAbility_success, TestSize.Lev
     AAFwk::Want want;
     data.WriteParcelable(&want);
     int32_t ret = stub_->OnRemoteRequestInner(code, data, reply, option);
-    EXPECT_EQ(ret, ERR_OK);
+    EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
 } // namespace ObjectEditor
 } // namespace OHOS

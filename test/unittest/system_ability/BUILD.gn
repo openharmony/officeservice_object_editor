@@ -29,7 +29,10 @@ config("system_ability_unittest_config") {
     "${object_editor_path}/database/include",
     "${object_editor_path}/client/include",
     "${object_editor_path}/extension_ability/include",
-    "${object_editor_path}/utils/include"
+    "${object_editor_path}/frameworks/kits/extension/include",
+    "${object_editor_path}/frameworks/ndk/include",
+    "${object_editor_path}/utils/include",
+    "${object_editor_path}/utils/include/dfx",
     "${object_editor_path}/test/mock/",
     "${object_editor_path}/test/mock/message_parcel",
     "${object_editor_path}/test/mock/ability_manager_client",
@@ -76,7 +79,7 @@ ohos_unittest("object_editor_manager_stub_test") {
     "resource_management:global_resmgr",
     "access_token:libaccesstoken_sdk",
     "common_event_service:cesfwk_innerkits",
-    "hisysevent:libhisysevent"
+    "hisysevent:libhisysevent",
     "googletest:gmock",
   ]
   part_name = "object_editor"
@@ -85,19 +88,23 @@ ohos_unittest("object_editor_manager_stub_test") {
 
 ohos_unittest("object_editor_manager_system_ability_test") {
   module_out_path = module_out_path
+
   sources = [
     "object_editor_manager_system_ability_test.cpp",
-    "${object_editor_path}/test/mock/ability_manager_client/mock_ability_manager_client.cpp",
   ]
+
+  deps = [
+    "${object_editor_path}/system_ability:content_embed_service",
+    "${object_editor_path}/document:content_embed_document",
+    "${object_editor_path}/utils:content_embed_utils",
+  ]
+
   configs = [
     ":system_ability_unittest_config",
     "${object_editor_path}/resources/config/build:coverage_flags",
     "${object_editor_path}/resources/config/build:testcase_flags",
   ]
-  deps = [
-    "${object_editor_path}/client:content_embed_client",
-    "${object_editor_path}/system_ability:content_embed_service",
-  ]
+
   external_deps = [
     "c_utils:utils",
     "ipc:ipc_core",
@@ -123,9 +130,125 @@ ohos_unittest("object_editor_manager_system_ability_test") {
     "resource_management:global_resmgr",
     "access_token:libaccesstoken_sdk",
     "common_event_service:cesfwk_innerkits",
-    "hisysevent:libhisysevent"
+    "hisysevent:libhisysevent",
     "googletest:gmock",
   ]
+
+  defines = [
+    "private=public",
+  ]
+
+  part_name = "object_editor"
+  subsystem_name = "officeservice"
+}
+
+ohos_unittest("object_editor_connection_test") {
+  module_out_path = module_out_path
+
+  sources = [
+    "object_editor_connection_test.cpp",
+  ]
+
+  deps = [
+    "${object_editor_path}/system_ability:content_embed_service",
+    "${object_editor_path}/document:content_embed_document",
+    "${object_editor_path}/utils:content_embed_utils",
+  ]
+
+  configs = [
+    ":system_ability_unittest_config",
+    "${object_editor_path}/resources/config/build:coverage_flags",
+    "${object_editor_path}/resources/config/build:testcase_flags",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+    "hilog:libhilog",
+    "relational_store:native_rdb",
+    "ability_runtime:uri_permission_mgr",
+    "ability_runtime:ability_connect_callback_stub",
+    "ability_runtime:ability_manager",
+    "ability_runtime:app_context",
+    "ability_base:zuri",
+    "ability_base:want",
+    "ability_runtime:wantagent_innerkits",
+    "os_account:os_account_innerkits",
+    "cJSON:cjson",
+    "bundle_framework:appexecfwk_core",
+    "bundle_framework:bundle_napi_common",
+    "napi:ace_napi",
+    "udmf:utd_client",
+    "app_file_service:fileuri_native",
+    "image_framework:image_native",
+    "resource_management:global_resmgr",
+    "access_token:libaccesstoken_sdk",
+    "common_event_service:cesfwk_innerkits",
+    "hisysevent:libhisysevent",
+    "googletest:gmock",
+  ]
+
+  defines = [
+    "private=public",
+  ]
+
+  part_name = "object_editor"
+  subsystem_name = "officeservice"
+}
+
+ohos_unittest("object_editor_client_death_recipient_test") {
+  module_out_path = module_out_path
+
+  sources = [
+    "object_editor_client_death_recipient_test.cpp",
+  ]
+
+  deps = [
+    "${object_editor_path}/system_ability:content_embed_service",
+    "${object_editor_path}/document:content_embed_document",
+  ]
+
+  configs = [
+    ":system_ability_unittest_config",
+    "${object_editor_path}/resources/config/build:coverage_flags",
+    "${object_editor_path}/resources/config/build:testcase_flags",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+    "hilog:libhilog",
+    "relational_store:native_rdb",
+    "ability_runtime:uri_permission_mgr",
+    "ability_runtime:ability_connect_callback_stub",
+    "ability_runtime:ability_manager",
+    "ability_runtime:app_context",
+    "ability_base:zuri",
+    "ability_base:want",
+    "ability_runtime:wantagent_innerkits",
+    "os_account:os_account_innerkits",
+    "cJSON:cjson",
+    "bundle_framework:appexecfwk_core",
+    "bundle_framework:bundle_napi_common",
+    "napi:ace_napi",
+    "udmf:utd_client",
+    "app_file_service:fileuri_native",
+    "image_framework:image_native",
+    "resource_management:global_resmgr",
+    "access_token:libaccesstoken_sdk",
+    "common_event_service:cesfwk_innerkits",
+    "hisysevent:libhisysevent",
+    "googletest:gmock",
+  ]
+
+  defines = [
+    "private=public",
+  ]
+
   part_name = "object_editor"
   subsystem_name = "officeservice"
 }
@@ -134,7 +257,9 @@ group("system_ability_unittest") {
   testonly = true
 
   deps = [
-    ":object_editor_manager_stub_test",
     ":object_editor_manager_system_ability_test",
+    ":object_editor_manager_stub_test",
+    ":object_editor_connection_test",
+    ":object_editor_client_death_recipient_test",
   ]
 }
