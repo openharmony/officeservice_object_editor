@@ -17,5 +17,6 @@ group("unittest") {
   deps = [
     "common:common_unittest",
     "frameworks:framework_unittest",
+    "utils:utils_unittest",
   ]
 }
