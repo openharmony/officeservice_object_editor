@@ -421,7 +421,7 @@ ErrCode ObjectEditorManagerSystemAbility::StartObjectEditorExtension(
     }
     if (errCode != ObjectEditorManagerErrCode::SA_OK || objectEditorFormat == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "get object editor format failed");
-        return errCode;
+        return ObjectEditorManagerErrCode::SA_FIND_FORMAT_FAIL;
     }
     if (document->GetOperateType() == OperateType::CREATE_BY_FILE) {
         document->SetOEid(objectEditorFormat->oeid);
@@ -560,6 +560,10 @@ ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::GetDefaultAppBundle
 ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::CheckIsAllowStartExtension(
     const ObjectEditorDocument &document)
 {
+    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "not supported");
+        return ObjectEditorManagerErrCode::SA_CONNECT_LIMIT_EXCEED;
+    }
     if (document.GetOperateType() == OperateType::UNKNOWN) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "unknown operation");
         return ObjectEditorManagerErrCode::SA_UNKNOWN_OPERATE;

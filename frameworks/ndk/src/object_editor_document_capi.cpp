@@ -348,6 +348,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_CreateDocumentByOEid(const char *oeid, Co
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid length is invalid");
         return CE_ERR_PARAM_INVALID;
     }
+    if (!IsValidOEid(oeidStr)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid is invalid");
+        return CE_ERR_PARAM_INVALID;
+    }
     auto doc = ObjectEditorDocument::CreateByOEid(oeidStr);
     if (doc == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create document failed");
@@ -1140,6 +1144,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_SetOEid(ContentEmbed_Storage *sto
     std::string oeidStr(oeid);
     if (!(oeidStr.size() == OEID_LEN || oeidStr.size() == OEID_MAX_LEN)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid length is invalid");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (!IsValidOEid(oeidStr)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid is invalid");
         return CE_ERR_PARAM_INVALID;
     }
     OHOS::ObjectEditor::Storage *root = nullptr;

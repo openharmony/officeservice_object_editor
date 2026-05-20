@@ -322,6 +322,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedFormatByOEidAndLocale(cons
     }
     std::string oeidStr(oeid);
     if (!IsValidOEid(oeidStr)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid is invalid");
         return CE_ERR_PARAM_INVALID;
     }
     std::string strLocale = locale == nullptr ? "" : std::string(locale);
@@ -574,6 +575,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_RegisterOnExtensionStoppedFunc(Cont
 ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StartWork(ContentEmbed_ExtensionProxy *proxy)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT_NDK, "in");
+    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
+        return CE_ERR_IN_DLP_SANDBOX;
+    }
     if (proxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is null");
         return CE_ERR_PARAM_INVALID;
@@ -586,14 +591,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StartWork(ContentEmbed_ExtensionPro
     if (proxy->ceDocument == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "inner document is null");
         return CE_ERR_PARAM_INVALID;
-    }
-    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "connections exceeds the limit");
-        return CE_ERR_CONNECT_LIMIT_EXCEED;
-    }
-    if (ObjectEditorConfig::GetInstance().CheckIsInDlp()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "application is in dlp sandbox");
-        return CE_ERR_IN_DLP_SANDBOX;
     }
     auto oeCallbackInner = new (std::nothrow) ObjectEditorClientCallback(proxy);
     if (oeCallbackInner == nullptr) {
