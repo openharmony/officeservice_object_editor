@@ -42,6 +42,7 @@ bool IsAppSandboxPath(const std::string &path);
 std::string GetSubstrByPrefix(const std::string &str, const std::string &prefix);
 /* str like "prefix123456", num returns "123456" */
 bool GetIntByPrefix(const std::string &str, const std::string &prefix, int &num);
+bool ValidateAndNormalizePath(const std::string &path, std::string &canonicalFileName);
 } // namespace SystemUtils
 } // namespace ObjectEditor
 } // namespace OHOS

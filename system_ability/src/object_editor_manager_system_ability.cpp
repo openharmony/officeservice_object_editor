@@ -311,7 +311,7 @@ bool ObjectEditorManagerSystemAbility::CheckRateLimitAdvanced()
     auto now = std::chrono::steady_clock::now();
     auto nowMs = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
     uint64_t windowStartMs = windowStartMs_.load();
-    if (static_cast<uint64_t>(nowMs) - windowStartMs >= WINDOW_SIZE_MS) {
+    if (static_cast<uint64_t>(nowMs) - windowStartMs >= static_cast<uint64_t>(WINDOW_SIZE_MS)) {
         if (windowStartMs_.compare_exchange_strong(windowStartMs, nowMs)) {
             requestCount_.store(1);
             return true;
@@ -511,7 +511,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::HandleDefaultAppFor
     std::string defaultAppBundleName;
     auto errCode = GetDefaultAppBundleNameByFileExt(fileExt, defaultAppBundleName);
     bool defaultAppFormatRegistered = false;
-    if (errCode == ObjectEditorManagerErrCode::SA_OK && !defaultAppBundleName.empty()) {
+    if (errCode == ObjectEditorManagerErrCode::SA_OK && !defaultAppBundleName.empty() && !formats.empty()) {
         for (auto &format : formats) {
             if (format->bundleName == defaultAppBundleName) {
                 objectEditorFormat = std::move(format);

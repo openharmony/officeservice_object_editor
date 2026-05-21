@@ -19,6 +19,7 @@
 #include <cctype>
 #include <ctime>
 #include <fstream>
+#include <filesystem>
 #include <regex>
 #include <sstream>
 #include <sys/stat.h>
@@ -279,6 +280,25 @@ bool GetIntByPrefix(const std::string &str, const std::string &prefix, int &num)
     }
     return true;
 }
+
+bool ValidateAndNormalizePath(const std::string &inputPath, std::string &canonicalFileName)
+{
+    if (inputPath.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "input path is empty");
+        return false;
+    }
+    std::filesystem::path path(inputPath);
+    std::string directory = path.parent_path().string() + "/";
+    std::string filenameTemp = path.filename().string();
+    std::unique_ptr<char, decltype(&free)> canonicalDirPath(realpath(directory.c_str(), nullptr), &free);
+    if (canonicalDirPath == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "canonical directory path is null");
+        return false;
+    }
+    canonicalFileName = std::string(canonicalDirPath.get()) + "/" + filenameTemp;
+    return true;
+}
+
 // LCOV_EXCL_STOP
 } // namespace SystemUtils
 } // namespace ObjectEditor
