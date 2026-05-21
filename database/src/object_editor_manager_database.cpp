@@ -489,7 +489,7 @@ bool ObjectEditorManagerDatabase::DoDeleteBundle(const std::string &bundleName)
 ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByOEid(
     const std::string &oeid, std::unique_ptr<ObjectEditorFormat> &format) const
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "oeid: %{public}s", oeid.c_str());
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "oeid: %{private}s", oeid.c_str());
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
     std::string sql = "SELECT oeid, bundle_name, module_name, ability_name from object_editor_info WHERE oeid = ?";
     ObjectEditorManagerErrCode errCode = QueryBySql(sql, resultSet, { oeid });
@@ -514,7 +514,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByO
 ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByOEidAndMinVersion(
     const std::string &oeid, const std::string &minVersion, std::unique_ptr<ObjectEditorFormat> &format) const
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "oeid: %{public}s, minVersion: %{public}s",
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "oeid: %{private}s, minVersion: %{public}s",
         oeid.c_str(), minVersion.c_str());
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
     std::string sql = "SELECT oeid, bundle_name, module_name, ability_name from object_editor_info"
@@ -604,7 +604,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatsBy
 ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatsByFileExt(
     const std::string &fileExt, std::vector<std::unique_ptr<ObjectEditorFormat>> &formats) const
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "fileExt:%{public}s", fileExt.c_str());
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "fileExt:%{private}s", fileExt.c_str());
     if (!SystemUtils::IsValidFileExt(fileExt)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "invalid file ext");
         return ObjectEditorManagerErrCode::SA_INVALID_PARAMETER;

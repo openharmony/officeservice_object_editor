@@ -28,6 +28,7 @@
 #include "system_utils.h"
 #include "user_mgr.h"
 #include "object_editor_permission_utils.h"
+#include "utils.h"
 
 namespace OHOS {
 namespace ObjectEditor {
@@ -150,6 +151,10 @@ bool GetConfigOEid(const nlohmann::json &json, std::string &oeid)
         return false;
     }
     oeid = it.value();
+    if (!IsValidOEid(oeid)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "invalid oeid");
+        return false;
+    }
     return true;
 }
 

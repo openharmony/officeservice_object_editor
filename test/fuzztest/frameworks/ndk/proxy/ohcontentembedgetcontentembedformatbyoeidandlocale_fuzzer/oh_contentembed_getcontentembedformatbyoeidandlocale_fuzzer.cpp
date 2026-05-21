@@ -17,6 +17,8 @@
 #include "object_editor_config.h"
 #undef private
 
+#include <limits>
+
 #include "native_object_editor_types.h"
 #include "object_editor_extension_proxy.h"
 #include "oh_contentembed_getcontentembedformatbyoeidandlocale_fuzzer.h"
@@ -36,7 +38,10 @@ bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
         config.isSupportObjectEditor_.isLoaded = true;
         config.isSupportObjectEditor_.value = true;
     }
-    int32_t oeidSize = size / SPILT_NUM + 1;
+    if (size > static_cast<size_t>(std::numeric_limits<int32_t>::max())) {
+        return false;
+    }
+    int32_t oeidSize = static_cast<int32_t>(size / SPILT_NUM) + 1;
     char *oeid = static_cast<char*>(malloc(sizeof(char) * oeidSize));
     if (oeid == nullptr) {
         return false;
@@ -46,8 +51,12 @@ bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
         return false;
     }
     oeid[oeidSize - 1] = 0;
-    int32_t offset = size - (size / SPILT_NUM);
-    int32_t localeSize = static_cast<int32_t>(offset) + 1;
+    int32_t offset = static_cast<int32_t>(size) - static_cast<int32_t>(size / SPILT_NUM);
+    if (offset < 0 || offset > static_cast<int32_t>(std::numeric_limits<int32_t>::max()) - 1) {
+        free(oeid);
+        return false;
+    }
+    int32_t localeSize = offset + 1;
     char *locale = static_cast<char*>(malloc(sizeof(char) * localeSize));
     if (locale == nullptr) {
         free(oeid);

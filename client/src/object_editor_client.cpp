@@ -394,7 +394,8 @@ std::string ObjectEditorClient::GenRandomUuid()
     uuid_[INDEX_9] = static_cast<uint8_t>((static_cast<uint64_t>(tv.tv_usec) & 0x0000FF0000000000) >> RIGHT_SHIFT_40);
     uuid_[INDEX_8] = static_cast<uint8_t>((static_cast<uint64_t>(tv.tv_usec) & 0x00FF000000000000) >> RIGHT_SHIFT_48);
     uuid_[INDEX_7] = static_cast<uint8_t>((static_cast<uint64_t>(tv.tv_usec) & 0xFF00000000000000) >> RIGHT_SHIFT_56);
-    uuid_[INDEX_6] = static_cast<uint8_t>((unsigned int)randomTime.tm_sec + static_cast<unsigned int>(randomNum) & 0xFF);
+    uuid_[INDEX_6] = static_cast<uint8_t>((unsigned int)randomTime.tm_sec +
+        static_cast<unsigned int>(randomNum) & 0xFF);
     uuid_[INDEX_5] = static_cast<uint8_t>(((unsigned int)randomTime.tm_min + (randomNum >> RIGHT_SHIFT_8)) & 0xFF);
     uuid_[INDEX_4] = static_cast<uint8_t>(((unsigned int)randomTime.tm_hour + (randomNum >> RIGHT_SHIFT_16)) & 0xFF);
     uuid_[INDEX_3] = static_cast<uint8_t>(((unsigned int)randomTime.tm_mday + (randomNum >> RIGHT_SHIFT_24)) & 0xFF);
@@ -503,12 +504,12 @@ ErrCode ObjectEditorClient::PrepareFiles(const std::unique_ptr<ObjectEditorDocum
             document->SetNativeFileUri(SystemUtils::GetUriFromPath(destPath.string()));
         }
     }
-    std::unique_ptr<char, decltype(&free)> canonicalFilePath(realpath(sandboxPath.c_str(), nullptr), &free);
-    if (canonicalFilePath == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "canonicalFilePath is null");
+    std::string canonicalFilePath = SystemUtils::GetRealPath(sandboxPath);
+    if (canonicalFilePath.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "canonicalFilePath is empty");
         return ObjectEditorClientErrCode::CLIENT_PREPARE_FILES_ERROR;
     }
-    sandboxPath = canonicalFilePath.get();
+    sandboxPath = canonicalFilePath;
     std::string snapshotFilePath = sandboxPath + "/snapshot.png";
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "snapshotFilePath is %{private}s", snapshotFilePath.c_str());
     std::ofstream snapshotFile(snapshotFilePath, std::ios::binary);
