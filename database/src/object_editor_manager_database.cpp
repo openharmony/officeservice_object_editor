@@ -339,8 +339,6 @@ void ObjectEditorManagerDatabase::RemoveBundle(const std::string &bundleName)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "store is null");
         return;
     }
-    std::string oeid;
-    bool isOERegistered = HasRegisteredOEFormat(bundleName, oeid);
     int32_t ret = store_->BeginTransaction();
     if (ret != NativeRdb::E_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "BeginTransaction failed, errCode: %{public}d", ret);
@@ -356,10 +354,6 @@ void ObjectEditorManagerDatabase::RemoveBundle(const std::string &bundleName)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "Commit failed, errCode: %{public}d", ret);
         store_->RollBack();
         return;
-    }
-    if (isOERegistered) {
-        HiSysEventWrite(OBJECT_EDITOR, "REGISTER_EXTENSION", OHOS::HiviewDFX::HiSysEvent::EventType::STATISTIC,
-            "BUNDLENAME", bundleName, "OEID", oeid, "REGISTERTYPE", "uninstall");
     }
 }
 
@@ -469,6 +463,8 @@ bool ObjectEditorManagerDatabase::DoInsert(const std::vector<NativeRdb::ValuesBu
 bool ObjectEditorManagerDatabase::DoDeleteBundle(const std::string &bundleName)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "bundleName: %{public}s", bundleName.c_str());
+    std::string oeid;
+    bool isOERegistered = HasRegisteredOEFormat(bundleName, oeid);
     ObjectEditorManagerResmgr::GetInstance().RemoveBundle(bundleName);
     if (store_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "store is null");
@@ -483,6 +479,10 @@ bool ObjectEditorManagerDatabase::DoDeleteBundle(const std::string &bundleName)
         return false;
     }
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "rows:%{public}d", rows);
+    if (isOERegistered) {
+        HiSysEventWrite(OBJECT_EDITOR, "REGISTER_EXTENSION", OHOS::HiviewDFX::HiSysEvent::EventType::STATISTIC,
+            "BUNDLENAME", bundleName, "OEID", oeid, "REGISTERTYPE", "uninstall");
+    }
     return true;
 }
 
@@ -771,6 +771,18 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::RefreshDb()
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "commit failed, errCode:%{public}d", ret);
         store_->RollBack();
         return ObjectEditorManagerErrCode::SA_DB_ERR;
+    }
+    NativeRdb::ValueObject oeidValue;
+    NativeRdb::ValueObject bundleNameValue;
+    for (auto &bucket : buckets) {
+        bucket.GetObject("oeid", oeidValue);
+        bucket.GetObject("bundle_name", bundleNameValue);
+        std::string oeid;
+        std::string bundleName;
+        oeidValue.GetString(oeid);
+        bundleNameValue.GetString(bundleName);
+        HiSysEventWrite(OBJECT_EDITOR, "REGISTER_EXTENSION", OHOS::HiviewDFX::HiSysEvent::EventType::STATISTIC,
+                        "BUNDLENAME", bundleName, "OEID", oeid, "REGISTERTYPE", "install");
     }
     return ObjectEditorManagerErrCode::SA_OK;
 }
