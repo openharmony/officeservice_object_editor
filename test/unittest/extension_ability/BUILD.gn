@@ -57,7 +57,7 @@ ohos_unittest("object_editor_extension_stub_test") {
   deps = [
     "${object_editor_path}/client:content_embed_client",
     "${object_editor_path}/document:content_embed_document",
-    "${object_editor_path}/frameworks/kits/extension:content_embed_document",
+    "${object_editor_path}/frameworks/kits/extension:content_embed_extension",
   ]
 
   external_deps = [
@@ -109,7 +109,7 @@ ohos_unittest("object_editor_client_callback_proxy_test") {
   deps = [
     "${object_editor_path}/client:content_embed_client",
     "${object_editor_path}/document:content_embed_document",
-    "${object_editor_path}/frameworks/kits/extension:content_embed_document",
+    "${object_editor_path}/frameworks/kits/extension:content_embed_extension",
   ]
 
   external_deps = [

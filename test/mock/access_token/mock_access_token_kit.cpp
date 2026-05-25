@@ -14,6 +14,7 @@
  */
 
 #include "accesstoken_kit.h"
+#include "errors.h"
 #include "hap_token_info.h"
 
 namespace OHOS {

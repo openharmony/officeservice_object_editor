@@ -18,6 +18,7 @@
 #define private public
 #define protected public
 #include "mock_hilog.h"
+#include "mock_resource_manager.h"
 #include "object_editor_manager_resmgr.h"
 #undef protected
 #undef private
@@ -28,6 +29,8 @@ using namespace testing::ext;
 namespace OHOS {
 namespace ObjectEditor {
 
+using MockResMgr = Global::Resource::MockResourceManager;
+
 class ObjectEditorManagerResmgrTest : public ::testing::Test {
 public:
     static void SetUpTestCase();
@@ -35,7 +38,7 @@ public:
     void SetUp();
     void TearDown();
 
-    ObjectEditorManagerResmgr &resmgr_;
+    ObjectEditorManagerResmgr *resmgr_;
 };
 
 void ObjectEditorManagerResmgrTest::SetUpTestCase() {}
@@ -44,15 +47,15 @@ void ObjectEditorManagerResmgrTest::TearDownTestCase() {}
 
 void ObjectEditorManagerResmgrTest::SetUp()
 {
-    resmgr_ = ObjectEditorManagerResmgr::GetInstance();
-    resmgr_.resMgrs_.clear();
+    resmgr_ = &ObjectEditorManagerResmgr::GetInstance();
+    resmgr_->resMgrs_.clear();
     logMsg.clear();
     LOG_SetCallback(MyLogCallback);
 }
 
 void ObjectEditorManagerResmgrTest::TearDown()
 {
-    resmgr_.resMgrs_.clear();
+    resmgr_->resMgrs_.clear();
 }
 
 namespace {
@@ -64,10 +67,10 @@ namespace {
  */
 HWTEST_F(ObjectEditorManagerResmgrTest, AddResourceManager_NewBundle, TestSize.Level1)
 {
-    auto mockResMgr = std::make_shared<Global::Resource::ResourceManager>();
-    resmgr_.AddResourceManager("com.test.bundle1", "module1", "zh", mockResMgr);
-    EXPECT_NE(resmgr_.resMgrs_.find("com.test.bundle1"), resmgr_.resMgrs_.end());
-    EXPECT_EQ(resmgr_.resMgrs_["com.test.bundle1"].size(), 1u);
+    auto mockResMgr = std::make_shared<MockResMgr>();
+    resmgr_->AddResourceManager("com.test.bundle1", "module1", "zh", mockResMgr);
+    EXPECT_NE(resmgr_->resMgrs_.find("com.test.bundle1"), resmgr_->resMgrs_.end());
+    EXPECT_EQ(resmgr_->resMgrs_["com.test.bundle1"].size(), 1u);
 }
 
 /**
@@ -77,11 +80,11 @@ HWTEST_F(ObjectEditorManagerResmgrTest, AddResourceManager_NewBundle, TestSize.L
  */
 HWTEST_F(ObjectEditorManagerResmgrTest, AddResourceManager_ExistingBundleNewModule, TestSize.Level1)
 {
-    auto mockResMgr1 = std::make_shared<Global::Resource::ResourceManager>();
-    auto mockResMgr2 = std::make_shared<Global::Resource::ResourceManager>();
-    resmgr_.AddResourceManager("com.test.bundle1", "module1", "zh", mockResMgr1);
-    resmgr_.AddResourceManager("com.test.bundle1", "module2", "zh", mockResMgr2);
-    EXPECT_EQ(resmgr_.resMgrs_["com.test.bundle1"].size(), 2u);
+    auto mockResMgr1 = std::make_shared<MockResMgr>();
+    auto mockResMgr2 = std::make_shared<MockResMgr>();
+    resmgr_->AddResourceManager("com.test.bundle1", "module1", "zh", mockResMgr1);
+    resmgr_->AddResourceManager("com.test.bundle1", "module2", "zh", mockResMgr2);
+    EXPECT_EQ(resmgr_->resMgrs_["com.test.bundle1"].size(), 2u);
 }
 
 /**
@@ -91,11 +94,11 @@ HWTEST_F(ObjectEditorManagerResmgrTest, AddResourceManager_ExistingBundleNewModu
  */
 HWTEST_F(ObjectEditorManagerResmgrTest, AddResourceManager_ExistingBundleExistingModule, TestSize.Level1)
 {
-    auto mockResMgr1 = std::make_shared<Global::Resource::ResourceManager>();
-    auto mockResMgr2 = std::make_shared<Global::Resource::ResourceManager>();
-    resmgr_.AddResourceManager("com.test.bundle1", "module1", "zh", mockResMgr1);
-    resmgr_.AddResourceManager("com.test.bundle1", "module1", "zh", mockResMgr2);
-    EXPECT_EQ(resmgr_.resMgrs_["com.test.bundle1"].size(), 1u);
+    auto mockResMgr1 = std::make_shared<MockResMgr>();
+    auto mockResMgr2 = std::make_shared<MockResMgr>();
+    resmgr_->AddResourceManager("com.test.bundle1", "module1", "zh", mockResMgr1);
+    resmgr_->AddResourceManager("com.test.bundle1", "module1", "zh", mockResMgr2);
+    EXPECT_EQ(resmgr_->resMgrs_["com.test.bundle1"].size(), 1u);
 }
 
 /**
@@ -105,7 +108,7 @@ HWTEST_F(ObjectEditorManagerResmgrTest, AddResourceManager_ExistingBundleExistin
  */
 HWTEST_F(ObjectEditorManagerResmgrTest, GetResourceManager_BundleNotFound, TestSize.Level1)
 {
-    auto result = resmgr_.GetResourceManager("com.test.nonexist", "module1", "zh");
+    auto result = resmgr_->GetResourceManager("com.test.nonexist", "module1", "zh");
     EXPECT_EQ(result, nullptr);
 }
 
@@ -116,9 +119,9 @@ HWTEST_F(ObjectEditorManagerResmgrTest, GetResourceManager_BundleNotFound, TestS
  */
 HWTEST_F(ObjectEditorManagerResmgrTest, GetResourceManager_ModuleLocaleNotFound, TestSize.Level1)
 {
-    auto mockResMgr = std::make_shared<Global::Resource::ResourceManager>();
-    resmgr_.AddResourceManager("com.test.bundle1", "module1", "zh", mockResMgr);
-    auto result = resmgr_.GetResourceManager("com.test.bundle1", "module2", "zh");
+    auto mockResMgr = std::make_shared<MockResMgr>();
+    resmgr_->AddResourceManager("com.test.bundle1", "module1", "zh", mockResMgr);
+    auto result = resmgr_->GetResourceManager("com.test.bundle1", "module2", "zh");
     EXPECT_EQ(result, nullptr);
 }
 
@@ -129,9 +132,9 @@ HWTEST_F(ObjectEditorManagerResmgrTest, GetResourceManager_ModuleLocaleNotFound,
  */
 HWTEST_F(ObjectEditorManagerResmgrTest, GetResourceManager_Found, TestSize.Level1)
 {
-    auto mockResMgr = std::make_shared<Global::Resource::ResourceManager>();
-    resmgr_.AddResourceManager("com.test.bundle1", "module1", "zh", mockResMgr);
-    auto result = resmgr_.GetResourceManager("com.test.bundle1", "module1", "zh");
+    auto mockResMgr = std::make_shared<MockResMgr>();
+    resmgr_->AddResourceManager("com.test.bundle1", "module1", "zh", mockResMgr);
+    auto result = resmgr_->GetResourceManager("com.test.bundle1", "module1", "zh");
     EXPECT_NE(result, nullptr);
     EXPECT_EQ(result, mockResMgr);
 }
@@ -143,11 +146,11 @@ HWTEST_F(ObjectEditorManagerResmgrTest, GetResourceManager_Found, TestSize.Level
  */
 HWTEST_F(ObjectEditorManagerResmgrTest, RemoveBundle_Existing, TestSize.Level1)
 {
-    auto mockResMgr = std::make_shared<Global::Resource::ResourceManager>();
-    resmgr_.AddResourceManager("com.test.bundle1", "module1", "zh", mockResMgr);
-    EXPECT_NE(resmgr_.resMgrs_.find("com.test.bundle1"), resmgr_.resMgrs_.end());
-    resmgr_.RemoveBundle("com.test.bundle1");
-    EXPECT_EQ(resmgr_.resMgrs_.find("com.test.bundle1"), resmgr_.resMgrs_.end());
+    auto mockResMgr = std::make_shared<MockResMgr>();
+    resmgr_->AddResourceManager("com.test.bundle1", "module1", "zh", mockResMgr);
+    EXPECT_NE(resmgr_->resMgrs_.find("com.test.bundle1"), resmgr_->resMgrs_.end());
+    resmgr_->RemoveBundle("com.test.bundle1");
+    EXPECT_EQ(resmgr_->resMgrs_.find("com.test.bundle1"), resmgr_->resMgrs_.end());
 }
 
 /**
@@ -157,8 +160,8 @@ HWTEST_F(ObjectEditorManagerResmgrTest, RemoveBundle_Existing, TestSize.Level1)
  */
 HWTEST_F(ObjectEditorManagerResmgrTest, RemoveBundle_NonExisting, TestSize.Level1)
 {
-    resmgr_.RemoveBundle("com.test.nonexist");
-    EXPECT_EQ(resmgr_.resMgrs_.find("com.test.nonexist"), resmgr_.resMgrs_.end());
+    resmgr_->RemoveBundle("com.test.nonexist");
+    EXPECT_EQ(resmgr_->resMgrs_.find("com.test.nonexist"), resmgr_->resMgrs_.end());
 }
 
 /**
@@ -168,9 +171,9 @@ HWTEST_F(ObjectEditorManagerResmgrTest, RemoveBundle_NonExisting, TestSize.Level
  */
 HWTEST_F(ObjectEditorManagerResmgrTest, CreateResourceManager_ExistingResMgr, TestSize.Level1)
 {
-    auto mockResMgr = std::make_shared<Global::Resource::ResourceManager>();
-    resmgr_.AddResourceManager("com.test.bundle1", "module1", "en", mockResMgr);
-    auto result = resmgr_.CreateResourceManager("com.test.bundle1", "module1", "en", "/res/path", "/hap/path");
+    auto mockResMgr = std::make_shared<MockResMgr>();
+    resmgr_->AddResourceManager("com.test.bundle1", "module1", "en", mockResMgr);
+    auto result = resmgr_->CreateResourceManager("com.test.bundle1", "module1", "en", "/res/path", "/hap/path");
     EXPECT_EQ(result, mockResMgr);
 }
 
@@ -181,13 +184,13 @@ HWTEST_F(ObjectEditorManagerResmgrTest, CreateResourceManager_ExistingResMgr, Te
  */
 HWTEST_F(ObjectEditorManagerResmgrTest, RemoveBundle_MultipleModules, TestSize.Level1)
 {
-    auto mockResMgr1 = std::make_shared<Global::Resource::ResourceManager>();
-    auto mockResMgr2 = std::make_shared<Global::Resource::ResourceManager>();
-    resmgr_.AddResourceManager("com.test.bundle1", "module1", "zh", mockResMgr1);
-    resmgr_.AddResourceManager("com.test.bundle1", "module2", "en", mockResMgr2);
-    EXPECT_EQ(resmgr_.resMgrs_["com.test.bundle1"].size(), 2u);
-    resmgr_.RemoveBundle("com.test.bundle1");
-    EXPECT_EQ(resmgr_.resMgrs_.find("com.test.bundle1"), resmgr_.resMgrs_.end());
+    auto mockResMgr1 = std::make_shared<MockResMgr>();
+    auto mockResMgr2 = std::make_shared<MockResMgr>();
+    resmgr_->AddResourceManager("com.test.bundle1", "module1", "zh", mockResMgr1);
+    resmgr_->AddResourceManager("com.test.bundle1", "module2", "en", mockResMgr2);
+    EXPECT_EQ(resmgr_->resMgrs_["com.test.bundle1"].size(), 2u);
+    resmgr_->RemoveBundle("com.test.bundle1");
+    EXPECT_EQ(resmgr_->resMgrs_.find("com.test.bundle1"), resmgr_->resMgrs_.end());
 }
 
 }

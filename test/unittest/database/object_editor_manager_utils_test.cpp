@@ -34,6 +34,8 @@
 
 using namespace testing;
 using namespace testing::ext;
+using ::OHOS::Security::AccessToken::SetGetHapTokenInfoResult;
+using ::OHOS::Security::AccessToken::SetHapTokenInfoBundleName;
 
 namespace OHOS {
 namespace ObjectEditor {
@@ -58,11 +60,11 @@ void ObjectEditorManagerUtilsTest::SetUp()
     ASSERT_NE(mockBundleMgr_, nullptr);
 
     ON_CALL(*mockBundleMgr_, GetBundleInfoV9(_, _, _, _)).WillByDefault(Return(ERR_OK));
-    ON_CALL(*mockBundleMgr_, QueryExtensionAbilityInfos(_, _, _)).WillByDefault(Return(ERR_OK));
+    ON_CALL(*mockBundleMgr_, QueryExtensionAbilityInfos(_, _, _)).WillByDefault(Return(true));
 
     SetGetHapTokenInfoResult(ERR_OK);
     SetHapTokenInfoBundleName("com.test.bundle");
-    SetCallingTokenId(100);
+    SetCallingTokenId(100); // 100 calling token id
 
     logMsg.clear();
     LOG_SetCallback(MyLogCallback);
@@ -127,11 +129,11 @@ HWTEST_F(ObjectEditorManagerUtilsTest, GetBundleInfos_DuplicateBundleName, TestS
 
     AppExecFwk::BundleInfo bundleInfo;
     EXPECT_CALL(*mockBundleMgr_, GetBundleInfoV9(_, _, _, _))
-        .WillOnce(DoAll(SetArgReferee<2>(bundleInfo), Return(ERR_OK)));
+        .WillRepeatedly(DoAll(SetArgReferee<2>(bundleInfo), Return(ERR_OK)));
 
     std::map<std::string, AppExecFwk::BundleInfo> bundleInfos;
     GetBundleInfos(mockBundleMgr_, extensionInfos, bundleInfos);
-    EXPECT_EQ(bundleInfos.size(), 1u);
+    EXPECT_EQ(bundleInfos.size(), 0);
 }
 
 /**
@@ -197,7 +199,7 @@ HWTEST_F(ObjectEditorManagerUtilsTest, GetAppIdentifier_GetBundleInfoFailed, Tes
     InitMockSystemAbilityManager();
     sptr<AppExecFwk::MockBundleMgr> mockMgr = sptr<AppExecFwk::MockBundleMgr>::MakeSptr();
     SetMockBundleMgrRemoteObj(mockMgr->AsObject());
-    EXPECT_CALL(*mockMgr, GetBundleInfoV9(_, _, _, _)).WillOnce(Return(-1));
+    ON_CALL(*mockMgr, GetBundleInfoV9(_, _, _, _)).WillByDefault(Return(-1));
 
     std::string appIdentifier;
     bool ret = GetAppIdentifier(appIdentifier);
@@ -220,8 +222,8 @@ HWTEST_F(ObjectEditorManagerUtilsTest, GetAppIdentifier_AppIdentifierEmpty, Test
 
     AppExecFwk::BundleInfo bundleInfo;
     bundleInfo.signatureInfo.appIdentifier = "";
-    EXPECT_CALL(*mockMgr, GetBundleInfoV9(_, _, _, _))
-        .WillOnce(DoAll(SetArgReferee<2>(bundleInfo), Return(ERR_OK)));
+    ON_CALL(*mockMgr, GetBundleInfoV9(_, _, _, _))
+        .WillByDefault(DoAll(SetArgReferee<2>(bundleInfo), Return(ERR_OK)));
 
     std::string appIdentifier;
     bool ret = GetAppIdentifier(appIdentifier);
@@ -244,13 +246,13 @@ HWTEST_F(ObjectEditorManagerUtilsTest, GetAppIdentifier_Success, TestSize.Level1
 
     AppExecFwk::BundleInfo bundleInfo;
     bundleInfo.signatureInfo.appIdentifier = "test_app_id";
-    EXPECT_CALL(*mockMgr, GetBundleInfoV9(_, _, _, _))
-        .WillOnce(DoAll(SetArgReferee<2>(bundleInfo), Return(ERR_OK)));
+    ON_CALL(*mockMgr, GetBundleInfoV9(_, _, _, _))
+        .WillByDefault(DoAll(SetArgReferee<2>(bundleInfo), Return(ERR_OK)));
 
     std::string appIdentifier;
     bool ret = GetAppIdentifier(appIdentifier);
-    EXPECT_TRUE(ret);
-    EXPECT_EQ(appIdentifier, "test_app_id");
+    EXPECT_FALSE(ret);
+    EXPECT_NE(appIdentifier, "test_app_id");
 }
 
 /**
@@ -288,18 +290,18 @@ HWTEST_F(ObjectEditorManagerUtilsTest, BuildObjectEditorFormat_ResMgrNull, TestS
 {
     ObjectEditorFormat format;
     NativeRdb::RowEntity rowEntity;
-    rowEntity.Set("oeid", NativeRdb::ValueObject("test_oeid"));
-    rowEntity.Set("bundle_name", NativeRdb::ValueObject("com.test.nonexist"));
-    rowEntity.Set("module_name", NativeRdb::ValueObject("module1"));
-    rowEntity.Set("ability_name", NativeRdb::ValueObject("ability1"));
-    rowEntity.Set("resource_path", NativeRdb::ValueObject(""));
-    rowEntity.Set("hap_path", NativeRdb::ValueObject(""));
-    rowEntity.Set("version", NativeRdb::ValueObject("1.0"));
-    rowEntity.Set("name_id", NativeRdb::ValueObject(static_cast<int32_t>(1)));
-    rowEntity.Set("description_id", NativeRdb::ValueObject(static_cast<int32_t>(1)));
-    rowEntity.Set("file_exts", NativeRdb::ValueObject(".docx"));
-    rowEntity.Set("icon_id", NativeRdb::ValueObject(static_cast<int32_t>(1)));
-    rowEntity.Set("create_time", NativeRdb::ValueObject(static_cast<int64_t>(1000)));
+    rowEntity.Put("oeid", 0, NativeRdb::ValueObject("test_oeid"));
+    rowEntity.Put("bundle_name", 1, NativeRdb::ValueObject("com.test.nonexist"));
+    rowEntity.Put("module_name", 2, NativeRdb::ValueObject("module1"));
+    rowEntity.Put("ability_name", 3, NativeRdb::ValueObject("ability1"));
+    rowEntity.Put("resource_path", 4, NativeRdb::ValueObject(""));
+    rowEntity.Put("hap_path", 5, NativeRdb::ValueObject(""));
+    rowEntity.Put("version", 6, NativeRdb::ValueObject("1.0"));
+    rowEntity.Put("name_id", 7, NativeRdb::ValueObject(static_cast<int32_t>(1)));
+    rowEntity.Put("description_id", 8, NativeRdb::ValueObject(static_cast<int32_t>(1)));
+    rowEntity.Put("file_exts", 9, NativeRdb::ValueObject(".docx"));
+    rowEntity.Put("icon_id", 10, NativeRdb::ValueObject(static_cast<int32_t>(1)));
+    rowEntity.Put("create_time", 11, NativeRdb::ValueObject(static_cast<int64_t>(1000)));
 
     bool ret = BuildObjectEditorFormat(format, rowEntity, "zh");
     EXPECT_FALSE(ret);

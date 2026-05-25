@@ -16,6 +16,8 @@
 #ifndef MOCK_SYSTEM_ABILITY_MANAGER_H
 #define MOCK_SYSTEM_ABILITY_MANAGER_H
 
+#include "iremote_object.h"
+
 namespace OHOS {
 
 void SetMockSaMgrNull(bool isNull);

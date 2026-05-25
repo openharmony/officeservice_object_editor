@@ -18,8 +18,6 @@
 
 #include <gmock/gmock.h>
 #include "bundle_mgr_interface.h"
-#include "extension_ability_info.h"
-#include "bundle_info.h"
 
 namespace OHOS {
 namespace AppExecFwk {
@@ -28,8 +26,8 @@ class MockBundleMgr : public IBundleMgr {
 public:
     MOCK_METHOD(ErrCode, GetBundleInfoV9,
         (const std::string &bundleName, int32_t flags, BundleInfo &bundleInfo, int32_t userId), (override));
-    MOCK_METHOD(ErrCode, QueryExtensionAbilityInfos,
-        (ExtensionAbilityType type, int32_t userId,
+    MOCK_METHOD(bool, QueryExtensionAbilityInfos,
+        (const ExtensionAbilityType &extensionType, const int32_t &userId,
          std::vector<ExtensionAbilityInfo> &extensionInfos), (override));
     MOCK_METHOD(sptr<IRemoteObject>, AsObject, (), (override));
 };

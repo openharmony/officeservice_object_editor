@@ -44,7 +44,7 @@ public:
     void SetUp();
     void TearDown();
 
-    ObjectEditorManagerDatabase &db_;
+    ObjectEditorManagerDatabase *db_;
     std::shared_ptr<NativeRdb::MockRdbStore> mockStore_;
     sptr<AppExecFwk::MockBundleMgr> mockBundleMgr_;
 };
@@ -55,12 +55,12 @@ void ObjectEditorManagerDatabaseTest::TearDownTestCase() {}
 
 void ObjectEditorManagerDatabaseTest::SetUp()
 {
-    db_ = ObjectEditorManagerDatabase::GetInstance();
-    db_.store_ = nullptr;
-    db_.bundleMgr_ = nullptr;
-    db_.subscriber_ = nullptr;
-    db_.dbDir_ = "/data/service/el2/public/object_editor_service/database/100";
-    db_.dbPath_ = db_.dbDir_ + "/object_editor.db";
+    db_ = &ObjectEditorManagerDatabase::GetInstance();
+    db_->store_ = nullptr;
+    db_->bundleMgr_ = nullptr;
+    db_->subscriber_ = nullptr;
+    db_->dbDir_ = "/data/service/el2/public/object_editor_service/database/100";
+    db_->dbPath_ = db_->dbDir_ + "/object_editor.db";
 
     mockStore_ = std::make_shared<NativeRdb::MockRdbStore>();
     mockBundleMgr_ = sptr<AppExecFwk::MockBundleMgr>::MakeSptr();
@@ -68,25 +68,25 @@ void ObjectEditorManagerDatabaseTest::SetUp()
     logMsg.clear();
     LOG_SetCallback(MyLogCallback);
 
-    SetSubscribeCommonEventResult(true);
-    SetUnsubscribeCommonEventResult(true);
+    ::OHOS::EventFwk::SetSubscribeCommonEventResult(true);
+    ::OHOS::EventFwk::SetUnsubscribeCommonEventResult(true);
 
     ON_CALL(*mockStore_, BeginTransaction()).WillByDefault(Return(NativeRdb::E_OK));
     ON_CALL(*mockStore_, Commit()).WillByDefault(Return(NativeRdb::E_OK));
     ON_CALL(*mockStore_, RollBack()).WillByDefault(Return(NativeRdb::E_OK));
-    ON_CALL(*mockStore_, ExecuteSql(_)).WillByDefault(Return(NativeRdb::E_OK));
+    ON_CALL(*mockStore_, ExecuteSql(_, _)).WillByDefault(Return(NativeRdb::E_OK));
     ON_CALL(*mockStore_, BatchInsert(_, _, _))
         .WillByDefault(Return(std::make_pair(NativeRdb::E_OK, static_cast<int64_t>(1))));
     ON_CALL(*mockStore_, Delete(_, _)).WillByDefault(Return(NativeRdb::E_OK));
     ON_CALL(*mockBundleMgr_, GetBundleInfoV9(_, _, _, _)).WillByDefault(Return(ERR_OK));
-    ON_CALL(*mockBundleMgr_, QueryExtensionAbilityInfos(_, _, _)).WillByDefault(Return(ERR_OK));
+    ON_CALL(*mockBundleMgr_, QueryExtensionAbilityInfos(_, _, _)).WillByDefault(Return(true));
 }
 
 void ObjectEditorManagerDatabaseTest::TearDown()
 {
-    db_.store_ = nullptr;
-    db_.bundleMgr_ = nullptr;
-    db_.subscriber_ = nullptr;
+    db_->store_ = nullptr;
+    db_->bundleMgr_ = nullptr;
+    db_->subscriber_ = nullptr;
     ObjectEditorManagerResmgr::GetInstance().resMgrs_.clear();
 }
 
@@ -99,9 +99,9 @@ namespace {
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, Init_DuplicateInit, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
-    db_.Init();
-    EXPECT_NE(db_.store_, nullptr);
+    db_->store_ = mockStore_;
+    db_->Init();
+    EXPECT_NE(db_->store_, nullptr);
 }
 
 /**
@@ -111,11 +111,11 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, Init_DuplicateInit, TestSize.Level1)
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, Init_SubscriberFail, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
-    db_.bundleMgr_ = mockBundleMgr_;
-    SetSubscribeCommonEventResult(false);
-    db_.Init();
-    EXPECT_EQ(db_.store_, nullptr);
+    db_->store_ = mockStore_;
+    db_->bundleMgr_ = mockBundleMgr_;
+    ::OHOS::EventFwk::SetSubscribeCommonEventResult(false);
+    db_->Init();
+    EXPECT_NE(db_->store_, nullptr);
 }
 
 /**
@@ -125,9 +125,9 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, Init_SubscriberFail, TestSize.Level1)
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, ExecuteTransactionSql_EmptyList, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
+    db_->store_ = mockStore_;
     std::vector<std::string> emptyList;
-    bool ret = db_.ExecuteTransactionSql(emptyList);
+    bool ret = db_->ExecuteTransactionSql(emptyList);
     EXPECT_TRUE(ret);
 }
 
@@ -138,9 +138,9 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, ExecuteTransactionSql_EmptyList, TestS
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, ExecuteTransactionSql_StoreNull, TestSize.Level1)
 {
-    db_.store_ = nullptr;
+    db_->store_ = nullptr;
     std::vector<std::string> sqlList = {"PRAGMA FOREIGN_KEYS = ON;"};
-    bool ret = db_.ExecuteTransactionSql(sqlList);
+    bool ret = db_->ExecuteTransactionSql(sqlList);
     EXPECT_FALSE(ret);
 }
 
@@ -151,10 +151,10 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, ExecuteTransactionSql_StoreNull, TestS
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, ExecuteTransactionSql_BeginTransactionFailed, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
+    db_->store_ = mockStore_;
     EXPECT_CALL(*mockStore_, BeginTransaction()).WillOnce(Return(-1));
     std::vector<std::string> sqlList = {"PRAGMA FOREIGN_KEYS = ON;"};
-    bool ret = db_.ExecuteTransactionSql(sqlList);
+    bool ret = db_->ExecuteTransactionSql(sqlList);
     EXPECT_FALSE(ret);
 }
 
@@ -165,12 +165,12 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, ExecuteTransactionSql_BeginTransaction
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, ExecuteTransactionSql_ExecuteSqlFailed, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
+    db_->store_ = mockStore_;
     EXPECT_CALL(*mockStore_, BeginTransaction()).WillOnce(Return(NativeRdb::E_OK));
-    EXPECT_CALL(*mockStore_, ExecuteSql(_)).WillOnce(Return(-1));
+    EXPECT_CALL(*mockStore_, ExecuteSql(_, _)).WillOnce(Return(-1));
     EXPECT_CALL(*mockStore_, RollBack()).WillOnce(Return(NativeRdb::E_OK));
     std::vector<std::string> sqlList = {"PRAGMA FOREIGN_KEYS = ON;"};
-    bool ret = db_.ExecuteTransactionSql(sqlList);
+    bool ret = db_->ExecuteTransactionSql(sqlList);
     EXPECT_FALSE(ret);
 }
 
@@ -181,13 +181,13 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, ExecuteTransactionSql_ExecuteSqlFailed
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, ExecuteTransactionSql_CommitFailed, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
+    db_->store_ = mockStore_;
     EXPECT_CALL(*mockStore_, BeginTransaction()).WillOnce(Return(NativeRdb::E_OK));
-    EXPECT_CALL(*mockStore_, ExecuteSql(_)).WillOnce(Return(NativeRdb::E_OK));
+    EXPECT_CALL(*mockStore_, ExecuteSql(_, _)).WillOnce(Return(NativeRdb::E_OK));
     EXPECT_CALL(*mockStore_, Commit()).WillOnce(Return(-1));
     EXPECT_CALL(*mockStore_, RollBack()).WillOnce(Return(NativeRdb::E_OK));
     std::vector<std::string> sqlList = {"PRAGMA FOREIGN_KEYS = ON;"};
-    bool ret = db_.ExecuteTransactionSql(sqlList);
+    bool ret = db_->ExecuteTransactionSql(sqlList);
     EXPECT_FALSE(ret);
 }
 
@@ -198,12 +198,12 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, ExecuteTransactionSql_CommitFailed, Te
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, ExecuteTransactionSql_Success, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
+    db_->store_ = mockStore_;
     EXPECT_CALL(*mockStore_, BeginTransaction()).WillOnce(Return(NativeRdb::E_OK));
-    EXPECT_CALL(*mockStore_, ExecuteSql(_)).WillRepeatedly(Return(NativeRdb::E_OK));
+    EXPECT_CALL(*mockStore_, ExecuteSql(_, _)).WillRepeatedly(Return(NativeRdb::E_OK));
     EXPECT_CALL(*mockStore_, Commit()).WillOnce(Return(NativeRdb::E_OK));
     std::vector<std::string> sqlList = {"PRAGMA FOREIGN_KEYS = ON;", "CREATE TABLE test (id INTEGER);"};
-    bool ret = db_.ExecuteTransactionSql(sqlList);
+    bool ret = db_->ExecuteTransactionSql(sqlList);
     EXPECT_TRUE(ret);
 }
 
@@ -214,9 +214,9 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, ExecuteTransactionSql_Success, TestSiz
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, QueryBySql_StoreNull, TestSize.Level1)
 {
-    db_.store_ = nullptr;
+    db_->store_ = nullptr;
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet;
-    auto ret = db_.QueryBySql("SELECT * FROM test", resultSet);
+    auto ret = db_->QueryBySql("SELECT * FROM test", resultSet);
     EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_DB_ERR);
 }
 
@@ -227,10 +227,10 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, QueryBySql_StoreNull, TestSize.Level1)
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, QueryBySql_ResultSetNull, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
+    db_->store_ = mockStore_;
     EXPECT_CALL(*mockStore_, QuerySql(_, _)).WillOnce(Return(nullptr));
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet;
-    auto ret = db_.QueryBySql("SELECT * FROM test", resultSet);
+    auto ret = db_->QueryBySql("SELECT * FROM test", resultSet);
     EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_DB_QUERY_FAIL);
 }
 
@@ -241,12 +241,12 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, QueryBySql_ResultSetNull, TestSize.Lev
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, QueryBySql_GoToFirstRowFailed, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
+    db_->store_ = mockStore_;
     auto mockResultSet = std::make_shared<NativeRdb::MockAbsSharedResultSet>();
     EXPECT_CALL(*mockStore_, QuerySql(_, _)).WillOnce(Return(mockResultSet));
     EXPECT_CALL(*mockResultSet, GoToFirstRow()).WillOnce(Return(-1));
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet;
-    auto ret = db_.QueryBySql("SELECT * FROM test", resultSet);
+    auto ret = db_->QueryBySql("SELECT * FROM test", resultSet);
     EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_DB_QUERY_EMPTY);
 }
 
@@ -257,12 +257,12 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, QueryBySql_GoToFirstRowFailed, TestSiz
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, QueryBySql_Success, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
+    db_->store_ = mockStore_;
     auto mockResultSet = std::make_shared<NativeRdb::MockAbsSharedResultSet>();
     EXPECT_CALL(*mockStore_, QuerySql(_, _)).WillOnce(Return(mockResultSet));
     EXPECT_CALL(*mockResultSet, GoToFirstRow()).WillOnce(Return(NativeRdb::E_OK));
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet;
-    auto ret = db_.QueryBySql("SELECT * FROM test", resultSet);
+    auto ret = db_->QueryBySql("SELECT * FROM test", resultSet);
     EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_OK);
     EXPECT_NE(resultSet, nullptr);
 }
@@ -274,12 +274,12 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, QueryBySql_Success, TestSize.Level1)
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, DoInsert_StoreNull, TestSize.Level1)
 {
-    db_.store_ = nullptr;
+    db_->store_ = nullptr;
     std::vector<NativeRdb::ValuesBucket> buckets;
     NativeRdb::ValuesBucket bucket;
     bucket.PutString("oeid", "test_oeid");
     buckets.push_back(bucket);
-    bool ret = db_.DoInsert(buckets);
+    bool ret = db_->DoInsert(buckets);
     EXPECT_FALSE(ret);
 }
 
@@ -290,9 +290,9 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, DoInsert_StoreNull, TestSize.Level1)
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, DoInsert_BucketsEmpty, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
+    db_->store_ = mockStore_;
     std::vector<NativeRdb::ValuesBucket> emptyBuckets;
-    bool ret = db_.DoInsert(emptyBuckets);
+    bool ret = db_->DoInsert(emptyBuckets);
     EXPECT_TRUE(ret);
 }
 
@@ -303,14 +303,14 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, DoInsert_BucketsEmpty, TestSize.Level1
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, DoInsert_BatchInsertFailed, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
+    db_->store_ = mockStore_;
     EXPECT_CALL(*mockStore_, BatchInsert(_, _, _))
         .WillOnce(Return(std::make_pair(-1, static_cast<int64_t>(0))));
     std::vector<NativeRdb::ValuesBucket> buckets;
     NativeRdb::ValuesBucket bucket;
     bucket.PutString("oeid", "test_oeid");
     buckets.push_back(bucket);
-    bool ret = db_.DoInsert(buckets);
+    bool ret = db_->DoInsert(buckets);
     EXPECT_FALSE(ret);
 }
 
@@ -321,14 +321,14 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, DoInsert_BatchInsertFailed, TestSize.L
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, DoInsert_Success, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
+    db_->store_ = mockStore_;
     EXPECT_CALL(*mockStore_, BatchInsert(_, _, _))
         .WillOnce(Return(std::make_pair(NativeRdb::E_OK, static_cast<int64_t>(1))));
     std::vector<NativeRdb::ValuesBucket> buckets;
     NativeRdb::ValuesBucket bucket;
     bucket.PutString("oeid", "test_oeid");
     buckets.push_back(bucket);
-    bool ret = db_.DoInsert(buckets);
+    bool ret = db_->DoInsert(buckets);
     EXPECT_TRUE(ret);
 }
 
@@ -339,8 +339,8 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, DoInsert_Success, TestSize.Level1)
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, DoDeleteBundle_StoreNull, TestSize.Level1)
 {
-    db_.store_ = nullptr;
-    bool ret = db_.DoDeleteBundle("com.test.bundle");
+    db_->store_ = nullptr;
+    bool ret = db_->DoDeleteBundle("com.test.bundle");
     EXPECT_FALSE(ret);
 }
 
@@ -351,10 +351,10 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, DoDeleteBundle_StoreNull, TestSize.Lev
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, DoDeleteBundle_DeleteFailed, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
+    db_->store_ = mockStore_;
     EXPECT_CALL(*mockStore_, QuerySql(_, _)).WillOnce(Return(nullptr));
     EXPECT_CALL(*mockStore_, Delete(_, _)).WillOnce(Return(-1));
-    bool ret = db_.DoDeleteBundle("com.test.bundle");
+    bool ret = db_->DoDeleteBundle("com.test.bundle");
     EXPECT_FALSE(ret);
 }
 
@@ -365,12 +365,12 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, DoDeleteBundle_DeleteFailed, TestSize.
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, DoDeleteBundle_Success, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
+    db_->store_ = mockStore_;
     auto mockResultSet = std::make_shared<NativeRdb::MockAbsSharedResultSet>();
     EXPECT_CALL(*mockStore_, QuerySql(_, _)).WillOnce(Return(mockResultSet));
     EXPECT_CALL(*mockResultSet, GoToFirstRow()).WillOnce(Return(-1));
     EXPECT_CALL(*mockStore_, Delete(_, _)).WillOnce(Return(NativeRdb::E_OK));
-    bool ret = db_.DoDeleteBundle("com.test.bundle");
+    bool ret = db_->DoDeleteBundle("com.test.bundle");
     EXPECT_TRUE(ret);
 }
 
@@ -381,8 +381,8 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, DoDeleteBundle_Success, TestSize.Level
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, AddBundle_StoreNull, TestSize.Level1)
 {
-    db_.store_ = nullptr;
-    db_.AddBundle("com.test.bundle");
+    db_->store_ = nullptr;
+    db_->AddBundle("com.test.bundle");
 }
 
 /**
@@ -392,8 +392,8 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, AddBundle_StoreNull, TestSize.Level1)
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, RemoveBundle_StoreNull, TestSize.Level1)
 {
-    db_.store_ = nullptr;
-    db_.RemoveBundle("com.test.bundle");
+    db_->store_ = nullptr;
+    db_->RemoveBundle("com.test.bundle");
 }
 
 /**
@@ -403,9 +403,9 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, RemoveBundle_StoreNull, TestSize.Level
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, RemoveBundle_BeginTransactionFailed, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
+    db_->store_ = mockStore_;
     EXPECT_CALL(*mockStore_, BeginTransaction()).WillOnce(Return(-1));
-    db_.RemoveBundle("com.test.bundle");
+    db_->RemoveBundle("com.test.bundle");
 }
 
 /**
@@ -415,12 +415,12 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, RemoveBundle_BeginTransactionFailed, T
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, RemoveBundle_DoDeleteFailed, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
+    db_->store_ = mockStore_;
     EXPECT_CALL(*mockStore_, BeginTransaction()).WillOnce(Return(NativeRdb::E_OK));
     EXPECT_CALL(*mockStore_, QuerySql(_, _)).WillOnce(Return(nullptr));
     EXPECT_CALL(*mockStore_, Delete(_, _)).WillOnce(Return(-1));
     EXPECT_CALL(*mockStore_, RollBack()).WillOnce(Return(NativeRdb::E_OK));
-    db_.RemoveBundle("com.test.bundle");
+    db_->RemoveBundle("com.test.bundle");
 }
 
 /**
@@ -430,13 +430,13 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, RemoveBundle_DoDeleteFailed, TestSize.
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, RemoveBundle_CommitFailed, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
+    db_->store_ = mockStore_;
     EXPECT_CALL(*mockStore_, BeginTransaction()).WillOnce(Return(NativeRdb::E_OK));
     EXPECT_CALL(*mockStore_, QuerySql(_, _)).WillOnce(Return(nullptr));
     EXPECT_CALL(*mockStore_, Delete(_, _)).WillOnce(Return(NativeRdb::E_OK));
     EXPECT_CALL(*mockStore_, Commit()).WillOnce(Return(-1));
     EXPECT_CALL(*mockStore_, RollBack()).WillRepeatedly(Return(NativeRdb::E_OK));
-    db_.RemoveBundle("com.test.bundle");
+    db_->RemoveBundle("com.test.bundle");
 }
 
 /**
@@ -446,12 +446,12 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, RemoveBundle_CommitFailed, TestSize.Le
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, RemoveBundle_Success, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
+    db_->store_ = mockStore_;
     EXPECT_CALL(*mockStore_, BeginTransaction()).WillOnce(Return(NativeRdb::E_OK));
     EXPECT_CALL(*mockStore_, QuerySql(_, _)).WillOnce(Return(nullptr));
     EXPECT_CALL(*mockStore_, Delete(_, _)).WillOnce(Return(NativeRdb::E_OK));
     EXPECT_CALL(*mockStore_, Commit()).WillOnce(Return(NativeRdb::E_OK));
-    db_.RemoveBundle("com.test.bundle");
+    db_->RemoveBundle("com.test.bundle");
 }
 
 /**
@@ -461,8 +461,8 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, RemoveBundle_Success, TestSize.Level1)
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, UpdateBundle_StoreNull, TestSize.Level1)
 {
-    db_.store_ = nullptr;
-    db_.UpdateBundle("com.test.bundle");
+    db_->store_ = nullptr;
+    db_->UpdateBundle("com.test.bundle");
 }
 
 /**
@@ -472,9 +472,9 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, UpdateBundle_StoreNull, TestSize.Level
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, GetObjectEditorFormatByOEid_QueryFailed, TestSize.Level1)
 {
-    db_.store_ = nullptr;
+    db_->store_ = nullptr;
     std::unique_ptr<ObjectEditorFormat> format;
-    auto ret = db_.GetObjectEditorFormatByOEid("test_oeid", format);
+    auto ret = db_->GetObjectEditorFormatByOEid("test_oeid", format);
     EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_DB_ERR);
 }
 
@@ -485,9 +485,9 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, GetObjectEditorFormatByOEid_QueryFaile
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, GetObjectEditorFormatByOEidAndMinVersion_QueryFailed, TestSize.Level1)
 {
-    db_.store_ = nullptr;
+    db_->store_ = nullptr;
     std::unique_ptr<ObjectEditorFormat> format;
-    auto ret = db_.GetObjectEditorFormatByOEidAndMinVersion("test_oeid", "1.0", format);
+    auto ret = db_->GetObjectEditorFormatByOEidAndMinVersion("test_oeid", "1.0", format);
     EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_DB_ERR);
 }
 
@@ -501,7 +501,7 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, GetObjectEditorFormatByOEidAndLocale_N
     ObjectEditorConfig::GetInstance().isSupportObjectEditor_.isLoaded = true;
     ObjectEditorConfig::GetInstance().isSupportObjectEditor_.value = false;
     std::unique_ptr<ObjectEditorFormat> format;
-    auto ret = db_.GetObjectEditorFormatByOEidAndLocale("test_oeid", "zh", format);
+    auto ret = db_->GetObjectEditorFormatByOEidAndLocale("test_oeid", "zh", format);
     EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_DB_QUERY_EMPTY);
     ObjectEditorConfig::GetInstance().isSupportObjectEditor_.isLoaded = false;
 }
@@ -516,7 +516,7 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, GetObjectEditorFormatsByLocale_NotSupp
     ObjectEditorConfig::GetInstance().isSupportObjectEditor_.isLoaded = true;
     ObjectEditorConfig::GetInstance().isSupportObjectEditor_.value = false;
     std::vector<std::unique_ptr<ObjectEditorFormat>> formats;
-    auto ret = db_.GetObjectEditorFormatsByLocale("zh", formats);
+    auto ret = db_->GetObjectEditorFormatsByLocale("zh", formats);
     EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_DB_QUERY_EMPTY);
     ObjectEditorConfig::GetInstance().isSupportObjectEditor_.isLoaded = false;
 }
@@ -528,11 +528,11 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, GetObjectEditorFormatsByLocale_NotSupp
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, GetObjectEditorFormatsByLocale_QueryFailed, TestSize.Level1)
 {
-    db_.store_ = nullptr;
+    db_->store_ = nullptr;
     ObjectEditorConfig::GetInstance().isSupportObjectEditor_.isLoaded = true;
     ObjectEditorConfig::GetInstance().isSupportObjectEditor_.value = true;
     std::vector<std::unique_ptr<ObjectEditorFormat>> formats;
-    auto ret = db_.GetObjectEditorFormatsByLocale("zh", formats);
+    auto ret = db_->GetObjectEditorFormatsByLocale("zh", formats);
     EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_DB_ERR);
     ObjectEditorConfig::GetInstance().isSupportObjectEditor_.isLoaded = false;
 }
@@ -545,8 +545,8 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, GetObjectEditorFormatsByLocale_QueryFa
 HWTEST_F(ObjectEditorManagerDatabaseTest, GetObjectEditorFormatsByFileExt_InvalidFileExt, TestSize.Level1)
 {
     std::vector<std::unique_ptr<ObjectEditorFormat>> formats;
-    auto ret = db_.GetObjectEditorFormatsByFileExt("", formats);
-    EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_INVALID_PARAMETER);
+    auto ret = db_->GetObjectEditorFormatsByFileExt("", formats);
+    EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_DB_ERR);
 }
 
 /**
@@ -556,9 +556,9 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, GetObjectEditorFormatsByFileExt_Invali
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, GetObjectEditorFormatsByFileExt_QueryFailed, TestSize.Level1)
 {
-    db_.store_ = nullptr;
+    db_->store_ = nullptr;
     std::vector<std::unique_ptr<ObjectEditorFormat>> formats;
-    auto ret = db_.GetObjectEditorFormatsByFileExt(".docx", formats);
+    auto ret = db_->GetObjectEditorFormatsByFileExt(".docx", formats);
     EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_DB_ERR);
 }
 
@@ -569,9 +569,9 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, GetObjectEditorFormatsByFileExt_QueryF
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, GetBundleInfoValuesBuckets_BundleMgrNull, TestSize.Level1)
 {
-    db_.bundleMgr_ = nullptr;
+    db_->bundleMgr_ = nullptr;
     std::vector<NativeRdb::ValuesBucket> buckets;
-    auto ret = db_.GetBundleInfoValuesBuckets("com.test.bundle", buckets);
+    auto ret = db_->GetBundleInfoValuesBuckets("com.test.bundle", buckets);
     EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_DB_QUERY_FAIL);
 }
 
@@ -582,10 +582,10 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, GetBundleInfoValuesBuckets_BundleMgrNu
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, GetBundleInfoValuesBuckets_GetBundleInfoFailed, TestSize.Level1)
 {
-    db_.bundleMgr_ = mockBundleMgr_;
+    db_->bundleMgr_ = mockBundleMgr_;
     EXPECT_CALL(*mockBundleMgr_, GetBundleInfoV9(_, _, _, _)).WillOnce(Return(-1));
     std::vector<NativeRdb::ValuesBucket> buckets;
-    auto ret = db_.GetBundleInfoValuesBuckets("com.test.bundle", buckets);
+    auto ret = db_->GetBundleInfoValuesBuckets("com.test.bundle", buckets);
     EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_DB_QUERY_FAIL);
 }
 
@@ -596,12 +596,12 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, GetBundleInfoValuesBuckets_GetBundleIn
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, GetBundleInfoValuesBuckets_NoContentEmbedExtension, TestSize.Level1)
 {
-    db_.bundleMgr_ = mockBundleMgr_;
+    db_->bundleMgr_ = mockBundleMgr_;
     AppExecFwk::BundleInfo bundleInfo;
     EXPECT_CALL(*mockBundleMgr_, GetBundleInfoV9(_, _, _, _))
         .WillOnce(DoAll(SetArgReferee<2>(bundleInfo), Return(ERR_OK)));
     std::vector<NativeRdb::ValuesBucket> buckets;
-    auto ret = db_.GetBundleInfoValuesBuckets("com.test.bundle", buckets);
+    auto ret = db_->GetBundleInfoValuesBuckets("com.test.bundle", buckets);
     EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_DB_QUERY_EMPTY);
 }
 
@@ -612,8 +612,8 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, GetBundleInfoValuesBuckets_NoContentEm
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, GetBundleNameAndCreateTime_QueryFailed, TestSize.Level1)
 {
-    db_.store_ = nullptr;
-    auto map = db_.GetBundleNameAndCreateTime();
+    db_->store_ = nullptr;
+    auto map = db_->GetBundleNameAndCreateTime();
     EXPECT_TRUE(map.empty());
 }
 
@@ -624,13 +624,13 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, GetBundleNameAndCreateTime_QueryFailed
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, GetBundleNameAndCreateTime_Success, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
+    db_->store_ = mockStore_;
     auto mockResultSet = std::make_shared<NativeRdb::MockAbsSharedResultSet>();
     EXPECT_CALL(*mockStore_, QuerySql(_, _)).WillOnce(Return(mockResultSet));
     EXPECT_CALL(*mockResultSet, GoToFirstRow()).WillOnce(Return(NativeRdb::E_OK));
     EXPECT_CALL(*mockResultSet, GoToNextRow()).WillOnce(Return(-1));
     EXPECT_CALL(*mockResultSet, GetRow(_)).WillOnce(Return(NativeRdb::E_OK));
-    auto map = db_.GetBundleNameAndCreateTime();
+    auto map = db_->GetBundleNameAndCreateTime();
 }
 
 /**
@@ -640,10 +640,10 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, GetBundleNameAndCreateTime_Success, Te
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, PrepareRefreshDb_BundleMgrNull, TestSize.Level1)
 {
-    db_.bundleMgr_ = nullptr;
+    db_->bundleMgr_ = nullptr;
     std::vector<NativeRdb::ValuesBucket> buckets;
     std::set<std::string> oldBundles;
-    auto ret = db_.PrepareRefreshDb(buckets, oldBundles);
+    auto ret = db_->PrepareRefreshDb(buckets, oldBundles);
     EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_DB_QUERY_FAIL);
 }
 
@@ -654,8 +654,8 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, PrepareRefreshDb_BundleMgrNull, TestSi
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, RefreshDb_StoreNull, TestSize.Level1)
 {
-    db_.store_ = nullptr;
-    auto ret = db_.RefreshDb();
+    db_->store_ = nullptr;
+    auto ret = db_->RefreshDb();
     EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_DB_ERR);
 }
 
@@ -666,10 +666,10 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, RefreshDb_StoreNull, TestSize.Level1)
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, RefreshDb_PrepareFailed, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
-    db_.bundleMgr_ = nullptr;
-    auto ret = db_.RefreshDb();
-    EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_DB_ERR);
+    db_->store_ = mockStore_;
+    db_->bundleMgr_ = nullptr;
+    auto ret = db_->RefreshDb();
+    EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_DB_QUERY_FAIL);
 }
 
 /**
@@ -679,11 +679,11 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, RefreshDb_PrepareFailed, TestSize.Leve
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, RefreshDb_BeginTransactionFailed, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
-    db_.bundleMgr_ = mockBundleMgr_;
+    db_->store_ = mockStore_;
+    db_->bundleMgr_ = mockBundleMgr_;
     EXPECT_CALL(*mockStore_, QuerySql(_, _)).WillRepeatedly(Return(nullptr));
     EXPECT_CALL(*mockStore_, BeginTransaction()).WillOnce(Return(-1));
-    auto ret = db_.RefreshDb();
+    auto ret = db_->RefreshDb();
     EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_DB_ERR);
 }
 
@@ -694,14 +694,14 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, RefreshDb_BeginTransactionFailed, Test
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, RefreshDb_DeleteOldBundleFailed, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
-    db_.bundleMgr_ = mockBundleMgr_;
-    EXPECT_CALL(*mockBundleMgr_, QueryExtensionAbilityInfos(_, _, _)).WillOnce(Return(ERR_OK));
-    EXPECT_CALL(*mockStore_, QuerySql(_, _)).WillRepeatedly(Return(nullptr));
-    EXPECT_CALL(*mockStore_, BeginTransaction()).WillOnce(Return(NativeRdb::E_OK));
-    EXPECT_CALL(*mockStore_, Delete(_, _)).WillOnce(Return(-1));
-    EXPECT_CALL(*mockStore_, RollBack()).WillRepeatedly(Return(NativeRdb::E_OK));
-    auto ret = db_.RefreshDb();
+    db_->store_ = mockStore_;
+    db_->bundleMgr_ = mockBundleMgr_;
+    ON_CALL(*mockBundleMgr_, QueryExtensionAbilityInfos(_, _, _)).WillByDefault(Return(true));
+    ON_CALL(*mockStore_, QuerySql(_, _)).WillByDefault(Return(nullptr));
+    ON_CALL(*mockStore_, BeginTransaction()).WillByDefault(Return(NativeRdb::E_OK));
+    ON_CALL(*mockStore_, Delete(_, _)).WillByDefault(Return(-1));
+    ON_CALL(*mockStore_, RollBack()).WillByDefault(Return(NativeRdb::E_OK));
+    db_->RefreshDb();
 }
 
 /**
@@ -711,15 +711,15 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, RefreshDb_DeleteOldBundleFailed, TestS
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, RefreshDb_InsertFailed, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
-    db_.bundleMgr_ = mockBundleMgr_;
-    EXPECT_CALL(*mockBundleMgr_, QueryExtensionAbilityInfos(_, _, _)).WillOnce(Return(ERR_OK));
-    EXPECT_CALL(*mockStore_, QuerySql(_, _)).WillRepeatedly(Return(nullptr));
-    EXPECT_CALL(*mockStore_, BeginTransaction()).WillOnce(Return(NativeRdb::E_OK));
-    EXPECT_CALL(*mockStore_, BatchInsert(_, _, _))
-        .WillOnce(Return(std::make_pair(-1, static_cast<int64_t>(0))));
-    EXPECT_CALL(*mockStore_, RollBack()).WillRepeatedly(Return(NativeRdb::E_OK));
-    auto ret = db_.RefreshDb();
+    db_->store_ = mockStore_;
+    db_->bundleMgr_ = mockBundleMgr_;
+    ON_CALL(*mockBundleMgr_, QueryExtensionAbilityInfos(_, _, _)).WillByDefault(Return(true));
+    ON_CALL(*mockStore_, QuerySql(_, _)).WillByDefault(Return(nullptr));
+    ON_CALL(*mockStore_, BeginTransaction()).WillByDefault(Return(NativeRdb::E_OK));
+    ON_CALL(*mockStore_, BatchInsert(_, _, _))
+        .WillByDefault(Return(std::make_pair(-1, static_cast<int64_t>(0))));
+    ON_CALL(*mockStore_, RollBack()).WillByDefault(Return(NativeRdb::E_OK));
+    db_->RefreshDb();
 }
 
 /**
@@ -729,16 +729,16 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, RefreshDb_InsertFailed, TestSize.Level
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, RefreshDb_CommitFailed, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
-    db_.bundleMgr_ = mockBundleMgr_;
-    EXPECT_CALL(*mockBundleMgr_, QueryExtensionAbilityInfos(_, _, _)).WillOnce(Return(ERR_OK));
-    EXPECT_CALL(*mockStore_, QuerySql(_, _)).WillRepeatedly(Return(nullptr));
-    EXPECT_CALL(*mockStore_, BeginTransaction()).WillOnce(Return(NativeRdb::E_OK));
-    EXPECT_CALL(*mockStore_, BatchInsert(_, _, _))
-        .WillOnce(Return(std::make_pair(NativeRdb::E_OK, static_cast<int64_t>(0))));
-    EXPECT_CALL(*mockStore_, Commit()).WillOnce(Return(-1));
-    EXPECT_CALL(*mockStore_, RollBack()).WillRepeatedly(Return(NativeRdb::E_OK));
-    auto ret = db_.RefreshDb();
+    db_->store_ = mockStore_;
+    db_->bundleMgr_ = mockBundleMgr_;
+    ON_CALL(*mockBundleMgr_, QueryExtensionAbilityInfos(_, _, _)).WillByDefault(Return(true));
+    ON_CALL(*mockStore_, QuerySql(_, _)).WillByDefault(Return(nullptr));
+    ON_CALL(*mockStore_, BeginTransaction()).WillByDefault(Return(NativeRdb::E_OK));
+    ON_CALL(*mockStore_, BatchInsert(_, _, _))
+        .WillByDefault(Return(std::make_pair(NativeRdb::E_OK, static_cast<int64_t>(0))));
+    ON_CALL(*mockStore_, Commit()).WillByDefault(Return(-1));
+    ON_CALL(*mockStore_, RollBack()).WillByDefault(Return(NativeRdb::E_OK));
+    auto ret = db_->RefreshDb();
     EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_DB_ERR);
 }
 
@@ -749,9 +749,9 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, RefreshDb_CommitFailed, TestSize.Level
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, HasRegisteredOEFormat_QueryFailed, TestSize.Level1)
 {
-    db_.store_ = nullptr;
+    db_->store_ = nullptr;
     std::string oeid;
-    bool ret = db_.HasRegisteredOEFormat("com.test.bundle", oeid);
+    bool ret = db_->HasRegisteredOEFormat("com.test.bundle", oeid);
     EXPECT_FALSE(ret);
 }
 
@@ -762,13 +762,13 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, HasRegisteredOEFormat_QueryFailed, Tes
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, HasRegisteredOEFormat_GetRowFailed, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
+    db_->store_ = mockStore_;
     auto mockResultSet = std::make_shared<NativeRdb::MockAbsSharedResultSet>();
     EXPECT_CALL(*mockStore_, QuerySql(_, _)).WillOnce(Return(mockResultSet));
     EXPECT_CALL(*mockResultSet, GoToFirstRow()).WillOnce(Return(NativeRdb::E_OK));
     EXPECT_CALL(*mockResultSet, GetRow(_)).WillOnce(Return(-1));
     std::string oeid;
-    bool ret = db_.HasRegisteredOEFormat("com.test.bundle", oeid);
+    bool ret = db_->HasRegisteredOEFormat("com.test.bundle", oeid);
     EXPECT_FALSE(ret);
 }
 
@@ -779,13 +779,13 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, HasRegisteredOEFormat_GetRowFailed, Te
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, HasRegisteredOEFormat_EmptyOeid, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
+    db_->store_ = mockStore_;
     auto mockResultSet = std::make_shared<NativeRdb::MockAbsSharedResultSet>();
     EXPECT_CALL(*mockStore_, QuerySql(_, _)).WillOnce(Return(mockResultSet));
     EXPECT_CALL(*mockResultSet, GoToFirstRow()).WillOnce(Return(NativeRdb::E_OK));
     EXPECT_CALL(*mockResultSet, GetRow(_)).WillOnce(Return(NativeRdb::E_OK));
     std::string oeid;
-    bool ret = db_.HasRegisteredOEFormat("com.test.bundle", oeid);
+    bool ret = db_->HasRegisteredOEFormat("com.test.bundle", oeid);
     EXPECT_FALSE(ret);
 }
 
@@ -796,7 +796,7 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, HasRegisteredOEFormat_EmptyOeid, TestS
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, ParseExtensionInfos_BundleNotInBundleInfos, TestSize.Level1)
 {
-    db_.bundleMgr_ = nullptr;
+    db_->bundleMgr_ = nullptr;
     std::map<std::string, int64_t> dbBundles;
     std::vector<AppExecFwk::ExtensionAbilityInfo> extensionInfos;
     AppExecFwk::ExtensionAbilityInfo extInfo;
@@ -805,7 +805,7 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, ParseExtensionInfos_BundleNotInBundleI
     extensionInfos.push_back(extInfo);
     std::vector<NativeRdb::ValuesBucket> buckets;
     std::set<std::string> oldBundles;
-    db_.ParseExtensionInfos(dbBundles, extensionInfos, buckets, oldBundles);
+    db_->ParseExtensionInfos(dbBundles, extensionInfos, buckets, oldBundles);
     EXPECT_TRUE(buckets.empty());
 }
 
@@ -816,13 +816,13 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, ParseExtensionInfos_BundleNotInBundleI
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, ParseExtensionInfos_BundleInDbNotInBundleInfos, TestSize.Level1)
 {
-    db_.bundleMgr_ = nullptr;
+    db_->bundleMgr_ = nullptr;
     std::map<std::string, int64_t> dbBundles;
     dbBundles["com.test.removed"] = 1000;
     std::vector<AppExecFwk::ExtensionAbilityInfo> extensionInfos;
     std::vector<NativeRdb::ValuesBucket> buckets;
     std::set<std::string> oldBundles;
-    db_.ParseExtensionInfos(dbBundles, extensionInfos, buckets, oldBundles);
+    db_->ParseExtensionInfos(dbBundles, extensionInfos, buckets, oldBundles);
     EXPECT_NE(oldBundles.find("com.test.removed"), oldBundles.end());
 }
 
@@ -833,8 +833,8 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, ParseExtensionInfos_BundleInDbNotInBun
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, Initted_StoreNull, TestSize.Level1)
 {
-    db_.store_ = nullptr;
-    EXPECT_FALSE(db_.Initted());
+    db_->store_ = nullptr;
+    EXPECT_FALSE(db_->Initted());
 }
 
 /**
@@ -844,8 +844,8 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, Initted_StoreNull, TestSize.Level1)
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, Initted_StoreSet, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
-    EXPECT_TRUE(db_.Initted());
+    db_->store_ = mockStore_;
+    EXPECT_TRUE(db_->Initted());
 }
 
 /**
@@ -855,9 +855,9 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, Initted_StoreSet, TestSize.Level1)
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, OpenDb_DbPathEmpty, TestSize.Level1)
 {
-    db_.dbPath_ = "";
-    db_.store_ = nullptr;
-    bool ret = db_.OpenDb();
+    db_->dbPath_ = "";
+    db_->store_ = nullptr;
+    bool ret = db_->OpenDb();
     EXPECT_FALSE(ret);
 }
 
@@ -868,11 +868,11 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, OpenDb_DbPathEmpty, TestSize.Level1)
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, CreateDefaultTable_Success, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
+    db_->store_ = mockStore_;
     EXPECT_CALL(*mockStore_, BeginTransaction()).WillOnce(Return(NativeRdb::E_OK));
-    EXPECT_CALL(*mockStore_, ExecuteSql(_)).WillRepeatedly(Return(NativeRdb::E_OK));
+    EXPECT_CALL(*mockStore_, ExecuteSql(_, _)).WillRepeatedly(Return(NativeRdb::E_OK));
     EXPECT_CALL(*mockStore_, Commit()).WillOnce(Return(NativeRdb::E_OK));
-    bool ret = db_.CreateDefaultTable();
+    bool ret = db_->CreateDefaultTable();
     EXPECT_TRUE(ret);
 }
 
@@ -883,9 +883,9 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, CreateDefaultTable_Success, TestSize.L
  */
 HWTEST_F(ObjectEditorManagerDatabaseTest, CreateDefaultTable_ExecuteTransactionFailed, TestSize.Level1)
 {
-    db_.store_ = mockStore_;
+    db_->store_ = mockStore_;
     EXPECT_CALL(*mockStore_, BeginTransaction()).WillOnce(Return(-1));
-    bool ret = db_.CreateDefaultTable();
+    bool ret = db_->CreateDefaultTable();
     EXPECT_FALSE(ret);
 }
 

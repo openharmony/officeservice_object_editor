@@ -39,6 +39,7 @@ config("database_test_config") {
     "${object_editor_path}/test/mock/system_ability",
     "${object_editor_path}/test/mock/access_token",
     "${object_editor_path}/test/mock/ipc_skeleton",
+    "${object_editor_path}/test/mock/resource_manager",
   ]
 
   cflags = [
@@ -217,14 +218,36 @@ ohos_unittest("object_editor_manager_resmgr_test") {
 
   deps = [
     "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/document:content_embed_document",
+    "${object_editor_path}/utils:content_embed_utils",
   ]
 
   external_deps = [
-    "c_utils:utils",
-    "hilog:libhilog",
-    "googletest:gmock",
+    "ability_base:want",
+    "ability_base:ability_base_want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_runtime",
+    "ability_runtime:ability_manager",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "app_file_service:fileuri_native",
     "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "cJSON:cjson",
+    "common_event_service:cesfwk_innerkits",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "ipc:ipc_core",
+    "napi:ace_napi",
+    "os_account:os_account_innerkits",
+    "relational_store:native_rdb",
     "resource_management:global_resmgr",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+    "access_token:libaccesstoken_sdk",
   ]
 
   defines = [

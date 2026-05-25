@@ -14,6 +14,7 @@
  */
 
 #include "hisysevent.h"
+#undef HiSysEventWrite
 
 namespace OHOS {
 namespace HiviewDFX {

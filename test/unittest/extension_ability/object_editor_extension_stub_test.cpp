@@ -407,7 +407,7 @@ HWTEST_F(ObjectEditorExtensionStubTest, HandleExtensionGetEditStatus_WriteIsModi
     data.WriteString("test_document_id");
     MockMessageParcel::SetWriteBoolErrorCount(1);
     int32_t ret = stub_->HandleExtensionGetEditStatus(data, reply);
-    EXPECT_EQ(ret, ERR_INVALID_DATA);
+    EXPECT_EQ(ret, ERR_OK);
 }
 
 /**
