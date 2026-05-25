@@ -1,0 +1,270 @@
+# Copyright (c) Huawei Device Co., Ltd. 2026-2026. All rights reserved.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# Description: oe service database test build.gn file
+
+import("//build/test.gni")
+import("//foundation/officeservice/object_editor/object_editor.gni")
+
+module_out_path = "object_editor/unittest"
+
+config("database_test_config") {
+  include_dirs = [
+    "${kits_path}/c",
+    "${innerkits_path}/include",
+    "${object_editor_path}/common/include",
+    "${object_editor_path}/document/include",
+    "${object_editor_path}/client/include",
+    "${object_editor_path}/utils/include",
+    "${object_editor_path}/utils/include/dfx",
+    "${object_editor_path}/extension_ability/include",
+    "${object_editor_path}/frameworks/kits/extension/include",
+    "${object_editor_path}/frameworks/ndk/include",
+    "${object_editor_path}/database/include",
+    "${object_editor_path}/system_ability/include",
+    "${object_editor_path}/test/mock/",
+    "${object_editor_path}/test/mock/message_parcel",
+    "${object_editor_path}/test/mock/rdb",
+    "${object_editor_path}/test/mock/bundle_mgr",
+    "${object_editor_path}/test/mock/common_event",
+    "${object_editor_path}/test/mock/system_ability",
+    "${object_editor_path}/test/mock/access_token",
+    "${object_editor_path}/test/mock/ipc_skeleton",
+    "${object_editor_path}/test/mock/resource_manager",
+  ]
+
+  cflags = [
+    "-g",
+    "-O0",
+    "-Wno-unused-variable",
+    "-fno-omit-frame-pointer",
+  ]
+}
+
+ohos_unittest("object_editor_manager_database_test") {
+  module_out_path = module_out_path
+
+  sources = [
+    "object_editor_manager_database_test.cpp",
+    "${object_editor_path}/database/src/object_editor_manager_database.cpp",
+    "${object_editor_path}/database/src/object_editor_manager_resmgr.cpp",
+    "${object_editor_path}/database/src/object_editor_manager_utils.cpp",
+    "${object_editor_path}/common/src/object_editor_config.cpp",
+    "${object_editor_path}/common/src/object_editor_format.cpp",
+    "${object_editor_path}/common/src/system_utils.cpp",
+    "${object_editor_path}/common/src/user_mgr.cpp",
+    "${object_editor_path}/test/mock/common_event/mock_common_event_manager.cpp",
+    "${object_editor_path}/test/mock/hisysevent/mock_hisysevent.cpp",
+    "${object_editor_path}/test/mock/system_ability/mock_system_ability_manager.cpp",
+    "${object_editor_path}/test/mock/access_token/mock_access_token_kit.cpp",
+  ]
+
+  configs = [
+    ":database_test_config",
+    "${object_editor_path}/resources/config/build:coverage_flags",
+    "${object_editor_path}/resources/config/build:testcase_flags",
+  ]
+
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/document:content_embed_document",
+    "${object_editor_path}/utils:content_embed_utils",
+  ]
+
+  external_deps = [
+    "ability_base:want",
+    "ability_base:ability_base_want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_runtime",
+    "ability_runtime:ability_manager",
+    "ability_runtime:ability_start_options",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:napi_common",
+    "app_file_service:fileuri_native",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "bundle_framework:bundle_napi_common",
+    "c_utils:utils",
+    "cJSON:cjson",
+    "common_event_service:cesfwk_innerkits",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "image_framework:image_native",
+    "image_framework:pixelmap",
+    "ipc:ipc_core",
+    "ipc:ipc_napi",
+    "napi:ace_napi",
+    "os_account:os_account_innerkits",
+    "relational_store:native_rdb",
+    "resource_management:global_resmgr",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+    "access_token:libaccesstoken_sdk",
+    "udmf:utd_client",
+  ]
+
+  defines = [
+    "private=public",
+    "protected=public",
+  ]
+
+  part_name = "object_editor"
+  subsystem_name = "officeservice"
+}
+
+ohos_unittest("object_editor_manager_utils_test") {
+  module_out_path = module_out_path
+
+  sources = [
+    "object_editor_manager_utils_test.cpp",
+    "${object_editor_path}/database/src/object_editor_manager_database.cpp",
+    "${object_editor_path}/database/src/object_editor_manager_resmgr.cpp",
+    "${object_editor_path}/database/src/object_editor_manager_utils.cpp",
+    "${object_editor_path}/common/src/object_editor_config.cpp",
+    "${object_editor_path}/common/src/object_editor_format.cpp",
+    "${object_editor_path}/common/src/system_utils.cpp",
+    "${object_editor_path}/common/src/user_mgr.cpp",
+    "${object_editor_path}/test/mock/common_event/mock_common_event_manager.cpp",
+    "${object_editor_path}/test/mock/hisysevent/mock_hisysevent.cpp",
+    "${object_editor_path}/test/mock/system_ability/mock_system_ability_manager.cpp",
+    "${object_editor_path}/test/mock/access_token/mock_access_token_kit.cpp",
+    "${object_editor_path}/test/mock/ipc_skeleton/mock_ipc_skeleton.cpp",
+  ]
+
+  configs = [
+    ":database_test_config",
+    "${object_editor_path}/resources/config/build:coverage_flags",
+    "${object_editor_path}/resources/config/build:testcase_flags",
+  ]
+
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/document:content_embed_document",
+    "${object_editor_path}/utils:content_embed_utils",
+  ]
+
+  external_deps = [
+    "ability_base:want",
+    "ability_base:ability_base_want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_runtime",
+    "ability_runtime:ability_manager",
+    "ability_runtime:ability_start_options",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:napi_common",
+    "app_file_service:fileuri_native",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "bundle_framework:bundle_napi_common",
+    "c_utils:utils",
+    "cJSON:cjson",
+    "common_event_service:cesfwk_innerkits",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "image_framework:image_native",
+    "image_framework:pixelmap",
+    "ipc:ipc_core",
+    "ipc:ipc_napi",
+    "napi:ace_napi",
+    "os_account:os_account_innerkits",
+    "relational_store:native_rdb",
+    "resource_management:global_resmgr",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+    "access_token:libaccesstoken_sdk",
+    "udmf:utd_client",
+  ]
+
+  defines = [
+    "private=public",
+    "protected=public",
+  ]
+
+  part_name = "object_editor"
+  subsystem_name = "officeservice"
+}
+
+ohos_unittest("object_editor_manager_resmgr_test") {
+  module_out_path = module_out_path
+
+  sources = [
+    "object_editor_manager_resmgr_test.cpp",
+    "${object_editor_path}/database/src/object_editor_manager_resmgr.cpp",
+    "${object_editor_path}/common/src/object_editor_config.cpp",
+    "${object_editor_path}/common/src/system_utils.cpp",
+    "${object_editor_path}/common/src/user_mgr.cpp",
+  ]
+
+  configs = [
+    ":database_test_config",
+    "${object_editor_path}/resources/config/build:coverage_flags",
+    "${object_editor_path}/resources/config/build:testcase_flags",
+  ]
+
+  deps = [
+    "${object_editor_path}/client:content_embed_client",
+    "${object_editor_path}/document:content_embed_document",
+    "${object_editor_path}/utils:content_embed_utils",
+  ]
+
+  external_deps = [
+    "ability_base:want",
+    "ability_base:ability_base_want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_runtime",
+    "ability_runtime:ability_manager",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "app_file_service:fileuri_native",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "cJSON:cjson",
+    "common_event_service:cesfwk_innerkits",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "ipc:ipc_core",
+    "napi:ace_napi",
+    "os_account:os_account_innerkits",
+    "relational_store:native_rdb",
+    "resource_management:global_resmgr",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+    "access_token:libaccesstoken_sdk",
+  ]
+
+  defines = [
+    "private=public",
+    "protected=public",
+  ]
+
+  part_name = "object_editor"
+  subsystem_name = "officeservice"
+}
+
+group("database_unittest") {
+  testonly = true
+
+  deps = [
+    ":object_editor_manager_database_test",
+    ":object_editor_manager_resmgr_test",
+    ":object_editor_manager_utils_test",
+  ]
+}
