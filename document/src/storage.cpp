@@ -446,7 +446,12 @@ bool StorageIO::ValidateHeader(uint64_t fileSize)
 
 bool StorageIO::LoadFatChain(uint32_t sectorSize, std::vector<uint32_t> &fatBlocks)
 {
-    const uint32_t bufLen = static_cast<uint32_t>(fatBlocks.size()) * sectorSize;
+    const uint64_t bufLen64 = static_cast<uint64_t>(fatBlocks.size()) * static_cast<uint64_t>(sectorSize);
+    if (bufLen64 > static_cast<uint64_t>(std::numeric_limits<uint32_t>::max())) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "FAT buffer length overflow");
+        return false;
+    }
+    const uint32_t bufLen = static_cast<uint32_t>(bufLen64);
     if (bufLen > 0) {
         std::vector<Byte> buffer(bufLen);
         const uint32_t bytesRead = LoadBigBlocks(fatBlocks, buffer.data(), bufLen);
@@ -606,8 +611,13 @@ bool StorageIO::LoadDirectoryTree(SectorIndex &sbStart)
         return false;
     }
 
-    const uint32_t bufLen = static_cast<uint32_t>(blocks.size()) *
-        static_cast<uint32_t>(bbat_->BlockSize());
+    const uint64_t bufLen64 = static_cast<uint64_t>(blocks.size()) *
+        static_cast<uint64_t>(bbat_->BlockSize());
+    if (bufLen64 > static_cast<uint64_t>(std::numeric_limits<uint32_t>::max())) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Directory buffer length overflow");
+        return false;
+    }
+    const uint32_t bufLen = static_cast<uint32_t>(bufLen64);
     std::vector<Byte> buffer(bufLen);
     const uint32_t bytesRead = LoadBigBlocks(blocks, buffer.data(), bufLen);
     if (bytesRead != bufLen) {
@@ -660,7 +670,12 @@ bool StorageIO::LoadMiniFatBlocks(std::vector<uint32_t> &blocks, std::vector<Byt
             "Failed to follow mini FAT chain");
         return false;
     }
-    const uint32_t bufLen = static_cast<uint32_t>(blocks.size()) * bbat_->BlockSize();
+    const uint64_t bufLen64 = static_cast<uint64_t>(blocks.size()) * static_cast<uint64_t>(bbat_->BlockSize());
+    if (bufLen64 > static_cast<uint64_t>(std::numeric_limits<uint32_t>::max())) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Mini FAT buffer length overflow");
+        return false;
+    }
+    const uint32_t bufLen = static_cast<uint32_t>(bufLen64);
     if (bufLen == 0) {
         return true;
     }
@@ -2352,7 +2367,13 @@ bool StorageIO::SaveFat()
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid block size");
         return false;
     }
-    const uint32_t buflen = static_cast<uint32_t>(fatSectors_.size()) * blockSize;
+    const uint64_t buflen64 = static_cast<uint64_t>(fatSectors_.size()) * static_cast<uint64_t>(blockSize);
+    if (buflen64 > static_cast<uint64_t>(std::numeric_limits<uint32_t>::max())) {
+        SetError(ErrorCode::InvalidOperation, "FAT buffer length overflow");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "FAT buffer length overflow");
+        return false;
+    }
+    const uint32_t buflen = static_cast<uint32_t>(buflen64);
     std::vector<Byte> buffer(buflen);
     if (!bbat_->Save(buffer.data(), buflen)) {
         SetError(ErrorCode::IOError, "Failed to save FAT");
@@ -2435,7 +2456,12 @@ bool StorageIO::FlushDirectoryTree(std::vector<uint32_t> &blocks, size_t neededB
     if (header_ && !blocks.empty() && header_->DirentStart() != blocks.front()) {
         header_->SetFirstDirSector(blocks.front());
     }
-    const size_t bufflen = blocks.size() * blockSize;
+    const uint64_t bufflen64 = static_cast<uint64_t>(blocks.size()) * static_cast<uint64_t>(blockSize);
+    if (bufflen64 > static_cast<uint64_t>(std::numeric_limits<size_t>::max())) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Directory flush buffer length overflow");
+        return false;
+    }
+    const size_t bufflen = static_cast<size_t>(bufflen64);
     if (bufflen == 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "bufflen is 0");
         return false;
@@ -2537,7 +2563,6 @@ std::string NormalizeFilePath(const std::string &filename)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "canonicalDirPath too long");
         return "";
     }
-    canonicalDirPath[PATH_MAX] = '\0';
     std::string canonicalFileName = std::string(canonicalDirPath) + "/" + basename;
     return canonicalFileName;
 }
