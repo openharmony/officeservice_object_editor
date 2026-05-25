@@ -24,6 +24,7 @@
 #include "dirtree.h"
 
 using namespace OHOS::ObjectEditor;
+
 namespace {
 constexpr char PATH_SEPARATOR = '/';
 constexpr const char* PATH_SEPARATOR_STR = "/";

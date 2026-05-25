@@ -17,6 +17,7 @@
 #include <fstream>
 
 #include "package_data.h"
+#include "system_utils.h"
 
 namespace OHOS {
 namespace ObjectEditor {
@@ -237,14 +238,12 @@ bool PackageData::WriteFileToSandbox(Stream *stream, StreamPos &offset, const st
         fs::create_directories(parentDir);
     }
     fs::path safeFilename = fs::path(filename_).filename();
-    char *canonicalPath = realpath(parentDir.string().c_str(), nullptr);
-    if (canonicalPath == nullptr) {
+    std::string canonicalPath = SystemUtils::GetRealPath(parentDir.string());
+    if (canonicalPath.empty()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "failed to get canonical path");
         return false;
     }
-    std::string outputPathStr = std::string(canonicalPath) + "/" + safeFilename.string();
-    free(canonicalPath);
-    canonicalPath = nullptr;
+    std::string outputPathStr = canonicalPath + "/" + safeFilename.string();
     std::ofstream outFile(outputPathStr, std::ios::binary);
     if (!outFile) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "cannot create file: %{private}s", tmpFilePath.c_str());
@@ -306,14 +305,12 @@ bool PackageData::WriteDataToStream(Stream *stream)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "stream is null");
         return false;
     }
-    char *canonicalPath = realpath(filepath_.c_str(), nullptr);
-    if (canonicalPath == nullptr) {
+    std::string canonicalPath = SystemUtils::GetRealPath(filepath_);
+    if (canonicalPath.empty()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "failed to get canonical path");
         return false;
     }
     std::ifstream file(canonicalPath, std::ios::binary | std::ios::ate);
-    free(canonicalPath);
-    canonicalPath = nullptr;
     if (!file.is_open()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "failed to open file");
         return false;
@@ -354,14 +351,12 @@ bool PackageData::WriteDataToStream(Stream *stream)
 
 bool PackageData::WriteDataToBuffer(std::vector<Byte> &buffer)
 {
-    char *canonicalPath = realpath(filepath_.c_str(), nullptr);
-    if (canonicalPath == nullptr) {
+    std::string canonicalPath = SystemUtils::GetRealPath(filepath_);
+    if (canonicalPath.empty()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "failed to get canonical path");
         return false;
     }
     std::ifstream file(canonicalPath, std::ios::binary | std::ios::ate);
-    free(canonicalPath);
-    canonicalPath = nullptr;
     if (!file.is_open()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "failed to open file");
         return false;
@@ -371,6 +366,11 @@ bool PackageData::WriteDataToBuffer(std::vector<Byte> &buffer)
     size_t originalSize = buffer.size();
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "bufferSize: %{public}u, totalSize: %{public}u",
         static_cast<uint32_t>(originalSize), static_cast<uint32_t>(totalSize));
+    if (totalSize < 0 || static_cast<size_t>(totalSize) > buffer.max_size() - originalSize) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "buffer resize overflow");
+        buffer.resize(originalSize);
+        return false;
+    }
     buffer.resize(originalSize + totalSize);
     if (!file.read(reinterpret_cast<char*>(buffer.data() + originalSize), totalSize)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "read file failed");
