@@ -82,6 +82,9 @@ void FileWatcher::Stop()
 
 void* FileWatcher::ThreadFuncStatic(void *arg)
 {
+    if (arg == nullptr) {
+        return nullptr;
+    }
     FileWatcher* self = static_cast<FileWatcher*>(arg);
     self->WatchLoop();
     return nullptr;

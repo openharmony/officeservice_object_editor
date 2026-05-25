@@ -45,12 +45,17 @@ class MockAbilityManagerClient : public CEAbilityManagerClient {
 public:
     MockAbilityManagerClient() = default;
     ~MockAbilityManagerClient() override = default;
-    MOCK_METHOD4(StartAbility,
-                 ErrCode(const AAFwk::Want &want, int requestCode, int32_t userId, uint64_t specifiedFullTokenId));
-    MOCK_METHOD5(StartAbility, ErrCode(const AAFwk::Want &want, sptr<IRemoteObject> callerToken, int requestCode,
+    ErrCode StartAbility(const AAFwk::Want &want, int requestCode,
+        int32_t userId, uint64_t specifiedFullTokenId) override { return 0; }
+    ErrCode StartAbility(const AAFwk::Want &want, sptr<IRemoteObject> callerToken, int requestCode,
+                         int32_t userId, uint64_t specifiedFullTokenId) override
+    {
+        return mock5StartAbility(want, callerToken, requestCode, userId, specifiedFullTokenId);
+    }
+    ErrCode StartAbility(const AAFwk::Want &want, const AAFwk::StartOptions &startOptions,
+                          sptr<IRemoteObject> callerToken, int requestCode, int32_t userId) override { return 0; }
+    MOCK_METHOD5(mock5StartAbility, ErrCode(const AAFwk::Want &want, sptr<IRemoteObject> callerToken, int requestCode,
                                        int32_t userId, uint64_t specifiedFullTokenId));
-    MOCK_METHOD5(StartAbility, ErrCode(const AAFwk::Want &want, const AAFwk::StartOptions &startOptions,
-                                       sptr<IRemoteObject> callerToken, int requestCode, int32_t userId));
     MOCK_METHOD3(TerminateAbility, ErrCode(sptr<IRemoteObject> token, int resultCode, const AAFwk::Want *resultWant));
 };
 
