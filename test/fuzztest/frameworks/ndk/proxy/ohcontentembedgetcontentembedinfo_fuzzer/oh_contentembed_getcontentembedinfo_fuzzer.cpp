@@ -17,6 +17,8 @@
 #include "object_editor_config.h"
 #undef private
 
+#include <limits>
+
 #include "native_object_editor_types.h"
 #include "object_editor_extension_proxy.h"
 #include "oh_contentembed_getcontentembedinfo_fuzzer.h"
@@ -34,12 +36,16 @@ bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
         config.isSupportObjectEditor_.isLoaded = true;
         config.isSupportObjectEditor_.value = true;
     }
+    if (size > static_cast<size_t>(std::numeric_limits<int32_t>::max()) - 1) {
+        return false;
+    }
     int32_t localeSize = static_cast<int32_t>(size) + 1;
-    char *locale = static_cast<char*>(malloc(sizeof(char) * localeSize));
+    size_t localeAllocSize = static_cast<size_t>(localeSize);
+    char *locale = static_cast<char*>(malloc(localeAllocSize));
     if (locale == nullptr) {
         return false;
     }
-    if (memcpy_s(locale, localeSize, data, size) != EOK) {
+    if (memcpy_s(locale, localeAllocSize, data, size) != EOK) {
         free(locale);
         return false;
     }
