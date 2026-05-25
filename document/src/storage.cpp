@@ -32,6 +32,7 @@
 #include "storage.h"
 #include "stream.h"
 #include "utils.h"
+#include "system_utils.h"
 
 namespace OHOS {
 namespace ObjectEditor {
@@ -2550,20 +2551,15 @@ bool StorageIO::FlushHeader()
 
 std::string NormalizeFilePath(const std::string &filename)
 {
-    char canonicalDirPath[PATH_MAX + 1] = {0x00};
     std::filesystem::path path(filename);
     std::string directory = path.parent_path().string() + "/";
     std::string basename = path.filename().string();
-    if (realpath(directory.c_str(), canonicalDirPath) == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "realpath failed");
+    std::string canonicalDirPath = SystemUtils::GetRealPath(directory);
+    if (canonicalDirPath.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "GetRealPath failed");
         return "";
     }
-    size_t len = strlen(canonicalDirPath);
-    if (len >= PATH_MAX) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "canonicalDirPath too long");
-        return "";
-    }
-    std::string canonicalFileName = std::string(canonicalDirPath) + "/" + basename;
+    std::string canonicalFileName = canonicalDirPath + "/" + basename;
     return canonicalFileName;
 }
 
