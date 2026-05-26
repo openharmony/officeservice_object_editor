@@ -17,8 +17,10 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <ctime>
 #include <fstream>
+#include <limits>
 #include <filesystem>
 #include <regex>
 #include <sstream>
@@ -39,6 +41,26 @@ constexpr int32_t TIME_FORMAT_SIZE = 64;
 constexpr const char* FILE_MANAGER_AUTHORITY = "docs";
 constexpr const char* MEDIA_AUTHORITY = "media";
 } // namespace
+
+std::string GetRealPath(const std::string &path)
+{
+    if (path.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "path is empty");
+        return "";
+    }
+    char resolvedPath[PATH_MAX] = {0};
+    if (realpath(path.c_str(), resolvedPath) == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "realpath failed, path: %{private}s, errno: %{public}d",
+            path.c_str(), errno);
+        return "";
+    }
+    size_t len = strnlen(resolvedPath, PATH_MAX);
+    if (len == 0 || len >= PATH_MAX) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "realpath result invalid, len: %{public}zu", len);
+        return "";
+    }
+    return std::string(resolvedPath, len);
+}
 
 // LCOV_EXCL_START
 uint64_t GetFileSize(const std::string &filePath)
@@ -67,13 +89,13 @@ std::string ReadFile(const std::string &filePath)
     std::string directory = path.parent_path().string() + "/";
     std::string filename = path.filename().string();
 
-    std::unique_ptr<char, decltype(&free)> canonicalDirPath(realpath(directory.c_str(), nullptr), &free);
-    if (canonicalDirPath == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "canonical directory path is null");
+    std::string canonicalDirPath = GetRealPath(directory);
+    if (canonicalDirPath.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "canonical directory path is empty");
         return "";
     }
 
-    std::string canonicalFilePath = std::string(canonicalDirPath.get()) + "/" + filename;
+    std::string canonicalFilePath = canonicalDirPath + "/" + filename;
 
     std::ifstream in(canonicalFilePath, std::ios::in | std::ios::binary);
     if (!in.is_open()) {
@@ -143,13 +165,19 @@ bool StringToLong(const char *input, long &num)
 
 bool StringToFloat(const char *input, float &num)
 {
-    char *endPtr = nullptr;
     if (input == nullptr) {
         return false;
     }
+    char *endPtr = nullptr;
     errno = 0;
     float result = strtof(input, &endPtr);
-    if (input == endPtr || errno == ERANGE || *endPtr != '\0') {
+    if (endPtr == input || errno == ERANGE || *endPtr != '\0') {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "strtof failed, errno: %{public}d, input: %{private}s",
+            errno, input);
+        return false;
+    }
+    if (!std::isfinite(result)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "strtof result is not finite, input: %{private}s", input);
         return false;
     }
     num = result;

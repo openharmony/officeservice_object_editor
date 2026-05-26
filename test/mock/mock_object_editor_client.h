@@ -22,15 +22,6 @@
 namespace OHOS {
 namespace ObjectEditor {
 
-class MockIRemoteObject : public IRemoteObject {
-public:
-    MOCK_METHOD(int32_t, SendRequest, (uint32_t, MessageParcel&, MessageParcel&, MessageOption&), (override));
-    MOCK_METHOD(int32_t, GetObjectRefCount, (), (override));
-    MOCK_METHOD(int, Dump, (int fd, const std::vector<std::u16string>& args), (override));
-    MOCK_METHOD(bool, AddDeathRecipient, (const sptr<DeathRecipient> &recipient), (override));
-    MOCK_METHOD(bool, RemoveDeathRecipient, (const sptr<DeathRecipient> &recipient), (override));
-};
-
 class MockISystemAbilityStatusChange : public ISystemAbilityStatusChange {
 public:
     MOCK_METHOD(void, OnAddSystemAbility, (int32_t systemAbilityId, const std::string &deviceId), (override));

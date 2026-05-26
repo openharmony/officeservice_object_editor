@@ -368,8 +368,11 @@ ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::GetObjectEditorForm
     bool &isPackageExtension)
 {
     if (document.GetOEid() == PACKAGE_OEID &&
-        (document.GetOperateType() == OperateType::CREATE_BY_OEID ||
-         document.GetOperateType() == OperateType::EDIT)) {
+        document.GetOperateType() == OperateType::CREATE_BY_OEID) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "package oeid create by oeid with empty oriFileUri");
+        return ObjectEditorManagerErrCode::SA_INVALID_PARAMETER;
+    }
+    if (document.GetOEid() == PACKAGE_OEID && document.GetOperateType() == OperateType::EDIT) {
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "oeid is package");
         isPackageExtension = true;
         return ObjectEditorManagerErrCode::SA_OK;
@@ -421,7 +424,7 @@ ErrCode ObjectEditorManagerSystemAbility::StartObjectEditorExtension(
     }
     if (errCode != ObjectEditorManagerErrCode::SA_OK || objectEditorFormat == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "get object editor format failed");
-        return errCode;
+        return ObjectEditorManagerErrCode::SA_FIND_FORMAT_FAIL;
     }
     if (document->GetOperateType() == OperateType::CREATE_BY_FILE) {
         document->SetOEid(objectEditorFormat->oeid);
@@ -507,7 +510,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::HandleDefaultAppFor
     std::vector<std::unique_ptr<ObjectEditorFormat>> &formats,
     std::unique_ptr<ObjectEditorFormat> &objectEditorFormat)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "fileExt: %{public}s", fileExt.c_str());
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "fileExt: %{private}s", fileExt.c_str());
     std::string defaultAppBundleName;
     auto errCode = GetDefaultAppBundleNameByFileExt(fileExt, defaultAppBundleName);
     bool defaultAppFormatRegistered = false;
@@ -560,6 +563,10 @@ ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::GetDefaultAppBundle
 ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::CheckIsAllowStartExtension(
     const ObjectEditorDocument &document)
 {
+    if (!ObjectEditorConfig::GetInstance().IsSupportObjectEditor()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "not supported");
+        return ObjectEditorManagerErrCode::SA_CONNECT_LIMIT_EXCEED;
+    }
     if (document.GetOperateType() == OperateType::UNKNOWN) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "unknown operation");
         return ObjectEditorManagerErrCode::SA_UNKNOWN_OPERATE;
@@ -581,14 +588,14 @@ ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::GetTargetOEid(const
     std::shared_lock lock(diversionMapMutex_);
     auto it = diversionMap_.find(sourceOEid);
     if (it == diversionMap_.end()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "source oeid %{public}s get diversion failed",
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "source oeid %{private}s get diversion failed",
             sourceOEid.c_str());
         return ObjectEditorManagerErrCode::SA_DIVERSION_QUERY_EMPTY;
     }
     targetOEid = it->second.targetOEid;
     minVersion = it->second.minVersion;
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "source oeid %{public}s get target oeid %{public}s "
-        "min version %{public}s",
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "source oeid %{private}s get target oeid %{private}s "
+        "min version %{private}s",
         sourceOEid.c_str(), targetOEid.c_str(), minVersion.c_str());
     return ObjectEditorManagerErrCode::SA_OK;
 }
@@ -671,7 +678,7 @@ ErrCode ObjectEditorManagerSystemAbility::GetObjectEditorFormatByOEidAndLocale(c
 ErrCode ObjectEditorManagerSystemAbility::GetObjectEditorFormatsByLocale(const std::string &locale,
     std::vector<std::unique_ptr<ObjectEditorFormat>> &formats)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "locale: %{public}s", locale.c_str());
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "locale: %{private}s", locale.c_str());
     return ObjectEditorManagerDatabase::GetInstance().GetObjectEditorFormatsByLocale(locale, formats);
 }
 
