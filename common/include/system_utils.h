@@ -175,6 +175,7 @@ std::string GetSubstrByPrefix(const std::string &str, const std::string &prefix)
  * @return True if prefix found and integer conversion succeeded, false otherwise.
  */
 bool GetIntByPrefix(const std::string &str, const std::string &prefix, int &num);
+bool ValidateAndNormalizePath(const std::string &path, std::string &canonicalFileName);
 } // namespace SystemUtils
 } // namespace ObjectEditor
 } // namespace OHOS

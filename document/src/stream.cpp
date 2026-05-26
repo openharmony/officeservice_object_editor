@@ -214,6 +214,10 @@ std::streamsize StreamImpl::ReadBigBlocks(size_t pos, Byte *buffer, size_t allow
             available : static_cast<std::streamsize>(allowed) - totalbytes;
         if (count > 0) {
             const size_t destRemaining = allowed - static_cast<size_t>(totalbytes);
+            if (destRemaining < count) {
+                OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "StreamImpl::ReadBigBlocks - destRemaining < count");
+                return 0;
+            }
             if (memcpy_s(buffer + static_cast<size_t>(totalbytes), destRemaining, buf.data() + offset,
                 static_cast<size_t>(count)) != EOK) {
                 OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "StreamImpl::ReadBigBlocks memcpy_s failed");
@@ -389,6 +393,9 @@ bool StreamImpl::EnsureWriteCapacity(uint32_t &targetLen)
         return false;
     }
     const StreamPos currentPos = pos_ < 0 ? 0 : static_cast<StreamPos>(pos_);
+    if (targetLen > std::numeric_limits<StreamPos>::max() - currentPos) {
+        return false;
+    }
     const StreamPos desiredSize = currentPos + static_cast<StreamPos>(targetLen);
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "currentPos:%{public}" PRIu64 ", desiredSize:%{public}" PRIu64,
         static_cast<uint64_t>(currentPos), static_cast<uint64_t>(desiredSize));
@@ -453,8 +460,13 @@ uint32_t StreamImpl::WriteMiniBlocks(const Byte *data, uint32_t targetLen,
             return count;
         }
         const uint32_t bbindice = sbrootEntry[bbindex];
-        const uint64_t physicalOffset =
-            (static_cast<uint64_t>(bbindice) * bigBlockSize) + bigBlockSize + (sbindexOffset * smallBlockSize) + offset;
+        uint64_t baseOffset = static_cast<uint64_t>(bbindice) * bigBlockSize;
+        uint64_t miniOffset = sbindexOffset * smallBlockSize;
+        if (baseOffset > UINT64_MAX - bigBlockSize - miniOffset - offset) {
+            state_ |= BAD_FLAG;
+            return count;
+        }
+        const uint64_t physicalOffset = baseOffset + bigBlockSize + miniOffset + offset;
         const uint64_t canWrite64 = smallBlockSize - offset;
         const uint32_t canWrite =
             static_cast<uint32_t>(std::min<uint64_t>(canWrite64, static_cast<uint64_t>(targetLen - count)));
@@ -543,6 +555,9 @@ uint32_t StreamImpl::Write(const Byte *data, uint32_t maxlen)
     }
 
     if (count > UINT32_MAX) {
+        return 0;
+    }
+    if (pos_ + count > std::numeric_limits<std::streamsize>::max()) {
         return 0;
     }
     pos_ += static_cast<std::streamsize>(count);

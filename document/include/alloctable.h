@@ -53,7 +53,7 @@ public:
             return 0;
         }
         if (index >= data_.size()) {
-            data_[data_.size() - 1];
+            return 0;
         }
 
         return data_[index];

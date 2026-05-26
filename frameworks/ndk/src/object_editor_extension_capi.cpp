@@ -22,6 +22,7 @@
 #include "want_manager.h"
 #include "image_packer.h"
 #include "start_options_impl.h"
+#include "system_utils.h"
 
 // LCOV_EXCL_START
 using namespace OHOS::ObjectEditor;
@@ -472,6 +473,11 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_SetSnapshot(ContentEmbed_Object
         return CE_ERR_NULL_POINTER;
     }
     std::string snapshotPath = object->document->oeDocumentInner->GetSnapshotPath();
+    std::string canonicalFileName;
+    if (!SystemUtils::ValidateAndNormalizePath(snapshotPath, canonicalFileName)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "Failed to validate and normalize path");
+        return CE_ERR_PARAM_INVALID;
+    }
     OHOS::Media::ImagePacker imagePacker;
     OHOS::Media::PackOption option;
     option.format = "image/png";

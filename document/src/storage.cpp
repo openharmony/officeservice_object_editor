@@ -32,6 +32,7 @@
 #include "storage.h"
 #include "stream.h"
 #include "utils.h"
+#include "system_utils.h"
 
 namespace OHOS {
 namespace ObjectEditor {
@@ -756,7 +757,12 @@ bool StorageIO::ValidateMiniRootCoverage(size_t highestUsed)
 
 bool StorageIO::Create(const char *filename)
 {
-    auto f = std::make_unique<std::fstream>(filename, std::ios::binary | std::ios::out);
+    std::string canonicalFileName;
+    if (!SystemUtils::ValidateAndNormalizePath(filename, canonicalFileName)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to validate and normalize path");
+        return false;
+    }
+    auto f = std::make_unique<std::fstream>(canonicalFileName.c_str(), std::ios::binary | std::ios::out);
     if (!f || f->fail()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to open file");
         return false;
@@ -989,6 +995,9 @@ uint32_t StorageIO::ReadMiniBlocks(const std::vector<uint32_t> &blocks, Byte *da
             smallBlockSz, remaining, data + bytes, copied)) {
             return bytes;
         }
+        if (copied > maxlen - bytes) {
+            return bytes;
+        }
         bytes += copied;
     }
     return bytes;
@@ -1057,6 +1066,10 @@ uint32_t StorageIO::SaveBlockToFile(uint64_t physicalOffset, const Byte *data, u
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to seek to end of file");
         return 0;
     }
+    if (static_cast<uint64_t>(len) > maxStreamOff - physicalOffset) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to write block");
+        return 0;
+    }
     const uint64_t newEnd64 = physicalOffset + static_cast<uint64_t>(len);
     if (static_cast<std::streamoff>(newEnd64) > size_) {
         const uint64_t clamped = std::min<uint64_t>(newEnd64, maxStreamOff);
@@ -1068,6 +1081,10 @@ uint32_t StorageIO::SaveBlockToFile(uint64_t physicalOffset, const Byte *data, u
 uint32_t StorageIO::SaveBlockToBuffer(uint64_t physicalOffset, const Byte *data, uint32_t len,
     std::vector<uint8_t> &buffer)
 {
+    if (physicalOffset > UINT64_MAX - len) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "physicalOffset overflow");
+        return 0;
+    }
     const uint64_t requiredSize = physicalOffset + static_cast<uint64_t>(len);
     if (requiredSize > buffer.max_size()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "buffer size exceeds max_size");
@@ -1078,6 +1095,9 @@ uint32_t StorageIO::SaveBlockToBuffer(uint64_t physicalOffset, const Byte *data,
         buffer.resize(static_cast<size_t>(requiredSize), 0);
     }
     const size_t offset = static_cast<size_t>(physicalOffset);
+    if (len > buffer.size() - offset) {
+        return 0;
+    }
     auto ec = memcpy_s(buffer.data() + offset, buffer.size() - offset, data, len);
     if (ec != EOK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to memcpy data to buffer");

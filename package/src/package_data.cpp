@@ -168,6 +168,10 @@ bool PackageData::ParseOle10NativeStream(Stream *stream, const std::string &tmpF
         return false;
     }
     // skip file link
+    if (offset + fileLinkSize > streamSize) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "Insufficient data for file link");
+        return false;
+    }
     offset += fileLinkSize;
     // dataSize 4 byte little endian
     if (!ReadStreamUint32(stream, streamSize, offset, dataSize_)) {
