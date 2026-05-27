@@ -15,10 +15,12 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#define final
 
 #define private public
 #include "content_embed_document.h"
 #include "mock_object_editor_document.h"
+#undef final
 #include "mock_storage.h"
 #include "native_object_editor_types.h"
 #include "object_editor_config.h"

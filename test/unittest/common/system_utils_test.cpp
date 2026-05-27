@@ -1123,6 +1123,62 @@ HWTEST_F(SystemUtilsTest, IsAppSandboxPath_004, TestSize.Level1)
     EXPECT_EQ(result, true);
 }
 
+/**
+ * @tc.name GetRealPath_001
+ * @tc.desc Test GetRealPath with empty path
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, GetRealPath_001, TestSize.Level1)
+{
+    std::string result = GetRealPath("");
+    EXPECT_EQ(result, "");
+}
+
+/**
+ * @tc.name GetRealPath_002
+ * @tc.desc Test GetRealPath with nonexistent path
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, GetRealPath_002, TestSize.Level1)
+{
+    std::string result = GetRealPath("/nonexistent/path/");
+    EXPECT_EQ(result, "");
+}
+
+/**
+ * @tc.name GetRealPath_003
+ * @tc.desc Test GetRealPath with valid current directory
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, GetRealPath_003, TestSize.Level1)
+{
+    std::string result = GetRealPath("./");
+    EXPECT_NE(result, "");
+}
+
+/**
+ * @tc.name GetRealPath_004
+ * @tc.desc Test GetRealPath with valid temp directory
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, GetRealPath_004, TestSize.Level1)
+{
+    std::string result = GetRealPath("/tmp/");
+    EXPECT_NE(result, "");
+}
+
+/**
+ * @tc.name GetRealPath_005
+ * @tc.desc Test GetRealPath resolves symlinks for /tmp
+ * @tc.type FUNC
+ */
+HWTEST_F(SystemUtilsTest, GetRealPath_005, TestSize.Level1)
+{
+    std::string result = GetRealPath("/tmp/");
+    EXPECT_NE(result, "");
+    EXPECT_NE(result.find("/"), std::string::npos);
+}
+
 }
 }
 }

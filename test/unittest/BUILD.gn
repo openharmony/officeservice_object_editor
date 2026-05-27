@@ -19,6 +19,7 @@ group("unittest") {
     "database:database_unittest",
     "extension_ability:extension_ability_unittest",
     "frameworks:framework_unittest",
+    "package:package_unittest",
     "system_ability:system_ability_unittest",
     "utils:utils_unittest",
   ]
