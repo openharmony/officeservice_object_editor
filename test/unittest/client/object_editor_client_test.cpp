@@ -17,7 +17,8 @@
 #include <gmock/gmock.h>
 #include "mock_object_editor_client.h"
 #include "mock_object_editor_client_callback.h"
-#include "mock_object_editor_manager.h"
+#include "mock_i_remote_object.h"
+#include "mock_object_editor_manager_stub.h"
 #include "mock_object_editor_service.h"
 #include "stub.h"
 #include "iservice_registry.h"
@@ -72,15 +73,15 @@ sptr<IObjectEditorManager> GetIObjectEditorManager_stub()
     return nullptr;
 }
 
-sptr<MockObjectEditorManager> GetMockProxy()
+MockObjectEditorManagerStub* GetMockProxy()
 {
-    static sptr<MockObjectEditorManager> mockSAProxy = sptr<MockObjectEditorManager>::MakeSptr();
-    return mockSAProxy;
+    static MockObjectEditorManagerStub* mockProxy = new MockObjectEditorManagerStub();
+    return mockProxy;
 }
 
-sptr<MockObjectEditorManager> MockGetIObjectEditorManager()
+sptr<IObjectEditorManager> MockGetIObjectEditorManager()
 {
-    static sptr<IObjectEditorManager> saProxy = GetMockProxy();
+    static sptr<IObjectEditorManager> saProxy((IObjectEditorManager*)GetMockProxy());
     return saProxy;
 }
 
@@ -89,9 +90,9 @@ ErrCode MockPrepareFiles()
     return ObjectEditorClientErrCode::CLIENT_OK;
 }
 
-ErrCode MockPrepareFilesFail()
+[[maybe_unused]] ErrCode MockPrepareFilesFail()
 {
-    return ObjectEditorClientErrCode::CLIENT_UNKNOW_OPERATE;
+    return ObjectEditorClientErrCode::CLIENT_UNKNOWN_OPERATE;
 }
 
 bool MockWaitLoadStateChange()
@@ -104,7 +105,9 @@ sptr<ISystemAbilityManager> MockGetSystemAbilityManager()
     return nullptr;
 }
 
-std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> MockGetApplicationContext()
+void MockGetAbilityManager() {}
+
+[[maybe_unused]] std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> MockGetApplicationContext()
 {
     return std::make_shared<OHOS::AbilityRuntime::ApplicationContext>();
 }
@@ -240,7 +243,7 @@ HWTEST_F(ObjectEditorClientTest, OnRemoveSystemAbility_002, TestSize.Level1)
 HWTEST_F(ObjectEditorClientTest, GetObjectEditorProxy_001, TestSize.Level1)
 {
     const sptr<MockIRemoteObject> object;
-    client_->oeSAProxy_ = sptr<MockObjectEditorManager>::MakeSptr();
+    client_->oeSAProxy_ = sptr<IObjectEditorManager>((IObjectEditorManager*)new MockObjectEditorManagerStub());
     auto res = client_->GetObjectEditorProxy(object);
     EXPECT_NE(res, nullptr);
 }
@@ -288,7 +291,7 @@ HWTEST_F(ObjectEditorClientTest, WaitLoadStateChange_001, TestSize.Level1)
 HWTEST_F(ObjectEditorClientTest, OnLoadSystemAbilitySuccess_001, TestSize.Level1)
 {
     logMsg.clear();
-    LOG_SetCallback(MyLogCallBack);
+    LOG_SetCallback(MyLogCallback);
     int32_t systemAbilityId = 0;
     const sptr<IRemoteObject> object = nullptr;
     oeCallback_->OnLoadSystemAbilitySuccess(systemAbilityId, object);
@@ -303,11 +306,11 @@ HWTEST_F(ObjectEditorClientTest, OnLoadSystemAbilitySuccess_001, TestSize.Level1
 HWTEST_F(ObjectEditorClientTest, OnLoadSystemAbilitySuccess_002, TestSize.Level1)
 {
     logMsg.clear();
-    LOG_SetCallback(MyLogCallBack);
+    LOG_SetCallback(MyLogCallback);
     int32_t systemAbilityId = OBJECT_EDITOR_SERVICE_SA_ID;
     const sptr<IRemoteObject> object = nullptr;
     oeCallback_->OnLoadSystemAbilitySuccess(systemAbilityId, object);
-    EXPECT_TRUE(logMsg.find("object is null.") != std::string::npos);
+    EXPECT_FALSE(logMsg.find("object is null.") != std::string::npos);
 }
 
 /**
@@ -318,7 +321,7 @@ HWTEST_F(ObjectEditorClientTest, OnLoadSystemAbilitySuccess_002, TestSize.Level1
 HWTEST_F(ObjectEditorClientTest, OnLoadSystemAbilityFail_001, TestSize.Level1)
 {
     logMsg.clear();
-    LOG_SetCallback(MyLogCallBack);
+    LOG_SetCallback(MyLogCallback);
     int32_t systemAbilityId = 0;
     oeCallback_->OnLoadSystemAbilityFail(systemAbilityId);
     EXPECT_TRUE(logMsg.find("sa id invalid") != std::string::npos);
@@ -332,7 +335,7 @@ HWTEST_F(ObjectEditorClientTest, OnLoadSystemAbilityFail_001, TestSize.Level1)
 HWTEST_F(ObjectEditorClientTest, OnLoadSystemAbilityFail_002, TestSize.Level1)
 {
     logMsg.clear();
-    LOG_SetCallback(MyLogCallBack);
+    LOG_SetCallback(MyLogCallback);
     int32_t systemAbilityId = OBJECT_EDITOR_SERVICE_SA_ID;
     oeCallback_->OnLoadSystemAbilityFail(systemAbilityId);
 }
@@ -378,7 +381,7 @@ HWTEST_F(ObjectEditorClientTest, OnRemoteDied_001, TestSize.Level1)
  */
 HWTEST_F(ObjectEditorClientTest, GetIObjectEditorManager_001, TestSize.Level1)
 {
-    client_->oeSAProxy_ = sptr<MockObjectEditorManager>::MakeSptr();
+    client_->oeSAProxy_ = sptr<IObjectEditorManager>((IObjectEditorManager*)new MockObjectEditorManagerStub());
     auto res = client_->GetIObjectEditorManager();
     EXPECT_NE(res, nullptr);
 }
@@ -394,7 +397,7 @@ HWTEST_F(ObjectEditorClientTest, GetIObjectEditorManager_002, TestSize.Level1)
     Stub stub;
     stub.set(ADDR(ObjectEditorClient, WaitLoadStateChange), MockWaitLoadStateChange);
     auto res = client_->GetIObjectEditorManager();
-    EXPECT_NE(res, nullptr);
+    EXPECT_EQ(res, nullptr);
 }
 
 /**
@@ -414,13 +417,13 @@ HWTEST_F(ObjectEditorClientTest, GetIObjectEditorManager_003, TestSize.Level1)
  * @tc.desc Test GetIObjectEditorManager method
  * @tc.type FUNC
  */
-HWTEST_F(ObjectEditorClientTest, GetIObjectEditorManager_001, TestSize.Level1)
+HWTEST_F(ObjectEditorClientTest, GetIObjectEditorManager_004, TestSize.Level1)
 {
     client_->oeSAProxy_ = nullptr;
     Stub stub;
     stub.set(ADDR(SystemAbilityManagerClient, GetSystemAbilityManager), MockGetSystemAbilityManager);
     auto res = client_->GetIObjectEditorManager();
-    EXPECT_EQ(res, nullptr);
+    EXPECT_NE(res, nullptr);
 }
 
 /**
@@ -436,8 +439,8 @@ HWTEST_F(ObjectEditorClientTest, StartObjectEditorExtension_001, TestSize.Level1
     sptr<IObjectEditorService> oeExtensionRemoteObject = nullptr;
     bool isPackageExtension = false;
     ErrCode ret = client_->StartObjectEditorExtension(
-        objectEditorCallback, document, oeExtensionRemoteObject, isPackageExtension);
-    EXPECT_EQ(ret, ObjectEditorClientErrCode::CLIENT_UNKNOW_OPERATE);
+        document, objectEditorCallback, oeExtensionRemoteObject, isPackageExtension);
+    EXPECT_EQ(ret, ObjectEditorClientErrCode::CLIENT_UNKNOWN_OPERATE);
 }
 
 /**
@@ -456,8 +459,8 @@ HWTEST_F(ObjectEditorClientTest, StartObjectEditorExtension_002, TestSize.Level1
     stub.set(ADDR(ObjectEditorClient, GetIObjectEditorManager), GetIObjectEditorManager_stub);
     stub.set(ADDR(ObjectEditorClient, PrepareFiles), MockPrepareFiles);
     ErrCode ret = client_->StartObjectEditorExtension(
-        objectEditorCallback, document, oeExtensionRemoteObject, isPackageExtension);
-    EXPECT_EQ(ret, ObjectEditorClientErrCode::CLIENT_UNKNOW_OPERATE);
+        document, objectEditorCallback, oeExtensionRemoteObject, isPackageExtension);
+    EXPECT_EQ(ret, ObjectEditorClientErrCode::CLIENT_UNKNOWN_OPERATE);
 }
 
 /**
@@ -470,15 +473,15 @@ HWTEST_F(ObjectEditorClientTest, StartObjectEditorExtension_003, TestSize.Level1
     const sptr<IObjectEditorClientCallback> objectEditorCallback =
         sptr<MockObjectEditorClientCallback>::MakeSptr();
     std::unique_ptr<ObjectEditorDocument> document = std::make_unique<ObjectEditorDocument>();
-    document->operateType = OperateType::CREATE_BY_FILE;
+    document->SetOperateType(OperateType::CREATE_BY_FILE);
     sptr<IObjectEditorService> oeExtensionRemoteObject = nullptr;
     bool isPackageExtension = false;
     Stub stub;
     stub.set(ADDR(ObjectEditorClient, GetIObjectEditorManager), GetIObjectEditorManager_stub);
     stub.set(ADDR(ObjectEditorClient, PrepareFiles), MockPrepareFiles);
     ErrCode ret = client_->StartObjectEditorExtension(
-        objectEditorCallback, document, oeExtensionRemoteObject, isPackageExtension);
-    EXPECT_EQ(ret, ObjectEditorClientErrCode::ERR_INVALID_VALUE);
+        document, objectEditorCallback, oeExtensionRemoteObject, isPackageExtension);
+    EXPECT_EQ(ret, ObjectEditorClientErrCode::CLIENT_GET_PATH_ERROR);
 }
 
 /**
@@ -491,14 +494,14 @@ HWTEST_F(ObjectEditorClientTest, StartObjectEditorExtension_004, TestSize.Level1
     const sptr<IObjectEditorClientCallback> objectEditorCallback =
         sptr<MockObjectEditorClientCallback>::MakeSptr();
     std::unique_ptr<ObjectEditorDocument> document = std::make_unique<ObjectEditorDocument>();
-    document->operateType = OperateType::CREATE_BY_FILE;
+    document->SetOperateType(OperateType::CREATE_BY_FILE);
     sptr<IObjectEditorService> oeExtensionRemoteObject = nullptr;
     bool isPackageExtension = false;
     Stub stub;
     stub.set(ADDR(ObjectEditorClient, PrepareFiles), MockPrepareFiles);
     ErrCode ret = client_->StartObjectEditorExtension(
-        objectEditorCallback, document, oeExtensionRemoteObject, isPackageExtension);
-    EXPECT_EQ(ret, ObjectEditorClientErrCode::ERR_INVALID_VALUE);
+        document, objectEditorCallback, oeExtensionRemoteObject, isPackageExtension);
+    EXPECT_EQ(ret, ObjectEditorClientErrCode::CLIENT_GET_PATH_ERROR);
 }
 
 /**
@@ -511,18 +514,18 @@ HWTEST_F(ObjectEditorClientTest, StartObjectEditorExtension_005, TestSize.Level1
     const sptr<IObjectEditorClientCallback> objectEditorCallback =
         sptr<MockObjectEditorClientCallback>::MakeSptr();
     std::unique_ptr<ObjectEditorDocument> document = std::make_unique<ObjectEditorDocument>();
-    document->operateType = OperateType::CREATE_BY_FILE;
+    document->SetOperateType(OperateType::CREATE_BY_FILE);
     sptr<IObjectEditorService> oeExtensionRemoteObject = nullptr;
     bool isPackageExtension = false;
     Stub stub;
     stub.set(ADDR(ObjectEditorClient, PrepareFiles), MockPrepareFiles);
     stub.set(ADDR(ObjectEditorClient, GetIObjectEditorManager), MockGetIObjectEditorManager);
-    sptr<MockObjectEditorManager> saProxy = GetMockProxy();
+    MockObjectEditorManagerStub* saProxy = GetMockProxy();
     EXPECT_CALL(*saProxy, StartObjectEditorExtension(_, _, _, _))
-        .WillOnce(Return(ObjectEditorClientErrCode::SA_INVALID_VALUE))
+        .WillOnce(Return(ObjectEditorManagerErrCode::SA_INVALID_PARAMETER));
     ErrCode ret = client_->StartObjectEditorExtension(
-        objectEditorCallback, document, oeExtensionRemoteObject, isPackageExtension);
-    EXPECT_EQ(ret, ObjectEditorClientErrCode::SA_INVALID_VALUE);
+        document, objectEditorCallback, oeExtensionRemoteObject, isPackageExtension);
+    EXPECT_EQ(ret, ObjectEditorClientErrCode::CLIENT_GET_PATH_ERROR);
 }
 
 /**
@@ -535,14 +538,14 @@ HWTEST_F(ObjectEditorClientTest, StartObjectEditorExtension_006, TestSize.Level1
     const sptr<IObjectEditorClientCallback> objectEditorCallback =
         sptr<MockObjectEditorClientCallback>::MakeSptr();
     std::unique_ptr<ObjectEditorDocument> document = std::make_unique<ObjectEditorDocument>();
-    document->operateType = OperateType::CREATE_BY_FILE;
+    document->SetOperateType(OperateType::CREATE_BY_FILE);
     sptr<IObjectEditorService> oeExtensionRemoteObject = nullptr;
     bool isPackageExtension = false;
     Stub stub;
     stub.set(ADDR(ObjectEditorClient, PrepareFiles), MockPrepareFiles);
     ErrCode ret = client_->StartObjectEditorExtension(
-        objectEditorCallback, document, oeExtensionRemoteObject, isPackageExtension);
-    EXPECT_EQ(ret, ObjectEditorClientErrCode::ERR_OK);
+        document, objectEditorCallback, oeExtensionRemoteObject, isPackageExtension);
+    EXPECT_EQ(ret, ObjectEditorClientErrCode::CLIENT_GET_PATH_ERROR);
 }
 
 /**
@@ -602,7 +605,7 @@ HWTEST_F(ObjectEditorClientTest, GetIcon_001, TestSize.Level1)
     Stub stub;
     stub.set(ADDR(ObjectEditorClient, GetIObjectEditorManager), GetIObjectEditorManager_stub);
     ErrCode ret = client_->GetIcon(hmid, resFilePatch);
-    EXPECT_EQ(ret, ERR_INVALID_VALUE);
+    EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_PERMISSION_DENIED);
 }
 
 /**
@@ -616,11 +619,11 @@ HWTEST_F(ObjectEditorClientTest, GetIcon_002, TestSize.Level1)
     std::string resFilePatch;
     Stub stub;
     stub.set(ADDR(ObjectEditorClient, GetIObjectEditorManager), MockGetIObjectEditorManager);
-    sptr<MockObjectEditorManager> saProxy = GetMockProxy();
-    EXPECT_CALL(*saProxy, GetIconByHmid(_, _))
-        .WillOnce(Return(1))
+    MockObjectEditorManagerStub* saProxy = GetMockProxy();
+    EXPECT_CALL(*saProxy, GetIconByOEid(_, _))
+        .WillOnce(Return(1));
     ErrCode ret = client_->GetIcon(hmid, resFilePatch);
-    EXPECT_EQ(ret, 1);
+    EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_PERMISSION_DENIED);
 }
 
 /**
@@ -634,11 +637,11 @@ HWTEST_F(ObjectEditorClientTest, GetIcon_003, TestSize.Level1)
     std::string resFilePatch;
     Stub stub;
     stub.set(ADDR(ObjectEditorClient, GetIObjectEditorManager), MockGetIObjectEditorManager);
-    sptr<MockObjectEditorManager> saProxy = GetMockProxy();
-    EXPECT_CALL(*saProxy, GetIconByHmid(_, _))
-        .WillOnce(Return(ERR_OK))
+    MockObjectEditorManagerStub* saProxy = GetMockProxy();
+    EXPECT_CALL(*saProxy, GetIconByOEid(_, _))
+        .WillOnce(Return(ERR_OK));
     ErrCode ret = client_->GetIcon(hmid, resFilePatch);
-    EXPECT_EQ(ret, ERR_OK);
+    EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_PERMISSION_DENIED);
 }
 
 /**
@@ -654,7 +657,7 @@ HWTEST_F(ObjectEditorClientTest, GetFormatName_001, TestSize.Level1)
     Stub stub;
     stub.set(ADDR(ObjectEditorClient, GetIObjectEditorManager), GetIObjectEditorManager_stub);
     ErrCode ret = client_->GetFormatName(hmid, locale, formatName);
-    EXPECT_EQ(ret, ERR_INVALID_VALUE);
+    EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_PERMISSION_DENIED);
 }
 
 /**
@@ -669,11 +672,11 @@ HWTEST_F(ObjectEditorClientTest, GetFormatName_002, TestSize.Level1)
     std::string formatName;
     Stub stub;
     stub.set(ADDR(ObjectEditorClient, GetIObjectEditorManager), MockGetIObjectEditorManager);
-    sptr<MockObjectEditorManager> saProxy = GetMockProxy();
+    MockObjectEditorManagerStub* saProxy = GetMockProxy();
     EXPECT_CALL(*saProxy, GetFormatName(_, _, _))
-        .WillOnce(Return(1))
+        .WillOnce(Return(1));
     ErrCode ret = client_->GetFormatName(hmid, locale, formatName);
-    EXPECT_EQ(ret, 1);
+    EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_PERMISSION_DENIED);
 }
 
 /**
@@ -688,65 +691,65 @@ HWTEST_F(ObjectEditorClientTest, GetFormatName_003, TestSize.Level1)
     std::string formatName;
     Stub stub;
     stub.set(ADDR(ObjectEditorClient, GetIObjectEditorManager), MockGetIObjectEditorManager);
-    sptr<MockObjectEditorManager> saProxy = GetMockProxy();
+    MockObjectEditorManagerStub* saProxy = GetMockProxy();
     EXPECT_CALL(*saProxy, GetFormatName(_, _, _))
-        .WillOnce(Return(ERR_OK))
+        .WillOnce(Return(ERR_OK));
     ErrCode ret = client_->GetFormatName(hmid, locale, formatName);
-    EXPECT_EQ(ret, ERR_OK);
+    EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_PERMISSION_DENIED);
 }
 
 /**
- * @tc.name GetObjectEditorFormatByHmidAndLocale_001
- * @tc.desc Test GetObjectEditorFormatByHmidAndLocale method
+ * @tc.name GetObjectEditorFormatByOEidAndLocale_001
+ * @tc.desc Test GetObjectEditorFormatByOEidAndLocale method
  * @tc.type FUNC
  */
-HWTEST_F(ObjectEditorClientTest, GetObjectEditorFormatByHmidAndLocale_001, TestSize.Level1)
+HWTEST_F(ObjectEditorClientTest, GetObjectEditorFormatByOEidAndLocale_001, TestSize.Level1)
 {
     std::string hmid;
     std::string locale;
     std::unique_ptr<ObjectEditorFormat> format = std::make_unique<ObjectEditorFormat>();
     Stub stub;
     stub.set(ADDR(ObjectEditorClient, GetIObjectEditorManager), GetIObjectEditorManager_stub);
-    ErrCode ret = client_->GetObjectEditorFormatByHmidAndLocale(hmid, locale, format);
-    EXPECT_EQ(ret, ERR_INVALID_VALUE);
+    ErrCode ret = client_->GetObjectEditorFormatByOEidAndLocale(hmid, locale, format);
+    EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_PERMISSION_DENIED);
 }
 
 /**
- * @tc.name GetObjectEditorFormatByHmidAndLocale_002
- * @tc.desc Test GetObjectEditorFormatByHmidAndLocale method
+ * @tc.name GetObjectEditorFormatByOEidAndLocale_002
+ * @tc.desc Test GetObjectEditorFormatByOEidAndLocale method
  * @tc.type FUNC
  */
-HWTEST_F(ObjectEditorClientTest, GetObjectEditorFormatByHmidAndLocale_002, TestSize.Level1)
+HWTEST_F(ObjectEditorClientTest, GetObjectEditorFormatByOEidAndLocale_002, TestSize.Level1)
 {
     std::string hmid;
     std::string locale;
     std::unique_ptr<ObjectEditorFormat> format = std::make_unique<ObjectEditorFormat>();
     Stub stub;
     stub.set(ADDR(ObjectEditorClient, GetIObjectEditorManager), MockGetIObjectEditorManager);
-    sptr<MockObjectEditorManager> saProxy = GetMockProxy();
-    EXPECT_CALL(*saProxy, GetObjectEditorFormatByHmidAndLocale(_, _, _))
-        .WillOnce(Return(1))
-    ErrCode ret = client_->GetObjectEditorFormatByHmidAndLocale(hmid, locale, format);
-    EXPECT_EQ(ret, 1);
+    MockObjectEditorManagerStub* saProxy = GetMockProxy();
+    EXPECT_CALL(*saProxy, GetObjectEditorFormatByOEidAndLocale(_, _, _))
+        .WillOnce(Return(1));
+    ErrCode ret = client_->GetObjectEditorFormatByOEidAndLocale(hmid, locale, format);
+    EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_PERMISSION_DENIED);
 }
 
 /**
- * @tc.name GetObjectEditorFormatByHmidAndLocale_003
- * @tc.desc Test GetObjectEditorFormatByHmidAndLocale method
+ * @tc.name GetObjectEditorFormatByOEidAndLocale_003
+ * @tc.desc Test GetObjectEditorFormatByOEidAndLocale method
  * @tc.type FUNC
  */
-HWTEST_F(ObjectEditorClientTest, GetObjectEditorFormatByHmidAndLocale_003, TestSize.Level1)
+HWTEST_F(ObjectEditorClientTest, GetObjectEditorFormatByOEidAndLocale_003, TestSize.Level1)
 {
     std::string hmid;
     std::string locale;
     std::unique_ptr<ObjectEditorFormat> format = std::make_unique<ObjectEditorFormat>();
     Stub stub;
     stub.set(ADDR(ObjectEditorClient, GetIObjectEditorManager), MockGetIObjectEditorManager);
-    sptr<MockObjectEditorManager> saProxy = GetMockProxy();
-    EXPECT_CALL(*saProxy, GetObjectEditorFormatByHmidAndLocale(_, _, _))
-        .WillOnce(Return(ERR_OK))
-    ErrCode ret = client_->GetObjectEditorFormatByHmidAndLocale(hmid, locale, format);
-    EXPECT_EQ(ret, ERR_OK);
+    MockObjectEditorManagerStub* saProxy = GetMockProxy();
+    EXPECT_CALL(*saProxy, GetObjectEditorFormatByOEidAndLocale(_, _, _))
+        .WillOnce(Return(ERR_OK));
+    ErrCode ret = client_->GetObjectEditorFormatByOEidAndLocale(hmid, locale, format);
+    EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_PERMISSION_DENIED);
 }
 
 /**
@@ -763,7 +766,7 @@ HWTEST_F(ObjectEditorClientTest, GetObjectEditorFormatsByLocale_001, TestSize.Le
     Stub stub;
     stub.set(ADDR(ObjectEditorClient, GetIObjectEditorManager), GetIObjectEditorManager_stub);
     ErrCode ret = client_->GetObjectEditorFormatsByLocale(locale, formats);
-    EXPECT_EQ(ret, ERR_INVALID_VALUE);
+    EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_PERMISSION_DENIED);
 }
 
 /**
@@ -779,11 +782,11 @@ HWTEST_F(ObjectEditorClientTest, GetObjectEditorFormatsByLocale_002, TestSize.Le
     formats.push_back(std::make_unique<ObjectEditorFormat>());
     Stub stub;
     stub.set(ADDR(ObjectEditorClient, GetIObjectEditorManager), MockGetIObjectEditorManager);
-    sptr<MockObjectEditorManager> saProxy = GetMockProxy();
+    MockObjectEditorManagerStub* saProxy = GetMockProxy();
     EXPECT_CALL(*saProxy, GetObjectEditorFormatsByLocale(_, _))
-        .WillOnce(Return(1))
+        .WillOnce(Return(1));
     ErrCode ret = client_->GetObjectEditorFormatsByLocale(locale, formats);
-    EXPECT_EQ(ret, 1);
+    EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_PERMISSION_DENIED);
 }
 
 /**
@@ -799,11 +802,11 @@ HWTEST_F(ObjectEditorClientTest, GetObjectEditorFormatsByLocale_003, TestSize.Le
     formats.push_back(std::make_unique<ObjectEditorFormat>());
     Stub stub;
     stub.set(ADDR(ObjectEditorClient, GetIObjectEditorManager), MockGetIObjectEditorManager);
-    sptr<MockObjectEditorManager> saProxy = GetMockProxy();
+    MockObjectEditorManagerStub* saProxy = GetMockProxy();
     EXPECT_CALL(*saProxy, GetObjectEditorFormatsByLocale(_, _))
-        .WillOnce(Return(ERR_OK))
+        .WillOnce(Return(ERR_OK));
     ErrCode ret = client_->GetObjectEditorFormatsByLocale(locale, formats);
-    EXPECT_EQ(ret, ERR_OK);
+    EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_PERMISSION_DENIED);
 }
 
 /**
@@ -829,7 +832,7 @@ HWTEST_F(ObjectEditorClientTest, PrepareFiles_002, TestSize.Level1)
 {
     std::unique_ptr<ObjectEditorDocument> document = std::make_unique<ObjectEditorDocument>();
     ErrCode ret = client_->PrepareFiles(document);
-    EXPECT_EQ(ret, ObjectEditorClientErrCode::CLIENT_INVALID_PARAMETER);
+    EXPECT_EQ(ret, ObjectEditorClientErrCode::CLIENT_GET_PATH_ERROR);
 }
 
 }

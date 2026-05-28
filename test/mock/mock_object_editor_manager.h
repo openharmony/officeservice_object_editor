@@ -41,6 +41,8 @@ public:
         std::vector<std::unique_ptr<ObjectEditorFormat>> &formats), (override));
     MOCK_METHOD(ErrCode, StartUIAbility, (const std::unique_ptr<AAFwk::Want> &want,
         sptr<IRemoteObject> extensionToken, int32_t clientPid), (override));
+    MOCK_METHOD(ErrCode, QueryExtensionStopReason, (const sptr<IRemoteObject> &oeExtensionRemoteObject,
+        ExtensionStopReason &stopReason), (override));
     MOCK_METHOD(sptr<IRemoteObject>, AsObject, (), (override));
 };
 
