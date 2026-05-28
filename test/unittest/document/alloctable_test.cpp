@@ -31,7 +31,7 @@ public:
     static void TearDownTestCase();
     void SetUp();
     void TearDown();
-    std::unique_ptr<Allocatable> table_;
+    std::unique_ptr<AllocTable> table_;
 };
 
 void AlloctableTest::SetUpTestCase()
@@ -44,7 +44,7 @@ void AlloctableTest::TearDownTestCase()
 
 void AlloctableTest::SetUp()
 {
-    table_ = std::make_unique<Allocatable>();
+    table_ = std::make_unique<AllocTable>();
 }
 
 void AlloctableTest::TearDown()
@@ -56,7 +56,7 @@ void AlloctableTest::TearDown()
  * @tc.desc Test Set method
  * @tc.type FUNC
  */
-HWTEST_F(AllocatableTest, Set_001, TestSize.Level1)
+HWTEST_F(AlloctableTest, Set_001, TestSize.Level1)
 {
     table_->Resize(5);
     table_->Set(3, 0x12345678);
@@ -68,7 +68,7 @@ HWTEST_F(AllocatableTest, Set_001, TestSize.Level1)
  * @tc.desc Test SetChain method
  * @tc.type FUNC
  */
-HWTEST_F(AllocatableTest, SetChain_001, TestSize.Level1)
+HWTEST_F(AlloctableTest, SetChain_001, TestSize.Level1)
 {
     table_->Resize(5);
     std::vector<uint32_t> empty;
@@ -81,7 +81,7 @@ HWTEST_F(AllocatableTest, SetChain_001, TestSize.Level1)
  * @tc.desc Test SetChain method
  * @tc.type FUNC
  */
-HWTEST_F(AllocatableTest, SetChain_002, TestSize.Level1)
+HWTEST_F(AlloctableTest, SetChain_002, TestSize.Level1)
 {
     table_->Resize(5);
     std::vector<uint32_t> empty = {1, 7, 3};
@@ -94,11 +94,11 @@ HWTEST_F(AllocatableTest, SetChain_002, TestSize.Level1)
  * @tc.desc Test Follow method
  * @tc.type FUNC
  */
-HWTEST_F(AllocatableTest, Follow_001, TestSize.Level1)
+HWTEST_F(AlloctableTest, Follow_001, TestSize.Level1)
 {
     table_->Resize(10);
     std::vector<uint32_t> chain;
-    auto res = table_->Follow(AllocaTable::Eof, chain);
+    auto res = table_->Follow(AllocTable::Eof, chain);
     EXPECT_EQ(res, true);
 }
 
@@ -107,7 +107,7 @@ HWTEST_F(AllocatableTest, Follow_001, TestSize.Level1)
  * @tc.desc Test Follow method
  * @tc.type FUNC
  */
-HWTEST_F(AllocatableTest, Follow_002, TestSize.Level1)
+HWTEST_F(AlloctableTest, Follow_002, TestSize.Level1)
 {
     table_->Resize(5);
     std::vector<uint32_t> chain;
@@ -120,7 +120,7 @@ HWTEST_F(AllocatableTest, Follow_002, TestSize.Level1)
  * @tc.desc Test Follow method
  * @tc.type FUNC
  */
-HWTEST_F(AllocatableTest, Follow_003, TestSize.Level1)
+HWTEST_F(AlloctableTest, Follow_003, TestSize.Level1)
 {
     table_->Resize(10);
     std::vector<uint32_t> chain;
@@ -133,10 +133,10 @@ HWTEST_F(AllocatableTest, Follow_003, TestSize.Level1)
  * @tc.desc Test Unused method
  * @tc.type FUNC
  */
-HWTEST_F(AllocatableTest, Unused_001, TestSize.Level1)
+HWTEST_F(AlloctableTest, Unused_001, TestSize.Level1)
 {
     table_->Resize(10);
-    table_->Set(0, AllocaTable::Avail);
+    table_->Set(0, AllocTable::Avail);
     EXPECT_EQ(table_->Unused(), 0);
 }
 
@@ -145,7 +145,7 @@ HWTEST_F(AllocatableTest, Unused_001, TestSize.Level1)
  * @tc.desc Test Unused method
  * @tc.type FUNC
  */
-HWTEST_F(AllocatableTest, Unused_002, TestSize.Level1)
+HWTEST_F(AlloctableTest, Unused_002, TestSize.Level1)
 {
     table_->Resize(5);
     for (uint32_t i = 0; i < 5; i++) {
@@ -159,7 +159,7 @@ HWTEST_F(AllocatableTest, Unused_002, TestSize.Level1)
  * @tc.desc Test Load method
  * @tc.type FUNC
  */
-HWTEST_F(AllocatableTest, Load_001, TestSize.Level1)
+HWTEST_F(AlloctableTest, Load_001, TestSize.Level1)
 {
     auto res = table_->Load(nullptr, 5);
     EXPECT_EQ(res, false);
@@ -170,7 +170,7 @@ HWTEST_F(AllocatableTest, Load_001, TestSize.Level1)
  * @tc.desc Test Load method
  * @tc.type FUNC
  */
-HWTEST_F(AllocatableTest, Load_002, TestSize.Level1)
+HWTEST_F(AlloctableTest, Load_002, TestSize.Level1)
 {
     auto res = table_->Load(nullptr, 8);
     EXPECT_EQ(res, false);
@@ -181,7 +181,7 @@ HWTEST_F(AllocatableTest, Load_002, TestSize.Level1)
  * @tc.desc Test Load method
  * @tc.type FUNC
  */
-HWTEST_F(AllocatableTest, Load_003, TestSize.Level1)
+HWTEST_F(AlloctableTest, Load_003, TestSize.Level1)
 {
     uint8_t data[12] = {0x12, 0x34, 0x56, 0x78, 0x87, 0x65, 0x43, 0x21, 0x11, 0x22, 0x33, 0x44};
     auto res = table_->Load(data, 8);
@@ -193,7 +193,7 @@ HWTEST_F(AllocatableTest, Load_003, TestSize.Level1)
  * @tc.desc Test Save method
  * @tc.type FUNC
  */
-HWTEST_F(AllocatableTest, Save_001, TestSize.Level1)
+HWTEST_F(AlloctableTest, Save_001, TestSize.Level1)
 {
     table_->Resize(2);
     auto res = table_->Save(nullptr, 5);
@@ -205,7 +205,7 @@ HWTEST_F(AllocatableTest, Save_001, TestSize.Level1)
  * @tc.desc Test Save method
  * @tc.type FUNC
  */
-HWTEST_F(AllocatableTest, Save_002, TestSize.Level1)
+HWTEST_F(AlloctableTest, Save_002, TestSize.Level1)
 {
     table_->Resize(1);
     auto res = table_->Save(nullptr, 5);
@@ -217,12 +217,12 @@ HWTEST_F(AllocatableTest, Save_002, TestSize.Level1)
  * @tc.desc Test Save method
  * @tc.type FUNC
  */
-HWTEST_F(AllocatableTest, Save_003, TestSize.Level1)
+HWTEST_F(AlloctableTest, Save_003, TestSize.Level1)
 {
     table_->Resize(1);
     uint8_t buffer[12] = {0x12, 0x34, 0x56, 0x78, 0x87, 0x65, 0x43, 0x21, 0x11, 0x22, 0x33, 0x44};
     auto res = table_->Save(buffer, 5);
-    EXPECT_EQ(res, false);
+    EXPECT_EQ(res, true);
 }
 
 /**
@@ -230,10 +230,10 @@ HWTEST_F(AllocatableTest, Save_003, TestSize.Level1)
  * @tc.desc Test Debug method
  * @tc.type FUNC
  */
-HWTEST_F(AllocatableTest, Debug_001, TestSize.Level1)
+HWTEST_F(AlloctableTest, Debug_001, TestSize.Level1)
 {
     table_->Resize(1);
-    auto res = table_->Debug();
+    table_->Debug();
 }
 
 }

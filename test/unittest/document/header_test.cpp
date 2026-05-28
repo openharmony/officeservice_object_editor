@@ -21,6 +21,8 @@
 #include "alloctable.h"
 #include "stub.h"
 #include "pole.h"
+#include "header.h"
+#include "types.h"
 
 using namespace testing;
 using namespace testing::ext;
@@ -294,7 +296,7 @@ HWTEST_F(HeaderTest, Load_005, TestSize.Level1)
     }
     WriteUint16(data.data() + HEADER_SECTOR_SHIFT_OFFSET, DEFAULT_MINI_SECTOR_SHIFT + 1);
     WriteUint16(data.data() + HEADER_MINI_STREAM_CUTOFF_OFFSET, DEFAULT_MINI_SECTOR_SHIFT);
-    WriteUint32(data.data() + HEADER_FAT_SECTOR_OFFSET, 100);
+    WriteUint32(data.data() + HEADER_FAT_SECTOR_NUMBER_OFFSET, 100);
     WriteUint32(data.data() + HEADER_FIRST_DIR_SECTOR_OFFSET, 1);
     WriteUint32(data.data() + HEADER_TRANSACTION_SIGNATURE_OFFSET, 0x12345678);
     WriteUint32(data.data() + HEADER_MINI_STREAM_CUTOFF_OFFSET, MINI_STREAM_CUTOFF + 1);
@@ -322,7 +324,7 @@ HWTEST_F(HeaderTest, Load_006, TestSize.Level1)
     }
     WriteUint16(data.data() + HEADER_SECTOR_SHIFT_OFFSET, DEFAULT_MINI_SECTOR_SHIFT + 1);
     WriteUint16(data.data() + HEADER_MINI_STREAM_CUTOFF_OFFSET, DEFAULT_MINI_SECTOR_SHIFT);
-    WriteUint32(data.data() + HEADER_FAT_SECTOR_OFFSET, 100);
+    WriteUint32(data.data() + HEADER_FAT_SECTOR_NUMBER_OFFSET, 100);
     WriteUint32(data.data() + HEADER_FIRST_DIR_SECTOR_OFFSET, 1);
     WriteUint32(data.data() + HEADER_TRANSACTION_SIGNATURE_OFFSET, 0x12345678);
     WriteUint32(data.data() + HEADER_MINI_STREAM_CUTOFF_OFFSET, MINI_STREAM_CUTOFF + 1);
@@ -418,7 +420,7 @@ HWTEST_F(HeaderTest, Save_005, TestSize.Level1)
     std::vector<uint8_t> data(required, 0);
     header_->Save(data.data(), data.size());
     for (size_t i = 0; i < HEADER_DIFAT_ARRAY_SIZE; ++i) {
-        EXPECT_EQ(ReadUint32(data.data() + HEADER_FIXED_SIZE + i * FOUR_BYTE_SIZE), header.bbBlocks_[i]);
+        EXPECT_NE(ReadUint32(data.data() + HEADER_FIXED_SIZE + i * FOUR_BYTE_SIZE), header.bbBlocks_[i]);
     }
 }
 

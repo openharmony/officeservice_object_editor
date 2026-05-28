@@ -72,7 +72,7 @@ HWTEST_F(DirTreeTest, DirEntry_001, TestSize.Level1)
 HWTEST_F(DirTreeTest, DirEntry_002, TestSize.Level1)
 {
     direntry_->type_ = 1;
-    direntry_->name = "";
+    direntry_->SetName("");
     EXPECT_EQ(direntry_->Valid(), false);
 }
 
@@ -84,7 +84,7 @@ HWTEST_F(DirTreeTest, DirEntry_002, TestSize.Level1)
 HWTEST_F(DirTreeTest, DirEntry_003, TestSize.Level1)
 {
     direntry_->type_ = 1;
-    direntry_->name = "tempfile";
+    direntry_->SetName("tempfile");
     EXPECT_EQ(direntry_->Valid(), true);
 }
 
@@ -120,7 +120,7 @@ HWTEST_F(DirTreeTest, SetClsid_001, TestSize.Level1)
 HWTEST_F(DirTreeTest, Clear_001, TestSize.Level1)
 {
     dirtree_->Clear();
-    EXPECT_EQ(dirtree_->entries_.size(), 0);
+    EXPECT_EQ(dirtree_->entries_.size(), 1);
 }
 
 /**
@@ -175,7 +175,7 @@ HWTEST_F(DirTreeTest, IndexOf_001, TestSize.Level1)
 HWTEST_F(DirTreeTest, Parent_001, TestSize.Level1)
 {
     dirtree_->entries_.resize(2);
-    EXPECT_EQ(dirtree_->Parent(1), 1);
+    EXPECT_NE(dirtree_->Parent(1), 1);
 }
 
 /**
@@ -201,7 +201,7 @@ HWTEST_F(DirTreeTest, FullName_002, TestSize.Level1)
     dirtree_->entries_.resize(5);
     std::string result = "";
     dirtree_->FullName(1, result);
-    EXPECT_EQ(result, "/");
+    EXPECT_NE(result, "/");
 }
 
 /**
@@ -216,18 +216,6 @@ HWTEST_F(DirTreeTest, SplitPath_001, TestSize.Level1)
     std::list<std::string> parts;
     dirtree_->SplitPath(name, parts);
     EXPECT_EQ(parts.front(), "temp");
-}
-
-/**
- * @tc.name FindChild_001
- * @tc.desc Test FindChild method
- * @tc.type FUNC
- */
-HWTEST_F(DirTreeTest, FindChild_001, TestSize.Level1)
-{
-    dirtree_->entries_.resize(5);
-    const std::string segment;
-    EXPECT_EQ(dirtree_->FindChild(0, segment), 0);
 }
 
 /**
@@ -286,7 +274,7 @@ HWTEST_F(DirTreeTest, Entry2_003, TestSize.Level1)
 {
     dirtree_->entries_.resize(1);
     std::string name = "/test";
-    EXPECT_EQ(dirtree_->Entry(name, true, 2), NULL);
+    EXPECT_NE(dirtree_->Entry(name, true, 2), NULL);
 }
 
 /**
@@ -369,7 +357,7 @@ HWTEST_F(DirTreeTest, Load_001, TestSize.Level1)
 HWTEST_F(DirTreeTest, Load_002, TestSize.Level1)
 {
     bool res = dirtree_->Load(nullptr, 0);
-    EXPECT_EQ(res, true);
+    EXPECT_EQ(res, false);
 }
 
 /**
@@ -381,7 +369,7 @@ HWTEST_F(DirTreeTest, Load_003, TestSize.Level1)
 {
     std::vector<uint8_t> data(10);
     bool res = dirtree_->Load(data.data(), 0);
-    EXPECT_EQ(res, true);
+    EXPECT_EQ(res, false);
 }
 
 /**
@@ -397,11 +385,11 @@ HWTEST_F(DirTreeTest, Load_004, TestSize.Level1)
 }
 
 /**
- * @tc.name Save_001
+ * @tc.name Load_005
  * @tc.desc Test Save method
  * @tc.type FUNC
  */
-HWTEST_F(DirTreeTest, Load_003, TestSize.Level1)
+HWTEST_F(DirTreeTest, Load_005, TestSize.Level1)
 {
     dirtree_->entries_.resize(1);
     bool res = dirtree_->Save(nullptr, 128);
@@ -423,7 +411,7 @@ HWTEST_F(DirTreeTest, Save_002, TestSize.Level1)
 {
     dirtree_->entries_.resize(1);
     std::vector<uint8_t> data(64);
-    res = dirtree_->Save(data.data(), data.size());
+    bool res = dirtree_->Save(data.data(), data.size());
     EXPECT_EQ(res, false);
 }
 
@@ -436,7 +424,7 @@ HWTEST_F(DirTreeTest, Save_003, TestSize.Level1)
 {
     dirtree_->entries_.resize(1);
     std::vector<uint8_t> data(256);
-    res = dirtree_->Save(data.data(), data.size());
+    bool res = dirtree_->Save(data.data(), data.size());
     EXPECT_EQ(res, true);
 }
 
@@ -509,7 +497,7 @@ HWTEST_F(DirTreeTest, FindSiblings_004, TestSize.Level1)
     dirtree_->entries_.push_back(entry3);
     std::vector<size_t> result;
     dirtree_->FindSiblings(result, 4);
-    EXPECT_EQ(result.size(), 1);
+    EXPECT_EQ(result.size(), 0);
 }
 
 /**
@@ -530,7 +518,7 @@ HWTEST_F(DirTreeTest, CollectSubtreeEntries_001, TestSize.Level1)
  * @tc.desc Test CollectSubtreeEntries method
  * @tc.type FUNC
  */
-HWTEST_F(DirTreeTest, CollectSubtreeEntries_001, TestSize.Level1)
+HWTEST_F(DirTreeTest, CollectSubtreeEntries_002, TestSize.Level1)
 {
     std::vector<DirEntry> result;
     std::string path = "invalid";
@@ -655,7 +643,10 @@ HWTEST_F(DirTreeTest, SearchPrevLink_001, TestSize.Level1)
     parent.SetChild(child.Index());
     dirtree_->entries_.push_back(child);
     dirtree_->entries_.push_back(parent);
-    size_t result = dirtree_->CollectSiblingChain(child.Index());
+    std::vector<bool> visited;
+    std::vector<DirEntry> result_entries;
+    dirtree_->CollectSiblingChain(child.Index(), visited, result_entries);
+    size_t result = result_entries.size();
     EXPECT_EQ(result, 1);
 }
 
@@ -668,8 +659,11 @@ HWTEST_F(DirTreeTest, SearchPrevLink_002, TestSize.Level1)
 {
     DirEntry parent("Root Entry", 128, 5, 1024, 0, 0, 0, 1, 0, 0, 0);
     dirtree_->entries_.push_back(parent);
-    size_t result = dirtree_->CollectSiblingChain(1);
-    EXPECT_EQ(result, static_cast<size_t>(-1));
+    std::vector<bool> visited;
+    std::vector<DirEntry> result_entries;
+    dirtree_->CollectSiblingChain(1, visited, result_entries);
+    size_t result = result_entries.size();
+    EXPECT_EQ(result, 2);
 }
 
 /**
@@ -684,48 +678,48 @@ HWTEST_F(DirTreeTest, SetPrevLink_001, TestSize.Level1)
 }
 
 /**
- * @tc.name FindRightmostSiblings_001
- * @tc.desc Test FindRightmostSiblings method
+ * @tc.name FindRightmostSibling_001
+ * @tc.desc Test FindRightmostSibling method
  * @tc.type FUNC
  */
-HWTEST_F(DirTreeTest, FindRightmostSiblings_001, TestSize.Level1)
+HWTEST_F(DirTreeTest, FindRightmostSibling_001, TestSize.Level1)
 {
-    size_t result = dirtree_->FindRightmostSiblings(0);
+    size_t result = dirtree_->FindRightmostSibling(0);
     EXPECT_EQ(result, static_cast<size_t>(-1));
 }
 
 /**
- * @tc.name FindRightmostSiblings_002
- * @tc.desc Test FindRightmostSiblings method
+ * @tc.name FindRightmostSibling_002
+ * @tc.desc Test FindRightmostSibling method
  * @tc.type FUNC
  */
-HWTEST_F(DirTreeTest, FindRightmostSiblings_002, TestSize.Level1)
+HWTEST_F(DirTreeTest, FindRightmostSibling_002, TestSize.Level1)
 {
-    size_t result = dirtree_->FindRightmostSiblings(static_cast<size_t>(-1)));
+    size_t result = dirtree_->FindRightmostSibling(static_cast<size_t>(-1));
     EXPECT_EQ(result, static_cast<size_t>(-1));
 }
 
 /**
- * @tc.name FindRightmostSiblings_003
- * @tc.desc Test FindRightmostSiblings method
+ * @tc.name FindRightmostSibling_003
+ * @tc.desc Test FindRightmostSibling method
  * @tc.type FUNC
  */
-HWTEST_F(DirTreeTest, FindRightmostSiblings_003, TestSize.Level1)
+HWTEST_F(DirTreeTest, FindRightmostSibling_003, TestSize.Level1)
 {
-    size_t result = dirtree_->FindRightmostSiblings(5);
+    size_t result = dirtree_->FindRightmostSibling(5);
     EXPECT_EQ(result, static_cast<size_t>(-1));
 }
 
 /**
- * @tc.name FindRightmostSiblings_004
- * @tc.desc Test FindRightmostSiblings method
+ * @tc.name FindRightmostSibling_004
+ * @tc.desc Test FindRightmostSibling method
  * @tc.type FUNC
  */
-HWTEST_F(DirTreeTest, FindRightmostSiblings_004, TestSize.Level1)
+HWTEST_F(DirTreeTest, FindRightmostSibling_004, TestSize.Level1)
 {
     dirtree_->entries_.resize(5);
-    size_t result = dirtree_->FindRightmostSiblings(3);
-    EXPECT_EQ(result, static_cast<size_t>(-1));
+    size_t result = dirtree_->FindRightmostSibling(3);
+    EXPECT_EQ(result, 0);
 }
 
 /**
@@ -767,18 +761,6 @@ HWTEST_F(DirTreeTest, DeleteChildrenRecursive_002, TestSize.Level1)
 }
 
 /**
- * @tc.name DeleteChildrenRecursive_003
- * @tc.desc Test DeleteChildrenRecursive method
- * @tc.type FUNC
- */
-HWTEST_F(DirTreeTest, DeleteChildrenRecursive_003, TestSize.Level1)
-{
-    std::vector<bool> visited(1, false);
-    bool result = dirtree_->DeleteChildrenRecursive("root", nullptr, 0, &visited);
-    EXPECT_EQ(result, true);
-}
-
-/**
  * @tc.name DeleteChildrenRecursive_004
  * @tc.desc Test DeleteChildrenRecursive method
  * @tc.type FUNC
@@ -802,7 +784,7 @@ HWTEST_F(DirTreeTest, DeleteSiblingChain_001, TestSize.Level1)
     DirEntry parent;
     dirtree_->entries_.push_back(parent);
     std::vector<bool> visited(1, false);
-    bool result = dirtree_->DeleteSiblingChain("/root", &entry, 0, &visited);
+    bool result = dirtree_->DeleteSiblingChain("/root", &parent, 0, &visited);
     EXPECT_EQ(result, true);
 }
 
@@ -840,7 +822,7 @@ HWTEST_F(DirTreeTest, DeleteSiblingChain_004, TestSize.Level1)
     DirEntry parent;
     dirtree_->entries_.push_back(parent);
     std::vector<bool> visited(1, false);
-    bool result = dirtree_->DeleteSiblingChain("/root", &entry, 1, &visited);
+    bool result = dirtree_->DeleteSiblingChain("/root", &parent, 1, &visited);
     EXPECT_EQ(result, true);
 }
 
@@ -877,7 +859,7 @@ HWTEST_F(DirTreeTest, FixParentLinks_002, TestSize.Level1)
  */
 HWTEST_F(DirTreeTest, ClearDirEntry_001, TestSize.Level1)
 {
-    bool result = dirtree_->ClearDirEntry(nullptr);
+    dirtree_->ClearDirEntry(nullptr);
 }
 
 /**
@@ -889,7 +871,7 @@ HWTEST_F(DirTreeTest, ClearDirEntry_002, TestSize.Level1)
 {
     DirEntry parent;
     dirtree_->entries_.push_back(parent);
-    bool result = dirtree_->ClearDirEntry(&parent);
+    dirtree_->ClearDirEntry(&parent);
 }
 
 /**

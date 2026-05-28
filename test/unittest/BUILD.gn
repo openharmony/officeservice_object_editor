@@ -17,6 +17,7 @@ group("unittest") {
   deps = [
     "common:common_unittest",
     "database:database_unittest",
+    "document:document_unittest",
     "extension_ability:extension_ability_unittest",
     "frameworks:framework_unittest",
     "system_ability:system_ability_unittest",

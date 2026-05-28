@@ -1,0 +1,311 @@
+# Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/test.gni")
+import("//foundation/officeservice/object_editor/object_editor.gni")
+
+module_out_path = "object_editor/unittest"
+
+config("document_test_config") {
+  include_dirs = [
+    "${object_editor_path}/document/include",
+    "${object_editor_path}/common/include",
+    "${object_editor_path}/utils/include/dfx",
+    "${object_editor_path}/interfaces/innerkits/include",
+    "${object_editor_path}/test/mock/",
+    "${object_editor_path}/client/include",
+  ]
+
+  cflags = [
+    "-g",
+    "-O0",
+    "-Wno-unused-variable",
+    "-fno-omit-frame-pointer",
+  ]
+}
+
+ohos_unittest("alloctable_test") {
+  module_out_path = module_out_path
+
+  sources = [
+    "alloctable_test.cpp",
+  ]
+
+  configs = [
+    ":document_test_config",
+    "${object_editor_path}/resources/config/build:coverage_flags",
+    "${object_editor_path}/resources/config/build:testcase_flags",
+  ]
+
+  deps = [
+    "${object_editor_path}/document:content_embed_document",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "icu:shared_icuuc",
+  ]
+
+  defines = [
+    "private=public",
+  ]
+
+  part_name = "object_editor"
+  subsystem_name = "officeservice"
+}
+
+ohos_unittest("dirtree_test") {
+  module_out_path = module_out_path
+
+  sources = [
+    "dirtree_test.cpp",
+  ]
+
+  configs = [
+    ":document_test_config",
+    "${object_editor_path}/resources/config/build:coverage_flags",
+    "${object_editor_path}/resources/config/build:testcase_flags",
+  ]
+
+  deps = [
+    "${object_editor_path}/document:content_embed_document",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "icu:shared_icuuc",
+  ]
+
+  defines = [
+    "private=public",
+  ]
+
+  part_name = "object_editor"
+  subsystem_name = "officeservice"
+}
+
+ohos_unittest("header_test") {
+  module_out_path = module_out_path
+
+  sources = [
+    "header_test.cpp",
+  ]
+
+  configs = [
+    ":document_test_config",
+    "${object_editor_path}/resources/config/build:coverage_flags",
+    "${object_editor_path}/resources/config/build:testcase_flags",
+  ]
+
+  deps = [
+    "${object_editor_path}/document:content_embed_document",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "icu:shared_icuuc",
+  ]
+
+  defines = [
+    "private=public",
+  ]
+
+  part_name = "object_editor"
+  subsystem_name = "officeservice"
+}
+
+ohos_unittest("object_editor_document_test") {
+  module_out_path = module_out_path
+
+  sources = [
+    "object_editor_document_test.cpp",
+  ]
+
+  configs = [
+    ":document_test_config",
+    "${object_editor_path}/resources/config/build:coverage_flags",
+    "${object_editor_path}/resources/config/build:testcase_flags",
+  ]
+
+  deps = [
+    "${object_editor_path}/document:content_embed_document",
+  ]
+
+  external_deps = [
+    "ability_base:zuri",
+    "ability_runtime:app_context",
+    "app_file_service:fileuri_native",
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "icu:shared_icuuc",
+    "ipc:ipc_core",
+  ]
+
+  defines = [
+    "private=public",
+  ]
+
+  part_name = "object_editor"
+  subsystem_name = "officeservice"
+}
+
+ohos_unittest("pole_test") {
+  module_out_path = module_out_path
+
+  sources = [
+    "pole_test.cpp",
+  ]
+
+  configs = [
+    ":document_test_config",
+    "${object_editor_path}/resources/config/build:coverage_flags",
+    "${object_editor_path}/resources/config/build:testcase_flags",
+  ]
+
+  deps = [
+    "${object_editor_path}/document:content_embed_document",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "icu:shared_icuuc",
+  ]
+
+  defines = [
+    "private=public",
+  ]
+
+  part_name = "object_editor"
+  subsystem_name = "officeservice"
+}
+
+ohos_unittest("storage_test") {
+  module_out_path = module_out_path
+
+  sources = [
+    "storage_test.cpp",
+  ]
+
+  configs = [
+    ":document_test_config",
+    "${object_editor_path}/resources/config/build:coverage_flags",
+    "${object_editor_path}/resources/config/build:testcase_flags",
+  ]
+
+  deps = [
+    "${object_editor_path}/document:content_embed_document",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "icu:shared_icuuc",
+  ]
+
+  defines = [
+    "private=public",
+  ]
+
+  part_name = "object_editor"
+  subsystem_name = "officeservice"
+}
+
+ohos_unittest("stream_test") {
+  module_out_path = module_out_path
+
+  sources = [
+    "stream_test.cpp",
+  ]
+
+  configs = [
+    ":document_test_config",
+    "${object_editor_path}/resources/config/build:coverage_flags",
+    "${object_editor_path}/resources/config/build:testcase_flags",
+  ]
+
+  deps = [
+    "${object_editor_path}/document:content_embed_document",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "icu:shared_icuuc",
+  ]
+
+  defines = [
+    "private=public",
+  ]
+
+  part_name = "object_editor"
+  subsystem_name = "officeservice"
+}
+
+ohos_unittest("utils_test") {
+  module_out_path = module_out_path
+
+  sources = [
+    "utils_test.cpp",
+  ]
+
+  configs = [
+    ":document_test_config",
+    "${object_editor_path}/resources/config/build:coverage_flags",
+    "${object_editor_path}/resources/config/build:testcase_flags",
+  ]
+
+  deps = [
+    "${object_editor_path}/document:content_embed_document",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gmock",
+    "hilog:libhilog",
+    "icu:shared_icuuc",
+  ]
+
+  defines = [
+    "private=public",
+  ]
+
+  part_name = "object_editor"
+  subsystem_name = "officeservice"
+}
+
+group("document_unittest") {
+  testonly = true
+
+  deps = [
+    ":alloctable_test",
+    ":dirtree_test",
+    ":header_test",
+    ":object_editor_document_test",
+    ":pole_test",
+    ":storage_test",
+    ":stream_test",
+    ":utils_test",
+  ]
+}
