@@ -86,7 +86,8 @@ ohos_shared_library("content_embed_client") {
         "image_framework:image_native",
         "app_file_service:fileuri_native",
         "ability_runtime:ability_runtime",
-        "hisysevent:libhisysevent"
+        "hisysevent:libhisysevent",
+        "hitrace:hitrace_meter",
     ]
     defines = []
 

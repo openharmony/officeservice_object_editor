@@ -15,6 +15,7 @@
 
 #include <cstring>
 #include <filesystem>
+#include <hitrace_meter.h>
 #include "image_source.h"
 
 #include "iobject_editor_extension.h"
@@ -661,7 +662,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_DoEdit(ContentEmbed_ExtensionProxy 
                         proxy->ceDocument->oeDocumentInner->GetOEid();
     HiSysEventWrite(OBJECT_EDITOR, "EDIT_DOCUMENT", OHOS::HiviewDFX::HiSysEvent::EventType::STATISTIC,
                     "OEID", oeid, "BUNDLENAME", contextSptr->GetBundleName());
-
+    HITRACE_METER_FMT(HITRACE_TAG_OHOS, "proxy::OH_ContentEmbed_Proxy_DoEdit");
     auto errCode = proxy->objectEditorService->DoEdit(proxy->ceDocument->oeDocumentInner->GetDocumentId());
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed: %{public}d", errCode);
