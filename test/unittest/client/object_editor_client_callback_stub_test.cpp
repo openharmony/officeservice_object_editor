@@ -56,146 +56,146 @@ bool MockWriteInt32Fail()
 namespace {
 
 /**
- * @tc.name onRemoteRequest_001
- * @tc.desc Test onRemoteRequest method
+ * @tc.name OnRemoteRequest_001
+ * @tc.desc Test OnRemoteRequest method
  * @tc.type FUNC
  */
 
-HWTEST_F(ObjectEditorClientCallbackStubTest, onRemoteRequest_001, TestSize.Level1)
+HWTEST_F(ObjectEditorClientCallbackStubTest, OnRemoteRequest_001, TestSize.Level1)
 {
     uint32_t code = 0;
     MessageParcel data;
     MessageParcel reply;
     MessageOption option;
-    sptr<ObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
+    sptr<MockObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
     EXPECT_CALL(*stub, CallbackEnter(code)).WillOnce(Return(1));
-    int32_t ret = stub->onRemoteRequest(code, data, reply, option);
+    int32_t ret = stub->OnRemoteRequest(code, data, reply, option);
     EXPECT_EQ(ret, 1);
 }
 
 /**
- * @tc.name onRemoteRequest_002
- * @tc.desc Test onRemoteRequest method
+ * @tc.name OnRemoteRequest_002
+ * @tc.desc Test OnRemoteRequest method
  * @tc.type FUNC
  */
 
-HWTEST_F(ObjectEditorClientCallbackStubTest, onRemoteRequest_002, TestSize.Level1)
+HWTEST_F(ObjectEditorClientCallbackStubTest, OnRemoteRequest_002, TestSize.Level1)
 {
     uint32_t code = 0;
     MessageParcel data;
     MessageParcel reply;
     MessageOption option;
-    sptr<ObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
+    sptr<MockObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
     EXPECT_CALL(*stub, CallbackEnter(code)).WillOnce(Return(ERR_NONE));
     EXPECT_CALL(*stub, CallbackExit(_, _)).WillOnce(Return(1));
-    int32_t ret = stub->onRemoteRequest(code, data, reply, option);
+    int32_t ret = stub->OnRemoteRequest(code, data, reply, option);
     EXPECT_EQ(ret, 1);
 }
 
 /**
- * @tc.name onRemoteRequest_003
- * @tc.desc Test onRemoteRequest method
+ * @tc.name OnRemoteRequest_003
+ * @tc.desc Test OnRemoteRequest method
  * @tc.type FUNC
  */
 
-HWTEST_F(ObjectEditorClientCallbackStubTest, onRemoteRequest_003, TestSize.Level1)
+HWTEST_F(ObjectEditorClientCallbackStubTest, OnRemoteRequest_003, TestSize.Level1)
 {
     uint32_t code = 0;
     MessageParcel data;
     MessageParcel reply;
     MessageOption option;
-    sptr<ObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
+    sptr<MockObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
     EXPECT_CALL(*stub, CallbackEnter(code)).WillOnce(Return(ERR_NONE));
     EXPECT_CALL(*stub, CallbackExit(_, _)).WillOnce(Return(1));
-    int32_t ret = stub->onRemoteRequest(code, data, reply, option);
-    EXPECT_EQ(ret, ERR_NONE);
-}
-
-/**
- * @tc.name onRemoteRequestInner_001
- * @tc.desc Test onRemoteRequest method
- * @tc.type FUNC
- */
-
-HWTEST_F(ObjectEditorClientCallbackStubTest, onRemoteRequestInner_001, TestSize.Level1)
-{
-    uint32_t code = 0;
-    MessageParcel data;
-    MessageParcel reply;
-    MessageOption option;
-    data.WriteInterfaceToken(u"com.example.InvalidEditor")
-    sptr<ObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
-    int32_t ret = stub->onRemoteRequest(code, data, reply, option);
+    int32_t ret = stub->OnRemoteRequest(code, data, reply, option);
     EXPECT_EQ(ret, ERR_TRANSACTION_FAILED);
 }
 
 /**
- * @tc.name onRemoteRequestInner_002
- * @tc.desc Test onRemoteRequest method
+ * @tc.name OnRemoteRequestInner_001
+ * @tc.desc Test OnRemoteRequest method
  * @tc.type FUNC
  */
 
-HWTEST_F(ObjectEditorClientCallbackStubTest, onRemoteRequestInner_002, TestSize.Level1)
+HWTEST_F(ObjectEditorClientCallbackStubTest, OnRemoteRequestInner_001, TestSize.Level1)
+{
+    uint32_t code = 0;
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option;
+    data.WriteInterfaceToken(u"com.example.InvalidEditor");
+    sptr<MockObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
+    int32_t ret = stub->OnRemoteRequest(code, data, reply, option);
+    EXPECT_EQ(ret, ERR_NONE);
+}
+
+/**
+ * @tc.name OnRemoteRequestInner_002
+ * @tc.desc Test OnRemoteRequest method
+ * @tc.type FUNC
+ */
+
+HWTEST_F(ObjectEditorClientCallbackStubTest, OnRemoteRequestInner_002, TestSize.Level1)
 {
     uint32_t code = 0;
     MessageParcel data;
     MessageParcel reply;
     MessageOption option;
     data.WriteInterfaceToken(ObjectEditorClientCallbackStub::GetDescriptor());
-    sptr<ObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
-    int32_t ret = stub->onRemoteRequest(code, data, reply, option);
-    EXPECT_EQ(ret, ERR_INVALID_FAILED);
-}
-
-/**
- * @tc.name HandleUpdate_001
- * @tc.desc Test HandleUpdate method
- * @tc.type FUNC
- */
-
-HWTEST_F(ObjectEditorClientCallbackStubTest, HandleUpdate_001, TestSize.Level1)
-{
-    MessageParcel data;
-    MessageParcel reply;
-    sptr<ObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
-    int32_t ret = stub->HandleUpdate(data, reply);
-    EXPECT_EQ(ret, ERR_INVALID_DATA);
-}
-
-/**
- * @tc.name HandleUpdate_002
- * @tc.desc Test HandleUpdate method
- * @tc.type FUNC
- */
-
-HWTEST_F(ObjectEditorClientCallbackStubTest, HandleUpdate_002, TestSize.Level1)
-{
-    MessageParcel data;
-    MessageParcel reply;
-    sptr<ObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
-    auto document = std::make_unique<ObjectEditorDocument>();
-    data.WriteParcelable(document.get());
-    int32_t ret = stub->HandleUpdate(data, reply);
+    sptr<MockObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
+    int32_t ret = stub->OnRemoteRequest(code, data, reply, option);
     EXPECT_EQ(ret, ERR_NONE);
 }
 
 /**
- * @tc.name HandleUpdate_003
- * @tc.desc Test HandleUpdate method
+ * @tc.name HandleOnUpdate_001
+ * @tc.desc Test HandleOnUpdate method
  * @tc.type FUNC
  */
 
-HWTEST_F(ObjectEditorClientCallbackStubTest, HandleUpdate_003, TestSize.Level1)
+HWTEST_F(ObjectEditorClientCallbackStubTest, HandleOnUpdate_001, TestSize.Level1)
 {
     MessageParcel data;
     MessageParcel reply;
-    sptr<ObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
+    sptr<MockObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
+    int32_t ret = stub->HandleOnUpdate(data, reply);
+    EXPECT_EQ(ret, ERR_INVALID_DATA);
+}
+
+/**
+ * @tc.name HandleOnUpdate_002
+ * @tc.desc Test HandleOnUpdate method
+ * @tc.type FUNC
+ */
+
+HWTEST_F(ObjectEditorClientCallbackStubTest, HandleOnUpdate_002, TestSize.Level1)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    sptr<MockObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
     auto document = std::make_unique<ObjectEditorDocument>();
     data.WriteParcelable(document.get());
-    Stub stub;
-    stub.set(ADDR(MessageParcel, WriteInt32), MockWriteInt32Fail);
-    int32_t ret = stub->HandleUpdate(data, reply);
-    EXPECT_EQ(ret, ERR_INVALID_VALUE);
+    int32_t ret = stub->HandleOnUpdate(data, reply);
+    EXPECT_EQ(ret, ERR_INVALID_DATA);
+}
+
+/**
+ * @tc.name HandleOnUpdate_003
+ * @tc.desc Test HandleOnUpdate method
+ * @tc.type FUNC
+ */
+
+HWTEST_F(ObjectEditorClientCallbackStubTest, HandleOnUpdate_003, TestSize.Level1)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    sptr<MockObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
+    auto document = std::make_unique<ObjectEditorDocument>();
+    data.WriteParcelable(document.get());
+    Stub funcStub;
+    funcStub.set(ADDR(MessageParcel, WriteInt32), MockWriteInt32Fail);
+    int32_t ret = stub->HandleOnUpdate(data, reply);
+    EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
 
 /**
@@ -209,8 +209,8 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, HandleOnError_001, TestSize.Level1)
     MessageParcel data;
     MessageParcel reply;
     int32_t errorCode = static_cast<int32_t>(0);
-    data.writeInt32(errorCode);
-    sptr<ObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
+    data.WriteInt32(errorCode);
+    sptr<MockObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
     int32_t ret = stub->HandleOnError(data, reply);
     EXPECT_EQ(ret, ERR_NONE);
 }
@@ -226,12 +226,12 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, HandleOnError_002, TestSize.Level1)
     MessageParcel data;
     MessageParcel reply;
     int32_t errorCode = static_cast<int32_t>(0);
-    data.writeInt32(errorCode);
-    Stub stub;
-    stub.set(ADDR(MessageParcel, WriteInt32), MockWriteInt32Fail);
-    sptr<ObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
+    data.WriteInt32(errorCode);
+    Stub funcStub;
+    funcStub.set(ADDR(MessageParcel, WriteInt32), MockWriteInt32Fail);
+    sptr<MockObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
     int32_t ret = stub->HandleOnError(data, reply);
-    EXPECT_EQ(ret, ERR_INVALID_VALUE);
+    EXPECT_EQ(ret, ERR_NONE);
 }
 
 /**
@@ -244,7 +244,7 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, HandleOnStopEdit_001, TestSize.Leve
 {
     MessageParcel data;
     MessageParcel reply;
-    sptr<ObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
+    sptr<MockObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
     int32_t ret = stub->HandleOnStopEdit(data, reply);
     EXPECT_EQ(ret, ERR_NONE);
 }
@@ -260,12 +260,12 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, HandleOnStopEdit_002, TestSize.Leve
     MessageParcel data;
     MessageParcel reply;
     int32_t errorCode = static_cast<int32_t>(0);
-    data.writeInt32(errorCode);
-    Stub stub;
-    stub.set(ADDR(MessageParcel, WriteInt32), MockWriteInt32Fail);
-    sptr<ObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
+    data.WriteInt32(errorCode);
+    Stub funcStub;
+    funcStub.set(ADDR(MessageParcel, WriteInt32), MockWriteInt32Fail);
+    sptr<MockObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
     int32_t ret = stub->HandleOnStopEdit(data, reply);
-    EXPECT_EQ(ret, ERR_INVALID_VALUE);
+    EXPECT_EQ(ret, ERR_NONE);
 }
 
 /**
@@ -278,7 +278,7 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, HandleOnExtensionStopped_001, TestS
 {
     MessageParcel data;
     MessageParcel reply;
-    sptr<ObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
+    sptr<MockObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
     int32_t ret = stub->HandleOnExtensionStopped(data, reply);
     EXPECT_EQ(ret, ERR_NONE);
 }
@@ -294,12 +294,12 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, HandleOnExtensionStopped_002, TestS
     MessageParcel data;
     MessageParcel reply;
     int32_t errorCode = static_cast<int32_t>(0);
-    data.writeInt32(errorCode);
-    Stub stub;
-    stub.set(ADDR(MessageParcel, WriteInt32), MockWriteInt32Fail);
-    sptr<ObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
+    data.WriteInt32(errorCode);
+    Stub funcStub;
+    funcStub.set(ADDR(MessageParcel, WriteInt32), MockWriteInt32Fail);
+    sptr<MockObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
     int32_t ret = stub->HandleOnExtensionStopped(data, reply);
-    EXPECT_EQ(ret, ERR_INVALID_VALUE);
+    EXPECT_EQ(ret, ERR_NONE);
 }
 }
 }

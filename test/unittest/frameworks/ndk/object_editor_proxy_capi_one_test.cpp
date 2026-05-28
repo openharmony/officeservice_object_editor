@@ -17,6 +17,7 @@
 #include <gmock/gmock.h>
 
 #define private public
+#include "securec.h"
 #include "content_embed_proxy.h"
 #include "mock_object_editor_client.h"
 #include "mock_object_editor_manager.h"

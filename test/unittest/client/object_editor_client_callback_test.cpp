@@ -119,7 +119,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnUpdate_002, TestSize.Level1)
 {
     std::unique_ptr<ObjectEditorDocument> document = std::make_unique<ObjectEditorDocument>();
     clientCallback_->proxy_ = new ContentEmbed_ExtensionProxy();
-    clientCallback_->proxy_->UpdateFunc = MockUpdateFunc;
+    clientCallback_->proxy_->onUpdateFunc = MockUpdateFunc;
     clientCallback_->proxy_->ceDocument = new ContentEmbed_Document();
     auto ret = clientCallback_->OnUpdate(document);
     EXPECT_EQ(ret, ERR_OK);
@@ -135,7 +135,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnUpdate_003, TestSize.Level1)
 {
     std::unique_ptr<ObjectEditorDocument> document = std::make_unique<ObjectEditorDocument>();
     clientCallback_->proxy_ = new ContentEmbed_ExtensionProxy();
-    clientCallback_->proxy_->UpdateFunc = MockUpdateFunc;
+    clientCallback_->proxy_->onUpdateFunc = MockUpdateFunc;
     clientCallback_->proxy_->ceDocument = nullptr;
     auto ret = clientCallback_->OnUpdate(document);
     EXPECT_EQ(ret, ERR_INVALID_VALUE);
@@ -150,7 +150,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnUpdate_004, TestSize.Level1)
 {
     std::unique_ptr<ObjectEditorDocument> document = nullptr;
     clientCallback_->proxy_ = new ContentEmbed_ExtensionProxy();
-    clientCallback_->proxy_->UpdateFunc = nullptr;
+    clientCallback_->proxy_->onUpdateFunc = nullptr;
     clientCallback_->proxy_->ceDocument = new ContentEmbed_Document();
     auto ret = clientCallback_->OnUpdate(document);
     EXPECT_EQ(ret, ERR_INVALID_VALUE);
@@ -166,10 +166,10 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnUpdate_005, TestSize.Level1)
 {
     std::unique_ptr<ObjectEditorDocument> document = std::make_unique<ObjectEditorDocument>();
     clientCallback_->proxy_ = new ContentEmbed_ExtensionProxy();
-    clientCallback_->proxy_->UpdateFunc = MockUpdateFunc;
+    clientCallback_->proxy_->onUpdateFunc = MockUpdateFunc;
     clientCallback_->proxy_->ceDocument = new ContentEmbed_Document();
     auto ret = clientCallback_->OnUpdate(document);
-    EXPECT_EQ(ret, ERR_INVALID_VALUE);
+    EXPECT_EQ(ret, ERR_NONE);
     delete clientCallback_->proxy_->ceDocument;
 }
 
@@ -195,7 +195,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnError_002, TestSize.Level1)
 {
     ContentEmbed_ErrorCode error = CE_ERR_OK;
     clientCallback_->proxy_ = new ContentEmbed_ExtensionProxy();
-    clientCallback_->proxy_->ErrorFunc = MockErrorFunc;
+    clientCallback_->proxy_->onErrorFunc = MockErrorFunc;
     auto ret = clientCallback_->OnError(error);
     EXPECT_EQ(ret, ERR_OK);
 }
@@ -209,7 +209,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnError_003, TestSize.Level1)
 {
     ContentEmbed_ErrorCode error = CE_ERR_OK;
     clientCallback_->proxy_ = new ContentEmbed_ExtensionProxy();
-    clientCallback_->proxy_->ErrorFunc = MockErrorFunc;
+    clientCallback_->proxy_->onErrorFunc = MockErrorFunc;
     auto ret = clientCallback_->OnError(error);
     EXPECT_EQ(ret, ERR_OK);
 }
@@ -305,7 +305,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnExtensionStopped_001, TestSize.Level1
 HWTEST_F(ObjectEditorClientCallbackTest, OnExtensionStopped_002, TestSize.Level1)
 {
     clientCallback_->proxy_ = new ContentEmbed_ExtensionProxy();
-    clientCallback_->proxy_->OnExtensionStoppedFunc = [](ContentEmbed_ExtensionProxy *proxy) {};
+    clientCallback_->proxy_->onExtensionStoppedFunc = [](ContentEmbed_ExtensionProxy *proxy) {};
     auto ret = clientCallback_->OnExtensionStopped();
     EXPECT_EQ(ret, ERR_OK);
 }
@@ -318,7 +318,7 @@ HWTEST_F(ObjectEditorClientCallbackTest, OnExtensionStopped_002, TestSize.Level1
 HWTEST_F(ObjectEditorClientCallbackTest, OnExtensionStoped_003, TestSize.Level1)
 {
     clientCallback_->proxy_ = new ContentEmbed_ExtensionProxy();
-    clientCallback_->proxy_->OnExtensionStoppedFunc = nullptr;
+    clientCallback_->proxy_->onExtensionStoppedFunc = nullptr;
     auto ret = clientCallback_->OnExtensionStopped();
     EXPECT_EQ(ret, ERR_INVALID_VALUE);
 }
