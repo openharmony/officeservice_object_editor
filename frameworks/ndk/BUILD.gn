@@ -73,7 +73,8 @@ ohos_shared_library("content_embed_ndk") {
         "ipc:ipc_napi",
         "napi:ace_napi",
         "safwk:system_ability_fwk",
-        "hisysevent:libhisysevent"
+        "hisysevent:libhisysevent",
+        "hitrace:hitrace_meter",
     ]
     defines = []
     if (object_editor_dlp_part_enabled) {

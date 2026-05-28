@@ -21,12 +21,14 @@
 #include <chrono>
 #include <sys/time.h>
 #include "application_context.h"
+#include <hitrace_meter.h>
 #include "iservice_registry.h"
 #include "system_utils.h"
 #include "iobject_editor_extension.h"
 #include "object_editor_package.h"
 #include "object_editor_common.h"
 #include "hisysevent.h"
+
 namespace OHOS {
 namespace ObjectEditor {
 namespace {
@@ -286,6 +288,7 @@ ErrCode ObjectEditorClient::StartObjectEditorExtension(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "unknown operate");
         return ObjectEditorClientErrCode::CLIENT_UNKNOWN_OPERATE;
     }
+    HITRACE_METER_FMT(HITRACE_TAG_OHOS, "client::StartObjectEditorExtension");
     document->SetDocumentId(GenRandomUuid());
     ErrCode ret = PrepareFiles(document);
     if (ret != ObjectEditorClientErrCode::CLIENT_OK) {
@@ -584,6 +587,7 @@ ErrCode ObjectEditorClient::StopObjectEditorExtension(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "documentId is not initialized");
         return ERR_INVALID_VALUE;
     }
+    HITRACE_METER_FMT(HITRACE_TAG_OHOS, "client::StopObjectEditorExtension");
     CleanupTempFiles(document);
     if (oeExtensionRemoteObject == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "extension is null");
@@ -659,6 +663,7 @@ ErrCode ObjectEditorClient::GetObjectEditorFormatByOEidAndLocale(
     std::unique_ptr<ObjectEditorFormat> &format)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
+    HITRACE_METER_FMT(HITRACE_TAG_OHOS, "client::GetObjectEditorFormatByOEidAndLocale");
     sptr<IObjectEditorManager> objectEditorManagerProxy = GetIObjectEditorManager();
     if (objectEditorManagerProxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "get proxy fail");
@@ -676,6 +681,7 @@ ErrCode ObjectEditorClient::GetObjectEditorFormatsByLocale(const std::string &lo
     std::vector<std::unique_ptr<ObjectEditorFormat>> &formats)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "in");
+    HITRACE_METER_FMT(HITRACE_TAG_OHOS, "client::GetObjectEditorFormatsByLocale");
     sptr<IObjectEditorManager> objectEditorManagerProxy = GetIObjectEditorManager();
     if (objectEditorManagerProxy == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "get proxy fail");

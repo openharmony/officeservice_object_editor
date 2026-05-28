@@ -16,6 +16,7 @@
 #include <cstring>
 #include <string_ex.h>
 
+#include <hitrace_meter.h>
 #include "content_embed_document.h"
 #include "native_object_editor_types.h"
 #include "object_editor_config.h"
@@ -427,6 +428,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_LoadDocumentFromFile(const char *srcFileP
         return CE_ERR_PARAM_INVALID;
     }
     std::string path(srcFilePath, length);
+    HITRACE_METER_FMT(HITRACE_TAG_OHOS, "document::OH_ContentEmbed_LoadDocumentFromFile");
     auto doc = ObjectEditorDocument::LoadFromFile(path);
     if (doc == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create document failed");
@@ -487,6 +489,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_Read(uint8_t *buffer, size_t len
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storage is dirty");
         return CE_ERR_STORAGE_OPERATION_FAILED;
     }
+    HITRACE_METER_FMT(HITRACE_TAG_OHOS, "document::OH_ContentEmbed_Document_Read");
     if (!storage->ReadRawCd(offset, buffer, length, readSize)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "read raw cd failed");
         return CE_ERR_STORAGE_OPERATION_FAILED;
@@ -607,6 +610,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_Flush(const ContentEmbed_Documen
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
         return CE_ERR_PARAM_INVALID;
     }
+    HITRACE_METER_FMT(HITRACE_TAG_OHOS, "document::OH_ContentEmbed_Document_Flush");
     if (!document->oeDocumentInner->Flush()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "flush failed");
         std::string oeid = document->oeDocumentInner == nullptr ? "" : document->oeDocumentInner->GetOEid();
@@ -906,7 +910,11 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_Read(ContentEmbed_Stream *stream,
         return ret;
     }
     *buffer = new unsigned char[length];
-    const std::streamsize read = innerStream->Read(*buffer, static_cast<std::streamsize>(length));
+    std::streamsize read = 0;
+    {
+        HITRACE_METER_FMT(HITRACE_TAG_OHOS, "document::OH_ContentEmbed_Stream_Read");
+        read = innerStream->Read(*buffer, static_cast<std::streamsize>(length));
+    }
     if (read < 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "read stream failed");
         delete[] *buffer;
@@ -960,7 +968,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_Write(ContentEmbed_Stream *stream,
         return ret;
     }
     const auto beforePos = innerStream->Tell();
-    innerStream->Write(data, static_cast<std::streamsize>(length));
+    {
+        HITRACE_METER_FMT(HITRACE_TAG_OHOS, "document::OH_ContentEmbed_Stream_Write");
+        innerStream->Write(data, static_cast<std::streamsize>(length));
+    }
     const auto afterPos = innerStream->Tell();
     const size_t written = (afterPos >= beforePos) ? static_cast<size_t>(afterPos - beforePos) : 0U;
     stream->pos = afterPos;
@@ -1414,6 +1425,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_CopyTo(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "dstStorage is null");
         return CE_ERR_PARAM_INVALID;
     }
+    HITRACE_METER_FMT(HITRACE_TAG_OHOS, "document::OH_ContentEmbed_Storage_CopyTo");
     auto err = CopyOEid(srcStorage, dstStorage);
     if (err != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "copy oeid failed");

@@ -19,6 +19,7 @@
 #include "object_editor_extension.h"
 #include "object_editor_config.h"
 
+#include <hitrace_meter.h>
 #include "want_manager.h"
 #include "image_packer.h"
 #include "start_options_impl.h"
@@ -526,6 +527,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextStartSelfUIAbility(
     }
     OHOS::AAFwk::Want innerWant;
     OHOS::AAFwk::CWantManager::TransformToWant(*want, false, innerWant);
+    HITRACE_METER_FMT(HITRACE_TAG_OHOS, "extension::ContextStartSelfUIAbility");
     auto ret = contextPtr->StartAbility(innerWant);
     if (ret != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "start ability failed:%{public}d", ret);
@@ -564,6 +566,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextStartSelfUIAbilityWithSt
     OHOS::AAFwk::Want innerWant;
     OHOS::AAFwk::CWantManager::TransformToWant(*want, false, innerWant);
     OHOS::AAFwk::StartOptions startOptions = options->GetInnerStartOptions();
+    HITRACE_METER_FMT(HITRACE_TAG_OHOS, "extension::ContextStartSelfUIAbilityWithStartOptions");
     auto ret = contextPtr->StartAbility(innerWant, startOptions);
     if (ret != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "start ability failed:%{public}d", ret);
