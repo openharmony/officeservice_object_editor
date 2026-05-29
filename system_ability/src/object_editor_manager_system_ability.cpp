@@ -367,15 +367,16 @@ ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::GetObjectEditorForm
     std::unique_ptr<ObjectEditorFormat> &objectEditorFormat,
     bool &isPackageExtension)
 {
-    if (document.GetOEid() == PACKAGE_OEID &&
-        document.GetOperateType() == OperateType::CREATE_BY_OEID) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "package oeid create by oeid with empty oriFileUri");
-        return ObjectEditorManagerErrCode::SA_INVALID_PARAMETER;
-    }
-    if (document.GetOEid() == PACKAGE_OEID && document.GetOperateType() == OperateType::EDIT) {
+    if (document.GetOEid() == PACKAGE_OEID) {
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "oeid is package");
-        isPackageExtension = true;
-        return ObjectEditorManagerErrCode::SA_OK;
+        if (document.GetOperateType() == OperateType::CREATE_BY_OEID) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "package oeid create by oeid with empty oriFileUri");
+            return ObjectEditorManagerErrCode::SA_INVALID_PARAMETER;
+        }
+        if (document.GetOperateType() == OperateType::EDIT) {
+            isPackageExtension = true;
+            return ObjectEditorManagerErrCode::SA_OK;
+        }
     }
     auto errCode = ObjectEditorManagerErrCode::SA_DB_QUERY_EMPTY;
     if (document.GetOperateType() == OperateType::CREATE_BY_FILE && document.GetOriFileUri().has_value()) {
@@ -525,7 +526,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::HandleDefaultAppFor
             }
         }
     }
-    if (!defaultAppFormatRegistered || defaultAppBundleName.empty()) {
+    if ((!defaultAppFormatRegistered || defaultAppBundleName.empty()) && !formats.empty()) {
         objectEditorFormat = std::move(formats.front());
     } else {
         return errCode;
@@ -778,6 +779,10 @@ void ObjectEditorManagerSystemAbilityConnectionStatusCallback::OnConnectionStatu
 bool ObjectEditorManagerSystemAbility::CheckConnectionLimit(const std::string &clientBundleName,
     std::unique_ptr<ObjectEditorFormat> &format, sptr<IRemoteObject> &remoteObject)
 {
+    if (format == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "format is null");
+        return false;
+    }
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "clientBundleName:%{public}s", clientBundleName.c_str());
     std::lock_guard<std::mutex> lock(connectionMapMutex_);
     int32_t count = 0;
@@ -851,7 +856,7 @@ bool ObjectEditorManagerSystemAbility::ConnectObjectEditorExtAbility(
     connection->SetClientBundleName(clientBundleName);
     auto ret = connection->StartConnect(format->bundleName, format->abilityName,
         format->moduleName, remoteObject);
-    if (ret != ObjectEditorManagerErrCode::SA_CONNECT_ABILITY_SUCCEED) {
+    if (ret != ObjectEditorManagerErrCode::SA_CONNECT_ABILITY_SUCCEED || remoteObject == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "Connect failed, ret = %{public}d", ret);
         return false;
     }

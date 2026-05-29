@@ -235,16 +235,20 @@ DirEntry *DirTree::Entry(const std::string &name, bool create, int leafType)
             return nullptr;
         }
 
-        if (index != 0 && !entries_[index].IsDir()) {
+        if (index > 0 && index < EntryCount() && !entries_[index].IsDir()) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "parent is not a directory");
             return nullptr;
         }
         const size_t parentIndex = index;
+        if (parentIndex < 0 || parentIndex >= EntryCount()) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "parent index out of range");
+            return nullptr;
+        }
         const uint32_t oldChild = entries_[parentIndex].Child();
         const size_t newIndex = ReuseOrAppendSlot();
         DirEntry e = MakeNewEntry(seg, newIndex, oldChild, segmentType);
 
-        if (newIndex < EntryCount()) {
+        if (newIndex >=0 && newIndex < EntryCount()) {
             entries_[newIndex] = e;
         } else {
             entries_.push_back(e);
@@ -333,7 +337,7 @@ bool DirTree::Load(Byte *buffer, size_t size)
         if (nameLen > DIR_MAX_NAME_LENGTH)
             nameLen = DIR_MAX_NAME_LENGTH;
         const uint16_t step = 2;
-        for (uint16_t j = 0; (buffer[j + p]) && (j < nameLen); j += step)
+        for (uint16_t j = 0; (buffer[j + p]) && (j < nameLen) && (j + p < size); j += step)
             name.append(1, static_cast<char>(buffer[j + p]));
 
         uint8_t type = buffer[0x42 + p];
@@ -361,7 +365,11 @@ bool DirTree::Load(Byte *buffer, size_t size)
 
 bool DirTree::Save(Byte *buffer, size_t len)
 {
-    size_t size = 128 * EntryCount();
+    if (EntryCount() > SIZE_MAX / BUFFER_ENTRY_SIZE) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "EntryCount overflow in Save");
+        return false;
+    }
+    size_t size = BUFFER_ENTRY_SIZE * EntryCount();
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "len: %{public}zu, size: %{public}zu", len, size);
     if (len < size || buffer == nullptr) [[unlikely]] {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "buffer too small or null");
@@ -696,6 +704,10 @@ bool DirTree::DeleteChildrenRecursive(const std::string &path, DirEntry *e,
     }
     const bool trailingSlash = !path.empty() && path.back() == '/';
     std::string childPath = trailingSlash ? path + child->Name() : MakeChildPath(path, child->Name());
+    if (childPath.size() > PATH_MAX) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "path size exceed");
+        return false;
+    }
     if (!DeleteEntry(childPath, level + 1, visited)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "delete child %{private}s failed", childPath.c_str());
         return false;

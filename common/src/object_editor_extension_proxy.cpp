@@ -130,8 +130,14 @@ ErrCode ObjectEditorExtensionProxy::GetEditStatus(const std::string &documentId,
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "reply failed");
         return errCode;
     }
-    *isEditing = reply.ReadBool();
-    *isModified = reply.ReadBool();
+    if (!reply.ReadBool(*isEditing)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "read isEditing failed");
+        return ERR_INVALID_DATA;
+    }
+    if (!reply.ReadBool(*isModified)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "read isModified failed");
+        return ERR_INVALID_DATA;
+    }
     return ERR_OK;
 }
 
@@ -161,7 +167,10 @@ ErrCode ObjectEditorExtensionProxy::GetExtensionEditStatus(bool &isEditing)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "reply failed");
         return errCode;
     }
-    isEditing = reply.ReadBool();
+    if (!reply.ReadBool(isEditing)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "read isEditing failed");
+        return ERR_INVALID_DATA;
+    }
     return ERR_OK;
 }
 
@@ -203,7 +212,10 @@ ErrCode ObjectEditorExtensionProxy::GetCapability(const std::string &documentId,
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "reply failed");
         return errCode;
     }
-    *bitmask = reply.ReadUint32();
+    if (!reply.ReadUint32(*bitmask)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "read bitmask failed");
+        return ERR_INVALID_DATA;
+    }
     return ERR_OK;
 }
 
@@ -241,7 +253,10 @@ ErrCode ObjectEditorExtensionProxy::Close(const std::string &documentId, bool &i
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "reply failed");
         return errCode;
     }
-    isAllObjectsRemoved = reply.ReadBool();
+    if (!reply.ReadBool(isAllObjectsRemoved)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "read isAllObjectsRemoved failed");
+        return ERR_INVALID_DATA;
+    }
     return ERR_OK;
 }
 

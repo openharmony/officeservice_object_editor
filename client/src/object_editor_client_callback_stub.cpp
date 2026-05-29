@@ -81,7 +81,12 @@ int32_t ObjectEditorClientCallbackStub::HandleOnUpdate(MessageParcel &data, Mess
 int32_t ObjectEditorClientCallbackStub::HandleOnError(MessageParcel &data, MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "call");
-    ContentEmbed_ErrorCode error = static_cast<ContentEmbed_ErrorCode>(data.ReadInt32());
+    int32_t errorValue = 0;
+    if (!data.ReadInt32(errorValue)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read error failed");
+        return ERR_INVALID_DATA;
+    }
+    ContentEmbed_ErrorCode error = static_cast<ContentEmbed_ErrorCode>(errorValue);
     ErrCode errCode = OnError(error);
     if (!reply.WriteInt32(errCode)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write errCode failed");
@@ -99,7 +104,11 @@ int32_t ObjectEditorClientCallbackStub::HandleOnError(MessageParcel &data, Messa
 int32_t ObjectEditorClientCallbackStub::HandleOnStopEdit(MessageParcel &data, MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "call");
-    bool dataModified = data.ReadBool();
+    bool dataModified = false;
+    if (!data.ReadBool(dataModified)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read dataModified failed");
+        return ERR_INVALID_DATA;
+    }
     ErrCode errCode = OnStopEdit(dataModified);
     if (!reply.WriteInt32(errCode)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write errCode failed");

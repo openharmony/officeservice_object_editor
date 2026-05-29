@@ -463,9 +463,6 @@ bool ObjectEditorManagerDatabase::DoInsert(const std::vector<NativeRdb::ValuesBu
 bool ObjectEditorManagerDatabase::DoDeleteBundle(const std::string &bundleName)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "bundleName: %{public}s", bundleName.c_str());
-    std::string oeid;
-    bool isOERegistered = HasRegisteredOEFormat(bundleName, oeid);
-    ObjectEditorManagerResmgr::GetInstance().RemoveBundle(bundleName);
     if (store_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "store is null");
         return false;
@@ -479,6 +476,9 @@ bool ObjectEditorManagerDatabase::DoDeleteBundle(const std::string &bundleName)
         return false;
     }
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "rows:%{public}d", rows);
+    ObjectEditorManagerResmgr::GetInstance().RemoveBundle(bundleName);
+    std::string oeid;
+    bool isOERegistered = HasRegisteredOEFormat(bundleName, oeid);
     if (isOERegistered) {
         HiSysEventWrite(OBJECT_EDITOR, "REGISTER_EXTENSION", OHOS::HiviewDFX::HiSysEvent::EventType::STATISTIC,
             "BUNDLENAME", bundleName, "OEID", oeid, "REGISTERTYPE", "uninstall");
@@ -498,7 +498,11 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByO
         return errCode;
     }
     NativeRdb::RowEntity rowEntity;
-    resultSet->GetRow(rowEntity);
+    auto getRowResult = resultSet->GetRow(rowEntity);
+    if (FAILED(getRowResult)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get row fail");
+        return ObjectEditorManagerErrCode::SA_DB_PARSE_FAIL;
+    }
     format = std::make_unique<ObjectEditorFormat>();
     if (format == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "format is null");
@@ -526,7 +530,11 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByO
     }
 
     NativeRdb::RowEntity rowEntity;
-    resultSet->GetRow(rowEntity);
+    auto getRowResult = resultSet->GetRow(rowEntity);
+    if (FAILED(getRowResult)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get row fail");
+        return ObjectEditorManagerErrCode::SA_DB_PARSE_FAIL;
+    }
     format = std::make_unique<ObjectEditorFormat>();
     if (format == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "format is null");
@@ -556,7 +564,11 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByO
         return errCode;
     }
     NativeRdb::RowEntity rowEntity;
-    resultSet->GetRow(rowEntity);
+    auto getRowResult = resultSet->GetRow(rowEntity);
+    if (FAILED(getRowResult)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get row fail");
+        return ObjectEditorManagerErrCode::SA_DB_PARSE_FAIL;
+    }
     format = std::make_unique<ObjectEditorFormat>();
     if (format == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "format is null");
@@ -585,7 +597,11 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatsBy
     }
     for (int32_t rowResult = NativeRdb::E_OK; rowResult == NativeRdb::E_OK; rowResult = resultSet->GoToNextRow()) {
         NativeRdb::RowEntity rowEntity;
-        resultSet->GetRow(rowEntity);
+        auto getRowResult = resultSet->GetRow(rowEntity);
+        if (FAILED(getRowResult)) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get row fail");
+            return ObjectEditorManagerErrCode::SA_DB_PARSE_FAIL;
+        }
         std::unique_ptr<ObjectEditorFormat> format = std::make_unique<ObjectEditorFormat>();
         if (format == nullptr) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "format is null");
@@ -619,7 +635,11 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatsBy
     }
     for (int32_t rowResult = NativeRdb::E_OK; rowResult == NativeRdb::E_OK; rowResult = resultSet->GoToNextRow()) {
         NativeRdb::RowEntity rowEntity;
-        resultSet->GetRow(rowEntity);
+        auto getRowResult = resultSet->GetRow(rowEntity);
+        if (FAILED(getRowResult)) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get row fail");
+            return ObjectEditorManagerErrCode::SA_DB_PARSE_FAIL;
+        }
         std::string fileExts;
         rowEntity.Get("file_exts").GetString(fileExts);
         if (!SystemUtils::FileExtsHasFileExt(fileExts, fileExt)) {
@@ -675,7 +695,11 @@ std::map<std::string, int64_t> ObjectEditorManagerDatabase::GetBundleNameAndCrea
     std::map<std::string, int64_t> map;
     for (int32_t rowResult = NativeRdb::E_OK; rowResult == NativeRdb::E_OK; rowResult = resultSet->GoToNextRow()) {
         NativeRdb::RowEntity rowEntity;
-        resultSet->GetRow(rowEntity);
+        auto getRowResult = resultSet->GetRow(rowEntity);
+        if (FAILED(getRowResult)) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get row fail");
+            continue;
+        }
         std::string bundleName;
         rowEntity.Get("bundle_name").GetString(bundleName);
         int64_t createTime = 0;

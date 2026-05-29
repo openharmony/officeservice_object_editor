@@ -69,9 +69,13 @@ int32_t ObjectEditorExtensionStub::OnRemoteRequestInner(
 int32_t ObjectEditorExtensionStub::HandleExtensionGetSnapshot(MessageParcel &data, MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "call");
-    std::string documentId = data.ReadString();
-    if (documentId.empty()) {
+    std::string documentId;
+    if (!data.ReadString(documentId)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "read documentId failed");
+        return ERR_INVALID_VALUE;
+    }
+    if (documentId.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId is empty");
         return ERR_INVALID_VALUE;
     }
     ErrCode errCode = GetSnapshot(documentId);
@@ -85,9 +89,13 @@ int32_t ObjectEditorExtensionStub::HandleExtensionGetSnapshot(MessageParcel &dat
 int32_t ObjectEditorExtensionStub::HandleExtensionGetCapability(MessageParcel &data, MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "call");
-    std::string documentId = data.ReadString();
-    if (documentId.empty()) {
+    std::string documentId;
+    if (!data.ReadString(documentId)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "read documentId failed");
+        return ERR_INVALID_VALUE;
+    }
+    if (documentId.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId is empty");
         return ERR_INVALID_VALUE;
     }
     uint32_t bitmask = 0;
@@ -106,9 +114,13 @@ int32_t ObjectEditorExtensionStub::HandleExtensionGetCapability(MessageParcel &d
 int32_t ObjectEditorExtensionStub::HandleExtensionGetEditStatus(MessageParcel &data, MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "call");
-    std::string documentId = data.ReadString();
-    if (documentId.empty()) {
+    std::string documentId;
+    if (!data.ReadString(documentId)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "read documentId failed");
+        return ERR_INVALID_VALUE;
+    }
+    if (documentId.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId is empty");
         return ERR_INVALID_VALUE;
     }
     bool isEditing = false;
@@ -148,9 +160,13 @@ int32_t ObjectEditorExtensionStub::HandleExtensionGetExtensionEditStatus(Message
 int32_t ObjectEditorExtensionStub::HandleExtensionDoEdit(MessageParcel &data, MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "call");
-    std::string documentId = data.ReadString();
-    if (documentId.empty()) {
+    std::string documentId;
+    if (!data.ReadString(documentId)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "read documentId failed");
+        return ERR_INVALID_VALUE;
+    }
+    if (documentId.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId is empty");
         return ERR_INVALID_VALUE;
     }
     ErrCode errCode = DoEdit(documentId);
@@ -187,9 +203,13 @@ int32_t ObjectEditorExtensionStub::HandleExtensionInitial(MessageParcel &data, M
 int32_t ObjectEditorExtensionStub::HandleExtensionClose(MessageParcel &data, MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "call");
-    std::string documentId = data.ReadString();
-    if (documentId.empty()) {
+    std::string documentId;
+    if (!data.ReadString(documentId)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "read documentId failed");
+        return ERR_INVALID_VALUE;
+    }
+    if (documentId.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId is empty");
         return ERR_INVALID_VALUE;
     }
     bool isAllObjectsRemoved = false;

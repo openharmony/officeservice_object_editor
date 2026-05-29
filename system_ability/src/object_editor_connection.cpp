@@ -169,8 +169,13 @@ void ObjectEditorConnection::TimerThreadStopExtension()
                 timerNotify_.store(false);
                 continue;
             }
-            ObjectEditorManagerSystemAbility::GetInstance().RegisterExtensionStopReason(
-                extensionProxy_, ExtensionStopReason::SA_CLEAN_IDLE);
+            {
+                std::unique_lock<std::mutex> uniqueProxyLock(extensionProxyMutex_);
+                if (extensionProxy_ != nullptr) {
+                    ObjectEditorManagerSystemAbility::GetInstance().RegisterExtensionStopReason(
+                        extensionProxy_, ExtensionStopReason::SA_CLEAN_IDLE);
+                }
+            }
             StopConnect();
             break;
         }

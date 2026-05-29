@@ -865,7 +865,7 @@ HWTEST_F(ObjectEditorDocumentTest, Unmarshalling_004, TestSize.Level1)
 {
     Parcel parcel;
     auto res = document_->Unmarshalling(parcel);
-    EXPECT_NE(res, nullptr);
+    EXPECT_EQ(res, nullptr);
 }
 }
 }

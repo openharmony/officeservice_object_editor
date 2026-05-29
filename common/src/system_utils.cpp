@@ -85,18 +85,11 @@ uint64_t GetFileSize(const std::string &filePath)
 
 std::string ReadFile(const std::string &filePath)
 {
-    std::filesystem::path path(filePath);
-    std::string directory = path.parent_path().string() + "/";
-    std::string filename = path.filename().string();
-
-    std::string canonicalDirPath = GetRealPath(directory);
-    if (canonicalDirPath.empty()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "canonical directory path is empty");
+    std::string canonicalFilePath;
+    if (!SystemUtils::ValidateAndNormalizePath(filePath, canonicalFilePath)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Failed to validate and normalize path");
         return "";
     }
-
-    std::string canonicalFilePath = canonicalDirPath + "/" + filename;
-
     std::ifstream in(canonicalFilePath, std::ios::in | std::ios::binary);
     if (!in.is_open()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Open file failed, path: %{private}s",

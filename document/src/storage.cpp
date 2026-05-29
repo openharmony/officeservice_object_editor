@@ -37,6 +37,10 @@
 namespace OHOS {
 namespace ObjectEditor {
 // LCOV_EXCL_START
+namespace {
+constexpr int32_t FLUSH_EXTRA_SIZE = 2;
+}
+
 StorageIO::StorageIO(const char *filename)
 {
     dtModified_ = false;
@@ -490,7 +494,12 @@ bool StorageIO::ProcessDifatEntries(uint32_t entriesPerSector, uint32_t expected
 {
     const uint32_t difatEntries = entriesPerSector > 0 ? entriesPerSector - 1 : 0;
     for (uint32_t i = 0; i < difatEntries && loadedFromDifat < expectedFromDifat; ++i) {
-        uint32_t entry = ReadUint32(difatBuf.data() + i * 4);
+        if ((i + 1) * FOUR_BYTE_SIZE > difatBuf.size()) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+                "exceed difat buffer size");
+            return false;
+        }
+        uint32_t entry = ReadUint32(difatBuf.data() + i * FOUR_BYTE_SIZE);
         if (entry == AllocTable::Avail) {
             continue;
         }
@@ -739,11 +748,21 @@ bool StorageIO::ValidateMiniRootCoverage(size_t highestUsed)
     if (highestUsed == 0) {
         return true;
     }
+    if (highestUsed > UINT64_MAX / SmallBlockSize()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "highestUsed overflow");
+        return false;
+    }
     const uint64_t requiredMiniBytes = static_cast<uint64_t>(highestUsed) * SmallBlockSize();
     const uint64_t bigBlockSz = BigBlockSize();
     if (bigBlockSz == 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
             "Invalid big block size");
+        return false;
+    }
+    if (requiredMiniBytes > UINT64_MAX - bigBlockSz + 1) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "requiredMiniBytes overflow in rounding");
         return false;
     }
     const uint64_t requiredBigBlocks = (requiredMiniBytes + bigBlockSz - 1) / bigBlockSz;
@@ -845,6 +864,10 @@ uint32_t StorageIO::ReadBigBlocksFromFile(const std::vector<uint32_t> &blocks,
     uint32_t bytes = 0;
     for (uint32_t i = 0; (i < blocks.size()) && (bytes < maxlen); ++i) {
         const uint32_t block = blocks[i];
+        if (block > maxStreamOff / blockSize) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "block overflow");
+            return bytes;
+        }
         const uint64_t pos = BlockToOffset(block, blockSize);
         if (pos > maxStreamOff) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Block offset overflow");
@@ -983,11 +1006,18 @@ uint32_t StorageIO::ReadMiniBlocks(const std::vector<uint32_t> &blocks, Byte *da
     const DirEntry *root = GetRootEntry();
     uint64_t miniStreamSize = root ? root->Size() : 0;
     if (miniStreamSize == 0 && !sbBlocks_.empty()) {
+        if (static_cast<uint64_t>(sbBlocks_.size()) > UINT64_MAX / bigBlockSz) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "miniStreamSize overflow");
+            return 0;
+        }
         miniStreamSize = static_cast<uint64_t>(sbBlocks_.size()) * bigBlockSz;
     }
     uint32_t bytes = 0;
     for (uint32_t i = 0; (i < blocks.size()) && (bytes < maxlen); ++i) {
         const uint32_t block = blocks[i];
+        if (block > UINT64_MAX / smallBlockSz) {
+            return 0;
+        }
         const uint64_t pos64 = static_cast<uint64_t>(block) * smallBlockSz;
         uint32_t copied = 0;
         const uint32_t remaining = maxlen - bytes;
@@ -1475,6 +1505,9 @@ bool StorageIO::PrepareDirectoryBlocks(size_t blockSize, size_t dirEntries, std:
         return false;
     }
     for (uint32_t block : blocks) {
+        if (block >= bbat_->Count()) {
+            continue;
+        }
         if ((*bbat_)[block] == AllocTable::Avail) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Block is not available");
             return false;
@@ -1569,7 +1602,19 @@ bool StorageIO::FinalizeFlush(bool memoryMode, FlushSnapshot &snap, size_t block
             maxUsedBlock = i;
         }
     }
-    const size_t computedSize = (maxUsedBlock + 2) * blockSize;
+    if (maxUsedBlock > SIZE_MAX - FLUSH_EXTRA_SIZE) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "maxUsedBlock overflow in size computation");
+        return false;
+    }
+    if (blockSize == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "blockSize less 0");
+        return false;
+    }
+    if (maxUsedBlock + FLUSH_EXTRA_SIZE > SIZE_MAX / blockSize) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "computedSize overflow");
+        return false;
+    }
+    const size_t computedSize = (maxUsedBlock + FLUSH_EXTRA_SIZE) * blockSize;
     const std::streamoff computedSizeOff = static_cast<std::streamoff>(
         std::min<size_t>(computedSize, static_cast<size_t>(std::numeric_limits<std::streamoff>::max())));
 
@@ -1867,12 +1912,12 @@ bool StorageIO::ExtendSameTypeChain(DirEntry *entry, uint64_t oldSize, uint64_t 
                 highestMiniBlock = i + 1;
             }
         }
-        highestMiniBlock += additionalBlocks;
-        if (highestMiniBlock > std::numeric_limits<uint32_t>::max()) {
+        if (highestMiniBlock > std::numeric_limits<uint32_t>::max() - additionalBlocks) {
             SetError(ErrorCode::InvalidOperation, "Cannot extend: block count overflow");
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "block count overflow");
             return false;
         }
+        highestMiniBlock += additionalBlocks;
         if (!EnsureRootForMiniGrowth(static_cast<uint32_t>(highestMiniBlock),
             "Failed to extend root stream when growing small stream")) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to extend root stream");
@@ -2570,20 +2615,11 @@ bool StorageIO::FlushHeader()
 
 std::string NormalizeFilePath(const std::string &filename)
 {
-    char canonicalDirPath[PATH_MAX + 1] = {0x00};
-    std::filesystem::path path(filename);
-    std::string directory = path.parent_path().string() + "/";
-    std::string basename = path.filename().string();
-    if (realpath(directory.c_str(), canonicalDirPath) == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "realpath failed");
+    std::string canonicalFileName;
+    if (!SystemUtils::ValidateAndNormalizePath(filename, canonicalFileName)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to validate and normalize path");
         return "";
     }
-    size_t len = strlen(canonicalDirPath);
-    if (len >= PATH_MAX) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "canonicalDirPath too long");
-        return "";
-    }
-    std::string canonicalFileName = std::string(canonicalDirPath) + "/" + basename;
     return canonicalFileName;
 }
 
@@ -2672,7 +2708,12 @@ bool StorageIO::ReadAndLoadHeader()
         return false;
     }
     stream_->seekg(0);
-    stream_->read(reinterpret_cast<char *>(headerBuffer.data()), headerBuffer.size());
+    auto bytesRead = stream_->read(reinterpret_cast<char *>(headerBuffer.data()), headerBuffer.size()).gcount();
+    if (bytesRead < 0 || static_cast<std::size_t>(bytesRead) != headerBuffer.size()) {
+        SetError(ErrorCode::BadOLE, "read head too short");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "read head too short");
+        return false;
+    }
     if (!header_->Load(headerBuffer.data(), headerBuffer.size())) {
         SetError(ErrorCode::BadOLE, "Failed to load header");
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "load header failed");
@@ -2718,16 +2759,14 @@ bool StorageIO::CheckClaimedTableSizes(uint64_t fileSize, uint32_t sectorSize)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "header is null");
         return false;
     }
-    const uint64_t claimedFatBytes = static_cast<uint64_t>(header_->NumBat()) * sectorSize;
-    const uint64_t claimedDifatBytes = static_cast<uint64_t>(header_->NumDifat()) * sectorSize;
-    if (claimedFatBytes > fileSize) {
+    if (header_->NumBat() > 0 && sectorSize > fileSize / header_->NumBat()) {
         SetError(ErrorCode::BadOLE, "FAT size exceeds file size");
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "FAT size exceeds file size");
         return false;
     }
-    if (claimedDifatBytes > fileSize) {
-        SetError(ErrorCode::BadOLE, "DIFAT size exceeds file size");
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "DIFAT size exceeds file size");
+    if (header_->NumDifat() > 0 && sectorSize > fileSize / header_->NumDifat()) {
+        SetError(ErrorCode::BadOLE, "FAT size exceeds file size");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "FAT size exceeds file size");
         return false;
     }
     return true;

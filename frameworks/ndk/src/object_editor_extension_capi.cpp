@@ -479,6 +479,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_SetSnapshot(ContentEmbed_Object
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "Failed to validate and normalize path");
         return CE_ERR_PARAM_INVALID;
     }
+    snapshotPath = canonicalFileName;
     OHOS::Media::ImagePacker imagePacker;
     OHOS::Media::PackOption option;
     option.format = "image/png";
