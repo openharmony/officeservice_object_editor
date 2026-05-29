@@ -557,6 +557,9 @@ void DirTree::CollectSiblingChain(uint32_t index, std::vector<bool> &visited,
             static_cast<int32_t>(index));
         return;
     }
+    if (visited.size() < EntryCount()) {
+        visited.resize(EntryCount(), false);
+    }
     if (visited[index]) {
         OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "entry %{public}d is already visited",
             static_cast<int32_t>(index));

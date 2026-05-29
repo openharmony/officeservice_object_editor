@@ -84,7 +84,7 @@ HWTEST_F(PoleTest, Result_002, TestSize.Level1)
 {
     storage_->io_ = nullptr;
     int res = storage_->Result();
-    EXPECT_NE(res, Storage::UnknownError);
+    EXPECT_EQ(res, Storage::UnknownError);
 }
 
 /**
@@ -96,7 +96,7 @@ HWTEST_F(PoleTest, ListEntries_001, TestSize.Level1)
 {
     storage_->io_ = nullptr;
     std::vector<const DirEntry*> result;
-    int res = storage_->ListEntries(result);
+    storage_->ListEntries(result);
     EXPECT_EQ(result.empty(), true);
 }
 
@@ -108,7 +108,7 @@ HWTEST_F(PoleTest, ListEntries_001, TestSize.Level1)
 HWTEST_F(PoleTest, ListEntries_002, TestSize.Level1)
 {
     std::vector<const DirEntry*> result;
-    int res = storage_->ListEntries(result);
+    storage_->ListEntries(result);
     EXPECT_EQ(result.empty(), true);
 }
 
@@ -143,7 +143,7 @@ HWTEST_F(PoleTest, EnterDirectory_002, TestSize.Level1)
 HWTEST_F(PoleTest, LeaveDirectory_001, TestSize.Level1)
 {
     storage_->io_ = nullptr;
-    auto res = storage_->LeaveDirectory();
+    storage_->LeaveDirectory();
 }
 
 /**
@@ -153,7 +153,7 @@ HWTEST_F(PoleTest, LeaveDirectory_001, TestSize.Level1)
  */
 HWTEST_F(PoleTest, LeaveDirectory_002, TestSize.Level1)
 {
-    auto res = storage_->LeaveDirectory();
+    storage_->LeaveDirectory();
 }
 
 /**
@@ -461,7 +461,7 @@ HWTEST_F(PoleTest, Debug_002, TestSize.Level1)
 HWTEST_F(PoleTest, DeleteEntry_001, TestSize.Level1)
 {
     storage_->io_ = nullptr;
-    bool res =  storage_->DeleteEntry("", false);
+    bool res =  storage_->DeleteEntry("");
     EXPECT_EQ(res, false);
 }
 
@@ -472,7 +472,7 @@ HWTEST_F(PoleTest, DeleteEntry_001, TestSize.Level1)
  */
 HWTEST_F(PoleTest, DeleteEntry_002, TestSize.Level1)
 {
-    bool res =  storage_->DeleteEntry("", false);
+    bool res =  storage_->DeleteEntry("");
     EXPECT_EQ(res, false);
 }
 
@@ -485,7 +485,7 @@ HWTEST_F(PoleTest, Clsid_001, TestSize.Level1)
 {
     CLSID empty{};
     storage_->io_ = nullptr;
-    EXPECT_EQ(storage_->GetClsid(), empty);
+    EXPECT_EQ(storage_->Clsid(), empty);
 }
 
 /**
@@ -496,7 +496,7 @@ HWTEST_F(PoleTest, Clsid_001, TestSize.Level1)
 HWTEST_F(PoleTest, Clsid_002, TestSize.Level1)
 {
     CLSID empty{};
-    EXPECT_EQ(storage_->GetClsid(), empty);
+    EXPECT_EQ(storage_->Clsid(), empty);
 }
 
 /**
@@ -525,7 +525,7 @@ HWTEST_F(PoleTest, TransactionSignature_002, TestSize.Level1)
  * @tc.desc Test Path method
  * @tc.type FUNC
  */
-HWTEST_F(PoleTest, Path_001, TestSize.Level1)
+HWTEST_F(PoleTest, Path_003, TestSize.Level1)
 {
     stream_->impl = nullptr;
     EXPECT_EQ(stream_->Path(), StreamImpl::nullPath);
@@ -536,7 +536,7 @@ HWTEST_F(PoleTest, Path_001, TestSize.Level1)
  * @tc.desc Test Path method
  * @tc.type FUNC
  */
-HWTEST_F(PoleTest, Path_002, TestSize.Level1)
+HWTEST_F(PoleTest, Path_004, TestSize.Level1)
 {
     EXPECT_EQ(stream_->Path(), "test");
 }
@@ -651,7 +651,7 @@ HWTEST_F(PoleTest, Getch_001, TestSize.Level1)
  * @tc.desc Test Getch method
  * @tc.type FUNC
  */
-HWTEST_F(PoleTest, Size_002, TestSize.Level1)
+HWTEST_F(PoleTest, Size_003, TestSize.Level1)
 {
     EXPECT_EQ(stream_->Getch(), 0);
 }

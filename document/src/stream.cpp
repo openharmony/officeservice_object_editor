@@ -51,7 +51,7 @@ StreamImpl::StreamImpl(StorageIO *io, DirEntry *e) : io_(io), entry_(e), pos_(0)
 }
 
 StreamImpl::StreamImpl(StorageIO *io, const std::string &path)
-    : io_(io), entry_(io->Entry(path)), path_(path), pos_(0), cacheSize_(0), cachePos_(0), state_(0)
+    : io_(io), entry_(io ? io->Entry(path) : nullptr), path_(path), pos_(0), cacheSize_(0), cachePos_(0), state_(0)
 {
     Init();
 }
