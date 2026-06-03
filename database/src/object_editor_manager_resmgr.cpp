@@ -24,7 +24,7 @@ std::shared_ptr<Global::Resource::ResourceManager> ObjectEditorManagerResmgr::Cr
     const std::string &bundleName, const std::string &moduleName, const std::string &locale,
     const std::string &resourcePath, const std::string &hapPath)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "bundleName:%{public}s moduleName:%{public}s locale:%{public}s",
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "bundleName:%{public}s moduleName:%{public}s locale:%{private}s",
         bundleName.c_str(), moduleName.c_str(), locale.c_str());
     std::lock_guard<std::mutex> lock(resMgrMutex_);
     auto ptr = GetResourceManager(bundleName, moduleName, locale);

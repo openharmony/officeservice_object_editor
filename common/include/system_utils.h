@@ -175,7 +175,22 @@ std::string GetSubstrByPrefix(const std::string &str, const std::string &prefix)
  * @return True if prefix found and integer conversion succeeded, false otherwise.
  */
 bool GetIntByPrefix(const std::string &str, const std::string &prefix, int &num);
+/**
+ * @brief Validates a path and normalizes it to its canonical form.
+ * Resolves the parent directory via realpath and combines it with the filename.
+ * Rejects empty paths or paths whose parent directory cannot be resolved.
+ * @param path The input file path to validate and normalize.
+ * @param canonicalFileName Output parameter for the canonical path string.
+ * @return True if the path is valid and normalization succeeded, false otherwise.
+ */
 bool ValidateAndNormalizePath(const std::string &path, std::string &canonicalFileName);
+
+/**
+ * @brief Gets the bundle name of the current application.
+ * Retrieves the bundle name from the application context.
+ * @return The bundle name string, or empty string if the application context is null.
+ */
+std::string GetBundleName();
 } // namespace SystemUtils
 } // namespace ObjectEditor
 } // namespace OHOS

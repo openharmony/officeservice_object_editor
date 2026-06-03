@@ -289,7 +289,25 @@ ErrCode ObjectEditorClient::StartObjectEditorExtension(
         return ObjectEditorClientErrCode::CLIENT_UNKNOWN_OPERATE;
     }
     HITRACE_METER_FMT(HITRACE_TAG_OHOS, "client::StartObjectEditorExtension");
-    document->SetDocumentId(GenRandomUuid());
+    if (document->GetDocumentId().empty()) {
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "init document id");
+        document->SetDocumentId(GenRandomUuid());
+    }
+    auto ret = StartObjectEditorExtensionInner(document, objectEditorClientCallback,
+        oeExtensionRemoteObject, isPackageExtension);
+    if (ret != ObjectEditorClientErrCode::CLIENT_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "clean temp file");
+        CleanupTempFiles(document);
+    }
+    return ret;
+}
+
+ErrCode ObjectEditorClient::StartObjectEditorExtensionInner(
+    std::unique_ptr<ObjectEditorDocument> &document,
+    const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
+    sptr<IObjectEditorService> &oeExtensionRemoteObject,
+    bool &isPackageExtension)
+{
     ErrCode ret = PrepareFiles(document);
     if (ret != ObjectEditorClientErrCode::CLIENT_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "prepare files failed, ret: %{public}d", ret);
@@ -598,6 +616,10 @@ ErrCode ObjectEditorClient::StopObjectEditorExtension(
     }
     HITRACE_METER_FMT(HITRACE_TAG_OHOS, "client::StopObjectEditorExtension");
     CleanupTempFiles(document);
+    if (isPackageExtension) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "is package");
+        return ObjectEditorClientErrCode::CLIENT_OK;
+    }
     if (oeExtensionRemoteObject == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "extension is null");
         return ERR_INVALID_VALUE;
