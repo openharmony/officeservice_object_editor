@@ -129,7 +129,6 @@ ErrCode ObjectEditorPackage::Close(const std::string &documentId, bool &isAllObj
 ErrCode ObjectEditorPackage::Initial(std::unique_ptr<ObjectEditorDocument> document,
     const sptr<IObjectEditorClientCallback> &clientCb)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "package");
     if (document == nullptr || clientCb == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "document or clientCb is null");
         return ERR_INVALID_VALUE;
@@ -143,9 +142,10 @@ ErrCode ObjectEditorPackage::Initial(std::unique_ptr<ObjectEditorDocument> docum
         return ERR_INVALID_VALUE;
     }
     if (document_->GetLinking()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "document is linking");
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "document is linking");
         return ERR_OK;
     }
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "type:%{public}d", document_->GetOperateType());
     if (document_->GetOperateType() == OperateType::CREATE_BY_FILE) {
         packageData_ = PackageData::CreateByDocument(document_);
     } else {
@@ -194,7 +194,7 @@ ErrCode ObjectEditorPackage::OpenFile(const std::string &fileUri)
     }
     auto ret = abilityManagerClient->StartAbility(want, callerToken, ILLEGAL_REQUEST_CODE,
         UserMgr::GetInstance().GetUserId());
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "package StartAbility result: %{public}d", ret);
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "StartAbility result: %{public}d", ret);
     if (ret == ERR_OK) {
         isEditing_ = true;
     }

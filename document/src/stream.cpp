@@ -214,7 +214,7 @@ std::streamsize StreamImpl::ReadBigBlocks(size_t pos, Byte *buffer, size_t allow
             available : static_cast<std::streamsize>(allowed) - totalbytes;
         if (count > 0) {
             const size_t destRemaining = allowed - static_cast<size_t>(totalbytes);
-            if (destRemaining < count) {
+            if (static_cast<std::streamsize>(destRemaining) < count) {
                 OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "StreamImpl::ReadBigBlocks - destRemaining < count");
                 return 0;
             }
@@ -376,7 +376,8 @@ bool StreamImpl::PrepareWrite(const Byte *data, uint32_t &maxlen)
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null");
             return false;
         }
-        const bool useBig = io_->GetHeader() && entrySize >= io_->GetHeader()->Threshold();
+        const Header* header = io_->GetHeader();
+        const bool useBig = header != nullptr && entrySize >= header->Threshold();
         if (blocks_.empty() || cachedStart_ != entry_->Start() ||
             cachedSize_ != entrySize || cachedUseBig_ != useBig) {
             RefreshBlocks();
@@ -453,6 +454,11 @@ uint32_t StreamImpl::WriteMiniBlocks(const Byte *data, uint32_t targetLen,
     for (; ((index < blocks_.size()) && (count < targetLen)); index++) {
         const uint32_t minifatIndex = blocks_[index];
         const uint64_t sbindexOffset = minifatIndex % 8;
+        if (static_cast<uint64_t>(minifatIndex) > UINT64_MAX / smallBlockSize) {
+            state_ |= BAD_FLAG;
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "minifatIndex * smallBlockSize overflow");
+            return count;
+        }
         const uint64_t position = static_cast<uint64_t>(minifatIndex) * smallBlockSize;
         const size_t bbindex = static_cast<size_t>(position / bigBlockSize);
         if (bbindex >= sbrootEntry.size()) {
@@ -460,6 +466,11 @@ uint32_t StreamImpl::WriteMiniBlocks(const Byte *data, uint32_t targetLen,
             return count;
         }
         const uint32_t bbindice = sbrootEntry[bbindex];
+        if (static_cast<uint64_t>(bbindice) > UINT64_MAX / bigBlockSize) {
+            state_ |= BAD_FLAG;
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "bbindice * bigBlockSize overflow");
+            return count;
+        }
         uint64_t baseOffset = static_cast<uint64_t>(bbindice) * bigBlockSize;
         uint64_t miniOffset = sbindexOffset * smallBlockSize;
         if (baseOffset > UINT64_MAX - bigBlockSize - miniOffset - offset) {
@@ -503,8 +514,13 @@ uint32_t StreamImpl::WriteBigBlocks(const Byte *data, uint32_t targetLen, uint64
     uint64_t offset = static_cast<uint64_t>(pos_ % static_cast<std::streamsize>(bigBlockSize));
     uint32_t count = 0;
     for (; ((index < blocks_.size()) && (count < targetLen)); index++) {
-        const uint64_t physicalOffset = (static_cast<uint64_t>(blocks_[index]) *
-            bigBlockSize) + bigBlockSize + offset;
+        const uint64_t blockOffset = static_cast<uint64_t>(blocks_[index]) * bigBlockSize;
+        if (blockOffset > UINT64_MAX - bigBlockSize - offset) {
+            state_ |= BAD_FLAG;
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "physicalOffset overflow in WriteBigBlocks");
+            return count;
+        }
+        const uint64_t physicalOffset = blockOffset + bigBlockSize + offset;
         const uint64_t canWrite64 = bigBlockSize - offset;
         const uint32_t canWrite = static_cast<uint32_t>(
             std::min<uint64_t>(canWrite64, static_cast<uint64_t>(targetLen - count)));
@@ -553,11 +569,7 @@ uint32_t StreamImpl::Write(const Byte *data, uint32_t maxlen)
     } else {
         count = WriteBigBlocks(data, targetLen, bigBlockSize);
     }
-
-    if (count > UINT32_MAX) {
-        return 0;
-    }
-    if (pos_ + count > std::numeric_limits<std::streamsize>::max()) {
+    if (pos_ > std::numeric_limits<std::streamsize>::max() - count) {
         return 0;
     }
     pos_ += static_cast<std::streamsize>(count);

@@ -308,7 +308,11 @@ ErrCode ObjectEditorClient::StartObjectEditorExtension(
         return ret;
     }
     if (isPackageExtension) {
-        HandlePackage(document, objectEditorClientCallback, oeExtensionRemoteObject);
+        ret = HandlePackage(document, objectEditorClientCallback, oeExtensionRemoteObject);
+        if (ret != ERR_OK) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "HandlePackage failed:%{public}d", ret);
+            return ret;
+        }
     } else {
         oeExtensionRemoteObject = iface_cast<IObjectEditorExtension>(remoteObject);
         if (oeExtensionRemoteObject == nullptr) {
@@ -452,8 +456,13 @@ std::string ObjectEditorClient::GetTempDir(const std::unique_ptr<ObjectEditorDoc
         return sandboxPath;
     }
     sandboxPath = fileDirPath + '/' + document->GetDocumentId();
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "sandboxPath: %{private}s", sandboxPath.c_str());
-    return sandboxPath;
+    std::string canonicalFileName;
+    if (!SystemUtils::ValidateAndNormalizePath(sandboxPath, canonicalFileName)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "Failed to validate and normalize path");
+        return "";
+    }
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "sandboxPath: %{private}s", canonicalFileName.c_str());
+    return canonicalFileName;
 }
 
 ErrCode ObjectEditorClient::PrepareFiles(const std::unique_ptr<ObjectEditorDocument> &document)
@@ -507,9 +516,9 @@ ErrCode ObjectEditorClient::PrepareFiles(const std::unique_ptr<ObjectEditorDocum
             document->SetNativeFileUri(SystemUtils::GetUriFromPath(destPath.string()));
         }
     }
-    std::string canonicalFilePath = SystemUtils::GetRealPath(sandboxPath);
-    if (canonicalFilePath.empty()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "canonicalFilePath is empty");
+    std::string canonicalFilePath;
+    if (!SystemUtils::ValidateAndNormalizePath(sandboxPath, canonicalFilePath)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "Failed to validate and normalize path");
         return ObjectEditorClientErrCode::CLIENT_PREPARE_FILES_ERROR;
     }
     sandboxPath = canonicalFilePath;

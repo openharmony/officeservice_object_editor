@@ -851,17 +851,21 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_DeleteAllEntry(ContentEmbed_Stora
     for (const auto entry : result) {
         if (!entry) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "entry is nullptr");
+            storageInner->LeaveDirectory();
             return CE_ERR_STORAGE_OPERATION_FAILED;
         }
         if (!storageInner->GetEntry(entry->Name(), false)) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "get entry failed");
+            storageInner->LeaveDirectory();
             return CE_ERR_STORAGE_OPERATION_FAILED;
         }
         if (!storageInner->DeleteEntry(entry->Name())) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "delete entry failed");
+            storageInner->LeaveDirectory();
             return CE_ERR_STORAGE_OPERATION_FAILED;
         }
     }
+    storageInner->LeaveDirectory();
     return CE_ERR_OK;
 }
 
@@ -1246,6 +1250,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetElements(const ContentEmbed_St
         auto element = std::make_unique<ContentEmbed_StorageElement>();
         if (element == nullptr) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create storage element failed");
+            rootStorage->LeaveDirectory();
             return CE_ERR_NULL_POINTER;
         }
         element->name = entry->Name();
@@ -1255,6 +1260,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetElements(const ContentEmbed_St
         element->modifiedTime = entry->GetModifiedTime();
         storageElements->elements.push_back(std::move(element));
     }
+    rootStorage->LeaveDirectory();
     return CE_ERR_OK;
 }
 

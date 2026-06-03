@@ -168,7 +168,7 @@ bool PackageData::ParseOle10NativeStream(Stream *stream, const std::string &tmpF
         return false;
     }
     // skip file link
-    if (offset + fileLinkSize > streamSize) {
+    if (fileLinkSize > streamSize || offset > streamSize - fileLinkSize) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "Insufficient data for file link");
         return false;
     }
@@ -227,6 +227,10 @@ bool PackageData::FormatOle10NativeStream(const std::string &tmpFilePath, std::v
     Byte fileSizeBuf[U32_BUF_LEN];
     WriteUint32(fileSizeBuf, fileSize, U32_BUF_LEN);
     std::vector<Byte> newFileSizeBuf(fileSizeBuf, fileSizeBuf + U32_BUF_LEN);
+    if (buffer.size() < newFileSizeBuf.size()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "buffer size small");
+        return false;
+    }
     std::copy(newFileSizeBuf.begin(), newFileSizeBuf.end(), buffer.begin());
     withData = dataSize_ < BLOCK_SIZE;
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "buffer size: %{public}u, dataSize: %{public}u",
@@ -246,12 +250,12 @@ bool PackageData::WriteFileToSandbox(Stream *stream, StreamPos &offset, const st
         fs::create_directories(parentDir);
     }
     fs::path safeFilename = fs::path(filename_).filename();
-    std::string canonicalPath = SystemUtils::GetRealPath(parentDir.string());
-    if (canonicalPath.empty()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "failed to get canonical path");
+    std::string canonicalPath = parentDir.string() + "/" + safeFilename.string();
+    std::string outputPathStr;
+    if (!SystemUtils::ValidateAndNormalizePath(canonicalPath, outputPathStr)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "Failed to validate and normalize path");
         return false;
     }
-    std::string outputPathStr = canonicalPath + "/" + safeFilename.string();
     std::ofstream outFile(outputPathStr, std::ios::binary);
     if (!outFile) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "cannot create file: %{private}s", tmpFilePath.c_str());
@@ -283,6 +287,7 @@ bool PackageData::WriteFileToSandbox(Stream *stream, StreamPos &offset, const st
         return false;
     }
     filepath_ = outputPathStr;
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::PACKAGE, "filepath:%{private}s", filepath_.c_str());
     return true;
 }
 
@@ -313,9 +318,9 @@ bool PackageData::WriteDataToStream(Stream *stream)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "stream is null");
         return false;
     }
-    std::string canonicalPath = SystemUtils::GetRealPath(filepath_);
-    if (canonicalPath.empty()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "failed to get canonical path");
+    std::string canonicalPath;
+    if (!SystemUtils::ValidateAndNormalizePath(filepath_, canonicalPath)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "Failed to validate and normalize path");
         return false;
     }
     std::ifstream file(canonicalPath, std::ios::binary | std::ios::ate);
@@ -359,9 +364,9 @@ bool PackageData::WriteDataToStream(Stream *stream)
 
 bool PackageData::WriteDataToBuffer(std::vector<Byte> &buffer)
 {
-    std::string canonicalPath = SystemUtils::GetRealPath(filepath_);
-    if (canonicalPath.empty()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "failed to get canonical path");
+    std::string canonicalPath;
+    if (!SystemUtils::ValidateAndNormalizePath(filepath_, canonicalPath)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "Failed to validate and normalize path");
         return false;
     }
     std::ifstream file(canonicalPath, std::ios::binary | std::ios::ate);

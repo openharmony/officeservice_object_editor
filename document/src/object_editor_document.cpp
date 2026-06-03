@@ -465,7 +465,9 @@ bool ObjectEditorDocument::CopyStreamData(Storage *src, Storage *dst, const std:
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "src stream is null, path: %{private}s", path.c_str());
         return false;
     }
-
+    if (size > std::numeric_limits<size_t>::max()) {
+        return false;
+    }
     constexpr uint64_t kChunkSize = 1ULL * 1024 * 1024;
     const std::size_t bufferSize = static_cast<std::size_t>(std::min<uint64_t>(kChunkSize, size));
     std::vector<std::uint8_t> buffer(bufferSize);
@@ -705,12 +707,22 @@ ObjectEditorDocument *ObjectEditorDocument::Unmarshalling(Parcel &parcel)
         return nullptr;
     }
     doc->oeid_ = parcel.ReadString();
-    doc->isLinking_ = parcel.ReadBool();
+    doc->isLinking_ = false;
+    if (!parcel.ReadBool(doc->isLinking_)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "read isLinking_ failed");
+        delete doc;
+        return nullptr;
+    }
     doc->tmpFileUri_ = parcel.ReadString();
     doc->oriFileUri_ = parcel.ReadString();
     doc->snapshotUri_ = parcel.ReadString();
     doc->nativeFileUri_ = parcel.ReadString();
-    int32_t operateTypeValue = parcel.ReadInt32();
+    int32_t operateTypeValue = 0;
+    if (!parcel.ReadInt32(operateTypeValue)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "read operateType failed");
+        delete doc;
+        return nullptr;
+    }
     if (operateTypeValue < 0 || operateTypeValue > static_cast<int32_t>(OperateType::EDIT)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid operateTypeValue: %{public}d", operateTypeValue);
         delete doc;

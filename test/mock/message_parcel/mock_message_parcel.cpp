@@ -360,13 +360,13 @@ bool Parcel::WriteString16(const std::u16string &value)
 
 bool Parcel::WriteString(const std::string &value)
 {
-    (void)value;
     if (g_setWriteStringErrorFlag && g_WriteStringErrorCount < 1) {
         return false;
     }
     if (g_WriteStringErrorCount > 0) {
         g_WriteStringErrorCount--;
     }
+    readStringResult = value;
     return true;
 }
 
@@ -455,13 +455,13 @@ bool Parcel::ReadStringVector(std::vector<std::string> *val)
 
 bool Parcel::ReadString(std::string &val)
 {
-    (void)val;
     if (g_setReadStringErrorFlag && g_ReadStringErrorCount < 1) {
         return false;
     }
     if (g_ReadStringErrorCount > 0) {
         g_ReadStringErrorCount--;
     }
+    val = readStringResult;
     return true;
 }
 

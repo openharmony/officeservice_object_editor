@@ -132,18 +132,18 @@ ContentEmbed_ErrorCode RegisterExtensionDeathRecipient(ContentEmbed_ExtensionPro
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "Memory allocation failed");
         return CE_ERR_NULL_POINTER;
     }
-    if (proxy->objectEditorService == nullptr) {
+    if (proxy == nullptr || proxy->objectEditorService == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "Service pointer is null");
         return CE_ERR_PARAM_INVALID;
     }
     auto oeExtensionRemoteObject = proxy->objectEditorService->GetRemoteObject();
-    proxy->deathRecipient = extensionDeathRecipient;
     if (oeExtensionRemoteObject != nullptr &&
         oeExtensionRemoteObject->IsProxyObject() &&
         !oeExtensionRemoteObject->AddDeathRecipient(extensionDeathRecipient)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "Failed add death recipient to remote");
         return CE_ERR_SYSTEM_ABNORMAL;
     }
+    proxy->deathRecipient = extensionDeathRecipient;
     return CE_ERR_OK;
 }
 } // namespace

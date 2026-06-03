@@ -352,7 +352,6 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, DoDeleteBundle_StoreNull, TestSize.Lev
 HWTEST_F(ObjectEditorManagerDatabaseTest, DoDeleteBundle_DeleteFailed, TestSize.Level1)
 {
     db_->store_ = mockStore_;
-    EXPECT_CALL(*mockStore_, QuerySql(_, _)).WillOnce(Return(nullptr));
     EXPECT_CALL(*mockStore_, Delete(_, _)).WillOnce(Return(-1));
     bool ret = db_->DoDeleteBundle("com.test.bundle");
     EXPECT_FALSE(ret);
@@ -417,7 +416,6 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, RemoveBundle_DoDeleteFailed, TestSize.
 {
     db_->store_ = mockStore_;
     EXPECT_CALL(*mockStore_, BeginTransaction()).WillOnce(Return(NativeRdb::E_OK));
-    EXPECT_CALL(*mockStore_, QuerySql(_, _)).WillOnce(Return(nullptr));
     EXPECT_CALL(*mockStore_, Delete(_, _)).WillOnce(Return(-1));
     EXPECT_CALL(*mockStore_, RollBack()).WillOnce(Return(NativeRdb::E_OK));
     db_->RemoveBundle("com.test.bundle");

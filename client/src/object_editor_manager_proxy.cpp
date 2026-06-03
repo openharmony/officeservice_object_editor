@@ -62,9 +62,18 @@ ErrCode ObjectEditorManagerProxy::StartObjectEditorExtension(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "ReadInt32 failed");
         return errCode;
     }
-    isPackageExtension = reply.ReadBool();
+    bool isPackageExtensionValue = false;
+    if (!reply.ReadBool(isPackageExtensionValue)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read isPackageExtension failed");
+        return ERR_INVALID_DATA;
+    }
+    isPackageExtension = isPackageExtensionValue;
     if (!isPackageExtension) {
         oeExtensionRemoteObject = reply.ReadRemoteObject();
+        if (oeExtensionRemoteObject == nullptr) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read oeExtensionRemoteObject failed");
+            return ERR_INVALID_DATA;
+        }
     }
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "succeed");
     return ERR_OK;
@@ -413,7 +422,12 @@ ErrCode ObjectEditorManagerProxy::QueryExtensionStopReason(const sptr<IRemoteObj
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "ReadInt32 failed");
         return errCode;
     }
-    stopReason = static_cast<ExtensionStopReason>(reply.ReadInt32());
+    int32_t stopReasonValue = 0;
+    if (!reply.ReadInt32(stopReasonValue)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read stopReason failed");
+        return ERR_INVALID_DATA;
+    }
+    stopReason = static_cast<ExtensionStopReason>(stopReasonValue);
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "succeed");
     return ERR_OK;
 }

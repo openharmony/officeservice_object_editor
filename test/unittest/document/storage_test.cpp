@@ -1872,7 +1872,7 @@ HWTEST_F(StorageTest, Create_001, TestSize.Level1)
 {
     const char *validPath = "valid_path";
     bool ret = storage_->Create(validPath);
-    EXPECT_EQ(ret, true);
+    EXPECT_EQ(ret, false);
 }
 
 /**

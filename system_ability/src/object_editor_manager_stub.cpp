@@ -125,7 +125,11 @@ int32_t ObjectEditorManagerStub::HandleStopObjectEditorExtension(MessageParcel &
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "extensionRemoteObject is nullptr");
         return ERR_INVALID_DATA;
     }
-    bool isPackageExtension = data.ReadBool();
+    bool isPackageExtension = false;
+    if (!data.ReadBool(isPackageExtension)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "isPackageExtension read failed");
+        return ERR_INVALID_DATA;
+    }
     ErrCode errCode = StopObjectEditorExtension(documentId, extensionRemoteObject, isPackageExtension);
     if (!reply.WriteInt32(errCode)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "write errCode failed");
@@ -222,7 +226,10 @@ int32_t ObjectEditorManagerStub::HandleGetObjectEditorFormatsByLocale(MessagePar
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "formats size exceed limit");
         return ERR_INVALID_DATA;
     }
-    reply.WriteInt32(formats.size());
+    if (!reply.WriteInt32(formats.size())) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "write format size failed");
+        return ERR_INVALID_VALUE;
+    }
     for (auto &format : formats) {
         if (!reply.WriteParcelable(format.get())) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "write format failed");
@@ -240,7 +247,11 @@ int32_t ObjectEditorManagerStub::HandleStartUIAbility(MessageParcel &data, Messa
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "want is nullptr");
         return ERR_INVALID_DATA;
     }
-    int32_t clientPid = data.ReadInt32();
+    int32_t clientPid = 0;
+    if (!data.ReadInt32(clientPid)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "read clientPid failed");
+        return ERR_INVALID_DATA;
+    }
     if (clientPid <= 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "clientPid is invalid");
         return ERR_INVALID_DATA;
