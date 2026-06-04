@@ -27,6 +27,7 @@
 #include <sys/stat.h>
 #include "file_uri.h"
 
+#include "application_context.h"
 #include "hilog_object_editor.h"
 
 namespace OHOS {
@@ -318,6 +319,16 @@ bool ValidateAndNormalizePath(const std::string &inputPath, std::string &canonic
     }
     canonicalFileName = std::string(canonicalDirPath.get()) + "/" + filenameTemp;
     return true;
+}
+
+std::string GetBundleName()
+{
+    auto context = AbilityRuntime::Context::GetApplicationContext();
+    if (context == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "application context is null");
+        return "";
+    }
+    return context->GetBundleName();
 }
 
 // LCOV_EXCL_STOP

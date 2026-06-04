@@ -33,6 +33,7 @@
 #include "iservice_registry.h"
 #include "common_event_manager.h"
 #include "common_event_support.h"
+#include "res_config.h"
 
 #include "hilog_object_editor.h"
 #include "object_editor_config.h"
@@ -647,6 +648,26 @@ ErrCode ObjectEditorManagerSystemAbility::StopObjectEditorExtension(
     return errCode;
 }
 
+bool ObjectEditorManagerSystemAbility::LocaleIsValid(const std::string &locale)
+{
+    if (locale.empty()) {
+        return true;
+    }
+#ifdef SUPPORT_GRAPHICS
+    Global::Resource::RState rState = Global::Resource::RState::SUCCESS;
+    Locale *parsedLocale = Global::Resource::BuildFromString(locale.c_str(), '-', rState);
+    if (parsedLocale != nullptr) {
+        delete parsedLocale;
+    }
+    if (rState != Global::Resource::RState::SUCCESS) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA,
+            "locale is invalid, locale:%{private}s, rState:%{public}d", locale.c_str(), rState);
+        return false;
+    }
+#endif
+    return true;
+}
+
 ErrCode ObjectEditorManagerSystemAbility::GetOEidByFileExtension(const std::string &oeid,
     std::string &fileExtension)
 {
@@ -672,6 +693,9 @@ ErrCode ObjectEditorManagerSystemAbility::GetObjectEditorFormatByOEidAndLocale(c
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "oeid: %{private}s, locale: %{private}s",
         oeid.c_str(), locale.c_str());
+    if (!LocaleIsValid(locale)) {
+        return ObjectEditorManagerErrCode::SA_INVALID_PARAMETER;
+    }
     return ObjectEditorManagerDatabase::GetInstance().GetObjectEditorFormatByOEidAndLocale(oeid,
         locale, format);
 }
@@ -680,6 +704,9 @@ ErrCode ObjectEditorManagerSystemAbility::GetObjectEditorFormatsByLocale(const s
     std::vector<std::unique_ptr<ObjectEditorFormat>> &formats)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "locale: %{private}s", locale.c_str());
+    if (!LocaleIsValid(locale)) {
+        return ObjectEditorManagerErrCode::SA_INVALID_PARAMETER;
+    }
     return ObjectEditorManagerDatabase::GetInstance().GetObjectEditorFormatsByLocale(locale, formats);
 }
 

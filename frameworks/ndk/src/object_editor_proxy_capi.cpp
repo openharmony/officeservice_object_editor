@@ -648,20 +648,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_DoEdit(ContentEmbed_ExtensionProxy 
         }
         proxy->objectEditorService->SetRemoteObject(contextSptr->GetToken());
     }
-    auto context = static_cast<std::weak_ptr<OHOS::AbilityRuntime::Context>*>(proxy->contextPtr);
-    if (context == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "context is null");
-        return CE_ERR_PARAM_INVALID;
-    }
-    auto contextSptr = context->lock();
-    if (contextSptr == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "contextSptr is null");
-        return CE_ERR_PARAM_INVALID;
-    }
     std::string oeid = proxy->ceDocument->oeDocumentInner == nullptr ? "" :
                         proxy->ceDocument->oeDocumentInner->GetOEid();
     HiSysEventWrite(OBJECT_EDITOR, "EDIT_DOCUMENT", OHOS::HiviewDFX::HiSysEvent::EventType::STATISTIC,
-                    "OEID", oeid, "BUNDLENAME", contextSptr->GetBundleName());
+                    "OEID", oeid, "BUNDLENAME", SystemUtils::GetBundleName());
     HITRACE_METER_FMT(HITRACE_TAG_OHOS, "proxy::OH_ContentEmbed_Proxy_DoEdit");
     auto errCode = proxy->objectEditorService->DoEdit(proxy->ceDocument->oeDocumentInner->GetDocumentId());
     if (errCode != OHOS::ERR_OK) {

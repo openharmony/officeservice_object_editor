@@ -96,6 +96,11 @@ private:
     ErrCode CleanupTempFiles(const std::unique_ptr<ObjectEditorDocument> &document);
     std::string GetTempDir(const std::unique_ptr<ObjectEditorDocument> &document);
     std::string GenRandomUuid();
+    ErrCode StartObjectEditorExtensionInner(
+        std::unique_ptr<ObjectEditorDocument> &document,
+        const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
+        sptr<IObjectEditorService> &oeExtensionRemoteObject,
+        bool &isPackageExtension);
 
     std::mutex proxyMutex_;
     sptr<IObjectEditorManager> oeSAProxy_ { nullptr };

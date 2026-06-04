@@ -140,6 +140,7 @@ private:
         sptr<IRemoteObject> &remoteObject);
     std::string GetCallerBundleName();
     bool CheckRateLimitAdvanced();
+    bool LocaleIsValid(const std::string &locale);
 
     ServiceRunningState state_ = ServiceRunningState::STATE_NOT_START;
     std::shared_mutex diversionMapMutex_;
