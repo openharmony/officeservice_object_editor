@@ -480,7 +480,7 @@ bool ObjectEditorDocument::CopyStreamData(Storage *src, Storage *dst, const std:
         auto bytesRead = srcStream->Read(buffer.data(), static_cast<std::streamsize>(toRead));
         if (bytesRead <= 0 || bytesRead > static_cast<std::streamsize>(toRead)) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-                "Read out of range, expected: %{public}u, actual: %{public}" PRIu64 ", path: %{private}s",
+                "Read out of range, expected: %{public}zu, actual: %{public}" PRIu64 ", path: %{private}s",
                 toRead, static_cast<uint64_t>(bytesRead), path.c_str());
             return false;
         }
