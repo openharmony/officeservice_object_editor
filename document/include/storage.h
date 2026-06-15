@@ -19,6 +19,7 @@
 #include <fstream>
 #include <list>
 #include <memory>
+#include <mutex>
 #include <set>
 #include <sstream>
 #include <string>
@@ -71,6 +72,7 @@ public:
     // Get parsed Header; returns nullptr if initialization failed
     [[nodiscard]] const Header *GetHeader() const
     {
+        std::lock_guard<std::recursive_mutex> lock(ioMutex_);
         return header_ ? header_.get() : nullptr;
     }
     // Get DirEntry for specified path; can create if needed
@@ -91,20 +93,24 @@ public:
     void ListEntries(std::vector<const DirEntry *> &result) const;
     [[nodiscard]] uint32_t SmallBlockSize() const
     {
+        std::lock_guard<std::recursive_mutex> lock(ioMutex_);
         return (sbat_) ? sbat_->BlockSize() : 0;
     }
     [[nodiscard]] uint32_t BigBlockSize() const
     {
+        std::lock_guard<std::recursive_mutex> lock(ioMutex_);
         return (bbat_) ? bbat_->BlockSize() : 0;
     }
     [[nodiscard]] bool FollowSmallBlockTable(uint32_t start, std::vector<uint32_t> &chain) const
     {
+        std::lock_guard<std::recursive_mutex> lock(ioMutex_);
         if (sbat_)
             return sbat_->Follow(start, chain);
         return false;
     }
     [[nodiscard]] bool FollowBigBlockTable(uint32_t start, std::vector<uint32_t> &chain) const
     {
+        std::lock_guard<std::recursive_mutex> lock(ioMutex_);
         if (bbat_)
             return bbat_->Follow(start, chain);
         return false;
@@ -112,6 +118,7 @@ public:
 
     [[nodiscard]] const std::vector<uint32_t> &SbBlocks() const
     {
+        std::lock_guard<std::recursive_mutex> lock(ioMutex_);
         return sbBlocks_;
     }
 
@@ -420,6 +427,8 @@ private:
     // Disable copy and assignment
     StorageIO(const StorageIO &) = delete;
     StorageIO &operator=(const StorageIO &) = delete;
+
+    mutable std::recursive_mutex ioMutex_;
 };
 
 }  // namespace ObjectEditor

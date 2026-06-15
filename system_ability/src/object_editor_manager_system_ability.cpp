@@ -76,8 +76,10 @@ std::mutex ObjectEditorManagerSystemAbility::extensionStopReasonMapMutex_;
 std::map<sptr<IRemoteObject>, std::shared_ptr<ExtensionStop>> ObjectEditorManagerSystemAbility::extensionStopReasonMap_;
 std::mutex ObjectEditorManagerSystemAbility::extensionStopCleanMutex_;
 std::condition_variable ObjectEditorManagerSystemAbility::cvExtensionStopClean_;
-std::atomic<bool> ObjectEditorManagerSystemAbility::extensionStopCleanRunning_{false};
+
 std::atomic<bool> ObjectEditorManagerSystemAbility::extensionStopCleanNotify_{false};
+std::atomic<bool> ObjectEditorManagerSystemAbility::extensionStopCleanExit_{false};
+std::atomic<bool> ObjectEditorManagerSystemAbility::extensionStopCleanRunning_{false};
 
 void ObjectEditorManagerSystemAbility::RegisterExtensionStopReason(const sptr<IRemoteObject> &remoteObject,
     ExtensionStopReason reason)
@@ -94,10 +96,8 @@ void ObjectEditorManagerSystemAbility::RegisterExtensionStopReason(const sptr<IR
             std::chrono::steady_clock::now().time_since_epoch()).count());
     extensionStopReasonMap_[remoteObject] = extensionStop;
     
-    bool expected = false;
-    if (extensionStopCleanRunning_.compare_exchange_strong(expected, true)) {
-        std::thread([this]() { TimerThreadCleanExtensionStopReason(); }).detach();
-    }
+    extensionStopCleanNotify_.store(true);
+    cvExtensionStopClean_.notify_one();
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "register extension stop reason: %{public}d", static_cast<int>(reason));
 }
 
@@ -124,10 +124,13 @@ void ObjectEditorManagerSystemAbility::TimerThreadCleanExtensionStopReason()
 {
     constexpr int32_t CLEAN_INTERVAL_S = 60;
     constexpr uint64_t CLEAN_THRESHOLD_MS = 60000;
-    while (true) {
+    while (!extensionStopCleanExit_.load()) {
         std::unique_lock<std::mutex> lock(extensionStopCleanMutex_);
         auto waitResult = cvExtensionStopClean_.wait_for(lock, std::chrono::seconds(CLEAN_INTERVAL_S),
-            []() { return extensionStopCleanNotify_.load(); });
+            []() { return extensionStopCleanNotify_.load() || extensionStopCleanExit_.load(); });
+        if (extensionStopCleanExit_.load()) {
+            break;
+        }
         if (waitResult) {
             extensionStopCleanNotify_.store(false);
             continue;
@@ -143,11 +146,6 @@ void ObjectEditorManagerSystemAbility::TimerThreadCleanExtensionStopReason()
             } else {
                 ++it;
             }
-        }
-        if (extensionStopReasonMap_.empty()) {
-            extensionStopCleanRunning_.store(false);
-            OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "extension stop reason map is empty, stop clean thread");
-            break;
         }
     }
 }
@@ -195,6 +193,11 @@ void ObjectEditorManagerSystemAbility::OnStart()
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "already running");
         return;
     }
+    bool expected = false;
+    if (extensionStopCleanRunning_.compare_exchange_strong(expected, true)) {
+        extensionStopCleanExit_.store(false);
+        cleanThread_ = std::thread([]() { TimerThreadCleanExtensionStopReason(); });
+    }
     bool res = Publish(this);
     if (!res) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "Publish failed");
@@ -212,6 +215,13 @@ void ObjectEditorManagerSystemAbility::OnStop()
         OBJECT_EDITOR_LOGW(ObjectEditorDomain::SA, "not running");
         return;
     }
+    extensionStopCleanExit_.store(true);
+    extensionStopCleanNotify_.store(true);
+    cvExtensionStopClean_.notify_one();
+    if (cleanThread_.joinable()) {
+        cleanThread_.join();
+    }
+    extensionStopCleanRunning_.store(false);
     state_ = ServiceRunningState::STATE_NOT_START;
 }
 
@@ -324,6 +334,11 @@ bool ObjectEditorManagerSystemAbility::CheckRateLimitAdvanced()
 
 bool ObjectEditorManagerSystemAbility::CheckCallingPermission(uint32_t code)
 {
+    if (code <= static_cast<uint32_t>(IObjectEditorManagerIpcCode::IPC_CODE_START) ||
+        code >= static_cast<uint32_t>(IObjectEditorManagerIpcCode::IPC_CODE_END)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "code %{public}u out of range", code);
+        return false;
+    }
     switch (static_cast<IObjectEditorManagerIpcCode>(code)) {
         case IObjectEditorManagerIpcCode::COMMAND_START_OBJECT_EDITOR_EXTENSION:
         case IObjectEditorManagerIpcCode::COMMAND_GET_OEID_BY_FILE_EXTENSION:

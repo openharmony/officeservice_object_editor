@@ -34,6 +34,7 @@ Storage::~Storage() = default;
 
 int Storage::Result() const
 {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (!io_) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null");
         return Storage::UnknownError;
@@ -43,6 +44,7 @@ int Storage::Result() const
 
 void Storage::ListEntries(std::vector<const DirEntry *> &result) const
 {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (!io_) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null");
         return;
@@ -52,6 +54,7 @@ void Storage::ListEntries(std::vector<const DirEntry *> &result) const
 
 bool Storage::EnterDirectory(const std::string &directory)
 {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (!io_) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null");
         return false;
@@ -61,6 +64,7 @@ bool Storage::EnterDirectory(const std::string &directory)
 
 void Storage::LeaveDirectory()
 {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (!io_) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null");
         return;
@@ -70,6 +74,7 @@ void Storage::LeaveDirectory()
 
 DirEntry *Storage::GetStorage(const std::string &path, bool create)
 {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "path: %{private}s, create: %{public}d",
         path.c_str(), create);
     if (!io_ || path.empty()) {
@@ -122,6 +127,7 @@ DirEntry *Storage::GetStorage(const std::string &path, bool create)
 
 void Storage::Path(std::string &result) const
 {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (!io_) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null");
         return;
@@ -131,6 +137,7 @@ void Storage::Path(std::string &result) const
 
 Stream *Storage::GetStream(const std::string &name, bool create, bool reuse)
 {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "name: %{private}s, create: %{public}d, reuse: %{public}d",
         name.c_str(), create, reuse);
     if (!io_ || !name.length()) {
@@ -174,26 +181,31 @@ Stream *Storage::GetStream(const std::string &name, bool create, bool reuse)
 
 DirEntry *Storage::GetRootEntry()
 {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     return io_ ? io_->GetRootEntry() : nullptr;
 }
 
 DirEntry *Storage::GetEntry(const std::string &path, bool create)
 {
-    return io_? io_->Entry(path, create) : nullptr;
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
+    return io_ ? io_->Entry(path, create) : nullptr;
 }
 
 bool Storage::Flush()
 {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     return io_ ? io_->Flush() : false;
 }
 
 bool Storage::IsDirty() const
 {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     return io_ ? io_->IsDirty() : false;
 }
 
 bool Storage::ReadRawCd(size_t offset, uint8_t *buf, size_t len, size_t *outRead)
 {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (buf == nullptr || outRead == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "buf or outRead is null");
         return false;
@@ -203,11 +215,13 @@ bool Storage::ReadRawCd(size_t offset, uint8_t *buf, size_t len, size_t *outRead
 
 bool Storage::SaveToFile(const char *filename)
 {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     return io_ ? io_->SaveToFile(filename, true) : false;
 }
 
 void Storage::Debug()
 {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (!io_) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null");
         return;
@@ -217,6 +231,7 @@ void Storage::Debug()
 
 bool Storage::DeleteEntry(const std::string &path)
 {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (io_) {
         bool result = io_->DeleteEntry(path);
         if (result) {
@@ -231,6 +246,7 @@ bool Storage::DeleteEntry(const std::string &path)
 
 const CLSID &Storage::Clsid() const
 {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (!io_ || io_->GetHeader() == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null or header is null");
         static CLSID empty{};
@@ -241,6 +257,7 @@ const CLSID &Storage::Clsid() const
 
 uint32_t Storage::TransactionSignature() const
 {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (!io_ || io_->GetHeader() == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null or header is null");
         return 0;

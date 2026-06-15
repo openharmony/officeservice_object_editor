@@ -14,6 +14,7 @@
  */
 
 #include "object_editor_client_callback_proxy.h"
+#include "object_editor_common.h"
 
 namespace OHOS {
 namespace ObjectEditor {
@@ -91,7 +92,7 @@ ErrCode ObjectEditorClientCallbackProxy::OnError(ContentEmbed_ErrorCode error)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read enum failed");
         return ERR_INVALID_DATA;
     }
-    error = static_cast<ContentEmbed_ErrorCode>(enumTmp);
+    error = ValidateErrorCode(enumTmp);
     return ERR_OK;
 }
 
