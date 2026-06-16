@@ -119,9 +119,10 @@ HWTEST_F(UserMgrTest, UserMgr_005, TestSize.Level1)
  */
 HWTEST_F(UserMgrTest, UserMgr_006, TestSize.Level1)
 {
-    int32_t userId1 = UserMgr::GetInstance().GetUserId();
-    int32_t userId2 = UserMgr::GetInstance().GetUserId();
-    EXPECT_EQ(userId1, userId2);
+    int32_t originalUserId = UserMgr::GetInstance().GetUserId();
+    UserMgr::GetInstance().SetNewUserId(99999);
+    int32_t userIdAfterSet = UserMgr::GetInstance().GetUserId();
+    EXPECT_EQ(originalUserId, userIdAfterSet);
 }
 
 /**
