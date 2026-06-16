@@ -24,6 +24,9 @@ std::string logMsg;
 void MyLogCallback(const LogType type, const LogLevel level, const unsigned int domain, const char *tag,
     const char *msg)
 {
+    if (level == LOG_DEBUG) {
+        return;
+    }
     logMsg = msg;
 }
 }

@@ -279,16 +279,6 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Helper_RequireStorageEntry(const ContentE
     return CE_ERR_OK;
 }
 
-ContentEmbed_ErrorCode OH_ContentEmbed_Helper_ValidateStorageEntry(const ContentEmbed_Storage *handle)
-{
-    Storage *storageRaw = nullptr;
-    ContentEmbed_ErrorCode err = OH_ContentEmbed_Helper_RequireStorageEntry(handle, storageRaw);
-    if (storageRaw == nullptr) {
-        return CE_ERR_STORAGE_OPERATION_FAILED;
-    }
-    return err;
-}
-
 ContentEmbed_ErrorCode OH_ContentEmbed_Helper_RequireStream(ContentEmbed_Stream *handle,
     Stream *&streamOut)
 {
@@ -1441,24 +1431,8 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_CopyTo(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "dstStorage is null");
         return CE_ERR_PARAM_INVALID;
     }
-    ContentEmbed_ErrorCode err = OH_ContentEmbed_Helper_ValidateStorageEntry(srcStorage);
-    if (err != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "srcStorage entry does not exist");
-        return err;
-    }
-    err = OH_ContentEmbed_Helper_ValidateStorageEntry(dstStorage);
-    if (err != CE_ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "dstStorage entry does not exist");
-        return err;
-    }
-    if (srcStorage->owner == dstStorage->owner &&
-        (srcStorage->name == dstStorage->name ||
-         dstStorage->name.find(srcStorage->name + PATH_SEPARATOR_STR) == 0)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "dstStorage is in srcStorage subtree");
-        return CE_ERR_PARAM_INVALID;
-    }
     HITRACE_METER_FMT(HITRACE_TAG_OHOS, "document::OH_ContentEmbed_Storage_CopyTo");
-    err = CopyOEid(srcStorage, dstStorage);
+    auto err = CopyOEid(srcStorage, dstStorage);
     if (err != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "copy oeid failed");
         return err;
