@@ -147,7 +147,7 @@ HWTEST_F(FileWatcherTest, ProcessEvent_001, TestSize.Level1)
         MockEventCallback);
     struct inotify_event event;
     event.wd = 1;
-    event.mask = IN_MODIFY;
+    event.mask = IN_CLOSE_WRITE;
     event.cookie = 0;
     event.len = 0;
     char buffer[sizeof(struct inotify_event) + 16] = {0};
@@ -156,7 +156,7 @@ HWTEST_F(FileWatcherTest, ProcessEvent_001, TestSize.Level1)
     g_callbackMask = 0;
     g_callbackFilepath = "";
     watcher->ProcessEvent(buffer, len);
-    EXPECT_EQ(g_callbackMask, static_cast<uint32_t>(IN_MODIFY));
+    EXPECT_EQ(g_callbackMask, static_cast<uint32_t>(IN_CLOSE_WRITE));
     EXPECT_EQ(g_callbackFilepath, "/test/file");
 }
 

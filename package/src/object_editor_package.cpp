@@ -44,6 +44,9 @@ ObjectEditorPackage::~ObjectEditorPackage()
     if (watcher_ != nullptr) {
         watcher_->Stop();
     }
+    if (clientCb_ != nullptr) {
+        clientCb_->OnStopEdit(true);
+    }
 }
 
 ErrCode ObjectEditorPackage::GetSnapshot(const std::string &documentId)
@@ -76,8 +79,16 @@ ErrCode ObjectEditorPackage::DoEdit(const std::string &documentId)
             OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "file mask:%{public}d, path:%{private}s",
                 mask, filepath.c_str());
             packageData_->SaveData();
-            if (clientCb_ != nullptr) {
-                clientCb_->OnStopEdit(true);
+            if (clientCb_ != nullptr && document_ != nullptr) {
+                auto newDocument = ObjectEditorDocument::LoadFromFile(document_->GetTmpFilePath());
+                if (newDocument == nullptr) {
+                    OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "load document failed");
+                    return;
+                }
+                if (document_->GetTmpFileUri().has_value()) {
+                    newDocument->SetTmpFileUri(document_->GetTmpFileUri().value());
+                }
+                clientCb_->OnUpdate(newDocument);
             }
         });
     if (watcher_ == nullptr) {
