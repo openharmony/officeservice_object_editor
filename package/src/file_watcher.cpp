@@ -142,7 +142,7 @@ ssize_t FileWatcher::ReadEvents(char *buffer, size_t bufferSize)
         return ret;
     }
     if (ret == 0) {
-        OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "no event");
+        OBJECT_EDITOR_LOGD(ObjectEditorDomain::PACKAGE, "no event");
         return ret;
     }
     if (!FD_ISSET(inotifyFd_, &fds)) {
@@ -206,7 +206,7 @@ void FileWatcher::ProcessEvent(char *buffer, ssize_t len)
             Stop();
             return;
         }
-        if (callback_ != nullptr) {
+        if (callback_ != nullptr && (event->mask & IN_CLOSE_WRITE)) {
             callback_(event->mask, filepath_);
         }
         ptr += event_size;
