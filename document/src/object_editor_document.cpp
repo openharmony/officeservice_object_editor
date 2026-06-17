@@ -71,10 +71,10 @@ std::unique_ptr<ObjectEditorDocument> ObjectEditorDocument::CreateByOEid(const s
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "storage creation failed");
         return nullptr;
     }
-    ObjectEditorDocument instance(std::move(storage), std::string{});
-    instance.oeid_ = oeid;
-    instance.operateType_ = OperateType::CREATE_BY_OEID;
-    return std::make_unique<ObjectEditorDocument>(std::move(instance));
+    auto doc = std::make_unique<ObjectEditorDocument>(std::move(storage), std::string{});
+    doc->oeid_ = oeid;
+    doc->operateType_ = OperateType::CREATE_BY_OEID;
+    return doc;
 }
 
 std::unique_ptr<ObjectEditorDocument> ObjectEditorDocument::CreateByFile(
@@ -103,10 +103,10 @@ std::unique_ptr<ObjectEditorDocument> ObjectEditorDocument::LoadFromFile(const s
         return nullptr;
     }
 
-    ObjectEditorDocument instance(std::move(storage), std::string{});
-    instance.operateType_ = OperateType::EDIT;
-    instance.userTmpFilePath_ = path;
-    return std::make_unique<ObjectEditorDocument>(std::move(instance));
+    auto doc = std::make_unique<ObjectEditorDocument>(std::move(storage), std::string{});
+    doc->operateType_ = OperateType::EDIT;
+    doc->userTmpFilePath_ = path;
+    return doc;
 }
 
 std::string ObjectEditorDocument::GetOEid() const
@@ -121,6 +121,7 @@ void ObjectEditorDocument::SetOEid(const std::string &oeid)
 
 bool ObjectEditorDocument::FlushOEid()
 {
+    std::lock_guard<std::recursive_mutex> lock(docMutex_);
     if (!storage_) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "storage is null");
         return false;
@@ -157,11 +158,13 @@ std::string ObjectEditorDocument::GetOEidInternal() const
 
 Storage *ObjectEditorDocument::GetRootStorage() noexcept
 {
+    std::lock_guard<std::recursive_mutex> lock(docMutex_);
     return storage_.get();
 }
 
 const Storage *ObjectEditorDocument::GetRootStorage() const noexcept
 {
+    std::lock_guard<std::recursive_mutex> lock(docMutex_);
     return storage_.get();
 }
 
@@ -206,11 +209,13 @@ void ObjectEditorDocument::SetNativeFileUri(const std::string &nativeFileUri) no
 
 void ObjectEditorDocument::RestoreStorage()
 {
+    std::lock_guard<std::recursive_mutex> lock(docMutex_);
     storage_ = std::make_unique<Storage>(GetTmpFilePath().c_str());
 }
 
 bool ObjectEditorDocument::Flush()
 {
+    std::lock_guard<std::recursive_mutex> lock(docMutex_);
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "oeid: %{public}s, operateType: %{public}d",
         oeid_.c_str(), static_cast<int32_t>(operateType_));
     if (!storage_) {
@@ -298,7 +303,8 @@ bool ObjectEditorDocument::Flush()
 namespace {
 bool AtomicReplaceFile(const std::string &tempPath, const std::string &targetPath)
 {
-    return fs::copy_file(tempPath, targetPath, fs::copy_options::overwrite_existing);
+    std::error_code ec;
+    return fs::copy_file(tempPath, targetPath, fs::copy_options::overwrite_existing, ec);
 }
 } // namespace
 
@@ -318,7 +324,12 @@ std::string GenerateTempPath(const std::string &targetPath, const std::string do
     }
     sandboxPath = fileDirPath + '/' + documentId;
     fs::path targetDirPath(sandboxPath);
-    fs::create_directories(targetDirPath);
+    std::error_code ec;
+    fs::create_directories(targetDirPath, ec);
+    if (ec) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "create directories failed, ec: %{public}d", ec.value());
+        return "";
+    }
     thread_local std::random_device rd;
     thread_local std::mt19937 gen(rd());
     constexpr uint32_t PATH_LEN = 16;

@@ -330,6 +330,7 @@ bool StorageIO::IsValidReadParams(size_t offset, uint8_t *buf, size_t len, size_
 
 bool StorageIO::ReadRawCd(size_t offset, uint8_t *buf, size_t len, size_t *outRead)
 {
+    std::lock_guard<std::recursive_mutex> lock(ioMutex_);
     if (!IsValidReadParams(offset, buf, len, outRead)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Invalid parameters");
         return false;
@@ -914,6 +915,7 @@ uint32_t StorageIO::LoadBigBlocks(const std::vector<uint32_t> &blocks,
 
 uint32_t StorageIO::LoadBigBlock(uint32_t block, Byte *data, uint32_t maxlen)
 {
+    std::lock_guard<std::recursive_mutex> lock(ioMutex_);
     if (!data) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Invalid data");
         return 0;
@@ -1040,6 +1042,7 @@ uint32_t StorageIO::LoadSmallBlocks(const std::vector<uint32_t> &blocks, Byte *d
 
 uint32_t StorageIO::LoadSmallBlock(uint32_t block, Byte *data, uint32_t maxlen)
 {
+    std::lock_guard<std::recursive_mutex> lock(ioMutex_);
     if (!data) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Invalid data");
         return 0;
@@ -1162,6 +1165,7 @@ void StorageIO::ListEntries(std::vector<const DirEntry *> &result) const
 
 DirEntry *StorageIO::Entry(const std::string &path, bool create)
 {
+    std::lock_guard<std::recursive_mutex> lock(ioMutex_);
     DirEntry *result = dirtree_ ? dirtree_->Entry(path, create) : nullptr;
     if (create && result) {
         dtModified_ = true;
@@ -1171,11 +1175,13 @@ DirEntry *StorageIO::Entry(const std::string &path, bool create)
 
 DirEntry *StorageIO::GetRootEntry()
 {
+    std::lock_guard<std::recursive_mutex> lock(ioMutex_);
     return dirtree_ ? dirtree_->GetEntryAt(0) : nullptr;
 }
 
 uint32_t StorageIO::SaveBlock(uint64_t physicalOffset, const Byte *data, uint32_t len)
 {
+    std::lock_guard<std::recursive_mutex> lock(ioMutex_);
     if (!data || len == 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Invalid data or len");
         return 0;
@@ -1761,6 +1767,7 @@ void StorageIO::ExecuteBlockRelease(const std::vector<std::pair<bool, std::vecto
 
 bool StorageIO::DeleteEntry(const std::string &path)
 {
+    std::lock_guard<std::recursive_mutex> lock(ioMutex_);
     uint32_t threshold = 0;
     uint32_t miniBlockSize = 0;
     uint32_t bigBlockSize = 0;
@@ -2000,6 +2007,7 @@ bool StorageIO::AllocateFreshChain(DirEntry *entry, uint64_t newSize, bool useBi
 
 bool StorageIO::ExtendEntry(DirEntry *entry, uint64_t newSize)
 {
+    std::lock_guard<std::recursive_mutex> lock(ioMutex_);
     if (!ValidateExtendPreconditions(entry)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to validate extend preconditions");
         return false;
@@ -2459,6 +2467,7 @@ bool StorageIO::SaveFat()
 
 bool StorageIO::Flush()
 {
+    std::lock_guard<std::recursive_mutex> lock(ioMutex_);
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "modified_: %{public}d", dtModified_);
     bool memoryMode = false;
     size_t blockSize = 0;
@@ -2654,6 +2663,7 @@ bool StorageIO::WriteBufferToFile(const std::string &filename)
 
 bool StorageIO::SaveToFile(const char *filename, bool switchToFileMode)
 {
+    std::lock_guard<std::recursive_mutex> lock(ioMutex_);
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "filename: %{private}s, switchToFileMode: %{public}d",
         filename, switchToFileMode);
     if (!memoryBuffer_) {
@@ -2738,8 +2748,10 @@ bool StorageIO::ValidateSectorSizes(uint32_t &sectorSize)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "BBAT, SBAT, or header is null");
         return false;
     }
-    bbat_->SetBlockSize(1 << header_->BigBlockShift());
-    sbat_->SetBlockSize(1 << header_->SmallBlockShift());
+    uint32_t bigBlockShift = header_->BigBlockShift();
+    uint32_t smallBlockShift = header_->SmallBlockShift();
+    bbat_->SetBlockSize(1 << bigBlockShift);
+    sbat_->SetBlockSize(1 << smallBlockShift);
     difatSectors_.clear();
     fatSectors_.clear();
     protectedBlocksCache_.clear();
@@ -2777,6 +2789,10 @@ bool StorageIO::ValidateHeaderSectorIndex(uint32_t sectorIdx, uint32_t sectorSiz
 {
     if (sectorIdx == AllocTable::Eof || sectorIdx == AllocTable::Avail) {
         return true;
+    }
+    if (sectorSize != 0 && sectorIdx > std::numeric_limits<uint64_t>::max() / sectorSize) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "exceed limit");
+        return false;
     }
     const uint64_t sectorOffset = BlockToOffset(sectorIdx, sectorSize);
     if (sectorOffset >= fileSize) {

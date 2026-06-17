@@ -563,18 +563,18 @@ ErrCode ObjectEditorClient::CleanupTempFiles(const std::unique_ptr<ObjectEditorD
     if (sandboxPath.empty()) {
         return ObjectEditorClientErrCode::CLIENT_GET_PATH_ERROR;
     }
-    if (!fs::exists(sandboxPath) || !fs::is_directory(sandboxPath)) {
+    std::error_code ec;
+    if (!fs::exists(sandboxPath, ec) || !fs::is_directory(sandboxPath, ec)) {
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "sandboxPath not exist or not directory");
         return ObjectEditorClientErrCode::CLIENT_OK;
     }
     std::string snapshotPath = sandboxPath + "/snapshot.png";
-    std::error_code ec;
-    if (fs::exists(snapshotPath)) {
+    if (fs::exists(snapshotPath, ec)) {
         fs::remove(snapshotPath, ec);
         OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "remove snapshot result: %{public}d", ec.value());
     }
     std::string oleBinPath = sandboxPath + "/ole.bin";
-    if (fs::exists(oleBinPath)) {
+    if (fs::exists(oleBinPath, ec)) {
         fs::remove(oleBinPath, ec);
         OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "remove oleBin result: %{public}d", ec.value());
     }
@@ -586,12 +586,12 @@ ErrCode ObjectEditorClient::CleanupTempFiles(const std::unique_ptr<ObjectEditorD
         }
         fs::path sourcePath(source);
         std::string destPath = sandboxPath + "/" + sourcePath.filename().string();
-        if (fs::exists(destPath)) {
+        if (fs::exists(destPath, ec)) {
             fs::remove(destPath, ec);
             OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "remove destPath result: %{public}d", ec.value());
         }
     }
-    if (fs::exists(sandboxPath) && fs::is_empty(sandboxPath)) {
+    if (fs::exists(sandboxPath, ec) && fs::is_empty(sandboxPath, ec)) {
         fs::remove(sandboxPath, ec);
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "remove sandboxPath:%{private}s result: %{public}d",
             sandboxPath.c_str(), ec.value());

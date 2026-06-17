@@ -26,10 +26,12 @@ namespace OHOS {
 namespace ObjectEditor {
 
 enum class IObjectEditorClientCallbackIpcCode {
-    COMMAND_ON_UPDATE = MIN_TRANSACTION_ID,
+    IPC_CODE_START = MIN_TRANSACTION_ID,
+    COMMAND_ON_UPDATE,
     COMMAND_ON_ERROR,
     COMMAND_ON_STOP_EDIT,
     COMMAND_ON_EXTENSION_STOPPED,
+    IPC_CODE_END,
 };
 
 class IObjectEditorClientCallback : public IRemoteBroker {

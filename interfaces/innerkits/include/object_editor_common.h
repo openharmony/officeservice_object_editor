@@ -16,6 +16,8 @@
 #ifndef OHOS_OBJECT_EDITOR_COMMON_H
 #define OHOS_OBJECT_EDITOR_COMMON_H
 
+#include "content_embed_common.h"
+
 namespace OHOS {
 namespace ObjectEditor {
 inline constexpr char OBJECT_EDITOR[] = "OBJECT_EDITOR";
@@ -26,6 +28,17 @@ enum class ExtensionStopReason {
     EXTENSION_TERMINATED = 3,
     EXTENSION_EXCEPTION_EXIT = 4
 };
+
+inline ContentEmbed_ErrorCode ValidateErrorCode(int32_t value,
+    ContentEmbed_ErrorCode defaultValue = CE_ERR_EXTENSION_ERROR)
+{
+    if (value == CE_ERR_OK || value == CE_PERMISSION_DENIED ||
+        value == CE_ERR_PARAM_INVALID || value == CE_ERR_DEVICE_NOT_SUPPORTED ||
+        (value >= CE_ERR_NULL_POINTER && value <= CE_ERR_EXTENSION_NOT_SUPPORT)) {
+        return static_cast<ContentEmbed_ErrorCode>(value);
+    }
+    return defaultValue;
+}
 
 } // namespace ObjectEditor
 } // namespace OHOS

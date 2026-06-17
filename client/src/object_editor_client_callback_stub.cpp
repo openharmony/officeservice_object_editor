@@ -14,6 +14,7 @@
  */
 
 #include "object_editor_client_callback_stub.h"
+#include "object_editor_common.h"
 
 namespace OHOS {
 namespace ObjectEditor {
@@ -44,6 +45,11 @@ int32_t ObjectEditorClientCallbackStub::OnRemoteRequestInner(
     std::u16string remoteDescriptor = data.ReadInterfaceToken();
     if (localDescriptor != remoteDescriptor) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "descriptor invalid");
+        return ERR_TRANSACTION_FAILED;
+    }
+    if (code <= static_cast<uint32_t>(IObjectEditorClientCallbackIpcCode::IPC_CODE_START) ||
+        code >= static_cast<uint32_t>(IObjectEditorClientCallbackIpcCode::IPC_CODE_END)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "code %{public}u out of range", code);
         return ERR_TRANSACTION_FAILED;
     }
     switch (static_cast<IObjectEditorClientCallbackIpcCode>(code)) {
@@ -86,7 +92,7 @@ int32_t ObjectEditorClientCallbackStub::HandleOnError(MessageParcel &data, Messa
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read error failed");
         return ERR_INVALID_DATA;
     }
-    ContentEmbed_ErrorCode error = static_cast<ContentEmbed_ErrorCode>(errorValue);
+    ContentEmbed_ErrorCode error = ValidateErrorCode(errorValue);
     ErrCode errCode = OnError(error);
     if (!reply.WriteInt32(errCode)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write errCode failed");

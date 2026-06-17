@@ -27,13 +27,15 @@ namespace ObjectEditor {
 using namespace OHOS::ObjectEditor;
 
 enum class IObjectEditorServiceIpcCode {
-    COMMAND_GET_SNAPSHOT = MIN_TRANSACTION_ID,
+    IPC_CODE_START = MIN_TRANSACTION_ID,
+    COMMAND_GET_SNAPSHOT,
     COMMAND_DO_EDIT,
     COMMAND_GET_EDITING_STATE,
     COMMAND_GET_EXTENSION_EDITING_STATUS,
     COMMAND_GET_CAPABILITY,
     COMMAND_CLOSE,
     COMMAND_INITIAL,
+    IPC_CODE_END,
 };
 
 class IObjectEditorService : public virtual RefBase {

@@ -22,6 +22,7 @@
 #include <filesystem>
 #include <iosfwd>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -45,8 +46,8 @@ public:
         oeid_{}, isLinking_{false}, operateType_{OperateType::UNKNOWN}, documentId_{} {}
     ObjectEditorDocument(const ObjectEditorDocument &) = delete;
     ObjectEditorDocument &operator=(const ObjectEditorDocument &) = delete;
-    ObjectEditorDocument(ObjectEditorDocument &&) noexcept = default;
-    ObjectEditorDocument &operator=(ObjectEditorDocument &&) noexcept = default;
+    ObjectEditorDocument(ObjectEditorDocument &&) noexcept = delete;
+    ObjectEditorDocument &operator=(ObjectEditorDocument &&) noexcept = delete;
     ~ObjectEditorDocument();
 
     bool Marshalling(Parcel &parcel) const override;
@@ -120,10 +121,10 @@ public:
     [[nodiscard]] bool Flush();
     void RestoreStorage();
 
+    ObjectEditorDocument(std::unique_ptr<Storage> storage, std::string tmpFileUri) noexcept;
     std::string GetDocumentId() const;
     void SetDocumentId(const std::string &documentId);
 private:
-    ObjectEditorDocument(std::unique_ptr<Storage> storage, std::string tmpFileUri) noexcept;
     bool RebuildAndFlush();
     bool ShouldRebuild() const;
     uint64_t ComputeLiveDataSize() const;
@@ -145,6 +146,7 @@ private:
     OperateType operateType_{OperateType::UNKNOWN};
     std::string userTmpFilePath_;
     std::string documentId_;
+    mutable std::recursive_mutex docMutex_;
 };
 } // namespace ObjectEditor
 } // namespace OHOS

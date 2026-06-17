@@ -18,6 +18,7 @@
 
 #include <map>
 #include <mutex>
+#include <thread>
 #include "iremote_object.h"
 #include "system_ability.h"
 #include "single_instance.h"
@@ -148,7 +149,7 @@ private:
 
     void TimerThreadStopSA();
     void ResetStopSATimer();
-    void TimerThreadCleanExtensionStopReason();
+    static void TimerThreadCleanExtensionStopReason();
     std::mutex mutexCallback_;
     static std::mutex mutexTimer_;
     static std::condition_variable cvTimer_;
@@ -157,8 +158,10 @@ private:
     static std::string permissionClient_;
     static std::mutex extensionStopCleanMutex_;
     static std::condition_variable cvExtensionStopClean_;
-    static std::atomic<bool> extensionStopCleanRunning_;
     static std::atomic<bool> extensionStopCleanNotify_;
+    static std::atomic<bool> extensionStopCleanExit_;
+    static std::atomic<bool> extensionStopCleanRunning_;
+    std::thread cleanThread_;
 
     std::shared_ptr<ObjectEditorScreenChangeReceiver> screenChangedReceiver_;
 

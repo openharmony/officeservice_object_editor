@@ -19,6 +19,7 @@
 #include <array>
 #include <list>
 #include <memory>
+#include <mutex>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -69,6 +70,7 @@ public:
 private:
     std::unique_ptr<StorageIO> io_;
     std::list<std::unique_ptr<Stream>> streams_;
+    mutable std::recursive_mutex mutex_;
     Storage(const Storage &);
     Storage &operator=(const Storage &);
 };

@@ -45,6 +45,11 @@ int32_t ObjectEditorManagerStub::OnRemoteRequestInner(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "descriptor invalid");
         return ERR_TRANSACTION_FAILED;
     }
+    if (code <= static_cast<uint32_t>(IObjectEditorManagerIpcCode::IPC_CODE_START) ||
+        code >= static_cast<uint32_t>(IObjectEditorManagerIpcCode::IPC_CODE_END)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "code %{public}u out of range", code);
+        return ERR_TRANSACTION_FAILED;
+    }
     switch (static_cast<IObjectEditorManagerIpcCode>(code)) {
         case IObjectEditorManagerIpcCode::COMMAND_START_OBJECT_EDITOR_EXTENSION:
             return HandleStartObjectEditorExtension(data, reply);

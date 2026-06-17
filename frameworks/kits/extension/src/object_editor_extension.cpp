@@ -129,6 +129,10 @@ void ObjectEditorExtension::ListenWindowManager()
     }
 
     auto objectEditorExtension = std::static_pointer_cast<ObjectEditorExtension>(shared_from_this());
+    if (objectEditorExtension == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "dynamic_cast failed");
+        return;
+    }
     displayListener_ = sptr<ObjectEditorExtensionDisplayListener>::MakeSptr(objectEditorExtension);
     if (displayListener_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "failed to create display listener");

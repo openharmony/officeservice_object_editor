@@ -187,11 +187,12 @@ bool PackageData::ParseOle10NativeStream(Stream *stream, const std::string &tmpF
 
 bool PackageData::FormatOle10NativeStream(const std::string &tmpFilePath, std::vector<Byte> &buffer, bool &withData)
 {
-    if (!fs::exists(filepath_)) {
+    std::error_code ec;
+    if (!fs::exists(filepath_, ec)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "tmpFilePath: %{private}s not exists", tmpFilePath.c_str());
         return false;
     }
-    uint64_t dataSize = fs::file_size(filepath_);
+    uint64_t dataSize = fs::file_size(filepath_, ec);
     if (dataSize > UINT32_MAX) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "the file size exceeds 4GB");
         return false;
@@ -244,10 +245,15 @@ bool PackageData::WriteFileToSandbox(Stream *stream, StreamPos &offset, const st
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "stream is null");
         return false;
     }
+    std::error_code ec;
     fs::path filepath(tmpFilePath);
     fs::path parentDir = filepath.parent_path();
-    if (!fs::exists(parentDir)) {
-        fs::create_directories(parentDir);
+    if (!fs::exists(parentDir, ec)) {
+        fs::create_directories(parentDir, ec);
+        if (ec) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "create directories failed, ec: %{public}d", ec.value());
+            return false;
+        }
     }
     fs::path safeFilename = fs::path(filename_).filename();
     std::string canonicalPath = parentDir.string() + "/" + safeFilename.string();
