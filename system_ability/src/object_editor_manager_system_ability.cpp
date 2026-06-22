@@ -349,7 +349,9 @@ bool ObjectEditorManagerSystemAbility::CheckCallingPermission(uint32_t code)
         case IObjectEditorManagerIpcCode::COMMAND_STOP_OBJECT_EDITOR_EXTENSION: {
             return ObjectEditorPermissionUtils::CheckCallingPermission(permissionClient_);
         }
-        case IObjectEditorManagerIpcCode::COMMAND_START_UI_ABILITY:
+        case IObjectEditorManagerIpcCode::COMMAND_START_UI_ABILITY: {
+            return ObjectEditorPermissionUtils::CheckCallingPermission(PERMISSION_SERVER);
+        }
         case IObjectEditorManagerIpcCode::COMMAND_QUERY_EXTENSION_STOP_REASON: {
             return true;
         }
