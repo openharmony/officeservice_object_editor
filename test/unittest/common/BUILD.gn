@@ -14,6 +14,7 @@
 
 import("//build/test.gni")
 import("//foundation/officeservice/object_editor/object_editor.gni")
+module_out_path = "object_editor/object_editor"
 
 config("common_test_config") {
   include_dirs = [
@@ -39,7 +40,7 @@ config("common_test_config") {
 }
 
 ohos_unittest("object_editor_config_test") {
-  module_out_path = "object_editor/unittest"
+  module_out_path = module_out_path
   sources = [
     "object_editor_config_test.cpp",
   ]
@@ -84,7 +85,7 @@ ohos_unittest("object_editor_config_test") {
 }
 
 ohos_unittest("object_editor_extension_proxy_test") {
-  module_out_path = "object_editor/unittest"
+  module_out_path = module_out_path
   sources = [
     "object_editor_extension_proxy_test.cpp",
     "${object_editor_path}/test/mock/message_parcel/mock_message_parcel.cpp",
@@ -126,7 +127,7 @@ ohos_unittest("object_editor_extension_proxy_test") {
 }
 
 ohos_unittest("object_editor_format_test") {
-  module_out_path = "object_editor/unittest"
+  module_out_path = module_out_path
   sources = [
     "object_editor_format_test.cpp",
     "${object_editor_path}/test/mock/message_parcel/mock_message_parcel.cpp",
@@ -168,7 +169,7 @@ ohos_unittest("object_editor_format_test") {
 }
 
 ohos_unittest("system_utils_test") {
-  module_out_path = "object_editor/unittest"
+  module_out_path = module_out_path
   sources = [
     "system_utils_test.cpp",
   ]
@@ -209,7 +210,7 @@ ohos_unittest("system_utils_test") {
 }
 
 ohos_unittest("user_mgr_test") {
-  module_out_path = "object_editor/unittest"
+  module_out_path = module_out_path
   sources = [
     "user_mgr_test.cpp",
   ]

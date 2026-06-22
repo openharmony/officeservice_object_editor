@@ -15,7 +15,7 @@
 import("//build/test.gni")
 import("//foundation/officeservice/object_editor/object_editor.gni")
 
-module_out_path = "object_editor/unittest"
+module_out_path = "object_editor/object_editor"
 
 config("extension_ability_test_config") {
   include_dirs = [
