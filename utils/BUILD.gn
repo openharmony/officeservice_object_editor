@@ -30,6 +30,7 @@ config("libobject_editor_utils_public_config") {
 
 # Build ObjectEditorUtils.so
 ohos_shared_library("content_embed_utils") {
+    branch_protector_ret = "pac_ret"
     sanitize = {
         cfi = true
         cfi_cross_dso = true

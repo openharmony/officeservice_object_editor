@@ -17,6 +17,7 @@ import("//foundation/officeservice/object_editor/object_editor.gni")
 
 # Build content_embed_document.so
 ohos_shared_library("content_embed_document") {
+    branch_protector_ret = "pac_ret"
     sanitize = {
         cfi = true
         cfi_cross_dso = true
