@@ -13,6 +13,7 @@
 
 import("//build/test.gni")
 import("//foundation/officeservice/object_editor/object_editor.gni")
+module_out_path = "object_editor/object_editor"
 
 config("package_test_config") {
   include_dirs = [
@@ -45,7 +46,7 @@ config("package_test_config") {
 }
 
 ohos_unittest("package_data_test") {
-  module_out_path = "object_editor/unittest"
+  module_out_path = module_out_path
   sources = [
     "package_data_test.cpp",
     "${object_editor_path}/package/src/package_data.cpp",
@@ -91,7 +92,7 @@ ohos_unittest("package_data_test") {
 }
 
 ohos_unittest("object_editor_package_test") {
-  module_out_path = "object_editor/unittest"
+  module_out_path = module_out_path
   sources = [
     "object_editor_package_test.cpp",
     "${object_editor_path}/client/src/object_editor_client_callback_stub.cpp",
@@ -147,7 +148,7 @@ ohos_unittest("object_editor_package_test") {
 }
 
 ohos_unittest("file_watcher_test") {
-  module_out_path = "object_editor/unittest"
+  module_out_path = module_out_path
   sources = [
     "file_watcher_test.cpp",
     "${object_editor_path}/package/src/file_watcher.cpp",
