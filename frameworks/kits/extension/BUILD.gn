@@ -85,6 +85,7 @@ ohos_shared_library("content_embed_extension") {
         "ability_base:configuration",
         "ability_base:want",
         "ability_base:ability_base_want",
+        "ability_base:session_info",
         "ability_runtime:ability_context_native",
         "ability_runtime:ability_manager",
         "ability_runtime:ability_start_options",
@@ -103,6 +104,9 @@ ohos_shared_library("content_embed_extension") {
         "image_framework:image_native",
         "image_framework:pixelmap_ndk",
         "ability_runtime:ability_runtime",
+        "bundle_framework:appexecfwk_base",
+        "bundle_framework:appexecfwk_core",
+        "window_manager:libwm",
     ]
 
     subsystem_name = "officeservice"
@@ -152,6 +156,8 @@ ohos_shared_library("content_embed_extension_module") {
         "ability_base:want",
         "ability_base:ability_base_want",
         "ability_base:zuri",
+        "ability_base:configuration",
+        "ability_base:session_info",
         "ability_runtime:abilitykit_native",
         "ability_runtime:runtime",
         "c_utils:utils",
@@ -162,6 +168,9 @@ ohos_shared_library("content_embed_extension_module") {
         "image_framework:image_native",
         "image_framework:pixelmap_ndk",
         "ability_runtime:ability_runtime",
+        "bundle_framework:appexecfwk_base",
+        "bundle_framework:appexecfwk_core",
+        "window_manager:libwm",
     ]
 
     relative_install_dir = "extensionability/"

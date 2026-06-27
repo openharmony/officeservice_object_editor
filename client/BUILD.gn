@@ -80,14 +80,21 @@ ohos_shared_library("content_embed_client") {
         "ability_runtime:uri_permission_mgr",
         "ability_base:want",
         "ability_base:ability_base_want",
+        "ability_base:configuration",
+        "ability_base:session_info",
         "os_account:os_account_innerkits",
         "ability_runtime:ability_manager",
         "image_framework:pixelmap_ndk",
         "image_framework:image_native",
         "app_file_service:fileuri_native",
         "ability_runtime:ability_runtime",
+        "bundle_framework:appexecfwk_base",
+        "bundle_framework:appexecfwk_core",
         "hisysevent:libhisysevent",
         "hitrace:hitrace_meter",
+        "init:libbegetutil",
+        "napi:ace_napi",
+        "window_manager:libwm",
     ]
     defines = []
 

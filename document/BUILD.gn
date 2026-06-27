@@ -53,11 +53,15 @@ ohos_shared_library("content_embed_document") {
         "c_utils:utils",
         "ipc:ipc_core",
         "ability_base:zuri",
+        "ability_base:configuration",
+        "ability_base:session_info",
         "ability_runtime:app_context",
         "app_file_service:fileuri_native",
         "bundle_framework:appexecfwk_core",
+        "bundle_framework:appexecfwk_base",
         "hilog:libhilog",
-        "icu:shared_icuuc"
+        "icu:shared_icuuc",
+        "init:libbegetutil",
     ]
 
     part_name = "object_editor"
