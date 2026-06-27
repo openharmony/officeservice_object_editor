@@ -78,10 +78,13 @@ ohos_shared_library("content_embed_service") {
     "ability_runtime:app_context",
     "ability_base:zuri",
     "ability_base:want",
+    "ability_base:configuration",
+    "ability_base:session_info",
     "ability_runtime:wantagent_innerkits",
     "os_account:os_account_innerkits",
     "cJSON:cjson",
     "bundle_framework:appexecfwk_core",
+    "bundle_framework:appexecfwk_base",
     "bundle_framework:bundle_napi_common",
     "napi:ace_napi",
     "udmf:utd_client",
@@ -90,7 +93,9 @@ ohos_shared_library("content_embed_service") {
     "resource_management:global_resmgr",
     "access_token:libaccesstoken_sdk",
     "common_event_service:cesfwk_innerkits",
-    "hisysevent:libhisysevent"
+    "hisysevent:libhisysevent",
+    "init:libbegetutil",
+    "window_manager:libwm"
   ]
   part_name = "object_editor"
   subsystem_name = "officeservice"

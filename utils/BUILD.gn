@@ -61,6 +61,8 @@ ohos_shared_library("content_embed_utils") {
         "bundle_framework:bundle_napi_common",
         "c_utils:utils",
         "os_account:os_account_innerkits",
+        "ability_base:configuration",
+        "ability_base:session_info",
     ]
     defines = []
     part_name = "object_editor"
