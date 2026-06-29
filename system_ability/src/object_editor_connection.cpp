@@ -151,6 +151,7 @@ void ObjectEditorConnection::TimerThreadStopExtension()
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "start wait %{public}ds", EXTENSION_STOP_TIME_S);
         auto waitResult = cvTimer_.wait_for(lock, std::chrono::seconds(EXTENSION_STOP_TIME_S),
                                             [this]() { return timerNotify_.load() || timerStopFlag_.load(); });
+        lock.unlock();
         if (!waitResult) {
             bool isScreenLocked = ObjectEditorEventManager::GetInstance().CheckIsScreenLocked();
             if (isScreenLocked && curCheckEditStatusTimes_ >= MAX_CHECK_REMOTE_EDITSTATUS_TIMES) {
