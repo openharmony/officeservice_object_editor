@@ -15,6 +15,7 @@ import("//build/ohos.gni")
 import("//foundation/officeservice/object_editor/object_editor.gni")
 
 ohos_shared_library("content_embed_ndk") {
+    branch_protector_ret = "pac_ret"
     sanitize = {
         cfi = true
         cfi_cross_dso = true
