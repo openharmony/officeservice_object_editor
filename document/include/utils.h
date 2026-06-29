@@ -52,6 +52,7 @@ constexpr uint64_t SEC_TO_UNIX_EPOCH = 11644473600ULL;
 constexpr uint64_t NANOS_PER_SEC = 1000000000ULL;
 constexpr uint32_t READ_U32_BUF_LEN = 4;
 constexpr uint32_t READ_U16_BUF_LEN = 2;
+constexpr uint32_t DIR_ENTRY_SIZE_OFFSET = 0x78;   // Size offset in DirEntry
 
 inline uint64_t GetCurrentFileTime()
 {
