@@ -318,6 +318,17 @@ bool ValidateAndNormalizePath(const std::string &inputPath, std::string &canonic
         return false;
     }
     canonicalFileName = std::string(canonicalDirPath.get()) + "/" + filenameTemp;
+    std::unique_ptr<char, decltype(&free)> finalPath(realpath(canonicalFileName.c_str(), nullptr), &free);
+    if (finalPath != nullptr) {
+        std::string finalStr(finalPath.get());
+        std::string canonicalDirStr(canonicalDirPath.get());
+        // 验证最终路径仍以允许的目录为前缀
+        if (finalStr.find(canonicalDirStr) != 0) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "path escaped sandbox");
+            return false;
+        }
+        canonicalFileName = finalStr;
+    }
     return true;
 }
 

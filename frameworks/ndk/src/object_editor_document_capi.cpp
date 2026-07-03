@@ -1157,7 +1157,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_SetOEid(ContentEmbed_Storage *sto
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid size is invalid");
         return CE_ERR_PARAM_INVALID;
     }
-    std::string oeidStr(oeid);
+    std::string oeidStr(oeid, oeidSize);
     if (!(oeidStr.size() == OEID_LEN || oeidStr.size() == OEID_MAX_LEN)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid length is invalid");
         return CE_ERR_PARAM_INVALID;

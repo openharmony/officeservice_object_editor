@@ -646,6 +646,11 @@ bool StorageIO::LoadDirectoryTree(SectorIndex &sbStart)
             "Failed to load directory tree");
         return false;
     }
+    if (buffer.size() < DIR_ENTRY_SIZE_OFFSET) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "Directory buffer too small to read sbStart");
+        return false;
+    }
     sbStart = ReadUint32(buffer.data() + 0x74);
     return true;
 }
@@ -748,11 +753,6 @@ bool StorageIO::ValidateMiniRootCoverage(size_t highestUsed)
 {
     if (highestUsed == 0) {
         return true;
-    }
-    if (highestUsed > UINT64_MAX / SmallBlockSize()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-            "highestUsed overflow");
-        return false;
     }
     const uint64_t requiredMiniBytes = static_cast<uint64_t>(highestUsed) * SmallBlockSize();
     const uint64_t bigBlockSz = BigBlockSize();
@@ -1277,6 +1277,10 @@ bool StorageIO::ReadMiniStream(DirEntry *entry, uint64_t oldSize, std::vector<ui
     if (oldSize == 0) {
         return true;
     }
+    if (oldSize > std::numeric_limits<uint32_t>::max()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "oldSize exceeds uint32_t limit");
+        return false;
+    }
     smallBuffer.resize(static_cast<size_t>(oldSize));
     const uint32_t bytesRead = LoadSmallBlocks(oldBlocks, smallBuffer.data(), static_cast<uint32_t>(oldSize));
     if (bytesRead < static_cast<uint32_t>(oldSize)) {
@@ -1495,6 +1499,10 @@ bool StorageIO::PrepareDirectoryBlocks(size_t blockSize, size_t dirEntries, std:
 {
     if (blockSize == 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Invalid block size");
+        return false;
+    }
+    if (dirEntries > SIZE_MAX / kDirectoryEntrySize) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "dirEntries overflow");
         return false;
     }
     const size_t neededBytes = dirEntries * kDirectoryEntrySize;
@@ -2340,6 +2348,10 @@ bool StorageIO::SaveMiniFat()
     const uint32_t blockSize = BigBlockSize();
     if (blockSize == 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid block size");
+        return false;
+    }
+    if (entryCount > SIZE_MAX / sizeof(uint32_t)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entryCount overflow");
         return false;
     }
     const size_t bytesNeeded = entryCount * sizeof(uint32_t);

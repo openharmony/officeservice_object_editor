@@ -178,6 +178,10 @@ bool PackageData::ParseOle10NativeStream(Stream *stream, const std::string &tmpF
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "failed to read dataSize");
         return false;
     }
+    if (dataSize_ > streamSize || offset > streamSize - dataSize_) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "Insufficient data for data size");
+        return false;
+    }
     if (!WriteFileToSandbox(stream, offset, tmpFilePath)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "failed to write sandbox");
         return false;
