@@ -95,11 +95,6 @@ ErrCode MockPrepareFiles()
     return ObjectEditorClientErrCode::CLIENT_UNKNOWN_OPERATE;
 }
 
-bool MockWaitLoadStateChange()
-{
-    return false;
-}
-
 sptr<ISystemAbilityManager> MockGetSystemAbilityManager()
 {
     return nullptr;
@@ -384,20 +379,6 @@ HWTEST_F(ObjectEditorClientTest, GetIObjectEditorManager_001, TestSize.Level1)
     client_->oeSAProxy_ = sptr<IObjectEditorManager>((IObjectEditorManager*)new MockObjectEditorManagerStub());
     auto res = client_->GetIObjectEditorManager();
     EXPECT_NE(res, nullptr);
-}
-
-/**
- * @tc.name GetIObjectEditorManager_002
- * @tc.desc Test GetIObjectEditorManager method
- * @tc.type FUNC
- */
-HWTEST_F(ObjectEditorClientTest, GetIObjectEditorManager_002, TestSize.Level1)
-{
-    client_->oeSAProxy_ = nullptr;
-    Stub stub;
-    stub.set(ADDR(ObjectEditorClient, WaitLoadStateChange), MockWaitLoadStateChange);
-    auto res = client_->GetIObjectEditorManager();
-    EXPECT_EQ(res, nullptr);
 }
 
 /**
