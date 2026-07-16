@@ -15,6 +15,7 @@
 
 #include <cstring>
 #include <string_ex.h>
+#include <algorithm>
 
 #include <hitrace_meter.h>
 #include "content_embed_document.h"
@@ -107,7 +108,7 @@ ContentEmbed_ErrorCode CopyOEid(ContentEmbed_Storage *srcStorage, ContentEmbed_S
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "GetOEid failed, err: %{private}d", err);
         return err;
     }
-    err = OH_ContentEmbed_Storage_SetOEid(dstStorage, oeid, MAX_OEID_LENGTH);
+    err = OH_ContentEmbed_Storage_SetOEid(dstStorage, oeid, OEID_MAX_LEN);
     if (err != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "SetOEid failed, err: %{private}d", err);
         return err;
@@ -1157,7 +1158,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_SetOEid(ContentEmbed_Storage *sto
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid size is invalid");
         return CE_ERR_PARAM_INVALID;
     }
-    std::string oeidStr(oeid, oeidSize);
+    std::string oeidStr(oeid, std::min<size_t>(oeidSize, OEID_MAX_LEN));
     if (!(oeidStr.size() == OEID_LEN || oeidStr.size() == OEID_MAX_LEN)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid length is invalid");
         return CE_ERR_PARAM_INVALID;
