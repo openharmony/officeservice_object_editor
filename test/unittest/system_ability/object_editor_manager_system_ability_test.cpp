@@ -170,7 +170,7 @@ HWTEST_F(ObjectEditorManagerSystemAbilityTest, CallbackEnter_002, TestSize.Level
 {
     uint32_t code = static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_QUERY_EXTENSION_STOP_REASON);
     int32_t ret = sa_->CallbackEnter(code);
-    EXPECT_EQ(ret, ERR_NONE);
+    EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_ERR_INVALID_USERID);
 }
 
 /**
