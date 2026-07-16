@@ -27,6 +27,7 @@ class UserMgr {
 public:
     void SetNewUserId(int32_t newUserId);
     int32_t GetUserId();
+    int32_t GetCallingUserId();
 private:
     UserMgr();
     ~UserMgr() = default;

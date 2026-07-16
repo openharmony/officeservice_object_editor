@@ -73,6 +73,8 @@ enum ObjectEditorManagerErrCode : int32_t {
     SA_START_UIABILITY_FAILED,
     SA_CONNECT_LIMIT_EXCEED,
     SA_CHECK_CLIENT_FILE_VALID_FAILED,
+    SA_ERR_IN_DLP_SANDBOX,
+    SA_ERR_INVALID_USERID,
 };
 
 enum ObjectorEditorExtensionErrCode : int32_t {

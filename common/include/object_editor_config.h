@@ -45,6 +45,12 @@ public:
      */
     bool CheckIsInDlp();
     /**
+     * @brief Check if the IPC caller is in DLP sandbox.
+     *
+     * @return true if the IPC caller is in DLP sandbox, false otherwise.
+     */
+    bool CheckCallerInDlpSandbox();
+    /**
      * @brief Check if the object editor is supported on the device.
      *
      * @return ContentEmbed_ErrorCode::CE_ERR_OK if the object editor is supported,

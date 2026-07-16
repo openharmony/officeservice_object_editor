@@ -314,6 +314,10 @@ int32_t ObjectEditorManagerSystemAbility::CallbackEnter([[maybe_unused]] uint32_
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "rate limit advanced");
         return ObjectEditorManagerErrCode::SA_CONNECT_LIMIT_EXCEED;
     }
+    if (UserMgr::GetInstance().GetUserId() != UserMgr::GetInstance().GetCallingUserId()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "invalid user id");
+        return ObjectEditorManagerErrCode::SA_ERR_INVALID_USERID;
+    }
     return ERR_NONE;
 }
 
@@ -734,6 +738,17 @@ ErrCode ObjectEditorManagerSystemAbility::StartUIAbility(const std::unique_ptr<A
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "want is null");
         return ObjectEditorManagerErrCode::SA_INVALID_PARAMETER;
     }
+    std::string callerBundleName = GetCallerBundleName();
+    if (callerBundleName.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "caller bundle name is empty");
+        return ObjectEditorManagerErrCode::SA_INVALID_PARAMETER;
+    }
+    std::string wantBundleName = want->GetElement().GetBundleName();
+    if (wantBundleName != callerBundleName) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "bundle name mismatch, want: %{public}s, caller: %{public}s",
+            wantBundleName.c_str(), callerBundleName.c_str());
+        return ObjectEditorManagerErrCode::SA_INVALID_PARAMETER;
+    }
     auto abilityManagerClient = AAFwk::AbilityManagerClient::GetInstance();
     if (abilityManagerClient == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "ability manager client is null");
@@ -769,6 +784,10 @@ bool ObjectEditorManagerSystemAbility::CheckClientFileValid(const ObjectEditorDo
     }
     uriVec.push_back(document.GetSnapshotUri());
     if (document.GetOperateType() == OperateType::CREATE_BY_FILE) {
+        if (document.GetLinking() && SystemUtils::IsAppSandboxPath(document.GetOriFilePath())) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "link not support sandbox");
+            return false;
+        }
         if (document.GetNativeFileUri().has_value()) {
             uriVec.push_back(document.GetNativeFileUri().value());
         }

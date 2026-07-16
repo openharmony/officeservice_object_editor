@@ -69,6 +69,7 @@ ohos_shared_library("content_embed_ndk") {
         "app_file_service:fileuri_native",
         "bundle_framework:appexecfwk_base",
         "bundle_framework:appexecfwk_core",
+        "access_token:libaccesstoken_sdk",
         "c_utils:utils",
         "hilog:libhilog",
         "image_framework:image_native",

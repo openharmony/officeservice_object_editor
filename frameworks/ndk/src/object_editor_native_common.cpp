@@ -71,6 +71,8 @@ const std::map<int32_t, ContentEmbed_ErrorCode> ERROR_CODE_MAP {
     {ObjectEditorManagerErrCode::SA_START_UIABILITY_FAILED, CE_ERR_SYSTEM_ABNORMAL},
     {ObjectEditorManagerErrCode::SA_CONNECT_LIMIT_EXCEED, CE_ERR_CONNECT_LIMIT_EXCEED},
     {ObjectEditorManagerErrCode::SA_CHECK_CLIENT_FILE_VALID_FAILED, CE_ERR_FILE_NOT_GRANT},
+    {ObjectEditorManagerErrCode::SA_ERR_IN_DLP_SANDBOX, CE_ERR_IN_DLP_SANDBOX},
+    {ObjectEditorManagerErrCode::SA_ERR_INVALID_USERID, CE_ERR_PARAM_INVALID},
 // ObjectorEditorExtensionErrCode
     {ObjectorEditorExtensionErrCode::EXTENSION_CAPABILITY_NOT_SUPPORT, CE_ERR_EXTENSION_NOT_SUPPORT},
     {ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER, CE_ERR_EXTENSION_ERROR},

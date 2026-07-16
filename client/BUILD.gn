@@ -91,6 +91,7 @@ ohos_shared_library("content_embed_client") {
         "ability_runtime:ability_runtime",
         "bundle_framework:appexecfwk_base",
         "bundle_framework:appexecfwk_core",
+        "access_token:libaccesstoken_sdk",
         "hisysevent:libhisysevent",
         "hitrace:hitrace_meter",
         "init:libbegetutil",
