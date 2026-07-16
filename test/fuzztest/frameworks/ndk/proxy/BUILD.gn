@@ -60,6 +60,7 @@ ohos_fuzztest("OHContentEmbedGetContentEmbedFormatByOEidAndLocaleFuzzTest") {
     "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "image_framework:pixelmap",
+    "napi:ace_napi",
     "ipc:ipc_core",
     "ipc:ipc_napi",
     "safwk:system_ability_fwk",
