@@ -59,14 +59,15 @@ ErrCode MockObjectEditorExtensionStub::GetCapability(const std::string &document
     return error;
 }
 
-ErrCode MockObjectEditorExtensionStub::Close(const std::string &documentId, bool &isAllObjectsRemoved)
+ErrCode MockObjectEditorExtensionStub::Close(const std::string &documentId, bool &isAllObjectsRemoved,
+    uint32_t callerTokenId)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "documentId: %{public}s", documentId.c_str());
     return error;
 }
 
 ErrCode MockObjectEditorExtensionStub::Initial(std::unique_ptr<ObjectEditorDocument> document,
-    const sptr<IObjectEditorClientCallback> &clientCb)
+    const sptr<IObjectEditorClientCallback> &clientCb, uint32_t callerTokenId)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "call");
     return error;
@@ -506,6 +507,7 @@ HWTEST_F(ObjectEditorExtensionStubTest, HandleExtensionInitial_WriteErrCodeFaile
     data.WriteParcelable(document.get());
     sptr<IObjectEditorClientCallback> clientCb = sptr<MockObjectEditorClientCallback>::MakeSptr();
     data.WriteRemoteObject(clientCb->AsObject());
+    data.WriteUint32(0);
     MockMessageParcel::SetWriteInt32ErrorFlag(true);
     int32_t ret = stub_->HandleExtensionInitial(data, reply);
     EXPECT_EQ(ret, ERR_INVALID_DATA);
@@ -524,6 +526,7 @@ HWTEST_F(ObjectEditorExtensionStubTest, HandleExtensionInitial_Success, TestSize
     data.WriteParcelable(document.get());
     sptr<IObjectEditorClientCallback> clientCb = sptr<MockObjectEditorClientCallback>::MakeSptr();
     data.WriteRemoteObject(clientCb->AsObject());
+    data.WriteUint32(0);
     int32_t ret = stub_->HandleExtensionInitial(data, reply);
     EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
@@ -551,6 +554,7 @@ HWTEST_F(ObjectEditorExtensionStubTest, HandleExtensionClose_WriteErrCodeFailed,
     MessageParcel data;
     MessageParcel reply;
     data.WriteString("test_document_id");
+    data.WriteUint32(0);
     MockMessageParcel::SetWriteInt32ErrorFlag(true);
     int32_t ret = stub_->HandleExtensionClose(data, reply);
     EXPECT_EQ(ret, ERR_INVALID_VALUE);
@@ -566,6 +570,7 @@ HWTEST_F(ObjectEditorExtensionStubTest, HandleExtensionClose_WriteIsAllObjectsRe
     MessageParcel data;
     MessageParcel reply;
     data.WriteString("test_document_id");
+    data.WriteUint32(0);
     MockMessageParcel::SetWriteBoolErrorFlag(true);
     int32_t ret = stub_->HandleExtensionClose(data, reply);
     EXPECT_EQ(ret, ERR_INVALID_VALUE);
@@ -581,6 +586,7 @@ HWTEST_F(ObjectEditorExtensionStubTest, HandleExtensionClose_Success, TestSize.L
     MessageParcel data;
     MessageParcel reply;
     data.WriteString("test_document_id");
+    data.WriteUint32(0);
     int32_t ret = stub_->HandleExtensionClose(data, reply);
     EXPECT_EQ(ret, ERR_NONE);
 }

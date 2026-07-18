@@ -17,7 +17,6 @@
 
 #include <string>
 #include <vector>
-#include "ipc_skeleton.h"
 #include "os_account_manager.h"
 
 #include "hilog_object_editor.h"
@@ -89,23 +88,6 @@ int32_t UserMgr::GetUserId()
     std::shared_lock<std::shared_mutex> lock(mtx_);
     userId_ = GetCurrentUserId();
     return userId_;
-}
-
-int32_t UserMgr::GetCallingUserId()
-{
-    pid_t callingUid = IPCSkeleton::GetCallingUid();
-    if (callingUid < 0) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Get calling uid failed, not in ipc context");
-        return -1;
-    }
-    int id = DEFAULT_USER_ID;
-    ErrCode result = AccountSA::OsAccountManager::GetOsAccountLocalIdFromUid(callingUid, id);
-    if (result != ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON,
-            "Get os account local id from uid failed, errCode: %{public}d", result);
-        return -1;
-    }
-    return id;
 }
 // LCOV_EXCL_STOP
 } // namespace ObjectEditor

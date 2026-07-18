@@ -197,7 +197,12 @@ int32_t ObjectEditorExtensionStub::HandleExtensionInitial(MessageParcel &data, M
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "clientCb is nullptr");
         return ERR_INVALID_DATA;
     }
-    ErrCode errCode = Initial(std::move(document), clientCb);
+    uint32_t callerTokenId = 0;
+    if (!data.ReadUint32(callerTokenId)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "read callerTokenId failed");
+        return ERR_INVALID_VALUE;
+    }
+    ErrCode errCode = Initial(std::move(document), clientCb, callerTokenId);
     if (!reply.WriteInt32(errCode)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write errCode failed");
         return ERR_INVALID_VALUE;
@@ -217,8 +222,13 @@ int32_t ObjectEditorExtensionStub::HandleExtensionClose(MessageParcel &data, Mes
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId is empty");
         return ERR_INVALID_VALUE;
     }
+    uint32_t callerTokenId = 0;
+    if (!data.ReadUint32(callerTokenId)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "read callerTokenId failed");
+        return ERR_INVALID_VALUE;
+    }
     bool isAllObjectsRemoved = false;
-    ErrCode errCode = Close(documentId, isAllObjectsRemoved);
+    ErrCode errCode = Close(documentId, isAllObjectsRemoved, callerTokenId);
     if (!reply.WriteInt32(errCode)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write errCode failed");
         return ERR_INVALID_VALUE;

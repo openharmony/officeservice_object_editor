@@ -32,6 +32,9 @@ namespace AbilityRuntime {
 // LCOV_EXCL_START
 using namespace OHOS::AppExecFwk;
 using namespace OHOS::ObjectEditor;
+namespace {
+constexpr int32_t OESA_UID = 7061;
+}
 
 ObjectEditorExtension *ObjectEditorExtension::Create(
     const std::unique_ptr<Runtime> &runtime)
@@ -331,6 +334,11 @@ ErrCode ObjectEditorExtension::GetSnapshot(const std::string &documentId)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onGetSnapshotFunc is nullptr");
         return ObjectorEditorExtensionErrCode::EXTENSION_CALLBACK_NULL;
     }
+    uint32_t callingTokenID = IPCSkeleton::GetCallingTokenID();
+    if (callingTokenID != iter->second->callerTokenId && IPCSkeleton::GetCallingUid() != OESA_UID) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid caller token id");
+        return ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_CALLER_TOKEN;
+    }
     uint32_t bitmask = 0;
     iter->second->onGetCapabilityFunc(iter->second.get(), &bitmask);
     if ((bitmask & CE_CAPABILITY_SUPPORT_SNAPSHOT) == 0) {
@@ -357,6 +365,11 @@ ErrCode ObjectEditorExtension::DoEdit(const std::string &documentId)
     if (iter->second == nullptr || iter->second->onDoEditFunc == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onDoEditFunc is nullptr");
         return ObjectorEditorExtensionErrCode::EXTENSION_CALLBACK_NULL;
+    }
+    uint32_t callingTokenID = IPCSkeleton::GetCallingTokenID();
+    if (callingTokenID != iter->second->callerTokenId && IPCSkeleton::GetCallingUid() != OESA_UID) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid caller token id");
+        return ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_CALLER_TOKEN;
     }
     uint32_t bitmask = 0;
     iter->second->onGetCapabilityFunc(iter->second.get(), &bitmask);
@@ -390,6 +403,11 @@ ErrCode ObjectEditorExtension::GetEditStatus(const std::string &documentId, bool
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onGetEditStatusFunc is nullptr");
             return ObjectorEditorExtensionErrCode::EXTENSION_CALLBACK_NULL;
         }
+        uint32_t callingTokenID = IPCSkeleton::GetCallingTokenID();
+        if (callingTokenID != iter->second->callerTokenId && IPCSkeleton::GetCallingUid() != OESA_UID) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid caller token id");
+            return ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_CALLER_TOKEN;
+        }
         iter->second->onGetEditStatusFunc(iter->second.get(), isEditing, isModified);
     }
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "isEditing:%{public}d, isModified:%{public}d",
@@ -400,6 +418,11 @@ ErrCode ObjectEditorExtension::GetEditStatus(const std::string &documentId, bool
 ErrCode ObjectEditorExtension::GetExtensionEditStatus(bool &isEditing)
 {
     isEditing = false;
+    if (IPCSkeleton::GetCallingUid() != OESA_UID) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid calling uid: %{public}d, expected: %{public}d",
+            callingUid, OESA_UID);
+        return ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_UID;
+    }
     if (ceInstance_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is null");
         return ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER;
@@ -443,15 +466,26 @@ ErrCode ObjectEditorExtension::GetCapability(const std::string &documentId, uint
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onGetCapabilityFunc is nullptr");
             return ObjectorEditorExtensionErrCode::EXTENSION_CALLBACK_NULL;
         }
+        uint32_t callingTokenID = IPCSkeleton::GetCallingTokenID();
+        if (callingTokenID != iter->second->callerTokenId && IPCSkeleton::GetCallingUid() != OESA_UID) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid caller token id");
+            return ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_CALLER_TOKEN;
+        }
         iter->second->onGetCapabilityFunc(iter->second.get(), bitmask);
     }
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "bitmask: %{public}u", *bitmask);
     return ObjectorEditorExtensionErrCode::EXTENSION_OK;
 }
 
-ErrCode ObjectEditorExtension::Close(const std::string &documentId, bool &isAllObjectsRemoved)
+ErrCode ObjectEditorExtension::Close(const std::string &documentId, bool &isAllObjectsRemoved,
+    uint32_t callerTokenId)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "documentId: %{private}s", documentId.c_str());
+    if (IPCSkeleton::GetCallingUid() != OESA_UID) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid calling uid: %{public}d, expected: %{public}d",
+            callingUid, OESA_UID);
+        return ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_UID;
+    }
     if (ceInstance_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is null");
         return ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER;
@@ -466,6 +500,10 @@ ErrCode ObjectEditorExtension::Close(const std::string &documentId, bool &isAllO
     if (iter->second == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "object is nullptr");
         return ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER;
+    }
+    if (callerTokenId != iter->second->callerTokenId) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid caller token id");
+        return ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_CALLER_TOKEN;
     }
     ErrCode ret = ObjectorEditorExtensionErrCode::EXTENSION_CALLBACK_NULL;
     if (ceInstance_->onObjectDetachFunc != nullptr) {
@@ -518,7 +556,7 @@ bool CheckFileValid(const std::unique_ptr<ObjectEditorDocument> &document)
 }
 
 ErrCode ObjectEditorExtension::CreateObject(std::unique_ptr<ObjectEditorDocument> document,
-    const sptr<IObjectEditorClientCallback> &clientCb)
+    const sptr<IObjectEditorClientCallback> &clientCb, uint32_t callerTokenId)
 {
     if (document == nullptr || ceInstance_ == nullptr) {
         return ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER;
@@ -547,6 +585,7 @@ ErrCode ObjectEditorExtension::CreateObject(std::unique_ptr<ObjectEditorDocument
     object->document->linking = document->GetLinking();
     object->document->oeDocumentInner = std::move(document);
     object->clientCb = clientCb;
+    object->callerTokenId = callerTokenId;
     std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
     ceInstance_->objects.insert({documentId, std::move(object)});
     auto iter = ceInstance_->objects.find(documentId);
@@ -568,7 +607,7 @@ ErrCode ObjectEditorExtension::CreateObject(std::unique_ptr<ObjectEditorDocument
 }
 
 ErrCode ObjectEditorExtension::Initial(std::unique_ptr<ObjectEditorDocument> document,
-    const sptr<IObjectEditorClientCallback> &clientCb)
+    const sptr<IObjectEditorClientCallback> &clientCb, uint32_t callerTokenId)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "extension");
     if (!moduleLoaded_.load()) {
@@ -595,9 +634,14 @@ ErrCode ObjectEditorExtension::Initial(std::unique_ptr<ObjectEditorDocument> doc
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onObjectAttachFunc is nullptr");
         return ObjectorEditorExtensionErrCode::EXTENSION_CALLBACK_NULL;
     }
+    if (IPCSkeleton::GetCallingUid() != OESA_UID) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid calling uid: %{public}d, expected: %{public}d",
+            callingUid, OESA_UID);
+        return ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_UID;
+    }
     document->RestoreStorage();
     document->FlushOEid();
-    return CreateObject(std::move(document), clientCb);
+    return CreateObject(std::move(document), clientCb, callerTokenId);
 }
 
 int32_t ObjectEditorExtension::CallbackEnter([[maybe_unused]] uint32_t code)

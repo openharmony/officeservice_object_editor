@@ -31,9 +31,9 @@ public:
     ErrCode GetEditStatus(const std::string &documentId, bool *isEditing, bool *isModified) override;
     ErrCode GetExtensionEditStatus(bool &isEditing) override;
     ErrCode GetCapability(const std::string &documentId, uint32_t *bitmask) override;
-    ErrCode Close(const std::string &documentId, bool &isAllObjectsRemoved) override;
+    ErrCode Close(const std::string &documentId, bool &isAllObjectsRemoved, uint32_t callerTokenId) override;
     ErrCode Initial(std::unique_ptr<ObjectEditorDocument> document,
-        const sptr<IObjectEditorClientCallback> &clientCb) override;
+        const sptr<IObjectEditorClientCallback> &clientCb, uint32_t callerTokenId) override;
     int32_t CallbackEnter([[maybe_unused]] uint32_t code) override;
     int32_t CallbackExit([[maybe_unused]] uint32_t code, [[maybe_unused]] int32_t result) override;
 

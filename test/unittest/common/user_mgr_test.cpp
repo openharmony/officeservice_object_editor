@@ -164,17 +164,6 @@ HWTEST_F(UserMgrTest, UserMgr_009, TestSize.Level1)
     EXPECT_NE(userId, -1);
 }
 
-/**
- * @tc.name UserMgr_010
- * @tc.desc Test GetCallingUserId method outside IPC context
- * @tc.type FUNC
- */
-HWTEST_F(UserMgrTest, UserMgr_010, TestSize.Level1)
-{
-    int32_t userId = UserMgr::GetInstance().GetCallingUserId();
-    EXPECT_NE(userId, -1);
-}
-
 }
 }
 }

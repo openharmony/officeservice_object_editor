@@ -34,9 +34,9 @@ public:
     ErrCode GetEditStatus(const std::string &documentId, bool *isEditing, bool *isModified) override;
     ErrCode GetExtensionEditStatus(bool &isEditing) override;
     ErrCode GetCapability(const std::string &documentId, uint32_t *bitmask) override;
-    ErrCode Close(const std::string &documentId, bool &isAllObjectsRemoved) override;
+    ErrCode Close(const std::string &documentId, bool &isAllObjectsRemoved, uint32_t callerTokenId) override;
     ErrCode Initial(std::unique_ptr<ObjectEditorDocument> document,
-        const sptr<IObjectEditorClientCallback> &clientCallback) override;
+        const sptr<IObjectEditorClientCallback> &clientCallback, uint32_t callerTokenId) override;
 private:
     static inline BrokerDelegator<ObjectEditorExtensionProxy> delegator_;
 };

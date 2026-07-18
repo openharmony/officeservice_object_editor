@@ -81,6 +81,8 @@ const std::map<int32_t, ContentEmbed_ErrorCode> ERROR_CODE_MAP {
     {ObjectorEditorExtensionErrCode::EXTENSION_CALLBACK_NULL, CE_ERR_EXTENSION_ERROR},
     {ObjectorEditorExtensionErrCode::EXTENSION_DOCUMENT_ALREADY_INITIAL, CE_ERR_EXTENSION_ERROR},
     {ObjectorEditorExtensionErrCode::EXTENSION_MEMORY_ALLOCATION_FAILED, CE_ERR_EXTENSION_ERROR},
+    {ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_UID, CE_ERR_PARAM_INVALID},
+    {ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_CALLER_TOKEN, CE_ERR_PARAM_INVALID},
     {ObjectorEditorExtensionErrCode::EXTENSION_UNKNOWN_ERROR, CE_ERR_EXTENSION_ERROR},
 // ObjectEditorDocumentErrCode
     {ObjectEditorDocumentErrCode::DOCUMENT_FLUSH_ERROR, CE_ERR_FILE_OPERATION_FAILED},
