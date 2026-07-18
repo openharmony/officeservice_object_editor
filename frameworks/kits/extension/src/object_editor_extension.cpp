@@ -418,7 +418,8 @@ ErrCode ObjectEditorExtension::GetEditStatus(const std::string &documentId, bool
 ErrCode ObjectEditorExtension::GetExtensionEditStatus(bool &isEditing)
 {
     isEditing = false;
-    if (IPCSkeleton::GetCallingUid() != OESA_UID) {
+    int callingUid = IPCSkeleton::GetCallingUid();
+    if (callingUid != OESA_UID) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid calling uid: %{public}d, expected: %{public}d",
             callingUid, OESA_UID);
         return ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_UID;
@@ -481,7 +482,8 @@ ErrCode ObjectEditorExtension::Close(const std::string &documentId, bool &isAllO
     uint32_t callerTokenId)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "documentId: %{private}s", documentId.c_str());
-    if (IPCSkeleton::GetCallingUid() != OESA_UID) {
+    int callingUid = IPCSkeleton::GetCallingUid();
+    if (callingUid != OESA_UID) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid calling uid: %{public}d, expected: %{public}d",
             callingUid, OESA_UID);
         return ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_UID;
@@ -634,7 +636,8 @@ ErrCode ObjectEditorExtension::Initial(std::unique_ptr<ObjectEditorDocument> doc
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onObjectAttachFunc is nullptr");
         return ObjectorEditorExtensionErrCode::EXTENSION_CALLBACK_NULL;
     }
-    if (IPCSkeleton::GetCallingUid() != OESA_UID) {
+    int callingUid = IPCSkeleton::GetCallingUid();
+    if (callingUid != OESA_UID) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid calling uid: %{public}d, expected: %{public}d",
             callingUid, OESA_UID);
         return ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_UID;

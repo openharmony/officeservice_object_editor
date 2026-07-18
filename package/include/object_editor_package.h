@@ -45,10 +45,11 @@ public:
 
     ErrCode GetCapability(const std::string &documentId, uint32_t *bitmask) override;
 
-    ErrCode Close(const std::string &documentId, bool &isAllObjectsRemoved, uint32_t callerTokenId) override;
+    ErrCode Close(const std::string &documentId, bool &isAllObjectsRemoved,
+        [[maybe_unused]] uint32_t callerTokenId) override;
 
     ErrCode Initial(std::unique_ptr<ObjectEditorDocument> document,
-        const sptr<IObjectEditorClientCallback> &clientCb, uint32_t callerTokenId) override;
+        const sptr<IObjectEditorClientCallback> &clientCb, [[maybe_unused]] uint32_t callerTokenId) override;
 
 private:
     ErrCode OpenFile(const std::string &fileUri);
