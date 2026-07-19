@@ -98,6 +98,11 @@ ohos_shared_library("content_embed_service") {
     "init:libbegetutil",
     "window_manager:libwm"
   ]
+  defines = []
+  if (object_editor_dlp_part_enabled) {
+    external_deps += [ "dlp_permission_service:libdlp_permission_sdk" ]
+    defines += [ "WITH_DLP" ]
+  }
   part_name = "object_editor"
   subsystem_name = "officeservice"
 }

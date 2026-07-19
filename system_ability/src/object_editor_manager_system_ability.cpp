@@ -782,11 +782,11 @@ bool ObjectEditorManagerSystemAbility::CheckClientFileValid(const ObjectEditorDo
     }
     uriVec.push_back(document.GetSnapshotUri());
     if (document.GetOperateType() == OperateType::CREATE_BY_FILE) {
-        if (document.GetLinking() && SystemUtils::IsAppSandboxPath(document.GetOriFilePath())) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "link not support sandbox");
-            return false;
-        }
         if (document.GetNativeFileUri().has_value()) {
+            if (document.GetLinking() && SystemUtils::IsAppSandboxPath(document.GetNativeFileUri().value())) {
+                OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "link not support sandbox");
+                return false;
+            }
             uriVec.push_back(document.GetNativeFileUri().value());
         }
     }
