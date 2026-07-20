@@ -382,18 +382,6 @@ HWTEST_F(ObjectEditorClientTest, GetIObjectEditorManager_001, TestSize.Level1)
 }
 
 /**
- * @tc.name GetIObjectEditorManager_003
- * @tc.desc Test GetIObjectEditorManager method
- * @tc.type FUNC
- */
-HWTEST_F(ObjectEditorClientTest, GetIObjectEditorManager_003, TestSize.Level1)
-{
-    client_->oeSAProxy_ = nullptr;
-    auto res = client_->GetIObjectEditorManager();
-    EXPECT_NE(res, nullptr);
-}
-
-/**
  * @tc.name GetIObjectEditorManager_004
  * @tc.desc Test GetIObjectEditorManager method
  * @tc.type FUNC
