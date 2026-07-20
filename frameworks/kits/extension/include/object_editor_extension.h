@@ -132,12 +132,12 @@ public:
 
     ErrCode GetCapability(const std::string &documentId, uint32_t *bitmask) override;
 
-    ErrCode Close(const std::string &documentId, bool &isAllObjectsRemoved) override;
+    ErrCode Close(const std::string &documentId, bool &isAllObjectsRemoved, uint32_t callerTokenId) override;
 
     ErrCode GetExtensionEditStatus(bool &isEditing) override;
 
     ErrCode Initial(std::unique_ptr<ObjectEditorDocument> document,
-        const sptr<IObjectEditorClientCallback> &clientCb) override;
+        const sptr<IObjectEditorClientCallback> &clientCb, uint32_t callerTokenId) override;
 
     int32_t CallbackEnter([[maybe_unused]] uint32_t code) override;
     int32_t CallbackExit([[maybe_unused]] uint32_t code, [[maybe_unused]] int32_t result) override;
@@ -197,7 +197,7 @@ private:
     void GetSrcPath(std::string &srcPath);
     void ListenWindowManager();
     ErrCode CreateObject(std::unique_ptr<ObjectEditorDocument> document,
-        const sptr<IObjectEditorClientCallback> &clientCb);
+        const sptr<IObjectEditorClientCallback> &clientCb, uint32_t callerTokenId);
 
     std::shared_ptr<AbilityHandler> handler_ = nullptr;
     std::shared_ptr<struct ContentEmbed_ExtensionInstance> ceInstance_ = nullptr;

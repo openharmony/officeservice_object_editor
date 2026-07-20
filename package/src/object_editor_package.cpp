@@ -131,14 +131,15 @@ ErrCode ObjectEditorPackage::GetCapability(const std::string &documentId, uint32
     return ERR_OK;
 }
 
-ErrCode ObjectEditorPackage::Close(const std::string &documentId, bool &isAllObjectsRemoved)
+ErrCode ObjectEditorPackage::Close(const std::string &documentId, bool &isAllObjectsRemoved,
+    [[maybe_unused]] uint32_t callerTokenId)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "package");
     return ERR_OK;
 }
 
 ErrCode ObjectEditorPackage::Initial(std::unique_ptr<ObjectEditorDocument> document,
-    const sptr<IObjectEditorClientCallback> &clientCb)
+    const sptr<IObjectEditorClientCallback> &clientCb, [[maybe_unused]] uint32_t callerTokenId)
 {
     if (document == nullptr || clientCb == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "document or clientCb is null");

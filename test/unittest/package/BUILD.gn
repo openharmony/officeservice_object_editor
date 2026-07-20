@@ -135,6 +135,7 @@ ohos_unittest("object_editor_package_test") {
     "ability_runtime:napi_common",
     "app_file_service:fileuri_native",
     "bundle_framework:appexecfwk_base",
+    "access_token:libaccesstoken_sdk",
     "c_utils:utils",
     "googletest:gmock",
     "googletest:gtest_main",

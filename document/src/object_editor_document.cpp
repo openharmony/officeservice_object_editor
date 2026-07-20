@@ -65,7 +65,7 @@ ObjectEditorDocument::ObjectEditorDocument(std::unique_ptr<Storage> storage,
 
 std::unique_ptr<ObjectEditorDocument> ObjectEditorDocument::CreateByOEid(const std::string &oeid)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DOCUMENT, "oeid: %{public}s", oeid.c_str());
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DOCUMENT, "oeid: %{private}s", oeid.c_str());
     auto storage = std::make_unique<Storage>(oeid);
     if (!storage || storage->Result() != Storage::Ok) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "storage creation failed");

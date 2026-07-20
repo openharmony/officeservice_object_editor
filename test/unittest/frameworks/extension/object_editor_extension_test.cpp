@@ -240,7 +240,7 @@ HWTEST_F(ObjectEditorExtensionTest, GetExtensionEditStatus_001, TestSize.Level1)
 {
     bool isEditing = false;
     ErrCode ret = extension_->GetExtensionEditStatus(isEditing);
-    EXPECT_EQ(ret, ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER);
+    EXPECT_EQ(ret, ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_UID);
     EXPECT_EQ(isEditing, false);
 }
 
@@ -278,8 +278,8 @@ HWTEST_F(ObjectEditorExtensionTest, Close_001, TestSize.Level1)
 {
     std::string documentId = "test_document_id";
     bool isAllObjectsRemoved = false;
-    ErrCode ret = extension_->Close(documentId, isAllObjectsRemoved);
-    EXPECT_EQ(ret, ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER);
+    ErrCode ret = extension_->Close(documentId, isAllObjectsRemoved, 0);
+    EXPECT_EQ(ret, ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_UID);
 }
 
 /**
@@ -291,8 +291,8 @@ HWTEST_F(ObjectEditorExtensionTest, Close_002, TestSize.Level1)
 {
     std::string documentId = "";
     bool isAllObjectsRemoved = false;
-    ErrCode ret = extension_->Close(documentId, isAllObjectsRemoved);
-    EXPECT_EQ(ret, ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER);
+    ErrCode ret = extension_->Close(documentId, isAllObjectsRemoved, 0);
+    EXPECT_EQ(ret, ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_UID);
 }
 
 /**
@@ -305,7 +305,7 @@ HWTEST_F(ObjectEditorExtensionTest, Initial_001, TestSize.Level1)
     std::unique_ptr<ObjectEditor::ObjectEditorDocument> document = nullptr;
     sptr<IObjectEditorClientCallback> clientCb = nullptr;
     extension_->moduleLoaded_ = true;
-    ErrCode ret = extension_->Initial(std::move(document), clientCb);
+    ErrCode ret = extension_->Initial(std::move(document), clientCb, 0);
     EXPECT_EQ(ret, ObjectorEditorExtensionErrCode::EXTENSION_PARAM_INVALID);
 }
 
@@ -320,7 +320,7 @@ HWTEST_F(ObjectEditorExtensionTest, Initial_002, TestSize.Level1)
         std::make_unique<ObjectEditor::ObjectEditorDocument>();
     sptr<IObjectEditorClientCallback> clientCb = nullptr;
     extension_->moduleLoaded_ = true;
-    ErrCode ret = extension_->Initial(std::move(document), clientCb);
+    ErrCode ret = extension_->Initial(std::move(document), clientCb, 0);
     EXPECT_EQ(ret, ObjectorEditorExtensionErrCode::EXTENSION_PARAM_INVALID);
 }
 
@@ -333,7 +333,7 @@ HWTEST_F(ObjectEditorExtensionTest, CreateObject_001, TestSize.Level1)
 {
     std::unique_ptr<ObjectEditor::ObjectEditorDocument> document = nullptr;
     sptr<IObjectEditorClientCallback> clientCb = nullptr;
-    ErrCode ret = extension_->CreateObject(std::move(document), clientCb);
+    ErrCode ret = extension_->CreateObject(std::move(document), clientCb, 0);
     EXPECT_EQ(ret, ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER);
 }
 

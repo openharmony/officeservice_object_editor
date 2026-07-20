@@ -268,7 +268,7 @@ HWTEST_F(ObjectEditorPackageTest, GetCapability_002, TestSize.Level1)
 HWTEST_F(ObjectEditorPackageTest, Close_001, TestSize.Level1)
 {
     bool isAllObjectsRemoved = false;
-    ErrCode result = package_->Close(TEST_DOCUMENT_ID, isAllObjectsRemoved);
+    ErrCode result = package_->Close(TEST_DOCUMENT_ID, isAllObjectsRemoved, 0);
     EXPECT_EQ(result, ERR_OK);
 }
 
@@ -280,7 +280,7 @@ HWTEST_F(ObjectEditorPackageTest, Close_001, TestSize.Level1)
 HWTEST_F(ObjectEditorPackageTest, Initial_001, TestSize.Level1)
 {
     sptr<IObjectEditorClientCallback> clientCb = nullptr;
-    auto result = package_->Initial(nullptr, clientCb);
+    auto result = package_->Initial(nullptr, clientCb, 0);
     EXPECT_EQ(result, ERR_INVALID_VALUE);
 }
 
@@ -293,7 +293,7 @@ HWTEST_F(ObjectEditorPackageTest, Initial_002, TestSize.Level1)
 {
     auto document = std::make_unique<ObjectEditorDocument>();
     sptr<IObjectEditorClientCallback> clientCb = nullptr;
-    auto result = package_->Initial(std::move(document), clientCb);
+    auto result = package_->Initial(std::move(document), clientCb, 0);
     EXPECT_EQ(result, ERR_INVALID_VALUE);
 }
 
@@ -304,7 +304,7 @@ HWTEST_F(ObjectEditorPackageTest, Initial_002, TestSize.Level1)
  */
 HWTEST_F(ObjectEditorPackageTest, Initial_003, TestSize.Level1)
 {
-    auto result = package_->Initial(nullptr, mockClientCb_);
+    auto result = package_->Initial(nullptr, mockClientCb_, 0);
     EXPECT_EQ(result, ERR_INVALID_VALUE);
 }
 
@@ -319,7 +319,7 @@ HWTEST_F(ObjectEditorPackageTest, Initial_004, TestSize.Level1)
     ON_CALL(*document, RestoreStorage());
     ON_CALL(*document, FlushOEid()).WillByDefault(Return(true));
     ON_CALL(*document, GetLinking()).WillByDefault(Return(true));
-    auto result = package_->Initial(std::move(document), mockClientCb_);
+    auto result = package_->Initial(std::move(document), mockClientCb_, 0);
     EXPECT_EQ(result, ERR_INVALID_VALUE);
 }
 
@@ -338,7 +338,7 @@ HWTEST_F(ObjectEditorPackageTest, Initial_005, TestSize.Level1)
     auto mockDocShared = std::make_shared<MockObjectEditorDocument>();
     package_->document_ = mockDocShared;
     package_->packageData_ = nullptr;
-    auto result = package_->Initial(std::move(document), mockClientCb_);
+    auto result = package_->Initial(std::move(document), mockClientCb_, 0);
     EXPECT_NE(result, ERR_OK);
 }
 

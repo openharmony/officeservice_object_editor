@@ -50,10 +50,11 @@ public:
 
     virtual ErrCode GetCapability(const std::string &documentId, uint32_t *bitmask) = 0;
 
-    virtual ErrCode Close(const std::string &documentId, bool &isAllObjectsRemoved) = 0;
+    virtual ErrCode Close(const std::string &documentId, bool &isAllObjectsRemoved,
+        uint32_t callerTokenId = 0) = 0;
 
     virtual ErrCode Initial(std::unique_ptr<ObjectEditorDocument> document,
-        const sptr<IObjectEditorClientCallback> &clientCb) = 0;
+        const sptr<IObjectEditorClientCallback> &clientCb, uint32_t callerTokenId = 0) = 0;
 
     sptr<IRemoteObject> GetRemoteObject() const
     {

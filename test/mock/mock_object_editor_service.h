@@ -29,9 +29,10 @@ public:
     MOCK_METHOD(ErrCode, GetEditStatus, (const std::string &documentId, bool *isEditing,
         bool *isModified), (override));
     MOCK_METHOD(ErrCode, GetCapability, (const std::string &documentId, uint32_t *bitmask), (override));
-    MOCK_METHOD(ErrCode, Close, (const std::string &documentId, bool &isAllObjectsRemoved), (override));
+    MOCK_METHOD(ErrCode, Close, (const std::string &documentId, bool &isAllObjectsRemoved,
+        uint32_t callerTokenId), (override));
     MOCK_METHOD(ErrCode, Initial, (std::unique_ptr<ObjectEditorDocument> document,
-        const sptr<IObjectEditorClientCallback> &clientCb), (override));
+        const sptr<IObjectEditorClientCallback> &clientCb, uint32_t callerTokenId), (override));
     MOCK_METHOD(ErrCode, GetExtensionEditStatus, (bool &isEditing), (override));
 };
 

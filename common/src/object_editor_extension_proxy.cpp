@@ -219,7 +219,8 @@ ErrCode ObjectEditorExtensionProxy::GetCapability(const std::string &documentId,
     return ERR_OK;
 }
 
-ErrCode ObjectEditorExtensionProxy::Close(const std::string &documentId, bool &isAllObjectsRemoved)
+ErrCode ObjectEditorExtensionProxy::Close(const std::string &documentId, bool &isAllObjectsRemoved,
+    uint32_t callerTokenId)
 {
     if (documentId.empty()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId is empty");
@@ -234,6 +235,10 @@ ErrCode ObjectEditorExtensionProxy::Close(const std::string &documentId, bool &i
     }
     if (!data.WriteString(documentId)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write documentId fail");
+        return ERR_INVALID_VALUE;
+    }
+    if (!data.WriteUint32(callerTokenId)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write callerTokenId fail");
         return ERR_INVALID_VALUE;
     }
 
@@ -261,7 +266,7 @@ ErrCode ObjectEditorExtensionProxy::Close(const std::string &documentId, bool &i
 }
 
 ErrCode ObjectEditorExtensionProxy::Initial(std::unique_ptr<ObjectEditorDocument> document,
-    const sptr<IObjectEditorClientCallback> &clientCallback)
+    const sptr<IObjectEditorClientCallback> &clientCallback, uint32_t callerTokenId)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -280,6 +285,10 @@ ErrCode ObjectEditorExtensionProxy::Initial(std::unique_ptr<ObjectEditorDocument
     }
     if (!data.WriteRemoteObject(clientCallback->AsObject())) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write clientCallback fail");
+        return ERR_INVALID_DATA;
+    }
+    if (!data.WriteUint32(callerTokenId)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "write callerTokenId fail");
         return ERR_INVALID_DATA;
     }
 

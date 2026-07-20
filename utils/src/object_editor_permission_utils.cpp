@@ -41,27 +41,20 @@ bool ObjectEditorPermissionUtils::CheckCallingPermission(const std::string &perm
 
 bool ObjectEditorPermissionUtils::CheckRequestPermission(const std::string &bundleName, const std::string &permission)
 {
-    auto bundleMgr = ObjectEditorBmsUtils::GetBundleMgr();
-    if (bundleMgr == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "null bundleMgr");
+    int32_t userId = UserMgr::GetInstance().GetUserId();
+    auto targetTokenID = Security::AccessToken::AccessTokenKit::GetHapTokenID(
+        userId, bundleName, 0);
+    if (targetTokenID == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "GetHapTokenID fail, bundle:%{public}s", bundleName.c_str());
         return false;
     }
-    AppExecFwk::BundleInfo bundleInfo;
-    ErrCode errCode = bundleMgr->GetBundleInfoV9(bundleName,
-        static_cast<int32_t>(AppExecFwk::GetBundleInfoFlag::GET_BUNDLE_INFO_WITH_REQUESTED_PERMISSION),
-        bundleInfo, UserMgr::GetInstance().GetUserId());
-    if (errCode != ERR_OK) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "GetBundleInfoV9 fail,bundleName:%{public}s,errCode:%{public}d",
-            bundleName.c_str(), errCode);
+    if (Security::AccessToken::AccessTokenKit::VerifyAccessToken(targetTokenID,
+        permission) != AppExecFwk::Constants::PERMISSION_GRANTED) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "not granted, bundle:%{public}s perm:%{public}s",
+            bundleName.c_str(), permission.c_str());
         return false;
     }
-    std::vector<std::string> permissions = bundleInfo.reqPermissions;
-    if (std::find(permissions.begin(), permissions.end(), permission) != permissions.end()) {
-        return true;
-    }
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::COMMON,
-        "permission denied, bundleName:%{public}s register", bundleName.c_str());
-    return false;
+    return true;
 }
 
 } // namespace ObjectEditor

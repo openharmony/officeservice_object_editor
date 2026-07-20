@@ -121,6 +121,7 @@ struct ContentEmbed_Object {
     OH_ContentEmbed_Extension_OnDoEditFunc onDoEditFunc = nullptr;
     OH_ContentEmbed_Extension_OnGetEditStatusFunc onGetEditStatusFunc = nullptr;
     OH_ContentEmbed_Extension_OnGetCapabilityFunc onGetCapabilityFunc = nullptr;
+    uint32_t callerTokenId = 0;
 };
 
 struct ContentEmbed_ExtensionContext : public AbilityRuntime_Context {

@@ -382,7 +382,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Close_001, TestSize.Level1)
     MockMessageParcel::SetWriteInterfaceTokenErrorFlag(true);
     std::string documentId = "123456";
     bool isAllObjectsRemoved = false;
-    ErrCode ret = proxy_->Close(documentId, isAllObjectsRemoved);
+    ErrCode ret = proxy_->Close(documentId, isAllObjectsRemoved, 0);
     EXPECT_EQ(ret, ERR_INVALID_VALUE);
 }
 
@@ -396,7 +396,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Close_002, TestSize.Level1)
     auto proxy = sptr<ObjectEditorExtensionProxy>::MakeSptr(nullptr);
     std::string documentId = "123456";
     bool isAllObjectsRemoved = false;
-    ErrCode ret = proxy_->Close(documentId, isAllObjectsRemoved);
+    ErrCode ret = proxy_->Close(documentId, isAllObjectsRemoved, 0);
     EXPECT_EQ(ret, ERR_OK);
 }
 
@@ -413,7 +413,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Close_003, TestSize.Level1)
         .WillOnce(Return(result));
         std::string documentId = "123456";
     bool isAllObjectsRemoved = false;
-    ErrCode ret = proxy_->Close(documentId, isAllObjectsRemoved);
+    ErrCode ret = proxy_->Close(documentId, isAllObjectsRemoved, 0);
     EXPECT_EQ(ret, result);
 }
 
@@ -429,7 +429,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Close_004, TestSize.Level1)
     MockMessageParcel::AddInt32Cache(errcode);
     std::string documentId = "123456";
     bool isAllObjectsRemoved = false;
-    ErrCode ret = proxy_->Close(documentId, isAllObjectsRemoved);
+    ErrCode ret = proxy_->Close(documentId, isAllObjectsRemoved, 0);
     EXPECT_EQ(ret, errcode);
 }
 
@@ -446,7 +446,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Close_005, TestSize.Level1)
         .WillOnce(Return(result));
     std::string documentId = "123456";
     bool isAllObjectsRemoved = false;
-    ErrCode ret = proxy_->Close(documentId, isAllObjectsRemoved);
+    ErrCode ret = proxy_->Close(documentId, isAllObjectsRemoved, 0);
     EXPECT_EQ(ret, ERR_OK);
 }
 
@@ -461,7 +461,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Initial_001, TestSize.Level1)
     std::unique_ptr<ObjectEditorDocument> document = std::make_unique<ObjectEditorDocument>();
     const sptr<IObjectEditorClientCallback> callback =
         sptr<MockObjectEditorClientCallback>::MakeSptr();
-    ErrCode ret = proxy_->Initial(std::move(document), callback);
+    ErrCode ret = proxy_->Initial(std::move(document), callback, 0);
     EXPECT_EQ(ret, ERR_INVALID_VALUE);
 }
 
@@ -475,7 +475,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Initial_002, TestSize.Level1)
     std::unique_ptr<ObjectEditorDocument> document = nullptr;
     const sptr<IObjectEditorClientCallback> callback =
         sptr<MockObjectEditorClientCallback>::MakeSptr();
-    ErrCode ret = proxy_->Initial(std::move(document), callback);
+    ErrCode ret = proxy_->Initial(std::move(document), callback, 0);
     EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
 
@@ -490,7 +490,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Initial_003, TestSize.Level1)
     std::unique_ptr<ObjectEditorDocument> document = std::make_unique<ObjectEditorDocument>();
     const sptr<IObjectEditorClientCallback> callback =
         sptr<MockObjectEditorClientCallback>::MakeSptr();
-    ErrCode ret = proxy_->Initial(std::move(document), callback);
+    ErrCode ret = proxy_->Initial(std::move(document), callback, 0);
     EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
 
@@ -505,7 +505,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Initial_004, TestSize.Level1)
     std::unique_ptr<ObjectEditorDocument> document = std::make_unique<ObjectEditorDocument>();
     const sptr<IObjectEditorClientCallback> callback =
         sptr<MockObjectEditorClientCallback>::MakeSptr();
-    ErrCode ret = proxy_->Initial(std::move(document), callback);
+    ErrCode ret = proxy_->Initial(std::move(document), callback, 0);
     EXPECT_EQ(ret, ERR_OK);
 }
 
@@ -523,7 +523,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Initial_005, TestSize.Level1)
     std::unique_ptr<ObjectEditorDocument> document = std::make_unique<ObjectEditorDocument>();
     const sptr<IObjectEditorClientCallback> callback =
         sptr<MockObjectEditorClientCallback>::MakeSptr();
-    ErrCode ret = proxy_->Initial(std::move(document), callback);
+    ErrCode ret = proxy_->Initial(std::move(document), callback, 0);
     EXPECT_EQ(ret, result);
 }
 
@@ -540,7 +540,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Initial_006, TestSize.Level1)
     std::unique_ptr<ObjectEditorDocument> document = std::make_unique<ObjectEditorDocument>();
     const sptr<IObjectEditorClientCallback> callback =
         sptr<MockObjectEditorClientCallback>::MakeSptr();
-    ErrCode ret = proxy_->Initial(std::move(document), callback);
+    ErrCode ret = proxy_->Initial(std::move(document), callback, 0);
     EXPECT_EQ(ret, errcode);
 }
 
@@ -558,7 +558,7 @@ HWTEST_F(ObjectEditorExtensionProxyTest, Initial_007, TestSize.Level1)
     std::unique_ptr<ObjectEditorDocument> document = std::make_unique<ObjectEditorDocument>();
     const sptr<IObjectEditorClientCallback> callback =
         sptr<MockObjectEditorClientCallback>::MakeSptr();
-    ErrCode ret = proxy_->Initial(std::move(document), callback);
+    ErrCode ret = proxy_->Initial(std::move(document), callback, 0);
     EXPECT_EQ(ret, ERR_OK);
 }
 

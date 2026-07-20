@@ -14,6 +14,7 @@
  */
 
 #include "object_editor_manager_stub.h"
+#include "object_editor_config.h"
 
 namespace OHOS {
 namespace ObjectEditor {
@@ -77,6 +78,10 @@ int32_t ObjectEditorManagerStub::HandleStartObjectEditorExtension(MessageParcel 
     MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::SA, "call");
+    if (ObjectEditorConfig::GetInstance().CheckCallerInDlpSandbox()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "is in dlp");
+        return ObjectEditorManagerErrCode::SA_ERR_IN_DLP_SANDBOX;
+    }
     std::unique_ptr<ObjectEditorDocument> document =
         std::unique_ptr<ObjectEditorDocument>(data.ReadParcelable<ObjectEditorDocument>());
     if (document == nullptr) {
@@ -120,6 +125,10 @@ int32_t ObjectEditorManagerStub::HandleStartObjectEditorExtension(MessageParcel 
 int32_t ObjectEditorManagerStub::HandleStopObjectEditorExtension(MessageParcel &data, MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::SA, "call");
+    if (ObjectEditorConfig::GetInstance().CheckCallerInDlpSandbox()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "is in dlp");
+        return ObjectEditorManagerErrCode::SA_ERR_IN_DLP_SANDBOX;
+    }
     std::string documentId = data.ReadString();
     if (documentId.empty()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "documentId is empty");
@@ -247,6 +256,10 @@ int32_t ObjectEditorManagerStub::HandleGetObjectEditorFormatsByLocale(MessagePar
 int32_t ObjectEditorManagerStub::HandleStartUIAbility(MessageParcel &data, MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::SA, "call");
+    if (ObjectEditorConfig::GetInstance().CheckCallerInDlpSandbox()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "is in dlp");
+        return ObjectEditorManagerErrCode::SA_ERR_IN_DLP_SANDBOX;
+    }
     std::unique_ptr<AAFwk::Want> want = std::unique_ptr<AAFwk::Want>(data.ReadParcelable<AAFwk::Want>());
     if (!want) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "want is nullptr");

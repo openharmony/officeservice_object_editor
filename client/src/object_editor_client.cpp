@@ -385,7 +385,7 @@ ErrCode ObjectEditorClient::HandlePackage(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "create package proxy failed");
         return CLIENT_MEMORY_ALLOCATION_FAILED;
     }
-    packageProxy->Initial(std::move(newDocument), objectEditorClientCallback);
+    packageProxy->Initial(std::move(newDocument), objectEditorClientCallback, 0);
     oeExtensionRemoteObject = packageProxy;
     auto end = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();

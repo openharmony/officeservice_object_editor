@@ -477,8 +477,9 @@ ErrCode ObjectEditorManagerSystemAbility::StartObjectEditorExtension(
         !clientRemote->AddDeathRecipient(clientDeathRecipient)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "add client death recipient failed");
     }
+    uint32_t callerTokenId = IPCSkeleton::GetCallingTokenID();
     ErrCode proxyResult = objectEditorExtensionProxy->Initial(
-        std::move(document), objectEditorClientCallback);
+        std::move(document), objectEditorClientCallback, callerTokenId);
     if (proxyResult != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "start object editor extension failed");
         if (clientRemote != nullptr) {
@@ -635,7 +636,8 @@ ErrCode ObjectEditorManagerSystemAbility::StopObjectEditorExtension(
         return ObjectEditorManagerErrCode::SA_CONNECT_EXTENSION_PROXY_IS_NULL;
     }
     bool isAllObjectsRemoved = false;
-    auto proxyResult = objectEditorExtensionProxy->Close(documentId, isAllObjectsRemoved);
+    uint32_t callerTokenId = IPCSkeleton::GetCallingTokenID();
+    auto proxyResult = objectEditorExtensionProxy->Close(documentId, isAllObjectsRemoved, callerTokenId);
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "close result:%{public}d", proxyResult);
     if (!isAllObjectsRemoved && (proxyResult >= ObjectorEditorExtensionErrCode::EXTENSION_ERROR_START ||
         proxyResult == ObjectorEditorExtensionErrCode::EXTENSION_OK)) {
@@ -734,6 +736,17 @@ ErrCode ObjectEditorManagerSystemAbility::StartUIAbility(const std::unique_ptr<A
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "want is null");
         return ObjectEditorManagerErrCode::SA_INVALID_PARAMETER;
     }
+    std::string callerBundleName = GetCallerBundleName();
+    if (callerBundleName.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "caller bundle name is empty");
+        return ObjectEditorManagerErrCode::SA_INVALID_PARAMETER;
+    }
+    std::string wantBundleName = want->GetElement().GetBundleName();
+    if (wantBundleName != callerBundleName) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "bundle name mismatch, want: %{public}s, caller: %{public}s",
+            wantBundleName.c_str(), callerBundleName.c_str());
+        return ObjectEditorManagerErrCode::SA_INVALID_PARAMETER;
+    }
     auto abilityManagerClient = AAFwk::AbilityManagerClient::GetInstance();
     if (abilityManagerClient == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "ability manager client is null");
@@ -770,6 +783,10 @@ bool ObjectEditorManagerSystemAbility::CheckClientFileValid(const ObjectEditorDo
     uriVec.push_back(document.GetSnapshotUri());
     if (document.GetOperateType() == OperateType::CREATE_BY_FILE) {
         if (document.GetNativeFileUri().has_value()) {
+            if (document.GetLinking() && SystemUtils::IsAppSandboxPath(document.GetNativeFileUri().value())) {
+                OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "link not support sandbox");
+                return false;
+            }
             uriVec.push_back(document.GetNativeFileUri().value());
         }
     }

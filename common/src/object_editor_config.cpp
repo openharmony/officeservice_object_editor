@@ -17,6 +17,8 @@
 #include "hilog_object_editor.h"
 #include "parameters.h"
 #include "single_instance.h"
+#include "ipc_skeleton.h"
+#include "accesstoken_kit.h"
 #ifdef WITH_DLP
 #include "dlp_permission_kit.h"
 #include "dlp_permission.h"
@@ -54,6 +56,26 @@ bool ObjectEditorConfig::CheckIsInDlp()
         OBJECT_EDITOR_LOGW(ObjectEditorDomain::COMMON, "Application is in DLP sandbox");
     }
     return isInDlpSandbox;
+#else
+    return false;
+#endif
+}
+
+bool ObjectEditorConfig::CheckCallerInDlpSandbox()
+{
+#ifdef WITH_DLP
+    uint32_t callerTokenId = IPCSkeleton::GetCallingTokenID();
+    int32_t dlpFlag = Security::AccessToken::AccessTokenKit::GetHapDlpFlag(callerTokenId);
+    if (dlpFlag < 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "GetHapDlpFlag failed, tokenId: %{public}u, result: %{public}d",
+            callerTokenId, dlpFlag);
+        return false;
+    }
+    bool inSandbox = (dlpFlag == 1);
+    if (inSandbox) {
+        OBJECT_EDITOR_LOGW(ObjectEditorDomain::COMMON, "Caller is in DLP sandbox, tokenId: %{public}u", callerTokenId);
+    }
+    return inSandbox;
 #else
     return false;
 #endif
