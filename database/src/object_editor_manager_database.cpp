@@ -319,7 +319,7 @@ bool ObjectEditorManagerDatabase::HasRegisteredOEFormat(const std::string &bundl
 {
     std::shared_ptr<NativeRdb::AbsSharedResultSet> pResultSet = nullptr;
     ObjectEditorManagerErrCode errCode = QueryBySql(
-        "SELECT oeid FROM object_editor_info WHERE bundle_name = ?", pResultSet, {bundleName});
+        "SELECT oeid FROM object_editor_info WHERE bundle_name = ?", pResultSet, { bundleName });
     if (errCode != ObjectEditorManagerErrCode::SA_OK || pResultSet == nullptr) {
         return false;
     }

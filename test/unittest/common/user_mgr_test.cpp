@@ -163,7 +163,6 @@ HWTEST_F(UserMgrTest, UserMgr_009, TestSize.Level1)
     int32_t userId = UserMgr::GetInstance().GetUserId();
     EXPECT_NE(userId, -1);
 }
-
 }
 }
 }

@@ -126,6 +126,20 @@ int32_t ObjectEditorClientCallbackStub::HandleOnStopEdit(MessageParcel &data, Me
 int32_t ObjectEditorClientCallbackStub::HandleOnExtensionStopped(MessageParcel &data, MessageParcel &reply)
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "call");
+    // Hold sptr to self during dispatch to prevent stub destruction while
+    // OnExtensionStopped is on stack. If user callback inside OnExtensionStopped
+    // triggers proxy destruction,
+    // and that chain releases the last ref to this stub, the sptr below keeps
+    // stub alive until scope exit, avoiding CFI violation on non-virtual thunk
+    // return path. sptr<Stub> is used because
+    // Stub (via IRemoteStub) is an IRemoteObject derivative; sptr<Interface>
+    // would not compile since IObjectEditorClientCallback inherits IRemoteBroker,
+    // not IRemoteObject.
+    sptr<ObjectEditorClientCallbackStub> selfSptr(this);
+    if (selfSptr.GetRefPtr() == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "selfSptr is null, AttemptAcquireRef failed");
+        return ERR_INVALID_VALUE;
+    }
     ErrCode errCode = OnExtensionStopped();
     if (!reply.WriteInt32(errCode)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write errCode failed");

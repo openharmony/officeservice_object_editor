@@ -16,6 +16,7 @@
 #ifndef OHOS_OBJECT_EDITOR_NATIVE_OBJECT_EDITOR_TYPES_H
 #define OHOS_OBJECT_EDITOR_NATIVE_OBJECT_EDITOR_TYPES_H
 
+#include <atomic>
 #include <string>
 #include <vector>
 
@@ -125,6 +126,11 @@ struct ContentEmbed_Object {
 };
 
 struct ContentEmbed_ExtensionContext : public AbilityRuntime_Context {
+    // Set to true in ObjectEditorExtension::OnStop to signal that the
+    // extension is being destroyed. OH_ContentEmbed_Extension_ContextTerminateAbility
+    // checks this before accessing the weak_ptr to prevent UAF when the
+    // underlying ObjectEditorExtensionContext is being torn down.
+    std::atomic<bool> isStopping_ { false };
 };
 
 constexpr uint32_t MAX_TEXT_LENGTH = 8 * 1024;

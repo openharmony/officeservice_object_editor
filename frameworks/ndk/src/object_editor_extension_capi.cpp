@@ -259,6 +259,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetContentEmbedContext(ContentE
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "ceContext is null");
         return CE_ERR_PARAM_INVALID;
     }
+    *ceContext = nullptr;
     std::shared_ptr<OHOS::AbilityRuntime::ObjectEditorExtension> extensionInstance =
         std::static_pointer_cast<OHOS::AbilityRuntime::ObjectEditorExtension>(instance->extension.lock());
     if (extensionInstance == nullptr) {
@@ -516,6 +517,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextStartSelfUIAbility(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "context is null");
         return CE_ERR_PARAM_INVALID;
     }
+    if (context->isStopping_.load(std::memory_order_acquire)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "extension is stopping");
+        return CE_ERR_PARAM_INVALID;
+    }
     if (want == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "want is null");
         return CE_ERR_PARAM_INVALID;
@@ -548,6 +553,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextStartSelfUIAbilityWithSt
     }
     if (context == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "context is null");
+        return CE_ERR_PARAM_INVALID;
+    }
+    if (context->isStopping_.load(std::memory_order_acquire)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "extension is stopping");
         return CE_ERR_PARAM_INVALID;
     }
     if (want == nullptr) {
@@ -588,8 +597,24 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextTerminateAbility(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "context is null");
         return CE_ERR_PARAM_INVALID;
     }
+    // Check if extension is being destroyed (OnStop in progress).
+    // If so, the weak_ptr to ObjectEditorExtensionContext is being torn down
+    // and lock() would dereference freed/corrupted memory.
+    if (context->isStopping_.load(std::memory_order_acquire)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK,
+            "extension is stopping, context terminate rejected");
+        return CE_ERR_PARAM_INVALID;
+    }
+    // Pre-check weak_ptr before lock(): expired() only reads control block use_count,
+    // does not construct shared_ptr. More robust than lock() alone for UAF scenarios
+    // where context handle points to freed memory.
+    auto &weakCtx = context->context;
+    if (weakCtx.expired()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "context weak_ptr expired, extension context destroyed");
+        return CE_ERR_PARAM_INVALID;
+    }
     std::shared_ptr<OHOS::AbilityRuntime::ObjectEditorExtensionContext> contextPtr =
-        std::static_pointer_cast<OHOS::AbilityRuntime::ObjectEditorExtensionContext>(context->context.lock());
+        std::static_pointer_cast<OHOS::AbilityRuntime::ObjectEditorExtensionContext>(weakCtx.lock());
     if (contextPtr == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "context is null");
         return CE_ERR_NULL_POINTER;
