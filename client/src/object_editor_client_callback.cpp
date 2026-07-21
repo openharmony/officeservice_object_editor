@@ -14,17 +14,41 @@
  */
 
 #include "object_editor_client_callback.h"
+#include "object_editor_client.h"
+#include <memory>
+#include <mutex>
 
 namespace OHOS {
 namespace ObjectEditor {
 // LCOV_EXCL_START
+namespace {
+// RAII guard for isDispatching_ flag. Sets flag to true on construction,
+// resets to false on destruction (even if user callback throws/longjmps).
+// Paired with ObjectEditorClient::PrepareForDestroy dispatch check.
+// The flag is encapsulated in ObjectEditorClientCallback,
+// to keep the dispatch mechanism private to the client layer.
+class DispatchFlagGuard {
+public:
+    explicit DispatchFlagGuard(std::atomic<bool> &flag) : flag_(flag)
+    {
+        flag_.store(true, std::memory_order_release);
+    }
+    ~DispatchFlagGuard()
+    {
+        flag_.store(false, std::memory_order_release);
+    }
+private:
+    std::atomic<bool> &flag_;
+};
+} // namespace
+
 ObjectEditorClientCallback::ObjectEditorClientCallback(struct ContentEmbed_ExtensionProxy *proxy) : proxy_(proxy)
 {
 }
 
 ObjectEditorClientCallback::~ObjectEditorClientCallback()
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "destructor");
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "destructor");
 }
 
 int32_t ObjectEditorClientCallback::CallbackEnter(uint32_t code)
@@ -39,57 +63,100 @@ int32_t ObjectEditorClientCallback::CallbackExit(uint32_t code, int32_t result)
 
 ErrCode ObjectEditorClientCallback::OnUpdate(std::unique_ptr<ObjectEditorDocument> &document)
 {
-    if (proxy_ == nullptr ||
-        proxy_->ceDocument == nullptr ||
-        proxy_->onUpdateFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "proxy invalid");
-        return ERR_INVALID_VALUE;
+    struct ContentEmbed_ExtensionProxy *proxy = nullptr;
+    OH_ContentEmbed_ClientCallbackOnUpdateFunc func = nullptr;
+    ContentEmbed_Document *ceDoc = nullptr;
+    std::unique_ptr<DispatchFlagGuard> guard;
+    {
+        auto lock = ObjectEditorClient::GetInstance().AcquireCallbackLock();
+        proxy = proxy_;
+        if (proxy == nullptr || proxy->ceDocument == nullptr || proxy->onUpdateFunc == nullptr) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "proxy invalid");
+            return ERR_INVALID_VALUE;
+        }
+        if (document == nullptr) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "document is null");
+            return ERR_INVALID_VALUE;
+        }
+        func = proxy->onUpdateFunc;
+        ceDoc = proxy->ceDocument;
+        guard = std::make_unique<DispatchFlagGuard>(isDispatching_);
     }
-    if (document == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "document is null");
-        return ERR_INVALID_VALUE;
-    }
+    // Document operations outside the lock — isDispatching_=true keeps proxy
+    // alive (PrepareForDestroy rejected). Avoids self-deadlock if
+    // RestoreStorage/GetOEid indirectly call back into ObjectEditorClient.
     document->RestoreStorage();
-    proxy_->ceDocument->oeid = document->GetOEid();
-    proxy_->ceDocument->oeDocumentInner = std::move(document);
-    proxy_->onUpdateFunc(proxy_);
+    ceDoc->oeid = document->GetOEid();
+    ceDoc->oeDocumentInner = std::move(document);
+    func(proxy);
     return ERR_OK;
 }
 
 ErrCode ObjectEditorClientCallback::OnError(ContentEmbed_ErrorCode error)
 {
-    if (proxy_ == nullptr ||
-        proxy_->onErrorFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "proxy invalid");
-        return ERR_INVALID_VALUE;
+    struct ContentEmbed_ExtensionProxy *proxy = nullptr;
+    OH_ContentEmbed_ClientCallbackOnErrorFunc func = nullptr;
+    std::unique_ptr<DispatchFlagGuard> guard;
+    {
+        auto lock = ObjectEditorClient::GetInstance().AcquireCallbackLock();
+        proxy = proxy_;
+        if (proxy == nullptr || proxy->onErrorFunc == nullptr) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "proxy invalid");
+            return ERR_INVALID_VALUE;
+        }
+        func = proxy->onErrorFunc;
+        guard = std::make_unique<DispatchFlagGuard>(isDispatching_);
     }
-    proxy_->onErrorFunc(proxy_, error);
+    func(proxy, error);
     return ERR_OK;
 }
 
 ErrCode ObjectEditorClientCallback::OnStopEdit(bool dataModified)
 {
-    if (proxy_ == nullptr ||
-        proxy_->onEditingFinishedFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "proxy invalid");
-        return ERR_INVALID_VALUE;
+    struct ContentEmbed_ExtensionProxy *proxy = nullptr;
+    OH_ContentEmbed_ClientCallbackOnEditingFinishedFunc func = nullptr;
+    ObjectEditorDocument *oeDocInner = nullptr;
+    std::unique_ptr<DispatchFlagGuard> guard;
+    {
+        auto lock = ObjectEditorClient::GetInstance().AcquireCallbackLock();
+        proxy = proxy_;
+        if (proxy == nullptr || proxy->onEditingFinishedFunc == nullptr) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "proxy invalid");
+            return ERR_INVALID_VALUE;
+        }
+        if (proxy->ceDocument != nullptr && proxy->ceDocument->oeDocumentInner != nullptr) {
+            oeDocInner = proxy->ceDocument->oeDocumentInner.get();
+        }
+        func = proxy->onEditingFinishedFunc;
+        guard = std::make_unique<DispatchFlagGuard>(isDispatching_);
     }
-    if (proxy_->ceDocument != nullptr && proxy_->ceDocument->oeDocumentInner != nullptr) {
+    // RestoreStorage outside the lock — isDispatching_=true keeps proxy alive.
+    // Avoids self-deadlock if RestoreStorage indirectly calls back into ObjectEditorClient.
+    if (oeDocInner != nullptr) {
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "restore storage");
-        proxy_->ceDocument->oeDocumentInner->RestoreStorage();
+        oeDocInner->RestoreStorage();
     }
-    proxy_->onEditingFinishedFunc(proxy_, dataModified);
+    func(proxy, dataModified);
     return ERR_OK;
 }
 
 ErrCode ObjectEditorClientCallback::OnExtensionStopped()
 {
-    if (proxy_ == nullptr ||
-        proxy_->onExtensionStoppedFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "proxy invalid");
-        return ERR_INVALID_VALUE;
+    struct ContentEmbed_ExtensionProxy *proxy = nullptr;
+    OH_ContentEmbed_ClientCallbackOnExtensionStoppedFunc func = nullptr;
+    std::unique_ptr<DispatchFlagGuard> guard;
+    {
+        auto lock = ObjectEditorClient::GetInstance().AcquireCallbackLock();
+        proxy = proxy_;
+        if (proxy == nullptr || proxy->onExtensionStoppedFunc == nullptr) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "proxy invalid");
+            return ERR_INVALID_VALUE;
+        }
+        func = proxy->onExtensionStoppedFunc;
+        guard = std::make_unique<DispatchFlagGuard>(isDispatching_);
     }
-    proxy_->onExtensionStoppedFunc(proxy_);
+    // isDispatching_=true; PrepareForDestroy rejected (checks under same lock).
+    func(proxy);
     return ERR_OK;
 }
 // LCOV_EXCL_STOP

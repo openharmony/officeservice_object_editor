@@ -239,12 +239,12 @@ ObjectEditorManagerErrCode ObjectEditorConnection::DoConnect(
     want.SetParam("clientPid", clientPid);
     auto indirectCallerInfo = std::make_shared<AAFwk::IndirectCallerInfo>();
     if (indirectCallerInfo == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "indirectCallerInfo is null");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "indirectCallerInfo is nullptr");
         return ObjectEditorManagerErrCode::SA_CONNECT_ABILITY_FAILED;
     }
     indirectCallerInfo->tokenId = IPCSkeleton::GetCallingTokenID();
     indirectCallerInfo->callerUid = IPCSkeleton::GetCallingUid();
-    indirectCallerInfo->callerPid = IPCSkeleton::GetCallingPid();
+    indirectCallerInfo->callerPid = clientPid;
     auto ret = abilityManagerClient->ConnectAbilityWithIndirectCallerInfo(want, this, nullptr,
         UserMgr::GetInstance().GetUserId(), AppExecFwk::ExtensionAbilityType::CONTENT_EMBED, indirectCallerInfo);
     if (ret != ERR_OK) {

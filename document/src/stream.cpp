@@ -188,7 +188,7 @@ std::streamsize StreamImpl::ReadBigBlocks(size_t pos, Byte *buffer, size_t allow
         return 0;
     }
     if (allowed > MAX_ALLOWED_2G) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "StreamImpl::ReadBigBlocks - exceeds 2 GB");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "exceeds 2 GB");
         return 0;
     }
     std::vector<Byte> buf(io_->BigBlockSize());

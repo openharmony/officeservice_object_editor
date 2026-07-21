@@ -24,8 +24,8 @@
 #include "object_editor_document.h"
 #include "pole.h"
 #include "dirtree.h"
-#include "object_editor_common.h"
 #include "hisysevent.h"
+#include "object_editor_common.h"
 using namespace OHOS::ObjectEditor;
 
 namespace {
@@ -614,10 +614,11 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_Flush(const ContentEmbed_Documen
     HITRACE_METER_FMT(HITRACE_TAG_OHOS, "document::OH_ContentEmbed_Document_Flush");
     if (!document->oeDocumentInner->Flush()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "flush failed");
-        std::string oeid = document->oeDocumentInner == nullptr ? "" : document->oeDocumentInner->GetOEid();
+        std::string oeid = document->oeDocumentInner == nullptr ? "" :
+                           document->oeDocumentInner->GetOEid();
         HiSysEventWrite(OBJECT_EDITOR, "OPERATE_DOCUMENT_FAIL", OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
-            "ERRORMSG", "file operation failed", "ERRORCODE", CE_ERR_FILE_OPERATION_FAILED,
-            "OEID", oeid, "FAILTYPE", "SAVE_DOCUMENT_FAIL");
+            "OEID", oeid, "ERRORCODE", CE_ERR_FILE_OPERATION_FAILED,
+            "ERRORMSG", "file operation failed", "FAILTYPE", "SAVE_DOCUMENT_FAIL");
         return CE_ERR_FILE_OPERATION_FAILED;
     }
     return CE_ERR_OK;
@@ -1325,7 +1326,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_StorageElement_GetName(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "name is null");
         return CE_ERR_PARAM_INVALID;
     }
-    if (nameSize < storageElement->name.size()) {
+    if (nameSize <= storageElement->name.size() + 1) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "name size exceeds limit");
         return CE_ERR_PARAM_INVALID;
     }

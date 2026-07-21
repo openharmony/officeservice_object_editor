@@ -726,6 +726,42 @@ ErrCode ObjectEditorClient::GetObjectEditorFormatsByLocale(const std::string &lo
     return ERR_OK;
 }
 
+std::unique_lock<std::mutex> ObjectEditorClient::AcquireCallbackLock()
+{
+    return std::unique_lock<std::mutex>(callbackMutex_);
+}
+
+bool ObjectEditorClient::PrepareForDestroy(struct ContentEmbed_ExtensionProxy *proxy)
+{
+    std::lock_guard<std::mutex> lock(callbackMutex_);
+    auto it = callbackRegistry_.find(proxy);
+    if (it == callbackRegistry_.end()) {
+        // not registered, safe to destroy
+        return true;
+    }
+    // Check isDispatching_ on the callback object under the lock.
+    // Prevents TOCTOU with OnXxx methods which set isDispatching_=true
+    // under the same lock.
+    if (it->second != nullptr && it->second->IsDispatching()) {
+        // dispatch in progress, cannot destroy
+        return false;
+    }
+    if (it->second != nullptr) {
+        // set callback->proxy_ = nullptr under lock
+        it->second->ClearProxy();
+    }
+    callbackRegistry_.erase(it);
+    // safe to destroy
+    return true;
+}
+
+void ObjectEditorClient::RegisterCallback(struct ContentEmbed_ExtensionProxy *proxy,
+    const sptr<ObjectEditorClientCallback> &callback)
+{
+    std::lock_guard<std::mutex> lock(callbackMutex_);
+    callbackRegistry_[proxy] = callback;
+}
+
 void ObjectEditorClient::SARegCleanUp()
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "in");

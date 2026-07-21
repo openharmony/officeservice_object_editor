@@ -18,7 +18,6 @@
 #include <vector>
 #include <cerrno>
 #include <chrono>
-
 #include <cJSON.h>
 #include "accesstoken_kit.h"
 #include "ipc_skeleton.h"
@@ -45,9 +44,8 @@
 #include "object_editor_permission_utils.h"
 #include "system_utils.h"
 #include "user_mgr.h"
-#include "object_editor_common.h"
 #include "hisysevent.h"
-
+#include "object_editor_common.h"
 using namespace OHOS::AAFwk;
 
 namespace OHOS {
@@ -467,7 +465,7 @@ ErrCode ObjectEditorManagerSystemAbility::StartObjectEditorExtension(
     std::string documentId = document->GetDocumentId();
     auto operateType = document->GetOperateType();
     std::string oeid = document->GetOEid();
-    bool islinking = document->GetLinking();
+    bool isLinking = document->GetLinking();
     std::string oriFileUri = document->GetOriFileUri().value_or("");
     std::string fileSuffix = SystemUtils::GetFileSuffix(oriFileUri);
     sptr<IRemoteObject> clientRemote = objectEditorClientCallback->AsObject();
@@ -493,13 +491,11 @@ ErrCode ObjectEditorManagerSystemAbility::StartObjectEditorExtension(
     }
     auto end = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    if (document->GetOperateType() == OperateType::CREATE_BY_FILE ||
-        document->GetOperateType() == OperateType::CREATE_BY_OEID) {
+    if (operateType == OperateType::CREATE_BY_OEID || operateType == OperateType::CREATE_BY_FILE) {
         bool isFromFile = (operateType == OperateType::CREATE_BY_FILE);
         HiSysEventWrite(OBJECT_EDITOR, "CREATE_DOCUMENT", OHOS::HiviewDFX::HiSysEvent::EventType::STATISTIC,
-                        "OEID", oeid, "CREATEMODE", isFromFile ? "CREATE_BY_FILE" : "CREATE_BY_OEID",
-                        "FILEEXT", fileSuffix, "ISLINKING", islinking,
-                        "ISPACKAGE", isPackageExtension, "DURATION", duration);
+            "OEID", oeid, "CREATEMODE", isFromFile ? "CREATE_BY_FILE" : "CREATE_BY_OEID",
+            "FILEEXT", fileSuffix, "ISLINKING", isLinking, "ISPACKAGE", isPackageExtension, "DURATION", duration);
     }
     return ObjectEditorManagerErrCode::SA_OK;
 }

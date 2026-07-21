@@ -255,7 +255,7 @@ bool PackageData::WriteFileToSandbox(Stream *stream, StreamPos &offset, const st
     if (!fs::exists(parentDir, ec)) {
         fs::create_directories(parentDir, ec);
         if (ec) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "create directories failed, ec: %{public}d", ec.value());
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "create directories failed, ec: %{public}d", ec.value());
             return false;
         }
     }

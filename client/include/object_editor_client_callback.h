@@ -16,6 +16,7 @@
 #ifndef OHOS_OBJECT_EDITOR_OBJECT_EDITOR_CLIENT_CALLBACK_H
 #define OHOS_OBJECT_EDITOR_OBJECT_EDITOR_CLIENT_CALLBACK_H
 
+#include <atomic>
 #include "object_editor_client_callback_stub.h"
 #include "native_object_editor_types.h"
 
@@ -33,8 +34,22 @@ public:
     ErrCode OnStopEdit(bool dataModified) override;
     ErrCode OnExtensionStopped() override;
 
+    // Clear the raw proxy_ pointer to prevent use-after-free when
+    // DestroyExtensionProxy frees the proxy struct before in-flight
+    // OnExtensionStopped/OnUpdate IPC is dispatched. After calling this,
+    // OnXxx methods will hit the proxy_ == nullptr guard and return safely.
+    void ClearProxy() { proxy_ = nullptr; }
+
+    // Dispatch flag: true while a user C callback (onUpdateFunc etc.) is on
+    // the call stack. PrepareForDestroy checks this under callbackMutex_ to
+    // reject DestroyExtensionProxy during dispatch (UAF/CFI guard).
+    // Encapsulated here instead of in the struct to keep the dispatch
+    // mechanism private to the client layer.
+    bool IsDispatching() const { return isDispatching_.load(std::memory_order_acquire); }
+
 private:
     struct ContentEmbed_ExtensionProxy *proxy_ {nullptr};
+    std::atomic<bool> isDispatching_ { false };
 };
 
 } // namespace ObjectEditor

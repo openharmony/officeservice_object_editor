@@ -243,6 +243,10 @@ void ObjectEditorExtension::OnStop()
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "failed to get context!");
         return;
     }
+    // Mark context as stopping — ContextTerminateAbility checks this flag
+    // before accessing the weak_ptr, preventing UAF when the underlying
+    // ObjectEditorExtensionContext is being torn down.
+    ceContext_->isStopping_.store(true, std::memory_order_release);
     /* callback onDestroy */
     bool ret = ConnectionManager::GetInstance().DisconnectCaller(context->GetToken());
     if (ret) {

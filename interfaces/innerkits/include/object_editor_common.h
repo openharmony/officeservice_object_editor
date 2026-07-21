@@ -21,6 +21,7 @@
 namespace OHOS {
 namespace ObjectEditor {
 inline constexpr char OBJECT_EDITOR[] = "OBJECT_EDITOR";
+
 enum class ExtensionStopReason {
     UNKNOWN = 0,
     SA_CLEAN_IDLE = 1,

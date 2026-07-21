@@ -18,12 +18,15 @@
 
 #include <vector>
 #include <string>
+#include <unordered_map>
+#include <mutex>
 #include "single_instance.h"
 #include "system_ability_status_change_stub.h"
 #include "system_ability_load_callback_stub.h"
 #include "object_editor_format.h"
 #include "iobject_editor_manager.h"
 #include "iobject_editor_service.h"
+#include "object_editor_client_callback.h"
 
 namespace OHOS {
 namespace ObjectEditor {
@@ -69,6 +72,30 @@ public:
     void LoadSystemAbilityFail();
     void SARegCleanUp();
 
+    // Callback registry: maps proxy struct to its callback object.
+    // RegisterCallback is called by StartWork after creating the callback;
+    // PrepareForDestroy is called by DestroyExtensionProxy before freeing
+    // the proxy struct, to atomically check IsDispatching() and clear the
+    // callback's raw proxy_ pointer under callbackMutex_, preventing UAF
+    // when in-flight OnExtensionStopped/OnUpdate IPC arrives later.
+    void RegisterCallback(struct ContentEmbed_ExtensionProxy *proxy,
+        const sptr<ObjectEditorClientCallback> &callback);
+
+    // Atomically check callback's IsDispatching() and clear proxy_ under
+    // callbackMutex_. Returns false if dispatch is in progress (can't destroy),
+    // true if safe to destroy (proxy_ cleared, registry entry erased).
+    // Called by DestroyExtensionProxy to eliminate race between
+    // IsDispatching() check and proxy deletion.
+    bool PrepareForDestroy(struct ContentEmbed_ExtensionProxy *proxy);
+
+    // Acquire a scoped lock on the callback mutex. Returned unique_lock
+    // holds the lock until it goes out of scope (RAII). Used by
+    // ObjectEditorClientCallback::OnXxx methods to safely read proxy_ and
+    // set isDispatching without friend access to callbackMutex_.
+    // Must not be held while calling user callbacks (deadlock risk if
+    // user callback calls back into ObjectEditorClient).
+    std::unique_lock<std::mutex> AcquireCallbackLock();
+
 private:
     class ObjectEditorSADeathRecipient : public IRemoteObject::DeathRecipient {
     public:
@@ -109,6 +136,9 @@ private:
     std::mutex loadMutex_;
     bool loadState_ = false;
     sptr<ISystemAbilityStatusChange> saStatusListener_ = nullptr;
+    std::mutex callbackMutex_;
+    std::unordered_map<struct ContentEmbed_ExtensionProxy *,
+        sptr<ObjectEditorClientCallback>> callbackRegistry_;
 };
 } // namespace ObjectEditor
 } // namespace OHOS

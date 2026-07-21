@@ -476,6 +476,14 @@ ContentEmbed_ErrorCode OH_ContentEmbed_DestroyExtensionProxy(ContentEmbed_Extens
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is null");
         return CE_ERR_PARAM_INVALID;
     }
+    // Atomically check callback's IsDispatching() and clear proxy_ under
+    // callbackMutex_ to eliminate race between the dispatch check
+    // and proxy deletion. OnXxx methods set isDispatching_=true
+    // under the same lock, ensuring mutual exclusion.
+    if (!ObjectEditorClient::GetInstance().PrepareForDestroy(proxy)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "proxy is being dispatched, cannot destroy now");
+        return CE_ERR_PARAM_INVALID;
+    }
     if (proxy->ceDocument != nullptr) {
         delete proxy->ceDocument;
         proxy->ceDocument = nullptr;
@@ -605,10 +613,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StartWork(ContentEmbed_ExtensionPro
         std::string oeid = proxy->ceDocument->oeDocumentInner == nullptr ? "" :
                             proxy->ceDocument->oeDocumentInner->GetOEid();
         HiSysEventWrite(OBJECT_EDITOR, "OPERATE_DOCUMENT_FAIL", OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
-            "ERRORMSG", "start work failed", "ERRORCODE", errCode,
-            "OEID", oeid, "FAILTYPE", "START_WORK_FAIL");
+            "ERRORCODE", errCode, "ERRORMSG", "start work failed", "OEID", oeid, "FAILTYPE", "START_WORK_FAIL");
         return ConvertErrorToCode(errCode, CE_ERR_SYSTEM_ABNORMAL);
     }
+    ObjectEditorClient::GetInstance().RegisterCallback(proxy, oeCallbackInner);
     if (proxy->isPackageExtension) {
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT_NDK, "is package");
         return CE_ERR_OK;
@@ -657,7 +665,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_DoEdit(ContentEmbed_ExtensionProxy 
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "failed: %{public}d", errCode);
         HiSysEventWrite(OBJECT_EDITOR, "OPERATE_DOCUMENT_FAIL", OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
-                        "ERRORMSG", "edit failed", "ERRORCODE", errCode,
+                        "ERRORCODE", errCode, "ERRORMSG", "edit failed",
                         "OEID", oeid, "FAILTYPE", "EDIT_DOCUMENT_FAIL");
         return ConvertErrorToCode(errCode, CE_ERR_EXTENSION_ERROR);
     }
@@ -809,11 +817,11 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_StopWork(ContentEmbed_ExtensionProx
             oeExtensionRemoteObject->IsProxyObject() &&
             proxy->deathRecipient != nullptr &&
             !oeExtensionRemoteObject->RemoveDeathRecipient(proxy->deathRecipient)) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK,
-                "Failed to remove death recipient from remote object");
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "Failed to remove death recipient from remote object");
             return CE_ERR_SYSTEM_ABNORMAL;
         }
     }
+
     proxy->deathRecipient = nullptr;
     return CE_ERR_OK;
 }
