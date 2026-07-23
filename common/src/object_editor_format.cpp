@@ -135,7 +135,7 @@ ObjectEditorFormat *ObjectEditorFormat::Unmarshalling(Parcel &parcel)
 
 ObjectEditorFormat::~ObjectEditorFormat()
 {
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::COMMON, "destructor oeid: %{public}s", oeid.c_str());
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::COMMON, "destructor oeid: %{private}s", oeid.c_str());
 }
 
 // LCOV_EXCL_STOP

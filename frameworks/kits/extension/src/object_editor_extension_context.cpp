@@ -77,7 +77,7 @@ bool ObjectEditorExtensionContext::ConnectAbility(
 
 ErrCode ObjectEditorExtensionContext::StartAbilityWithAccount(const AAFwk::Want &want, int accountId) const
 {
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "accountId=%{public}d", accountId);
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "accountId=%{private}d", accountId);
     auto abilityManagerClient = AAFwk::AbilityManagerClient::GetInstance();
     if (abilityManagerClient == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "abilityManagerClient is nullptr");

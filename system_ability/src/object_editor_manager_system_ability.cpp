@@ -739,7 +739,7 @@ ErrCode ObjectEditorManagerSystemAbility::StartUIAbility(const std::unique_ptr<A
     }
     std::string wantBundleName = want->GetElement().GetBundleName();
     if (wantBundleName != callerBundleName) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "bundle name mismatch, want: %{public}s, caller: %{public}s",
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "bundle name mismatch, want: %{private}s, caller: %{private}s",
             wantBundleName.c_str(), callerBundleName.c_str());
         return ObjectEditorManagerErrCode::SA_INVALID_PARAMETER;
     }
@@ -752,7 +752,7 @@ ErrCode ObjectEditorManagerSystemAbility::StartUIAbility(const std::unique_ptr<A
     ErrCode err = ERR_OK;
     if (isSameProc) {
         std::string specifiedFlag = want->GetParams().GetStringParam("specifiedFlag");
-        OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "specifiedFlag: %{public}s", specifiedFlag.c_str());
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "specifiedFlag: %{private}s", specifiedFlag.c_str());
         err = abilityManagerClient->StartAbilityByOEExt(*want, extensionToken, clientPid, specifiedFlag);
     } else {
         err = abilityManagerClient->StartAbility(*want, ILLEGAL_REQUEST_CODE, UserMgr::GetInstance().GetUserId());
@@ -840,7 +840,7 @@ bool ObjectEditorManagerSystemAbility::CheckConnectionLimit(const std::string &c
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "format is null");
         return false;
     }
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "clientBundleName:%{public}s", clientBundleName.c_str());
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "clientBundleName:%{private}s", clientBundleName.c_str());
     std::lock_guard<std::mutex> lock(connectionMapMutex_);
     int32_t count = 0;
     for (const auto &pair : connectionMap_) {
@@ -855,7 +855,7 @@ bool ObjectEditorManagerSystemAbility::CheckConnectionLimit(const std::string &c
             }
         } else if (pair.second->IsExtensionAbilityMatch(format->moduleName, format->abilityName)) {
             if (pair.second->GetClientBundleName() != clientBundleName) {
-                OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "extension client bundle name %{public}s not match",
+                OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "extension client bundle name %{private}s not match",
                     pair.second->GetClientBundleName().c_str());
                 return false;
             }

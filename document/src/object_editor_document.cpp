@@ -44,7 +44,7 @@ namespace fs = std::filesystem;
 
 ObjectEditorDocument::~ObjectEditorDocument()
 {
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "destructor oeid: %{public}s, documentId: %{private}s",
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "destructor oeid: %{private}s, documentId: %{private}s",
         oeid_.c_str(), documentId_.c_str());
 }
 
@@ -216,7 +216,7 @@ void ObjectEditorDocument::RestoreStorage()
 bool ObjectEditorDocument::Flush()
 {
     std::lock_guard<std::recursive_mutex> lock(docMutex_);
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "oeid: %{public}s, operateType: %{public}d",
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "oeid: %{private}s, operateType: %{public}d",
         oeid_.c_str(), static_cast<int32_t>(operateType_));
     if (!storage_) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "storage is null");
@@ -622,7 +622,7 @@ bool ObjectEditorDocument::RebuildAndFlush()
     TempGuard guard{tempPath, true};
     auto newDoc = ObjectEditorDocument::CreateByOEid(GetOEid());
     if (!newDoc) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "CreateByOEid failed, oeid: %{public}s", GetOEid().c_str());
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "CreateByOEid failed, oeid: %{private}s", GetOEid().c_str());
         return false;
     }
     Storage *newStorage = newDoc->GetRootStorage();

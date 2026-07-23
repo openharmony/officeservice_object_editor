@@ -191,7 +191,7 @@ void AllocTable::Debug() const
     }
 
     oss << "============================================================" << std::endl;
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "AllocTable dump: %{public}s", oss.str().c_str());
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "AllocTable dump: %{private}s", oss.str().c_str());
 }
 // LCOV_EXCL_STOP
 } // namespace ObjectEditor

@@ -231,7 +231,7 @@ void Header::Debug()
     }
     oss << std::endl;
     oss << "====================================================" << std::endl;
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "dirtree dump: %{public}s", oss.str().c_str());
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "dirtree dump: %{private}s", oss.str().c_str());
 }
 // LCOV_EXCL_STOP
 } // namespace ObjectEditor
