@@ -87,7 +87,7 @@ void ObjectEditorExtension::Init(const std::shared_ptr<AbilityLocalRecord> &reco
     std::string src = srcPath.substr(srcPath.find_last_of("/") + 1);
     moduleLoaded_ = NativeRuntime::LoadModule(bundleModuleName, src, abilityInfo_->name, *ceInstance_);
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION,
-                       "LoadModule, bundleModuleName: %{public}s, srcPath: %{public}s, "
+                       "LoadModule, bundleModuleName: %{private}s, srcPath: %{private}s, "
                        "ret: %{public}d",
                        bundleModuleName.c_str(), srcPath.c_str(), moduleLoaded_.load());
     handler_ = handler;
@@ -157,7 +157,7 @@ void ObjectEditorExtension::ListenWindowManager()
 void ObjectEditorExtension::SystemAbilityStatusChangeListener::OnAddSystemAbility(int32_t systemAbilityId,
                                                                                   const std::string &deviceId)
 {
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "systemAbilityId: %{public}d, deviceId: %{public}s",
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "systemAbilityId: %{private}d, deviceId: %{private}s",
         systemAbilityId, deviceId.c_str());
     if (systemAbilityId == WINDOW_MANAGER_SERVICE_ID) {
         Rosen::DisplayManager::GetInstance().RegisterDisplayListener(listener_);
@@ -288,7 +288,7 @@ void ObjectEditorExtension::OnCommand(const AAFwk::Want &want, bool restart, int
 {
     Extension::OnCommand(want, restart, startId);
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION,
-        "start restart: %{public}d, startId: %{public}d", restart, startId);
+        "start restart: %{public}d, startId: %{private}d", restart, startId);
 }
 
 void ObjectEditorExtension::OnCreate(Rosen::DisplayId displayId)
@@ -303,7 +303,7 @@ void ObjectEditorExtension::OnDestroy(Rosen::DisplayId displayId)
 
 void ObjectEditorExtension::OnChange(Rosen::DisplayId displayId)
 {
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "displayId: %{public}" PRIu64 "", displayId);
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "displayId: %{private}" PRIu64 "", displayId);
     auto context = GetContext();
     if (context == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "failed to get context!");
@@ -424,7 +424,7 @@ ErrCode ObjectEditorExtension::GetExtensionEditStatus(bool &isEditing)
     isEditing = false;
     int callingUid = IPCSkeleton::GetCallingUid();
     if (callingUid != OESA_UID) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid calling uid: %{public}d, expected: %{public}d",
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid calling uid: %{private}d, expected: %{private}d",
             callingUid, OESA_UID);
         return ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_UID;
     }
@@ -488,7 +488,7 @@ ErrCode ObjectEditorExtension::Close(const std::string &documentId, bool &isAllO
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "documentId: %{private}s", documentId.c_str());
     int callingUid = IPCSkeleton::GetCallingUid();
     if (callingUid != OESA_UID) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid calling uid: %{public}d, expected: %{public}d",
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid calling uid: %{private}d, expected: %{private}d",
             callingUid, OESA_UID);
         return ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_UID;
     }
@@ -642,7 +642,7 @@ ErrCode ObjectEditorExtension::Initial(std::unique_ptr<ObjectEditorDocument> doc
     }
     int callingUid = IPCSkeleton::GetCallingUid();
     if (callingUid != OESA_UID) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid calling uid: %{public}d, expected: %{public}d",
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid calling uid: %{private}d, expected: %{private}d",
             callingUid, OESA_UID);
         return ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_UID;
     }

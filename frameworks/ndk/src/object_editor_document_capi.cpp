@@ -434,7 +434,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_LoadDocumentFromFile(const char *srcFileP
     if (doc == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create document failed");
         HiSysEventWrite(OBJECT_EDITOR, "OPERATE_DOCUMENT_FAIL", OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
-            "ERRORMSG", "load document by file failed", "ERRORCODE", CE_ERR_NULL_POINTER,
+            "ERRORMSG", "load document failed", "ERRORCODE", CE_ERR_NULL_POINTER,
             "OEID", "", "FAILTYPE", "LOAD_DOCUMENT_FAIL");
         return CE_ERR_NULL_POINTER;
     }

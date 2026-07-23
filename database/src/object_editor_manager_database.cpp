@@ -81,7 +81,7 @@ public:
 
     int32_t OnUpgrade(NativeRdb::RdbStore &rdbStore, int32_t oldVersion, int32_t newVersion) override
     {
-        OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "oldVersion: %{public}d, newVersion: %{public}d",
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "oldVersion: %{private}d, newVersion: %{private}d",
             oldVersion, newVersion);
         return NativeRdb::E_OK;
     }
@@ -518,7 +518,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByO
 ObjectEditorManagerErrCode ObjectEditorManagerDatabase::GetObjectEditorFormatByOEidAndMinVersion(
     const std::string &oeid, const std::string &minVersion, std::unique_ptr<ObjectEditorFormat> &format) const
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "oeid: %{private}s, minVersion: %{public}s",
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "oeid: %{private}s, minVersion: %{private}s",
         oeid.c_str(), minVersion.c_str());
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
     std::string sql = "SELECT oeid, bundle_name, module_name, ability_name from object_editor_info"

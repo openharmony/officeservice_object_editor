@@ -82,14 +82,14 @@ StorageIO::StorageIO(const std::string &oeid)
     dtModified_ = false;
     Init();
     if (!ConfigMinimalCd(oeid)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "ConfigMinimalCd failed oeid: %{public}s",
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "ConfigMinimalCd failed oeid: %{private}s",
             oeid.c_str());
         return;
     }
 
     if (!SerializeToMemory()) {
         SetError(ErrorCode::BadOLE, "Failed to serialize the minimal in-memory");
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to serialize the minimal oeid: %{public}s",
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to serialize the minimal oeid: %{private}s",
             oeid.c_str());
         return;
     }
@@ -1353,11 +1353,11 @@ std::vector<Byte> BuildBatchBuffer(uint64_t &batchStartIdx, uint64_t &batchEndId
             auto ec = memcpy_s(batchBuffer.data() + blockOffset, batchBuffer.size() - blockOffset,
                 smallBuffer.data() + copied, dataToWrite);
             if (ec != EOK) {
-                break;
+                return {};
             }
             copied += dataToWrite;
         }
-        batchWriteLen += static_cast<uint32_t>(required);
+        batchWriteLen = static_cast<uint32_t>(required);
         lastWrittenIdx = idx;
     }
     return batchBuffer;
@@ -2646,8 +2646,13 @@ std::string NormalizeFilePath(const std::string &filename)
 
 bool StorageIO::WriteBufferToFile(const std::string &filename)
 {
-    std::ofstream outFile(filename.c_str(), std::ios::binary | std::ios::trunc | std::ios::out);
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::DOCUMENT, "filename: %{private}s", filename.c_str());
+    std::string canonicalFileName;
+    if (!SystemUtils::ValidateAndNormalizePath(filename, canonicalFileName)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "NormalizeFilePath failed");
+        return false;
+    }
+    std::ofstream outFile(canonicalFileName.c_str(), std::ios::binary | std::ios::trunc | std::ios::out);
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "filename: %{private}s", canonicalFileName.c_str());
     if (!outFile || outFile.fail()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "open file failed");
         return false;

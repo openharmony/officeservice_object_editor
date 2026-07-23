@@ -35,7 +35,7 @@ bool DirEntry::Valid() const
         return false;
     }
     if (name_.empty() || name_.find('/') != std::string::npos) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "name: %{public}s is invalid", name_.c_str());
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "name: %{private}s is invalid", name_.c_str());
         return false;
     }
     return true;
@@ -231,7 +231,7 @@ DirEntry *DirTree::Entry(const std::string &name, bool create, int leafType)
         }
 
         if (!create) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "name: %{public}s is not found", name.c_str());
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "name: %{private}s is not found", name.c_str());
             return nullptr;
         }
 
@@ -292,7 +292,7 @@ bool DirTree::EnterDirectory(const std::string &dir)
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "dir: %{private}s", dir.c_str());
     const DirEntry *e = Entry(dir);
     if (!e || !e->Valid() || !e->IsDir()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "name: %{public}s is invalid", dir.c_str());
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "name: %{private}s is invalid", dir.c_str());
         return false;
     }
 
@@ -472,7 +472,7 @@ void DirTree::Debug()
         oss << std::endl << std::endl;
     }
     oss << "========================================================" << std::endl;
-    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "dirtree dump: %{public}s", oss.str().c_str());
+    OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "dirtree dump: %{private}s", oss.str().c_str());
 }
 
 void DirTree::FindSiblings(std::vector<size_t> &result, uint32_t index) const

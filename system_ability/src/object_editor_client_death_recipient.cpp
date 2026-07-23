@@ -23,7 +23,7 @@ namespace ObjectEditor {
 
 void ObjectEditorClientDeathRecipient::OnRemoteDied(const OHOS::wptr<OHOS::IRemoteObject> &remoteObject)
 {
-    OBJECT_EDITOR_LOGW(ObjectEditorDomain::SA, "documentId:%{public}s", documentId_.c_str());
+    OBJECT_EDITOR_LOGW(ObjectEditorDomain::SA, "documentId:%{private}s", documentId_.c_str());
     ObjectEditorManagerSystemAbility::GetInstance().StopObjectEditorExtension(oeExtensionRemoteObject_);
 }
 
