@@ -160,6 +160,10 @@ void ObjectEditorExtension::SystemAbilityStatusChangeListener::OnAddSystemAbilit
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::EXTENSION, "systemAbilityId: %{private}d, deviceId: %{private}s",
         systemAbilityId, deviceId.c_str());
     if (systemAbilityId == WINDOW_MANAGER_SERVICE_ID) {
+        if (listener_ == nullptr) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "listener is null");
+            return;
+        }
         Rosen::DisplayManager::GetInstance().RegisterDisplayListener(listener_);
     }
 }

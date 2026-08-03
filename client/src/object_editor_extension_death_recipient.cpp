@@ -32,12 +32,17 @@ ObjectEditorExtensionDeathRecipient::~ObjectEditorExtensionDeathRecipient()
 void ObjectEditorExtensionDeathRecipient::OnRemoteDied(const OHOS::wptr<OHOS::IRemoteObject> &remoteObject)
 {
     OBJECT_EDITOR_LOGW(ObjectEditorDomain::CLIENT, "extension remote died");
-    if (proxy_ == nullptr) {
+    if (proxy_ == nullptr || proxy_->onErrorFunc == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "proxy is null");
         return;
     }
     if (proxy_->objectEditorService != nullptr) {
         sptr<IRemoteObject> oeExtensionRemoteObject = proxy_->objectEditorService->GetRemoteObject();
+        if (oeExtensionRemoteObject == nullptr) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "extension remote object is null");
+            proxy_->onErrorFunc(proxy_, ContentEmbed_ErrorCode::CE_ERR_EXTENSION_ABNORMAL_EXIT);
+            return;
+        }
         ExtensionStopReason stopReason = ExtensionStopReason::UNKNOWN;
         ObjectEditorClient::GetInstance().QueryExtensionStopReason(oeExtensionRemoteObject, stopReason);
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "extension stop reason: %{public}d",

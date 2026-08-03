@@ -88,7 +88,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnObjectAttachFunc(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "onObjectAttachFunc is null");
         return CE_ERR_PARAM_INVALID;
     }
-    instance->onObjectAttachFunc = onObjectAttachFunc;
+    {
+        std::lock_guard<std::mutex> lock(instance->objectsMutex);
+        instance->onObjectAttachFunc = onObjectAttachFunc;
+    }
     return CE_ERR_OK;
 }
 
@@ -103,7 +106,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_UnRegisterOnObjectAttachFunc(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "instance is null");
         return CE_ERR_PARAM_INVALID;
     }
-    instance->onObjectAttachFunc = nullptr;
+    {
+        std::lock_guard<std::mutex> lock(instance->objectsMutex);
+        instance->onObjectAttachFunc = nullptr;
+    }
     return CE_ERR_OK;
 }
 
@@ -123,7 +129,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_RegisterOnObjectDetachFunc(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "onObjectDetachFunc is null");
         return CE_ERR_PARAM_INVALID;
     }
-    instance->onObjectDetachFunc = onObjectDetachFunc;
+    {
+        std::lock_guard<std::mutex> lock(instance->objectsMutex);
+        instance->onObjectDetachFunc = onObjectDetachFunc;
+    }
     return CE_ERR_OK;
 }
 
@@ -138,7 +147,10 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_UnRegisterOnObjectDetachFunc(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "instance is null");
         return CE_ERR_PARAM_INVALID;
     }
-    instance->onObjectDetachFunc = nullptr;
+    {
+        std::lock_guard<std::mutex> lock(instance->objectsMutex);
+        instance->onObjectDetachFunc = nullptr;
+    }
     return CE_ERR_OK;
 }
 
@@ -266,7 +278,12 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_GetContentEmbedContext(ContentE
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "extensionInstance is null");
         return CE_ERR_NULL_POINTER;
     }
-    *ceContext = (extensionInstance->GetCEContext()).get();
+    auto ceCtx = extensionInstance->GetCEContext();
+    if (ceCtx == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "GetCEContext is null");
+        return CE_ERR_NULL_POINTER;
+    }
+    *ceContext = ceCtx.get();
     return CE_ERR_OK;
 }
 
@@ -532,7 +549,11 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextStartSelfUIAbility(
         return CE_ERR_NULL_POINTER;
     }
     OHOS::AAFwk::Want innerWant;
-    OHOS::AAFwk::CWantManager::TransformToWant(*want, false, innerWant);
+    auto result = OHOS::AAFwk::CWantManager::TransformToWant(*want, false, innerWant);
+    if (result != ABILITY_BASE_ERROR_CODE_NO_ERROR) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "TransformToWant failed");
+        return CE_ERR_PARAM_INVALID;
+    }
     HITRACE_METER_FMT(HITRACE_TAG_OHOS, "extension::ContextStartSelfUIAbility");
     auto ret = contextPtr->StartAbility(innerWant);
     if (ret != OHOS::ERR_OK) {
@@ -574,7 +595,11 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_ContextStartSelfUIAbilityWithSt
         return CE_ERR_NULL_POINTER;
     }
     OHOS::AAFwk::Want innerWant;
-    OHOS::AAFwk::CWantManager::TransformToWant(*want, false, innerWant);
+    auto result = OHOS::AAFwk::CWantManager::TransformToWant(*want, false, innerWant);
+    if (result != ABILITY_BASE_ERROR_CODE_NO_ERROR) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "TransformToWant failed");
+        return CE_ERR_PARAM_INVALID;
+    }
     OHOS::AAFwk::StartOptions startOptions = options->GetInnerStartOptions();
     HITRACE_METER_FMT(HITRACE_TAG_OHOS, "extension::ContextStartSelfUIAbilityWithStartOptions");
     auto ret = contextPtr->StartAbility(innerWant, startOptions);

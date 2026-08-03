@@ -22,6 +22,7 @@ namespace OHOS {
 namespace ObjectEditor {
 namespace {
 constexpr uint32_t FOUR_BYTE_SIZE = 4;
+constexpr uint32_t INT_BIT_SIZE = 32;
 
 // Header info
 constexpr uint16_t DEFAULT_MINOR_VERSION  = 0x003Eu;
@@ -93,6 +94,10 @@ constexpr uint32_t DASH_FIRST = 8;
 constexpr uint32_t DASH_SECOND = 13;
 constexpr uint32_t DASH_THREE = 18;
 constexpr uint32_t DASH_FOUR = 23;
+
+constexpr uint32_t DIR_ENTRY_NAME_CHAR_LEN = 2;
+constexpr uint32_t DIR_ENTRY_NAME_LENGTH_OFFSET = 0x40;
+constexpr uint32_t DIR_CLSID_OFFSET = 0x50;
 
 constexpr uint32_t DASH_FIRST_INSERT = 4;
 constexpr uint32_t DASH_SECOND_INSERT = 6;

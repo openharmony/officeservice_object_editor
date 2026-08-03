@@ -103,38 +103,41 @@ char **SplitToCStrings(const std::string &str, char pattern, uint32_t &count)
 {
     std::vector<std::string> substrs = SystemUtils::SplitString(str, pattern);
     size_t size = substrs.size();
-    count = static_cast<uint32_t>(size);
     if (size == 0 || size > MAX_STRING_LENGTH) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "size:%{public}zu invalid", size);
+        count = 0;
         return nullptr;
     }
     char **result = new (std::nothrow) char *[size];
     if (result == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "alloc result failed");
+        count = 0;
         return nullptr;
     }
     for (size_t i = 0; i < size; ++i) {
         char *subCstr = CopyToCString(substrs[i]);
         if (subCstr == nullptr) {
             FreeCStrings(result, i);
+            count = 0;
             return nullptr;
         }
         result[i] = subCstr;
     }
+    count = static_cast<uint32_t>(size);
     return result;
 }
 
 ContentEmbed_ErrorCode RegisterExtensionDeathRecipient(ContentEmbed_ExtensionProxy *proxy)
 {
+    if (proxy == nullptr || proxy->objectEditorService == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "Service pointer is null");
+        return CE_ERR_PARAM_INVALID;
+    }
     auto extensionDeathRecipient = OHOS::sptr<OHOS::IRemoteObject::DeathRecipient>(
         new (std::nothrow) ObjectEditorExtensionDeathRecipient(proxy));
     if (extensionDeathRecipient == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "Memory allocation failed");
         return CE_ERR_NULL_POINTER;
-    }
-    if (proxy == nullptr || proxy->objectEditorService == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "Service pointer is null");
-        return CE_ERR_PARAM_INVALID;
     }
     auto oeExtensionRemoteObject = proxy->objectEditorService->GetRemoteObject();
     if (oeExtensionRemoteObject != nullptr &&
@@ -165,11 +168,11 @@ ContentEmbed_Format::~ContentEmbed_Format()
     fileNameExtensionsCount = 0;
 }
 
-void ContentEmbed_Format::Build(std::unique_ptr<ObjectEditorFormat> &format)
+bool ContentEmbed_Format::Build(std::unique_ptr<ObjectEditorFormat> &format)
 {
     if (format == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "format is nullptr");
-        return;
+        return false;
     }
     oeid = std::move(format->oeid);
     locale = std::move(format->locale);
@@ -177,15 +180,24 @@ void ContentEmbed_Format::Build(std::unique_ptr<ObjectEditorFormat> &format)
     description = std::move(format->description);
     icon = std::move(format->pIconPixelMap);
     fileNameExtensions = SplitToCStrings(format->fileExts, ',', fileNameExtensionsCount);
+    if (fileNameExtensions == nullptr && !format->fileExts.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "SplitToCStrings failed");
+        return false;
+    }
+    return true;
 }
 
-void ContentEmbed_Info::Build(std::vector<std::unique_ptr<ObjectEditorFormat>> &oeFormats)
+bool ContentEmbed_Info::Build(std::vector<std::unique_ptr<ObjectEditorFormat>> &oeFormats)
 {
     for (auto &format : oeFormats) {
         std::unique_ptr<ContentEmbed_Format> embedFormat = std::make_unique<ContentEmbed_Format>();
-        embedFormat->Build(format);
+        if (!embedFormat->Build(format)) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "build format failed");
+            return false;
+        }
         formats.push_back(std::move(embedFormat));
     }
+    return true;
 }
 
 #ifdef __cplusplus
@@ -236,10 +248,13 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedInfo(const char *locale, C
     auto errCode = ObjectEditorClient::GetInstance().GetObjectEditorFormatsByLocale(strLocale, oeFormats);
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "GetFormats failed: %{public}d", errCode);
-        return ConvertErrorToCode(errCode);
+        return ConvertErrorToCode(errCode, CE_ERR_SYSTEM_ABNORMAL);
     }
 // LCOV_EXCL_START
-    info->Build(oeFormats);
+    if (!info->Build(oeFormats)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "build failed");
+        return CE_ERR_SYSTEM_ABNORMAL;
+    }
     return CE_ERR_OK;
 // LCOV_EXCL_STOP
 }
@@ -332,10 +347,13 @@ ContentEmbed_ErrorCode OH_ContentEmbed_GetContentEmbedFormatByOEidAndLocale(cons
         strLocale, oeFormat);
     if (errCode != OHOS::ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "GetFormat failed: %{public}d", errCode);
-        return ConvertErrorToCode(errCode);
+        return ConvertErrorToCode(errCode, CE_ERR_SYSTEM_ABNORMAL);
     }
 // LCOV_EXCL_START
-    format->Build(oeFormat);
+    if (!format->Build(oeFormat)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "build failed");
+        return CE_ERR_SYSTEM_ABNORMAL;
+    }
     return CE_ERR_OK;
 // LCOV_EXCL_STOP
 }
@@ -775,7 +793,8 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Proxy_GetSnapshot(ContentEmbed_ExtensionP
         return ConvertErrorToCode(errCode, CE_ERR_EXTENSION_ERROR);
     }
     std::string snapshotPath = proxy->ceDocument->oeDocumentInner->GetSnapshotPath();
-    if (!std::filesystem::exists(snapshotPath) || std::filesystem::file_size(snapshotPath) == 0) {
+    std::error_code ec;
+    if (!std::filesystem::exists(snapshotPath, ec) || std::filesystem::file_size(snapshotPath, ec) == 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "snapshotPath is invalid");
         return CE_ERR_PARAM_INVALID;
     }

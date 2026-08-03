@@ -102,20 +102,24 @@ public:
         operateType_ = type;
     }
 
-    std::string GetOriFilePath() const noexcept
+    std::string GetOriFilePath() const
     {
+        std::lock_guard<std::recursive_mutex> lock(docMutex_);
         return SystemUtils::GetPathFromUri(oriFileUri_);
     }
-    std::string GetTmpFilePath() const noexcept
+    std::string GetTmpFilePath() const
     {
+        std::lock_guard<std::recursive_mutex> lock(docMutex_);
         return SystemUtils::GetPathFromUri(tmpFileUri_);
     }
-    std::string GetNativeFilePath() const noexcept
+    std::string GetNativeFilePath() const
     {
+        std::lock_guard<std::recursive_mutex> lock(docMutex_);
         return SystemUtils::GetPathFromUri(nativeFileUri_);
     }
-    std::string GetSnapshotPath() const noexcept
+    std::string GetSnapshotPath() const
     {
+        std::lock_guard<std::recursive_mutex> lock(docMutex_);
         return SystemUtils::GetPathFromUri(snapshotUri_);
     }
     [[nodiscard]] bool Flush();

@@ -1686,7 +1686,7 @@ HWTEST_F(StorageTest, LoadMiniFatBlocks_005, TestSize.Level1)
 {
     storage_->bbat_ = std::make_unique<AllocTable>();
     storage_->header_ = std::make_unique<Header>();
-    storage_->bbat_->blockSize_ = 1;
+    storage_->bbat_->blockSize_ = 48;
     Stub stub;
     stub.set(ADDR(AllocTable, Follow), MockFollowSuccess);
     stub.set(ADDR(StorageIO, LoadBigBlocks), MockLoadBigBlocks);

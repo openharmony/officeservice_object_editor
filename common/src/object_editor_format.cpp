@@ -76,12 +76,12 @@ ObjectEditorFormat *ObjectEditorFormat::Unmarshalling(Parcel &parcel)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "alloc format failed");
         return nullptr;
     }
-    if (!parcel.ReadString(format->oeid)) {
+    if (!parcel.ReadString(format->oeid) || format->oeid.empty()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "read oeid failed");
         delete format;
         return nullptr;
     }
-    if (!parcel.ReadString(format->bundleName)) {
+    if (!parcel.ReadString(format->bundleName) || format->bundleName.empty()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "read bundleName failed");
         delete format;
         return nullptr;

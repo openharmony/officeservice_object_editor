@@ -78,6 +78,10 @@ ErrCode ObjectEditorPackage::DoEdit(const std::string &documentId)
         [this](uint32_t mask, const std::string &filepath) {
             OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "file mask:%{public}d, path:%{private}s",
                 mask, filepath.c_str());
+            if (packageData_ == nullptr) {
+                OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "lambda packageData is null");
+                return;
+            }
             packageData_->SaveData();
             if (clientCb_ != nullptr && document_ != nullptr) {
                 auto newDocument = ObjectEditorDocument::LoadFromFile(document_->GetTmpFilePath());
@@ -97,6 +101,7 @@ ErrCode ObjectEditorPackage::DoEdit(const std::string &documentId)
     }
     if (!watcher_->Start()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "watcher start failed");
+        watcher_.reset();
         return ERR_INVALID_VALUE;
     }
     return OpenFile(SystemUtils::GetUriFromPath(packageData_->GetFilePath()));
@@ -109,6 +114,9 @@ ErrCode ObjectEditorPackage::GetEditStatus(const std::string &documentId, bool *
         return ERR_INVALID_VALUE;
     }
     *isEditing = isEditing_;
+    if (isModified != nullptr) {
+        *isModified = true;
+    }
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "isEditing:%{public}d", isEditing_);
     return ERR_OK;
 }
@@ -135,6 +143,10 @@ ErrCode ObjectEditorPackage::Close(const std::string &documentId, bool &isAllObj
     [[maybe_unused]] uint32_t callerTokenId)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "package");
+    if (watcher_ != nullptr) {
+        watcher_->Stop();
+    }
+    isAllObjectsRemoved = true;
     return ERR_OK;
 }
 

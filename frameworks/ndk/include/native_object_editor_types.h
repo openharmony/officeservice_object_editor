@@ -44,12 +44,12 @@ struct ContentEmbed_Format {
     char **fileNameExtensions = nullptr;
 
     ~ContentEmbed_Format();
-    void Build(std::unique_ptr<OHOS::ObjectEditor::ObjectEditorFormat> &format);
+    bool Build(std::unique_ptr<OHOS::ObjectEditor::ObjectEditorFormat> &format);
 };
 
 struct ContentEmbed_Info {
     std::vector<std::unique_ptr<ContentEmbed_Format>> formats;
-    void Build(std::vector<std::unique_ptr<OHOS::ObjectEditor::ObjectEditorFormat>> &oeFormats);
+    bool Build(std::vector<std::unique_ptr<OHOS::ObjectEditor::ObjectEditorFormat>> &oeFormats);
 };
 
 struct ContentEmbed_ExtensionProxy {

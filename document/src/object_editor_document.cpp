@@ -111,11 +111,13 @@ std::unique_ptr<ObjectEditorDocument> ObjectEditorDocument::LoadFromFile(const s
 
 std::string ObjectEditorDocument::GetOEid() const
 {
+    std::lock_guard<std::recursive_mutex> lock(docMutex_);
     return oeid_;
 }
 
 void ObjectEditorDocument::SetOEid(const std::string &oeid)
 {
+    std::lock_guard<std::recursive_mutex> lock(docMutex_);
     oeid_ = oeid;
 }
 
@@ -717,17 +719,37 @@ ObjectEditorDocument *ObjectEditorDocument::Unmarshalling(Parcel &parcel)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Create ObjectEditorDocument failed");
         return nullptr;
     }
-    doc->oeid_ = parcel.ReadString();
+    if (!parcel.ReadString(doc->oeid_)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "read oeid failed");
+        delete doc;
+        return nullptr;
+    }
     doc->isLinking_ = false;
     if (!parcel.ReadBool(doc->isLinking_)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "read isLinking_ failed");
         delete doc;
         return nullptr;
     }
-    doc->tmpFileUri_ = parcel.ReadString();
-    doc->oriFileUri_ = parcel.ReadString();
-    doc->snapshotUri_ = parcel.ReadString();
-    doc->nativeFileUri_ = parcel.ReadString();
+    if (!parcel.ReadString(doc->tmpFileUri_)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "read tmpFileUri failed");
+        delete doc;
+        return nullptr;
+    }
+    if (!parcel.ReadString(doc->oriFileUri_)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "read oriFileUri failed");
+        delete doc;
+        return nullptr;
+    }
+    if (!parcel.ReadString(doc->snapshotUri_)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "read snapshotUri failed");
+        delete doc;
+        return nullptr;
+    }
+    if (!parcel.ReadString(doc->nativeFileUri_)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "read nativeFileUri failed");
+        delete doc;
+        return nullptr;
+    }
     int32_t operateTypeValue = 0;
     if (!parcel.ReadInt32(operateTypeValue)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "read operateType failed");
@@ -740,7 +762,11 @@ ObjectEditorDocument *ObjectEditorDocument::Unmarshalling(Parcel &parcel)
         return nullptr;
     }
     doc->operateType_ = static_cast<OperateType>(operateTypeValue);
-    doc->documentId_ = parcel.ReadString();
+    if (!parcel.ReadString(doc->documentId_)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "read documentId failed");
+        delete doc;
+        return nullptr;
+    }
     return doc;
 }
 

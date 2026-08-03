@@ -50,7 +50,7 @@ bool ObjectEditorConfig::CheckIsInDlp()
     int32_t result = OHOS::Security::DlpPermission::DlpPermissionKit::IsInDlpSandbox(isInDlpSandbox);
     if (result != OHOS::Security::DlpPermission::DLP_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "failed, result: %{public}d", result);
-        return false;
+        return true;
     }
     if (isInDlpSandbox) {
         OBJECT_EDITOR_LOGW(ObjectEditorDomain::COMMON, "Application is in DLP sandbox");
@@ -69,7 +69,7 @@ bool ObjectEditorConfig::CheckCallerInDlpSandbox()
     if (dlpFlag < 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "GetHapDlpFlag failed, tokenId: %{public}u, result: %{public}d",
             callerTokenId, dlpFlag);
-        return false;
+        return true;
     }
     bool inSandbox = (dlpFlag == 1);
     if (inSandbox) {

@@ -356,11 +356,12 @@ void StreamImpl::UpdateCache()
     size_t bytes = static_cast<size_t>(cacheSize_);
     const StreamPos entrySize = entry_->Size();
     const StreamPos cacheStart = cachePos_ < 0 ? 0 : static_cast<StreamPos>(cachePos_);
-    if (static_cast<size_t>(cacheStart) + bytes > static_cast<size_t>(entrySize)) {
+    const size_t cacheStartSz = static_cast<size_t>(cacheStart);
+    if (cacheStartSz > std::numeric_limits<size_t>::max() - bytes ||
+        cacheStartSz + bytes > static_cast<size_t>(entrySize)) {
         bytes = static_cast<size_t>(entrySize - cacheStart);
     }
-    cacheSize_ = Read(static_cast<size_t>(cacheStart),
-        cache_.data(), static_cast<std::streamsize>(bytes));
+    cacheSize_ = Read(cacheStartSz, cache_.data(), static_cast<std::streamsize>(bytes));
 }
 
 bool StreamImpl::PrepareWrite(const Byte *data, uint32_t &maxlen)
@@ -443,7 +444,7 @@ uint32_t StreamImpl::WriteMiniBlocks(const Byte *data, uint32_t targetLen,
         return 0;
     }
     size_t index = static_cast<size_t>(pos_ / static_cast<std::streamsize>(smallBlockSize));
-    if (index > sbrootEntry.size()) {
+    if (index >= sbrootEntry.size()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
             "index exceed root Entry size, index: %{public}zu, size: %{public}zu",
             index, sbrootEntry.size());

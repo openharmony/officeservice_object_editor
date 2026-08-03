@@ -19,6 +19,7 @@
 #include <atomic>
 #include <cstdint>
 #include <functional>
+#include <mutex>
 #include <pthread.h>
 #include <string>
 #include <unistd.h>
@@ -57,7 +58,7 @@ private:
     pthread_t watchThread_ = 0;
     std::atomic<bool> running_ {false};
     std::atomic<bool> threadCreated_ {false};
-    std::mutex mutex_;
+    std::recursive_mutex mutex_;
 };
 } // namespace ObjectEditor
 } // namespace OHOS

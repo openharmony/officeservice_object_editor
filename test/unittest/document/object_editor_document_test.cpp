@@ -159,10 +159,8 @@ Stream *MockGetStream()
 HWTEST_F(ObjectEditorDocumentTest, CreateByOEid_001, TestSize.Level1)
 {
     const std::string hmid;
-    Stub stub;
-    stub.set(ADDR(Storage, Result), MockStorageResult);
     std::unique_ptr<ObjectEditorDocument> doc = document_->CreateByOEid(hmid);
-    EXPECT_NE(doc, nullptr);
+    EXPECT_EQ(doc, nullptr);
 }
 
 /**

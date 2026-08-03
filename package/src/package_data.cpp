@@ -104,7 +104,11 @@ bool ReadStreamUint32(Stream *stream, uint64_t streamSize, StreamPos &offset, ui
     }
     stream->Seek(offset);
     Byte fileSizeBuf[U32_BUF_LEN];
-    stream->Read(fileSizeBuf, U32_BUF_LEN);
+    auto bytesRead = stream->Read(fileSizeBuf, U32_BUF_LEN);
+    if (bytesRead != U32_BUF_LEN) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "stream read expected not correct");
+        return false;
+    }
     value = ReadUint32(fileSizeBuf, U32_BUF_LEN);
     offset += U32_BUF_LEN;
     return true;
@@ -339,6 +343,10 @@ bool PackageData::WriteDataToStream(Stream *stream)
         return false;
     }
     std::streamsize totalSize = file.tellg();
+    if (totalSize < 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "failed to get file size");
+        return false;
+    }
     file.seekg(0, std::ios::beg);
     std::vector<uint8_t> buffer(CHUNK_SIZE);
     size_t totalWritten = 0;
@@ -385,6 +393,10 @@ bool PackageData::WriteDataToBuffer(std::vector<Byte> &buffer)
         return false;
     }
     std::streamsize totalSize = file.tellg();
+    if (totalSize < 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "failed to get file size");
+        return false;
+    }
     file.seekg(0, std::ios::beg);
     size_t originalSize = buffer.size();
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "bufferSize: %{public}u, totalSize: %{public}u",
@@ -445,6 +457,10 @@ bool PackageData::SaveData()
     }
     // write header to stream
     ole10NativeStream->Write(buffer.data(), buffer.size());
+    if (ole10NativeStream->Fail()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "stream write failed");
+        return false;
+    }
     // write data to stream
     if (!withData && !WriteDataToStream(ole10NativeStream)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "WriteDataToStream failed");
