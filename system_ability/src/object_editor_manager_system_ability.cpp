@@ -160,6 +160,13 @@ ObjectEditorManagerSystemAbility::ObjectEditorManagerSystemAbility()
 ObjectEditorManagerSystemAbility::~ObjectEditorManagerSystemAbility()
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "deconstructor");
+    extensionStopCleanExit_.store(true);
+    extensionStopCleanNotify_.store(true);
+    cvExtensionStopClean_.notify_one();
+    if (cleanThread_.joinable()) {
+        cleanThread_.join();
+    }
+    extensionStopCleanRunning_.store(false);
 }
 
 void ObjectEditorManagerSystemAbility::InitScreenChangedCommonEventSubscriber()
@@ -171,6 +178,9 @@ void ObjectEditorManagerSystemAbility::InitScreenChangedCommonEventSubscriber()
     screenChangedReceiver_ = std::make_shared<ObjectEditorScreenChangeReceiver>(subscribeInfo);
     auto ret = OHOS::EventFwk::CommonEventManager::SubscribeCommonEvent(screenChangedReceiver_);
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "subscribe common event ret:%{public}d", ret);
+    if (!ret) {
+        screenChangedReceiver_ = nullptr;
+    }
 }
 
 void ObjectEditorManagerSystemAbility::ResetScreenChangedCommonEventSubscriber()
@@ -180,8 +190,10 @@ void ObjectEditorManagerSystemAbility::ResetScreenChangedCommonEventSubscriber()
         return;
     }
     auto ret = OHOS::EventFwk::CommonEventManager::UnSubscribeCommonEvent(screenChangedReceiver_);
+    if (ret != ERR_OK) {
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "unsubscribe common event ret:%{public}d", ret);
+    }
     screenChangedReceiver_ = nullptr;
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "unsubscribe common event ret:%{public}d", ret);
 }
 
 void ObjectEditorManagerSystemAbility::OnStart()
@@ -209,10 +221,6 @@ void ObjectEditorManagerSystemAbility::OnStop()
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "in");
     ResetScreenChangedCommonEventSubscriber();
-    if (state_ != ServiceRunningState::STATE_RUNNING) {
-        OBJECT_EDITOR_LOGW(ObjectEditorDomain::SA, "not running");
-        return;
-    }
     extensionStopCleanExit_.store(true);
     extensionStopCleanNotify_.store(true);
     cvExtensionStopClean_.notify_one();
@@ -220,6 +228,10 @@ void ObjectEditorManagerSystemAbility::OnStop()
         cleanThread_.join();
     }
     extensionStopCleanRunning_.store(false);
+    if (state_ != ServiceRunningState::STATE_RUNNING) {
+        OBJECT_EDITOR_LOGW(ObjectEditorDomain::SA, "not running");
+        return;
+    }
     state_ = ServiceRunningState::STATE_NOT_START;
 }
 
@@ -285,8 +297,12 @@ void ObjectEditorManagerSystemAbility::TimerThreadStopSA()
         std::unique_lock<std::mutex> lock(mutexTimer_);
         auto waitResult = cvTimer_.wait_for(lock, std::chrono::seconds(SA_EXIT_TIME_S),
             [this]() { return timerNotify_.load(); });
-        std::unique_lock<std::mutex> lockExtension(connectionMapMutex_);
-        if (!waitResult && connectionMap_.empty()) {
+        bool shouldUnload = false;
+        {
+            std::unique_lock<std::mutex> lockExtension(connectionMapMutex_);
+            shouldUnload = !waitResult && connectionMap_.empty();
+        }
+        if (shouldUnload) {
             auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
             if (sam == nullptr) {
                 OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "get system ability manager failed");
@@ -303,11 +319,11 @@ void ObjectEditorManagerSystemAbility::TimerThreadStopSA()
 
 int32_t ObjectEditorManagerSystemAbility::CallbackEnter([[maybe_unused]] uint32_t code)
 {
-    ResetStopSATimer();
     if (!CheckCallingPermission(code)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "permission:%{public}s denied", permissionClient_.c_str());
         return ObjectEditorManagerErrCode::SA_PERMISSION_DENIED;
     }
+    ResetStopSATimer();
     if (!CheckRateLimitAdvanced()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "rate limit advanced");
         return ObjectEditorManagerErrCode::SA_CONNECT_LIMIT_EXCEED;
@@ -542,6 +558,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::HandleDefaultAppFor
         }
     }
     if ((!defaultAppFormatRegistered || defaultAppBundleName.empty()) && !formats.empty()) {
+        OBJECT_EDITOR_LOGW(ObjectEditorDomain::SA, "not default app use first format");
         objectEditorFormat = std::move(formats.front());
     } else {
         return errCode;
@@ -552,7 +569,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::HandleDefaultAppFor
 ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::GetDefaultAppBundleNameByFileExt(
     const std::string &fileExt, std::string &bundleName)
 {
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "fileExt:%{public}s bundleName:%{public}s",
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "fileExt:%{private}s bundleName:%{public}s",
         fileExt.c_str(), bundleName.c_str());
     sptr<AppExecFwk::IDefaultApp> defaultAppProxy = AppExecFwk::CommonFunc::GetDefaultAppProxy();
     if (defaultAppProxy == nullptr) {
@@ -570,7 +587,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerSystemAbility::GetDefaultAppBundle
         OBJECT_EDITOR_LOGW(ObjectEditorDomain::SA, "default app bundlename is empty");
     } else {
         bundleName = bundleInfo.name;
-        OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "fileExt:%{public}s default app bundlename is %{public}s",
+        OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "fileExt:%{private}s default app bundlename is %{public}s",
             fileExt.c_str(), bundleName.c_str());
     }
     return ObjectEditorManagerErrCode::SA_OK;
@@ -792,7 +809,10 @@ bool ObjectEditorManagerSystemAbility::CheckClientFileValid(const ObjectEditorDo
         Want::FLAG_AUTH_WRITE_URI_PERMISSION;
     std::vector<bool> uriVecHasPermission = UriPermissionManagerClient::GetInstance()
         .CheckUriAuthorization(uriVec, readAndWritePermission, tokenId);
-
+    if (uriVecHasPermission.size() != uriVec.size()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "size mismatch");
+        return false;
+    }
     auto it = std::find_if(uriVecHasPermission.begin(), uriVecHasPermission.end(),
         [](bool hasPermission) { return !hasPermission; });
     return it == uriVecHasPermission.end();

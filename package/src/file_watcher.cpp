@@ -31,16 +31,16 @@ constexpr int32_t EVENT_SIZE_OFFSET = 16;
 bool FileWatcher::Start()
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "in");
-    if (running_.load()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "watcher is running");
-        return false;
-    }
     if (callback_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "callback is nullptr");
         return false;
     }
     {
-        std::lock_guard<std::mutex> lock(mutex_);
+        std::lock_guard<std::recursive_mutex> lock(mutex_);
+        if (running_.load()) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "watcher is running");
+            return false;
+        }
         inotifyFd_ = inotify_init1(IN_NONBLOCK);
         if (inotifyFd_ < 0) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "create inotify fd failed: %{public}s", strerror(errno));
@@ -54,15 +54,16 @@ bool FileWatcher::Start()
             inotifyFd_ = -1;
             return false;
         }
+        running_.store(true);
     }
-    running_.store(true);
+    threadCreated_.store(true);
     int32_t result = pthread_create(&watchThread_, nullptr, FileWatcher::ThreadFuncStatic, this);
     if (result != 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "create thread failed: %{public}d", result);
+        threadCreated_.store(false);
         CleanupResources();
         return false;
     }
-    threadCreated_.store(true);
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "start watch file: %{private}s", filepath_.c_str());
     return true;
 }
@@ -92,7 +93,7 @@ void* FileWatcher::ThreadFuncStatic(void *arg)
 
 void FileWatcher::CleanupResources()
 {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (inotifyFd_ >= 0 && watchDescriptor_ >= 0) {
         inotify_rm_watch(inotifyFd_, watchDescriptor_);
         watchDescriptor_ = -1;
@@ -120,7 +121,7 @@ void FileWatcher::WatchLoop()
 
 ssize_t FileWatcher::ReadEvents(char *buffer, size_t bufferSize)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (inotifyFd_ < 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "inotify fd not initialized");
         return -1;
@@ -164,6 +165,7 @@ void FileWatcher::HandleReadError()
     switch (errno) {
         case EINTR:
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "read interrupted");
+            break;
         case EAGAIN:
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "not data available");
             break;

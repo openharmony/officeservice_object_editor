@@ -544,7 +544,7 @@ HWTEST_F(ObjectEditorManagerDatabaseTest, GetObjectEditorFormatsByFileExt_Invali
 {
     std::vector<std::unique_ptr<ObjectEditorFormat>> formats;
     auto ret = db_->GetObjectEditorFormatsByFileExt("", formats);
-    EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_DB_ERR);
+    EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_INVALID_PARAMETER);
 }
 
 /**

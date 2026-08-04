@@ -79,6 +79,10 @@ UserMgr::UserMgr()
 
 void UserMgr::SetNewUserId(int32_t newUserId)
 {
+    if (newUserId < DEFAULT_USER_ID) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "userId is invalid");
+        return;
+    }
     std::unique_lock<std::shared_mutex> lock(mtx_);
     userId_ = newUserId;
 }

@@ -328,20 +328,25 @@ bool DirTree::Load(Byte *buffer, size_t size)
 
     entries_.clear();
     current_ = 0;
-    size_t initCount = size / 128;
+    if (size % BUFFER_ENTRY_SIZE != 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "size is invalid");
+        return false;
+    }
+    size_t initCount = size / BUFFER_ENTRY_SIZE;
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "size: %{public}zu, initCount: %{public}zu", size, initCount);
     for (size_t i = 0; i < initCount; i++) {
-        size_t p = i * 128;
+        size_t p = i * BUFFER_ENTRY_SIZE;
         std::string name;
-        uint16_t nameLen = ReadUint16(buffer + 0x40 + p);
-        if (nameLen > DIR_MAX_NAME_LENGTH)
+        uint16_t nameLen = ReadUint16(buffer + DIR_ENTRY_NAME_LENGTH_OFFSET + p);
+        if (nameLen > DIR_MAX_NAME_LENGTH) {
             nameLen = DIR_MAX_NAME_LENGTH;
-        const uint16_t step = 2;
-        for (uint16_t j = 0; (buffer[j + p]) && (j < nameLen) && (j + p < size); j += step)
+        }
+        const uint16_t step = DIR_ENTRY_NAME_CHAR_LEN;
+        for (uint16_t j = 0; j + p < size && j < nameLen && (buffer[j + p]); j += step) {
             name.append(1, static_cast<char>(buffer[j + p]));
-
+        }
         uint8_t type = buffer[0x42 + p];
-        uint16_t len = ReadUint16(buffer + 0x40 + p);
+        uint16_t len = ReadUint16(buffer + DIR_ENTRY_NAME_LENGTH_OFFSET + p);
         uint32_t start = ReadUint32(buffer + 0x74 + p);
         uint64_t entrySize = ReadUint32(buffer + 0x78 + p);
         entrySize |= static_cast<uint64_t>(ReadUint32(buffer + 0x7C + p)) << BIT_SHIFT;
@@ -353,9 +358,9 @@ bool DirTree::Load(Byte *buffer, size_t size)
         uint64_t modifiedTime = static_cast<uint64_t>(ReadUint32(buffer + MODIFIED_TIME_LOW_OFFSET + p));
         modifiedTime |= static_cast<uint64_t>(ReadUint32(buffer + MODIFIED_TIME_HIGH_OFFSET + p)) << BIT_MASK;
         std::array<std::uint8_t, CLSID_SIZE> clsid;
-        for (size_t j = 0; j < CLSID_SIZE; j++)
-            clsid[j] = buffer[0x50 + p + j];
-
+        for (size_t j = 0; j < CLSID_SIZE; j++) {
+            clsid[j] = buffer[DIR_CLSID_OFFSET + p + j];
+        }
         DirEntry e(name, len, type, entrySize, start, prev, next, child, entries_.size(), creationTime, modifiedTime);
         e.SetClsid(clsid, std::size(clsid));
         entries_.push_back(e);

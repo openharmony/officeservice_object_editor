@@ -899,7 +899,7 @@ HWTEST_F(SystemUtilsTest, IsValidFileExt_005, TestSize.Level1)
 {
     std::string fileExt = "";
     bool result = IsValidFileExt(fileExt);
-    EXPECT_EQ(result, true);
+    EXPECT_EQ(result, false);
 }
 
 /**

@@ -87,6 +87,7 @@ void ObjectEditorClient::SubscribeSystemAbility()
     int32_t result = sam->SubscribeSystemAbility(static_cast<int32_t>(OBJECT_EDITOR_SERVICE_SA_ID), saStatusListener_);
     if (result != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "subscribe failed:%{public}d", result);
+        saStatusListener_ = nullptr;
     }
 }
 
@@ -323,7 +324,7 @@ ErrCode ObjectEditorClient::StartObjectEditorExtensionInner(
         objectEditorClientCallback, remoteObject, isPackageExtension);
     if (ret != ERR_OK || (!isPackageExtension && remoteObject == nullptr)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "failed:%{public}d", ret);
-        return ret;
+        return ret == ERR_OK ? CE_ERR_NULL_POINTER : ret;
     }
     if (isPackageExtension) {
         ret = HandlePackage(document, objectEditorClientCallback, oeExtensionRemoteObject);
@@ -347,6 +348,10 @@ ErrCode ObjectEditorClient::HandlePackage(
     const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
     sptr<IObjectEditorService> &oeExtensionRemoteObject)
 {
+    if (document == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "document is nullptr");
+        return CE_ERR_NULL_POINTER;
+    }
     auto start = std::chrono::steady_clock::now();
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "in");
     if ((document->GetOperateType() == OperateType::CREATE_BY_FILE &&
@@ -387,12 +392,16 @@ ErrCode ObjectEditorClient::HandlePackage(
     }
     packageProxy->Initial(std::move(newDocument), objectEditorClientCallback, 0);
     oeExtensionRemoteObject = packageProxy;
+    std::string fileSuffix;
+    if (document->GetOriFileUri().has_value()) {
+        fileSuffix = SystemUtils::GetFileSuffix(document->GetOriFileUri().value());
+    }
     auto end = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     if (document->GetOperateType() == OperateType::CREATE_BY_FILE) {
         HiSysEventWrite(OBJECT_EDITOR, "CREATE_DOCUMENT", OHOS::HiviewDFX::HiSysEvent::EventType::STATISTIC,
                         "OEID", PACKAGE_OEID, "CREATEMODE", "CREATE_BY_FILE",
-                        "FILEEXT", SystemUtils::GetFileSuffix(document->GetOriFileUri().value()),
+                        "FILEEXT", fileSuffix,
                         "ISLINKING", document->GetLinking(), "ISPACKAGE", true, "DURATION", duration);
     }
     return ERR_OK;
@@ -409,8 +418,14 @@ std::string ObjectEditorClient::GenRandomUuid()
     std::uniform_int_distribution<> dis(0, RAND_MAX);
     std::array<uint8_t, UUID_ARRAY_LEN> uuid_ = {0x00};
     randomNum = static_cast<unsigned int>(dis(gen));
-    gettimeofday(&tv, &tz);
-    localtime_r(&tv.tv_sec, &randomTime);
+    if (gettimeofday(&tv, &tz) != 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "gettimeofday failed");
+        return "";
+    }
+    if (localtime_r(&tv.tv_sec, &randomTime) == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "localtime_r failed");
+        return "";
+    }
     uuid_[INDEX_15] = static_cast<uint8_t>(static_cast<uint64_t>(tv.tv_usec) & 0x00000000000000FF);
     uuid_[INDEX_14] = static_cast<uint8_t>((static_cast<uint64_t>(tv.tv_usec) & 0x000000000000FF00) >> RIGHT_SHIFT_8);
     uuid_[INDEX_13] = static_cast<uint8_t>((static_cast<uint64_t>(tv.tv_usec) & 0x0000000000FF0000) >> RIGHT_SHIFT_16);
@@ -504,7 +519,12 @@ ErrCode ObjectEditorClient::PrepareFiles(const std::unique_ptr<ObjectEditorDocum
             return ObjectEditorClientErrCode::CLIENT_GET_PATH_ERROR;
         }
         if (document->GetLinking()) {
-            document->SetNativeFileUri(SystemUtils::GetUriFromPath(source));
+            std::string canonicalFileSourcePath;
+            if (!SystemUtils::ValidateAndNormalizePath(source, canonicalFileSourcePath)) {
+                OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "Failed to validate and normalize path");
+                return ObjectEditorClientErrCode::CLIENT_GET_PATH_ERROR;
+            }
+            document->SetNativeFileUri(SystemUtils::GetUriFromPath(canonicalFileSourcePath));
         } else {
             fs::path sourcePath(source);
             fs::path destPath = targetDirPath / sourcePath.filename().string();
@@ -765,16 +785,21 @@ void ObjectEditorClient::RegisterCallback(struct ContentEmbed_ExtensionProxy *pr
 void ObjectEditorClient::SARegCleanUp()
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "in");
-    std::lock_guard<std::mutex> lock(proxyMutex_);
-    UnsubscribeSystemAbility();
-    if (oeSAProxy_ == nullptr) {
-        return;
+    sptr<IRemoteObject> remoteObject = nullptr;
+    sptr<IRemoteObject::DeathRecipient> recipient = nullptr;
+    {
+        std::lock_guard<std::mutex> lock(proxyMutex_);
+        if (oeSAProxy_ != nullptr) {
+            remoteObject = oeSAProxy_->AsObject();
+            recipient = deathRecipient_;
+        }
+        oeSAProxy_ = nullptr;
+        deathRecipient_ = nullptr;
     }
-    sptr<IRemoteObject> remoteObject = oeSAProxy_->AsObject();
+    UnsubscribeSystemAbility();
     if (remoteObject != nullptr && deathRecipient_ != nullptr) {
         remoteObject->RemoveDeathRecipient(deathRecipient_);
     }
-    oeSAProxy_ = nullptr;
 }
 
 ObjectEditorClient::~ObjectEditorClient()

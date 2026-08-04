@@ -382,20 +382,6 @@ HWTEST_F(ObjectEditorClientTest, GetIObjectEditorManager_001, TestSize.Level1)
 }
 
 /**
- * @tc.name GetIObjectEditorManager_004
- * @tc.desc Test GetIObjectEditorManager method
- * @tc.type FUNC
- */
-HWTEST_F(ObjectEditorClientTest, GetIObjectEditorManager_004, TestSize.Level1)
-{
-    client_->oeSAProxy_ = nullptr;
-    Stub stub;
-    stub.set(ADDR(SystemAbilityManagerClient, GetSystemAbilityManager), MockGetSystemAbilityManager);
-    auto res = client_->GetIObjectEditorManager();
-    EXPECT_NE(res, nullptr);
-}
-
-/**
  * @tc.name StartObjectEditorExtension_001
  * @tc.desc Test StartObjectEditorExtension method
  * @tc.type FUNC

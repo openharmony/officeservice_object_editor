@@ -58,6 +58,7 @@ constexpr int32_t ERROR_SIZE = 1;
 std::u16string remoteDescriptor = u"";
 sptr<IRemoteObject> g_remote = nullptr;
 std::string readStringResult = "readStringResult";
+std::u16string readString16Result = u"readString16Result";
 }  // namespace
 
 namespace ObjectEditor {
@@ -92,6 +93,8 @@ void MockMessageParcel::ClearAllErrorFlag()
     g_WriteParcelableErrorCount = 0;
     g_WriteUint32ErrorCount = 0;
     g_WriteRemoteObjectErrorCount = 0;
+    readStringResult = "readStringResult";
+    readString16Result = u"readString16Result";
 }
 
 void MockMessageParcel::SetWriteBoolErrorFlag(bool flag)
@@ -354,8 +357,11 @@ bool Parcel::WriteFloat(float value)
 
 bool Parcel::WriteString16(const std::u16string &value)
 {
-    (void)value;
-    return !g_setWriteString16ErrorFlag;
+    if (g_setWriteString16ErrorFlag) {
+        return false;
+    }
+    readString16Result = value;
+    return true;
 }
 
 bool Parcel::WriteString(const std::string &value)
@@ -478,6 +484,9 @@ const std::string Parcel::ReadString()
 
 const std::u16string Parcel::ReadString16()
 {
-    return u"";
+    if (g_setReadString16ErrorFlag) {
+        return u"";
+    }
+    return readString16Result;
 }
 }  // namespace OHOS

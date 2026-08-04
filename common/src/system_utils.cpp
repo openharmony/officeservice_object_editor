@@ -41,6 +41,7 @@ constexpr int32_t NUMBER_BASE = 10;
 constexpr int32_t TIME_FORMAT_SIZE = 64;
 constexpr const char* FILE_MANAGER_AUTHORITY = "docs";
 constexpr const char* MEDIA_AUTHORITY = "media";
+constexpr const uint32_t MAX_READ_FILE_SIZE = 10 * 1024 * 1024;
 } // namespace
 
 std::string GetRealPath(const std::string &path)
@@ -89,6 +90,12 @@ std::string ReadFile(const std::string &filePath)
     std::string canonicalFilePath;
     if (!SystemUtils::ValidateAndNormalizePath(filePath, canonicalFilePath)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "Failed to validate and normalize path");
+        return "";
+    }
+    std::error_code ec;
+    auto fileSize = std::filesystem::file_size(canonicalFilePath, ec);
+    if (ec || fileSize > MAX_READ_FILE_SIZE) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "file exceed limit size");
         return "";
     }
     std::ifstream in(canonicalFilePath, std::ios::in | std::ios::binary);
@@ -204,7 +211,10 @@ bool HasSQLWildcard(const std::string &str)
 
 bool IsValidFileExt(const std::string &fileExt)
 {
-    return std::all_of(fileExt.begin(), fileExt.end(), [](char ch) {
+    if (fileExt.empty()) {
+        return false;
+    }
+    return std::all_of(fileExt.begin(), fileExt.end(), [](unsigned char ch) {
         return std::isalnum(ch) || ch == '.';
     });
 }
@@ -227,9 +237,10 @@ std::string UTCToBeijingTime(int64_t utcTime)
         return "";
     }
     time_t timeValue = static_cast<time_t>(utcTime);
-    tm *timePtr = gmtime(&timeValue);
+    tm timeBuf = {};
+    tm *timePtr = gmtime_r(&timeValue, &timeBuf);
     if (timePtr == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "gmtime failed, utcTime: %{private}s", ctime(&timeValue));
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "gmtime_r failed, utcTime: %{private}s", ctime(&timeValue));
         return "";
     }
     timePtr->tm_hour += BEIJING_TIME_ZONE;
@@ -259,7 +270,7 @@ std::string GetFileSuffix(const std::string &filePath)
         return "";
     }
     std::transform(fileType.begin(), fileType.end(),
-        fileType.begin(), [](char c) { return static_cast<char>(std::tolower(c)); });
+        fileType.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     return fileType;
 }
 

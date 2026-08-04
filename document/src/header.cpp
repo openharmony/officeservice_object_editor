@@ -71,6 +71,10 @@ bool Header::Valid() const
             return false;
         }
         const uint32_t extraNeeded = numBat_ - HEADER_DIFAT_ARRAY_SIZE;
+        if (extraNeeded > std::numeric_limits<uint32_t>::max() - difatEntries + 1) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "extraNeeded overflow");
+            return false;
+        }
         const uint32_t difatSectorsNeeded = (extraNeeded + difatEntries - 1) / difatEntries;
         if (numDifat_ < difatSectorsNeeded) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid number of DIFAT sectors");
@@ -197,9 +201,11 @@ void Header::Debug()
     constexpr uint32_t PRINT_WIDTH = 16;
     oss << "==================== HEADER ====================" << std::endl;
     oss << std::left << std::setw(PRINT_WIDTH) << "Block Shift:" << std::right << bigBlockShift_ << " (2^"
-        << bigBlockShift_ << " = " << (1u << bigBlockShift_) << " bytes)" << std::endl;
+        << bigBlockShift_ << " = " << (bigBlockShift_ < INT_BIT_SIZE ? (1u << bigBlockShift_) : 0)
+        << " bytes)" << std::endl;
     oss << std::left << std::setw(PRINT_WIDTH) << "Mini Shift:" << std::right << miniBlockShift_ << " (2^"
-        << miniBlockShift_ << " = " << (1u << miniBlockShift_) << " bytes)" << std::endl;
+        << miniBlockShift_ << " = " << (miniBlockShift_ < INT_BIT_SIZE ? (1u << miniBlockShift_) : 0)
+        << " bytes)" << std::endl;
     oss << std::left << std::setw(PRINT_WIDTH) << "FAT Blocks:" << std::right << numBat_ << std::endl;
     oss << std::left << std::setw(PRINT_WIDTH) << "Dir Start:" << std::right << indexOrNoneDec(direntStart_)
         << std::endl;

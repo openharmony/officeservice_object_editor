@@ -22,6 +22,10 @@ namespace ObjectEditor {
 // LCOV_EXCL_START
 Storage::Storage(const char *filename)
 {
+    if (filename == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "filename is null");
+        return;
+    }
     io_ = std::make_unique<StorageIO>(filename);
 }
 
@@ -246,23 +250,33 @@ bool Storage::DeleteEntry(const std::string &path)
 
 const CLSID &Storage::Clsid() const
 {
+    static CLSID empty{};
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    if (!io_ || io_->GetHeader() == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null or header is null");
-        static CLSID empty{};
+    if (io_ == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io_ is null");
         return empty;
     }
-    return io_->GetHeader()->Clsid();
+    auto header = io_->GetHeader();
+    if (header == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "headerr is null");
+        return empty;
+    }
+    return header->Clsid();
 }
 
 uint32_t Storage::TransactionSignature() const
 {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    if (!io_ || io_->GetHeader() == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io is null or header is null");
+    if (io_ == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "io_ is null");
         return 0;
     }
-    return io_->GetHeader()->TransactionSignature();
+    auto header = io_->GetHeader();
+    if (header == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "headerr is null");
+        return 0;
+    }
+    return header->TransactionSignature();
 }
 
 Stream::~Stream()

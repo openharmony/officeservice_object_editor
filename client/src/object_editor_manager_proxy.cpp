@@ -42,7 +42,8 @@ ErrCode ObjectEditorManagerProxy::StartObjectEditorExtension(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write document fail");
         return ERR_INVALID_DATA;
     }
-    if (!data.WriteRemoteObject(objectEditorClientCallback->AsObject())) {
+    if (objectEditorClientCallback->AsObject() == nullptr ||
+        !data.WriteRemoteObject(objectEditorClientCallback->AsObject())) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write remote object fail");
         return ERR_INVALID_DATA;
     }
@@ -57,9 +58,14 @@ ErrCode ObjectEditorManagerProxy::StartObjectEditorExtension(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
         return result;
     }
-    ErrCode errCode = reply.ReadInt32();
+    int32_t errCodeValue = 0;
+    if (!reply.ReadInt32(errCodeValue)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read errCodeValue failed");
+        return ERR_INVALID_DATA;
+    }
+    ErrCode errCode = static_cast<ErrCode>(errCodeValue);
     if (FAILED(errCode)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "ReadInt32 failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "errCode failed");
         return errCode;
     }
     bool isPackageExtensionValue = false;
@@ -119,9 +125,14 @@ ErrCode ObjectEditorManagerProxy::StopObjectEditorExtension(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
         return result;
     }
-    ErrCode errCode = reply.ReadInt32();
+    int32_t errCodeValue = 0;
+    if (!reply.ReadInt32(errCodeValue)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read errCodeValue failed");
+        return ERR_INVALID_DATA;
+    }
+    ErrCode errCode = static_cast<ErrCode>(errCodeValue);
     if (FAILED(errCode)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "ReadInt32 failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "errCode failed");
         return errCode;
     }
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "succeed");
@@ -155,12 +166,22 @@ ErrCode ObjectEditorManagerProxy::GetOEidByFileExtension(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
         return result;
     }
-    ErrCode errCode = reply.ReadInt32();
+    int32_t errCodeValue = 0;
+    if (!reply.ReadInt32(errCodeValue)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read errCodeValue failed");
+        return ERR_INVALID_DATA;
+    }
+    ErrCode errCode = static_cast<ErrCode>(errCodeValue);
     if (FAILED(errCode)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "ReadInt32 failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "errCode failed");
         return errCode;
     }
-    fileExtension = Str16ToStr8(reply.ReadString16());
+    std::u16string temp = reply.ReadString16();
+    if (temp.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read fileExtension is empty");
+        return ERR_INVALID_DATA;
+    }
+    fileExtension = Str16ToStr8(temp);
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "success");
     return ERR_OK;
 }
@@ -192,9 +213,14 @@ ErrCode ObjectEditorManagerProxy::GetIconByOEid(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
         return result;
     }
-    ErrCode errCode = reply.ReadInt32();
+    int32_t errCodeValue = 0;
+    if (!reply.ReadInt32(errCodeValue)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read errCodeValue failed");
+        return ERR_INVALID_DATA;
+    }
+    ErrCode errCode = static_cast<ErrCode>(errCodeValue);
     if (FAILED(errCode)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "ReadInt32 failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "errCode failed");
         return errCode;
     }
     resFilePath = Str16ToStr8(reply.ReadString16());
@@ -234,9 +260,14 @@ ErrCode ObjectEditorManagerProxy::GetFormatName(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
         return result;
     }
-    ErrCode errCode = reply.ReadInt32();
+    int32_t errCodeValue = 0;
+    if (!reply.ReadInt32(errCodeValue)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read errCodeValue failed");
+        return ERR_INVALID_DATA;
+    }
+    ErrCode errCode = static_cast<ErrCode>(errCodeValue);
     if (FAILED(errCode)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "ReadInt32 failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "errCode failed");
         return errCode;
     }
     formatName = Str16ToStr8(reply.ReadString16());
@@ -274,9 +305,14 @@ ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatByOEidAndLocale(const std
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
         return result;
     }
-    ErrCode errCode = reply.ReadInt32();
+    int32_t errCodeValue = 0;
+    if (!reply.ReadInt32(errCodeValue)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read errCodeValue failed");
+        return ERR_INVALID_DATA;
+    }
+    ErrCode errCode = static_cast<ErrCode>(errCodeValue);
     if (FAILED(errCode)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "ReadInt32 failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "errCode failed");
         return errCode;
     }
     format = std::unique_ptr<ObjectEditorFormat>(reply.ReadParcelable<ObjectEditorFormat>());
@@ -313,14 +349,23 @@ ErrCode ObjectEditorManagerProxy::GetObjectEditorFormatsByLocale(const std::stri
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
         return result;
     }
-    ErrCode errCode = reply.ReadInt32();
+    int32_t errCodeValue = 0;
+    if (!reply.ReadInt32(errCodeValue)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read errCodeValue failed");
+        return ERR_INVALID_DATA;
+    }
+    ErrCode errCode = static_cast<ErrCode>(errCodeValue);
     if (FAILED(errCode)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "ReadInt32 failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "errCode failed");
         return errCode;
     }
-    int32_t count = reply.ReadInt32();
+    int32_t count = 0;
+    if (!reply.ReadInt32(count)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read count failed");
+        return ERR_INVALID_DATA;
+    }
     if (count < 0 || count > MAX_READ_COUNT) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "ReadInt32 count failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "count out of range");
         return ERR_INVALID_DATA;
     }
     for (int32_t i = 0; i < count; ++i) {
@@ -378,9 +423,14 @@ ErrCode ObjectEditorManagerProxy::StartUIAbility(const std::unique_ptr<AAFwk::Wa
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
         return result;
     }
-    ErrCode errCode = reply.ReadInt32();
+    int32_t errCodeValue = 0;
+    if (!reply.ReadInt32(errCodeValue)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read errCodeValue failed");
+        return ERR_INVALID_DATA;
+    }
+    ErrCode errCode = static_cast<ErrCode>(errCodeValue);
     if (FAILED(errCode)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "ReadInt32 failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "errCode failed");
         return errCode;
     }
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "succeed");
@@ -417,14 +467,24 @@ ErrCode ObjectEditorManagerProxy::QueryExtensionStopReason(const sptr<IRemoteObj
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "SendRequest failed, result: %{public}d", result);
         return result;
     }
-    ErrCode errCode = reply.ReadInt32();
+    int32_t errCodeValue = 0;
+    if (!reply.ReadInt32(errCodeValue)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read errCodeValue failed");
+        return ERR_INVALID_DATA;
+    }
+    ErrCode errCode = static_cast<ErrCode>(errCodeValue);
     if (FAILED(errCode)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "ReadInt32 failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "errCode failed");
         return errCode;
     }
     int32_t stopReasonValue = 0;
     if (!reply.ReadInt32(stopReasonValue)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read stopReason failed");
+        return ERR_INVALID_DATA;
+    }
+    if (stopReasonValue < static_cast<int32_t>(ExtensionStopReason::UNKNOWN) ||
+        stopReasonValue > static_cast<int32_t>(ExtensionStopReason::EXTENSION_EXCEPTION_EXIT)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "stopReason out of range");
         return ERR_INVALID_DATA;
     }
     stopReason = static_cast<ExtensionStopReason>(stopReasonValue);

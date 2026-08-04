@@ -104,8 +104,12 @@ ObjectEditorManagerDatabase::~ObjectEditorManagerDatabase()
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "in");
     if (subscriber_ != nullptr) {
-        EventFwk::CommonEventManager::UnSubscribeCommonEvent(subscriber_);
-        subscriber_ = nullptr;
+        bool ret = EventFwk::CommonEventManager::UnSubscribeCommonEvent(subscriber_);
+        if (ret) {
+            subscriber_ = nullptr;
+        } else {
+            OBJECT_EDITOR_LOGI(ObjectEditorDomain::DATABASE, "UnSubscribeCommonEvent failed");
+        }
     }
 }
 
@@ -218,6 +222,10 @@ bool ObjectEditorManagerDatabase::CreateDefaultTable()
 
 bool ObjectEditorManagerDatabase::InitSubscriber()
 {
+    if (subscriber_ != nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "subscriber_ already init");
+        return true;
+    }
     EventFwk::MatchingSkills matchingSkills;
     matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_ADDED);
     matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_REPLACED);
@@ -310,7 +318,10 @@ void ObjectEditorManagerDatabase::AddBundle(const std::string &bundleName)
     NativeRdb::ValueObject value;
     buckets.back().GetObject("oeid", value);
     std::string oeid;
-    value.GetString(oeid);
+    if (!value.GetString(oeid)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get oeid failed");
+        return;
+    }
     HiSysEventWrite(OBJECT_EDITOR, "REGISTER_EXTENSION", OHOS::HiviewDFX::HiSysEvent::EventType::STATISTIC,
         "BUNDLENAME", bundleName, "OEID", oeid, "REGISTERTYPE", "install");
 }
@@ -399,7 +410,10 @@ void ObjectEditorManagerDatabase::UpdateBundle(const std::string &bundleName)
     NativeRdb::ValueObject value;
     buckets.back().GetObject("oeid", value);
     std::string oeid;
-    value.GetString(oeid);
+    if (!value.GetString(oeid)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get oeid failed");
+        return;
+    }
     HiSysEventWrite(OBJECT_EDITOR, "REGISTER_EXTENSION", OHOS::HiviewDFX::HiSysEvent::EventType::STATISTIC,
         "BUNDLENAME", bundleName, "OEID", oeid, "REGISTERTYPE", "install");
 }
@@ -803,8 +817,10 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::RefreshDb()
         bucket.GetObject("bundle_name", bundleNameValue);
         std::string oeid;
         std::string bundleName;
-        oeidValue.GetString(oeid);
-        bundleNameValue.GetString(bundleName);
+        if (!oeidValue.GetString(oeid) || !bundleNameValue.GetString(bundleName)) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get oeid or bundleName failed");
+            continue;
+        }
         HiSysEventWrite(OBJECT_EDITOR, "REGISTER_EXTENSION", OHOS::HiviewDFX::HiSysEvent::EventType::STATISTIC,
                         "BUNDLENAME", bundleName, "OEID", oeid, "REGISTERTYPE", "install");
     }

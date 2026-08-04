@@ -160,6 +160,10 @@ int32_t ObjectEditorManagerStub::HandleGetOEidByFileExtension(MessageParcel &dat
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::SA, "call");
     std::string oeid = Str16ToStr8(data.ReadString16());
+    if (oeid.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "oeid is empty");
+        return ERR_INVALID_VALUE;
+    }
     std::string fileExtension;
     ErrCode errCode = GetOEidByFileExtension(oeid, fileExtension);
     if (!reply.WriteInt32(errCode)) {

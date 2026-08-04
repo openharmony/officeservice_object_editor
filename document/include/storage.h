@@ -80,6 +80,7 @@ public:
     // Get read-only DirEntry
     [[nodiscard]] const DirEntry *Entry(const std::string &path) const
     {
+        std::lock_guard<std::recursive_mutex> lock(ioMutex_);
         return dirtree_ ? dirtree_->Entry(path) : nullptr;
     }
     void Path(std::string &result) const
@@ -125,20 +126,24 @@ public:
     // Access FAT table entries
     [[nodiscard]] size_t BbatCount() const
     {
+        std::lock_guard<std::recursive_mutex> lock(ioMutex_);
         return bbat_ ? bbat_->Count() : 0;
     }
     [[nodiscard]] uint32_t BbatAt(size_t index) const
     {
+        std::lock_guard<std::recursive_mutex> lock(ioMutex_);
         return bbat_ ? (*bbat_)[index] : 0;
     }
 
     // Access MiniFAT table entries
     [[nodiscard]] size_t SbatCount() const
     {
+        std::lock_guard<std::recursive_mutex> lock(ioMutex_);
         return sbat_ ? sbat_->Count() : 0;
     }
     [[nodiscard]] uint32_t SbatAt(size_t index) const
     {
+        std::lock_guard<std::recursive_mutex> lock(ioMutex_);
         return sbat_ ? (*sbat_)[index] : 0;
     }
 
@@ -160,6 +165,7 @@ public:
 
     void Children(size_t index, std::vector<size_t> &result) const
     {
+        std::lock_guard<std::recursive_mutex> lock(ioMutex_);
         if (dirtree_) {
             dirtree_->Children(index, result);
         }

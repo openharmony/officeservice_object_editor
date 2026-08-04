@@ -102,7 +102,7 @@ Storage *OH_ContentEmbed_Helper_GetRootStorage(const ContentEmbed_Storage *oeSto
 
 ContentEmbed_ErrorCode CopyOEid(ContentEmbed_Storage *srcStorage, ContentEmbed_Storage *dstStorage)
 {
-    char oeid[MAX_OEID_LENGTH];
+    char oeid[MAX_OEID_LENGTH] = {0};
     auto err = OH_ContentEmbed_Storage_GetOEid(srcStorage, oeid, MAX_OEID_LENGTH);
     if (err != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "GetOEid failed, err: %{private}d", err);
@@ -915,7 +915,11 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Stream_Read(ContentEmbed_Stream *stream,
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "require stream failed");
         return ret;
     }
-    *buffer = new unsigned char[length];
+    *buffer = new (std::nothrow) unsigned char[length];
+    if (*buffer == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "alloc buffer failed");
+        return CE_ERR_NULL_POINTER;
+    }
     std::streamsize read = 0;
     {
         HITRACE_METER_FMT(HITRACE_TAG_OHOS, "document::OH_ContentEmbed_Stream_Read");
@@ -1189,7 +1193,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_StorageElements_Create(ContentEmbed_Stora
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storageElements is null");
         return CE_ERR_PARAM_INVALID;
     }
-    *storageElements = new ContentEmbed_StorageElements();
+    *storageElements = new (std::nothrow) ContentEmbed_StorageElements();
     if (*storageElements == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create storage elements failed");
         return CE_ERR_NULL_POINTER;
@@ -1326,7 +1330,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_StorageElement_GetName(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "name is null");
         return CE_ERR_PARAM_INVALID;
     }
-    if (nameSize <= storageElement->name.size() + 1) {
+    if (nameSize < storageElement->name.size() + 1) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "name size exceeds limit");
         return CE_ERR_PARAM_INVALID;
     }
