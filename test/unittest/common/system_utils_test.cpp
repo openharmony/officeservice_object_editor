@@ -357,7 +357,7 @@ HWTEST_F(SystemUtilsTest, StringToULong_003, TestSize.Level1)
  */
 HWTEST_F(SystemUtilsTest, StringToULong_004, TestSize.Level1)
 {
-    const char *input = "1844692890384626432";
+    const char *input = (sizeof(unsigned long) == 8) ? "1844692890384626432" : "4294967290";
     unsigned long num = 0;
     bool result = StringToULong(input, num);
     EXPECT_EQ(result, true);
