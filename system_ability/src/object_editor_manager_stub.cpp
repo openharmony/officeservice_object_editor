@@ -185,6 +185,10 @@ int32_t ObjectEditorManagerStub::HandleGetIconByOEid(MessageParcel &data, Messag
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::SA, "call");
     std::string oeid = Str16ToStr8(data.ReadString16());
+    if (oeid.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "oeid is empty");
+        return ERR_INVALID_VALUE;
+    }
     std::string resourceId;
     ErrCode errCode = GetIconByOEid(oeid, resourceId);
     if (!reply.WriteInt32(errCode)) {
@@ -207,6 +211,10 @@ int32_t ObjectEditorManagerStub::HandleGetObjectEditorFormatByOEidAndLocale(Mess
 {
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::SA, "call");
     std::string oeid = Str16ToStr8(data.ReadString16());
+    if (oeid.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "oeid is empty");
+        return ERR_INVALID_VALUE;
+    }
     std::string locale = Str16ToStr8(data.ReadString16());
     std::unique_ptr<ObjectEditorFormat> format = nullptr;
     ErrCode errCode = GetObjectEditorFormatByOEidAndLocale(oeid, locale, format);

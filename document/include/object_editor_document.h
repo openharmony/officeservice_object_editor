@@ -68,10 +68,12 @@ public:
 
     bool GetLinking() const
     {
+        std::lock_guard<std::recursive_mutex> lock(docMutex_);
         return isLinking_;
     }
     void SetLinking(bool isLinking)
     {
+        std::lock_guard<std::recursive_mutex> lock(docMutex_);
         isLinking_ = isLinking;
     }
 
@@ -86,19 +88,25 @@ public:
 
     std::string GetSnapshotUri() const
     {
+        std::lock_guard<std::recursive_mutex> lock(docMutex_);
         return snapshotUri_;
     }
+
     void SetSnapshotUri(const std::string &snapshotUri)
     {
+        std::lock_guard<std::recursive_mutex> lock(docMutex_);
         snapshotUri_ = snapshotUri;
     }
 
     [[nodiscard]] OperateType GetOperateType() const noexcept
     {
+        std::lock_guard<std::recursive_mutex> lock(docMutex_);
         return operateType_;
     }
+
     void SetOperateType(const OperateType &type) noexcept
     {
+        std::lock_guard<std::recursive_mutex> lock(docMutex_);
         operateType_ = type;
     }
 
@@ -107,21 +115,25 @@ public:
         std::lock_guard<std::recursive_mutex> lock(docMutex_);
         return SystemUtils::GetPathFromUri(oriFileUri_);
     }
+
     std::string GetTmpFilePath() const
     {
         std::lock_guard<std::recursive_mutex> lock(docMutex_);
         return SystemUtils::GetPathFromUri(tmpFileUri_);
     }
+
     std::string GetNativeFilePath() const
     {
         std::lock_guard<std::recursive_mutex> lock(docMutex_);
         return SystemUtils::GetPathFromUri(nativeFileUri_);
     }
+
     std::string GetSnapshotPath() const
     {
         std::lock_guard<std::recursive_mutex> lock(docMutex_);
         return SystemUtils::GetPathFromUri(snapshotUri_);
     }
+
     [[nodiscard]] bool Flush();
     void RestoreStorage();
 
@@ -131,6 +143,11 @@ public:
 private:
     bool RebuildAndFlush();
     bool ShouldRebuild() const;
+    bool FlushCopyUserTmp(const std::string &userTmpPath, const std::string &tmpFilePath);
+    bool GenerateAndSaveTempFile(std::string &outTmpFileUri);
+    bool FlushDispatch(bool hasUserTmp, bool hasTmpFilePath,
+        const std::string &userTmpPath, const std::string &tmpFilePath,
+        bool &doRestore, bool &clearUserTmp, std::string &newTmpFileUri);
     uint64_t ComputeLiveDataSize() const;
     bool CopyAllStreamsRecursively(Storage* src, Storage* dst, const std::string& basePath);
     bool CopyAllStreamRecursivelyImpl(Storage *src, Storage *dst, const std::string& path,
