@@ -176,8 +176,8 @@ ErrCode ObjectEditorManagerProxy::GetOEidByFileExtension(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "errCode failed");
         return errCode;
     }
-    std::u16string temp = reply.ReadString16();
-    if (temp.empty()) {
+    std::u16string temp;
+    if (!reply.ReadString16(temp)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read fileExtension is empty");
         return ERR_INVALID_DATA;
     }
@@ -223,7 +223,12 @@ ErrCode ObjectEditorManagerProxy::GetIconByOEid(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "errCode failed");
         return errCode;
     }
-    resFilePath = Str16ToStr8(reply.ReadString16());
+    std::u16string temp;
+    if (!reply.ReadString16(temp)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read resFilePath is empty");
+        return ERR_INVALID_DATA;
+    }
+    resFilePath = Str16ToStr8(temp);
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "success");
     return ERR_OK;
 }
@@ -270,7 +275,12 @@ ErrCode ObjectEditorManagerProxy::GetFormatName(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "errCode failed");
         return errCode;
     }
-    formatName = Str16ToStr8(reply.ReadString16());
+    std::u16string temp;
+    if (!reply.ReadString16(temp)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read formatName is empty");
+        return ERR_INVALID_DATA;
+    }
+    formatName = Str16ToStr8(temp);
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "success");
     return ERR_OK;
 }

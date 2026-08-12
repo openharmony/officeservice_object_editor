@@ -85,6 +85,7 @@ public:
     }
     void Path(std::string &result) const
     {
+        std::lock_guard<std::recursive_mutex> lock(ioMutex_);
         if (!dirtree_) {
             return;
         }
@@ -149,6 +150,7 @@ public:
 
     void GetEntryChildrens(size_t index, std::vector<size_t> &result)
     {
+        std::lock_guard<std::recursive_mutex> lock(ioMutex_);
         if (!dirtree_) {
             return;
         }
@@ -157,6 +159,7 @@ public:
 
     void Debug()
     {
+        std::lock_guard<std::recursive_mutex> lock(ioMutex_);
         if (!dirtree_) {
             return;
         }
@@ -177,6 +180,7 @@ public:
     [[nodiscard]] bool Create(const char *filename);
     [[nodiscard]] bool EnterDirectory(const std::string &directory)
     {
+        std::lock_guard<std::recursive_mutex> lock(ioMutex_);
         if (!dirtree_) {
             return false;
         }
@@ -184,6 +188,7 @@ public:
     }
     void LeaveDirectory()
     {
+        std::lock_guard<std::recursive_mutex> lock(ioMutex_);
         if (!dirtree_) {
             return;
         }

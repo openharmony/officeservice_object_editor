@@ -765,8 +765,11 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::PrepareRefreshDb(
         return ObjectEditorManagerErrCode::SA_DB_QUERY_FAIL;
     }
     std::vector<AppExecFwk::ExtensionAbilityInfo> extensionInfos;
-    (void)bundleMgr_->QueryExtensionAbilityInfos(AppExecFwk::ExtensionAbilityType::CONTENT_EMBED,
+    bool res = bundleMgr_->QueryExtensionAbilityInfos(AppExecFwk::ExtensionAbilityType::CONTENT_EMBED,
         UserMgr::GetInstance().GetUserId(), extensionInfos);
+    if (!res) {
+        OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "QueryExtensionAbilityInfos failed");
+    }
     if (extensionInfos.empty()) {
         OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE, "extensionInfos is empty");
     }

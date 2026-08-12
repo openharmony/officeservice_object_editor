@@ -240,7 +240,7 @@ std::string UTCToBeijingTime(int64_t utcTime)
     tm timeBuf = {};
     tm *timePtr = gmtime_r(&timeValue, &timeBuf);
     if (timePtr == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "gmtime_r failed, utcTime: %{private}s", ctime(&timeValue));
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "gmtime_r failed");
         return "";
     }
     timePtr->tm_hour += BEIJING_TIME_ZONE;
@@ -250,7 +250,7 @@ std::string UTCToBeijingTime(int64_t utcTime)
     }
     char buffer[TIME_FORMAT_SIZE] = {0x00};
     if (strftime(buffer, TIME_FORMAT_SIZE, "%Y-%m-%d %H:%M:%S", timePtr) == 0) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "strftime failed, utcTime: %{private}s", ctime(&timeValue));
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::COMMON, "strftime failed");
         return "";
     }
     return std::string(buffer);
