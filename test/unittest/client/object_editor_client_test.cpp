@@ -515,6 +515,82 @@ HWTEST_F(ObjectEditorClientTest, GenRandomUuid_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name GenRandomUuid_002
+ * @tc.desc Test GenRandomUuid returns 36-char string with dashes at positions 8, 13, 18, 23
+ * @tc.type FUNC
+ */
+HWTEST_F(ObjectEditorClientTest, GenRandomUuid_002, TestSize.Level1)
+{
+    std::string ret = client_->GenRandomUuid();
+    EXPECT_EQ(ret.size(), static_cast<size_t>(36));
+    EXPECT_EQ(ret[8], '-');
+    EXPECT_EQ(ret[13], '-');
+    EXPECT_EQ(ret[18], '-');
+    EXPECT_EQ(ret[23], '-');
+}
+
+/**
+ * @tc.name GenRandomUuid_003
+ * @tc.desc Test GenRandomUuid sets RFC 4122 version 4 nibble at position 14
+ * @tc.type FUNC
+ */
+HWTEST_F(ObjectEditorClientTest, GenRandomUuid_003, TestSize.Level1)
+{
+    for (int i = 0; i < 10; i++) {
+        std::string ret = client_->GenRandomUuid();
+        ASSERT_EQ(ret.size(), static_cast<size_t>(36));
+        EXPECT_EQ(ret[14], '4') << "version nibble not '4' on iteration " << i;
+    }
+}
+
+/**
+ * @tc.name GenRandomUuid_004
+ * @tc.desc Test GenRandomUuid sets RFC 4122 variant nibble at position 19 (8, 9, A, or B)
+ * @tc.type FUNC
+ */
+HWTEST_F(ObjectEditorClientTest, GenRandomUuid_004, TestSize.Level1)
+{
+    const std::string validVariants = "89AB";
+    for (int i = 0; i < 10; i++) {
+        std::string ret = client_->GenRandomUuid();
+        ASSERT_EQ(ret.size(), static_cast<size_t>(36));
+        EXPECT_NE(validVariants.find(ret[19]), std::string::npos)
+            << "invalid variant nibble on iteration " << i << ": " << ret[19];
+    }
+}
+
+/**
+ * @tc.name GenRandomUuid_005
+ * @tc.desc Test GenRandomUuid produces different values on consecutive calls
+ * @tc.type FUNC
+ */
+HWTEST_F(ObjectEditorClientTest, GenRandomUuid_005, TestSize.Level1)
+{
+    std::string ret1 = client_->GenRandomUuid();
+    std::string ret2 = client_->GenRandomUuid();
+    EXPECT_NE(ret1, ret2);
+}
+
+/**
+ * @tc.name GenRandomUuid_006
+ * @tc.desc Test GenRandomUuid uses only uppercase hex characters (0-9, A-F)
+ * @tc.type FUNC
+ */
+HWTEST_F(ObjectEditorClientTest, GenRandomUuid_006, TestSize.Level1)
+{
+    const std::string validHex = "0123456789ABCDEF";
+    std::string ret = client_->GenRandomUuid();
+    ASSERT_EQ(ret.size(), static_cast<size_t>(36));
+    for (size_t i = 0; i < ret.size(); i++) {
+        if (ret[i] == '-') {
+            continue;
+        }
+        EXPECT_NE(validHex.find(ret[i]), std::string::npos)
+            << "invalid hex char at position " << i << ": " << ret[i];
+    }
+}
+
+/**
  * @tc.name StopObjectEditorExtension_001
  * @tc.desc Test StopObjectEditorExtension method
  * @tc.type FUNC
