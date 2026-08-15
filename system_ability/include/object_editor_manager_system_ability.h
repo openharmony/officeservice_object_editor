@@ -19,6 +19,8 @@
 #include <map>
 #include <mutex>
 #include <thread>
+
+#include <cJSON.h>
 #include "iremote_object.h"
 #include "system_ability.h"
 #include "single_instance.h"
@@ -121,6 +123,7 @@ private:
     bool GrantClientFileUriPermissionToServerExtension(const ObjectEditorDocument &document,
         const std::string &targetBundleName);
     void ReadDiversionsJsonFile();
+    void ParseDiversionItem(cJSON *diversionItem);
     ObjectEditorManagerErrCode GetTargetOEid(const std::string &sourceOEid,
         std::string &targetOEid, std::string &minVersion);
     ObjectEditorManagerErrCode HandleDefaultAppFormatPolicy(
