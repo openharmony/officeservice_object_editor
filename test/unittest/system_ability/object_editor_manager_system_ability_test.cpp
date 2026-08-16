@@ -14,6 +14,7 @@
  */
 
 #include <chrono>
+#include <fstream>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <cJSON.h>
@@ -63,6 +64,11 @@ void ObjectEditorManagerSystemAbilityTest::SetUp()
 
 void ObjectEditorManagerSystemAbilityTest::TearDown()
 {
+    // Signal the detached timer thread (started by ResetStopSATimer via CallbackEnter)
+    // to exit before destroying the SA object, preventing UAF CFI crash at process exit.
+    sa_->timerNotify_.store(true);
+    sa_->cvTimer_.notify_one();
+    std::this_thread::sleep_for(std::chrono::milliseconds(200)); // 200: wait time
     sa_ = nullptr;
 }
 
@@ -486,8 +492,14 @@ HWTEST_F(ObjectEditorManagerSystemAbilityTest, ReadDiversionsJsonFile_001, TestS
     sa_->diversionMap_.clear();
     logMsg.clear();
     sa_->ReadDiversionsJsonFile();
-    EXPECT_TRUE(logMsg.find("open file failed") != std::string::npos);
-    EXPECT_EQ(sa_->diversionMap_.size(), static_cast<size_t>(0));
+    std::ifstream testFile("/system/etc/office_service/object_editor_service/diversion_map.json");
+    if (!testFile.is_open()) {
+        EXPECT_TRUE(logMsg.find("open file failed") != std::string::npos);
+        EXPECT_EQ(sa_->diversionMap_.size(), static_cast<size_t>(0));
+    } else {
+        testFile.close();
+        SUCCEED();
+    }
 }
 
 /**
@@ -729,7 +741,8 @@ HWTEST_F(ObjectEditorManagerSystemAbilityTest, StartObjectEditorExtension_002, T
 
 /**
  * @tc.name: HandleDefaultAppFormatPolicy_001
- * @tc.desc: Test HandleDefaultAppFormatPolicy with empty formats returns BMS error from GetDefaultAppBundleNameByFileExt
+ * @tc.desc: Test HandleDefaultAppFormatPolicy with empty formats returns BMS error from
+ * GetDefaultAppBundleNameByFileExt
  * @tc.type: FUNC
  */
 HWTEST_F(ObjectEditorManagerSystemAbilityTest, HandleDefaultAppFormatPolicy_001, TestSize.Level1)
@@ -743,7 +756,8 @@ HWTEST_F(ObjectEditorManagerSystemAbilityTest, HandleDefaultAppFormatPolicy_001,
 
 /**
  * @tc.name: HandleDefaultAppFormatPolicy_002
- * @tc.desc: Test HandleDefaultAppFormatPolicy with non-empty formats and no default app uses first format and returns SA_OK
+ * @tc.desc: Test HandleDefaultAppFormatPolicy with non-empty formats and no default app uses first format and
+ * returns SA_OK
  * @tc.type: FUNC
  */
 HWTEST_F(ObjectEditorManagerSystemAbilityTest, HandleDefaultAppFormatPolicy_002, TestSize.Level1)

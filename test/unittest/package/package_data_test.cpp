@@ -457,7 +457,7 @@ HWTEST_F(PackageDataTest, WriteFileToSandbox_002, TestSize.Level1)
     packageData_->dataSize_ = 4;
     auto stream = std::make_unique<Stream>(nullptr);
     StreamPos offset = 0;
-    std::string tmpFilePath = "/tmp/oe_test_write_002/oe_test_write_002.dat";
+    std::string tmpFilePath = "/data/local/tmp/oe_test_write_002/oe_test_write_002.dat";
     auto result = packageData_->WriteFileToSandbox(stream.get(), offset, tmpFilePath);
     EXPECT_EQ(result, true);
     EXPECT_FALSE(packageData_->filepath_.empty());
@@ -465,7 +465,7 @@ HWTEST_F(PackageDataTest, WriteFileToSandbox_002, TestSize.Level1)
     bool fileExists = std::filesystem::exists(packageData_->filepath_, ec);
     EXPECT_TRUE(fileExists);
     // Clean up
-    std::filesystem::remove_all("/tmp/oe_test_write_002", ec);
+    std::filesystem::remove_all("/data/local/tmp/oe_test_write_002", ec);
 }
 
 /**
