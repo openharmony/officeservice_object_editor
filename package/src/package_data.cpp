@@ -286,8 +286,9 @@ bool PackageData::WriteFileToSandbox(Stream *stream, StreamPos &offset, const st
         stream->Read(data.data(), readLen);
         if (!outFile.write(reinterpret_cast<const char*>(data.data()), readLen)) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "write failed");
-            if (fs::exists(outputPathStr)) {
-                fs::remove(outputPathStr);
+            outFile.close();
+            if (fs::exists(outputPathStr, ec)) {
+                fs::remove(outputPathStr, ec);
             }
             return false;
         }
@@ -295,8 +296,9 @@ bool PackageData::WriteFileToSandbox(Stream *stream, StreamPos &offset, const st
     } while (readOffset < dataSize_);
     if (!outFile.good()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "write file data failed");
-        if (fs::exists(outputPathStr)) {
-            fs::remove(outputPathStr);
+        outFile.close();
+        if (fs::exists(outputPathStr, ec)) {
+            fs::remove(outputPathStr, ec);
         }
         return false;
     }

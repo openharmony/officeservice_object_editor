@@ -18,7 +18,7 @@
 #include <vector>
 #include <cerrno>
 #include <chrono>
-#include <cJSON.h>
+
 #include "accesstoken_kit.h"
 #include "ipc_skeleton.h"
 
@@ -241,6 +241,35 @@ int32_t ObjectEditorManagerSystemAbility::OnIdle(const SystemAbilityOnDemandReas
     return 0;
 }
 
+void ObjectEditorManagerSystemAbility::ParseDiversionItem(cJSON *diversionItem)
+{
+    cJSON *sourceOEid = cJSON_GetObjectItemCaseSensitive(diversionItem, "sourceOEid");
+    cJSON *targetOEid = cJSON_GetObjectItemCaseSensitive(diversionItem, "targetOEid");
+    cJSON *minVersion = cJSON_GetObjectItemCaseSensitive(diversionItem, "minVersion");
+    if (!cJSON_IsString(sourceOEid) || !cJSON_IsString(targetOEid) || !cJSON_IsString(minVersion)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "get field failed");
+        return;
+    }
+    if (sourceOEid->valuestring == nullptr || strlen(sourceOEid->valuestring) == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "sourceOEid is null or empty");
+        return;
+    }
+    if (targetOEid->valuestring == nullptr || strlen(targetOEid->valuestring) == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "targetOEid is null or empty");
+        return;
+    }
+    if (minVersion->valuestring == nullptr || strlen(minVersion->valuestring) == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "minVersion is null or empty");
+        return;
+    }
+    ContentEmbed_Diversion diversion;
+    diversion.sourceOEid = sourceOEid->valuestring;
+    diversion.targetOEid = targetOEid->valuestring;
+    diversion.minVersion = minVersion->valuestring;
+    std::unique_lock lock(diversionMapMutex_);
+    diversionMap_[diversion.sourceOEid] = diversion;
+}
+
 void ObjectEditorManagerSystemAbility::ReadDiversionsJsonFile()
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "in");
@@ -261,10 +290,17 @@ void ObjectEditorManagerSystemAbility::ReadDiversionsJsonFile()
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "parse json failed");
         return;
     }
+    auto cJSONDelete = [](cJSON *p) {
+        if (p == nullptr) {
+            return;
+        }
+        cJSON_Delete(p);
+    };
+    std::unique_ptr<cJSON, decltype(cJSONDelete)> jsonGuard(json, cJSONDelete);
+
     cJSON *diversionsArray = cJSON_GetObjectItemCaseSensitive(json, "diversions");
     if (diversionsArray == nullptr || !cJSON_IsArray(diversionsArray)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "get diversions array failed");
-        cJSON_Delete(json);
         return;
     }
     int32_t diversionsArraySize = cJSON_GetArraySize(diversionsArray);
@@ -274,21 +310,8 @@ void ObjectEditorManagerSystemAbility::ReadDiversionsJsonFile()
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "get diversion item failed");
             continue;
         }
-        cJSON *sourceOEid = cJSON_GetObjectItemCaseSensitive(diversionItem, "sourceOEid");
-        cJSON *targetOEid = cJSON_GetObjectItemCaseSensitive(diversionItem, "targetOEid");
-        cJSON *minVersion = cJSON_GetObjectItemCaseSensitive(diversionItem, "minVersion");
-        if (!cJSON_IsString(sourceOEid) || !cJSON_IsString(targetOEid) || !cJSON_IsString(minVersion)) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "get field failed");
-            continue;
-        }
-        ContentEmbed_Diversion diversion;
-        diversion.sourceOEid = sourceOEid->valuestring;
-        diversion.targetOEid = targetOEid->valuestring;
-        diversion.minVersion = minVersion->valuestring;
-        std::unique_lock lock(diversionMapMutex_);
-        diversionMap_[diversion.sourceOEid] = diversion;
+        ParseDiversionItem(diversionItem);
     }
-    cJSON_Delete(json);
 }
 
 void ObjectEditorManagerSystemAbility::TimerThreadStopSA()

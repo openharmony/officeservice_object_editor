@@ -446,5 +446,59 @@ HWTEST_F(PackageDataTest, WriteFileToSandbox_001, TestSize.Level1)
     EXPECT_EQ(result, false);
 }
 
+/**
+ * @tc.name: WriteFileToSandbox_002
+ * @tc.desc: Test WriteFileToSandbox succeeds and creates output file with valid stream and path
+ * @tc.type: FUNC
+ */
+HWTEST_F(PackageDataTest, WriteFileToSandbox_002, TestSize.Level1)
+{
+    packageData_->filename_ = "oe_test_write_002.dat";
+    packageData_->dataSize_ = 4;
+    auto stream = std::make_unique<Stream>(nullptr);
+    StreamPos offset = 0;
+    std::string tmpFilePath = "/data/local/tmp/oe_test_write_002/oe_test_write_002.dat";
+    auto result = packageData_->WriteFileToSandbox(stream.get(), offset, tmpFilePath);
+    EXPECT_EQ(result, true);
+    EXPECT_FALSE(packageData_->filepath_.empty());
+    std::error_code ec;
+    bool fileExists = std::filesystem::exists(packageData_->filepath_, ec);
+    EXPECT_TRUE(fileExists);
+    // Clean up
+    std::filesystem::remove_all("/data/local/tmp/oe_test_write_002", ec);
+}
+
+/**
+ * @tc.name: WriteFileToSandbox_003
+ * @tc.desc: Test WriteFileToSandbox returns false when output file cannot be opened (parent is not a directory)
+ * @tc.type: FUNC
+ */
+HWTEST_F(PackageDataTest, WriteFileToSandbox_003, TestSize.Level1)
+{
+    packageData_->filename_ = "oe_test_write_003.dat";
+    packageData_->dataSize_ = 4;
+    auto stream = std::make_unique<Stream>(nullptr);
+    StreamPos offset = 0;
+    std::string tmpFilePath = "/dev/null/oe_test_write_003.dat";
+    auto result = packageData_->WriteFileToSandbox(stream.get(), offset, tmpFilePath);
+    EXPECT_EQ(result, false);
+}
+
+/**
+ * @tc.name: WriteFileToSandbox_004
+ * @tc.desc: Test WriteFileToSandbox returns false when parent directory cannot be created
+ * @tc.type: FUNC
+ */
+HWTEST_F(PackageDataTest, WriteFileToSandbox_004, TestSize.Level1)
+{
+    packageData_->filename_ = "oe_test_write_004.dat";
+    packageData_->dataSize_ = 4;
+    auto stream = std::make_unique<Stream>(nullptr);
+    StreamPos offset = 0;
+    std::string tmpFilePath = "/dev/null/subdir/oe_test_write_004.dat";
+    auto result = packageData_->WriteFileToSandbox(stream.get(), offset, tmpFilePath);
+    EXPECT_EQ(result, false);
+}
+
 }
 }

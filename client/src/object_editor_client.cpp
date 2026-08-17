@@ -17,9 +17,8 @@
 
 #include <filesystem>
 #include <fstream>
-#include <random>
 #include <chrono>
-#include <sys/time.h>
+#include <sys/random.h>
 #include "application_context.h"
 #include <hitrace_meter.h>
 #include "iservice_registry.h"
@@ -32,35 +31,21 @@
 namespace OHOS {
 namespace ObjectEditor {
 namespace {
-constexpr int32_t UUID_ARRAY_LEN = 16;
+constexpr size_t UUID_BYTE_LEN = 16;
+constexpr size_t UUID_VERSION_BYTE = 6;
+constexpr size_t UUID_VARIANT_BYTE = 8;
+constexpr uint8_t UUID_VERSION_MASK = 0x0F;
+constexpr uint8_t UUID_VERSION_4 = 0x40;
+constexpr uint8_t UUID_VARIANT_MASK = 0x3F;
+constexpr uint8_t UUID_VARIANT_RFC4122 = 0x80;
+constexpr int32_t UUID_HEAD_LEN = 8;
+constexpr int32_t UUID_OTHER_LEN = 4;
 constexpr int32_t UUID_START_POS_1 = 8;
 constexpr int32_t UUID_START_POS_2 = 12;
 constexpr int32_t UUID_START_POS_3 = 16;
 constexpr int32_t UUID_START_POS_4 = 20;
-constexpr int32_t UUID_HEAD_LEN = 8;
-constexpr int32_t UUID_OTHER_LEN = 4;
-constexpr int32_t INDEX_15 = 15;
-constexpr int32_t INDEX_14 = 14;
-constexpr int32_t INDEX_13 = 13;
-constexpr int32_t INDEX_12 = 12;
-constexpr int32_t INDEX_10 = 10;
-constexpr int32_t INDEX_9 = 9;
-constexpr int32_t INDEX_8 = 8;
-constexpr int32_t INDEX_7 = 7;
-constexpr int32_t INDEX_6 = 6;
-constexpr int32_t INDEX_5 = 5;
-constexpr int32_t INDEX_4 = 4;
-constexpr int32_t INDEX_3 = 3;
-constexpr int32_t INDEX_2 = 2;
-constexpr int32_t INDEX_1 = 1;
-constexpr int32_t INDEX_0 = 0;
-constexpr int32_t RIGHT_SHIFT_8 = 8;
-constexpr int32_t RIGHT_SHIFT_16 = 16;
-constexpr int32_t RIGHT_SHIFT_24 = 24;
-constexpr int32_t RIGHT_SHIFT_32 = 32;
-constexpr int32_t RIGHT_SHIFT_40 = 40;
-constexpr int32_t RIGHT_SHIFT_48 = 48;
-constexpr int32_t RIGHT_SHIFT_56 = 56;
+constexpr int32_t NIBBLE_SHIFT = 4;
+constexpr int32_t NIBBLE_MASK = 0x0F;
 constexpr int32_t METADATA_BUFFER_SIZE = 2048;
 }
 namespace fs = std::filesystem;
@@ -409,47 +394,24 @@ ErrCode ObjectEditorClient::HandlePackage(
 
 std::string ObjectEditorClient::GenRandomUuid()
 {
-    struct timeval tv;
-    struct timezone tz;
-    struct tm randomTime;
-    uint32_t randomNum = 0;
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, RAND_MAX);
-    std::array<uint8_t, UUID_ARRAY_LEN> uuid_ = {0x00};
-    randomNum = static_cast<unsigned int>(dis(gen));
-    if (gettimeofday(&tv, &tz) != 0) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "gettimeofday failed");
+    std::array<uint8_t, UUID_BYTE_LEN> uuid{};
+    ssize_t bytesRead = getrandom(uuid.data(), uuid.size(), GRND_RANDOM | GRND_NONBLOCK);
+    if (bytesRead != static_cast<ssize_t>(uuid.size())) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,
+            "getrandom failed: read %{public}zd of %{public}zu bytes", bytesRead, uuid.size());
         return "";
     }
-    if (localtime_r(&tv.tv_sec, &randomTime) == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "localtime_r failed");
-        return "";
-    }
-    uuid_[INDEX_15] = static_cast<uint8_t>(static_cast<uint64_t>(tv.tv_usec) & 0x00000000000000FF);
-    uuid_[INDEX_14] = static_cast<uint8_t>((static_cast<uint64_t>(tv.tv_usec) & 0x000000000000FF00) >> RIGHT_SHIFT_8);
-    uuid_[INDEX_13] = static_cast<uint8_t>((static_cast<uint64_t>(tv.tv_usec) & 0x0000000000FF0000) >> RIGHT_SHIFT_16);
-    uuid_[INDEX_12] = static_cast<uint8_t>((static_cast<uint64_t>(tv.tv_usec) & 0x00000000FF000000) >> RIGHT_SHIFT_24);
-    uuid_[INDEX_10] = static_cast<uint8_t>((static_cast<uint64_t>(tv.tv_usec) & 0x000000FF00000000) >> RIGHT_SHIFT_32);
-    uuid_[INDEX_9] = static_cast<uint8_t>((static_cast<uint64_t>(tv.tv_usec) & 0x0000FF0000000000) >> RIGHT_SHIFT_40);
-    uuid_[INDEX_8] = static_cast<uint8_t>((static_cast<uint64_t>(tv.tv_usec) & 0x00FF000000000000) >> RIGHT_SHIFT_48);
-    uuid_[INDEX_7] = static_cast<uint8_t>((static_cast<uint64_t>(tv.tv_usec) & 0xFF00000000000000) >> RIGHT_SHIFT_56);
-    uuid_[INDEX_6] = static_cast<uint8_t>((unsigned int)randomTime.tm_sec +
-        static_cast<unsigned int>(randomNum) & 0xFF);
-    uuid_[INDEX_5] = static_cast<uint8_t>(((unsigned int)randomTime.tm_min + (randomNum >> RIGHT_SHIFT_8)) & 0xFF);
-    uuid_[INDEX_4] = static_cast<uint8_t>(((unsigned int)randomTime.tm_hour + (randomNum >> RIGHT_SHIFT_16)) & 0xFF);
-    uuid_[INDEX_3] = static_cast<uint8_t>(((unsigned int)randomTime.tm_mday + (randomNum >> RIGHT_SHIFT_24)) & 0xFF);
-    uuid_[INDEX_2] = static_cast<uint8_t>((unsigned int)randomTime.tm_mon & 0xFF);
-    uuid_[INDEX_1] = static_cast<uint8_t>((unsigned int)randomTime.tm_year & 0xFF);
-    uuid_[INDEX_0] = static_cast<uint8_t>(((unsigned int)randomTime.tm_year & 0xFF00) >> RIGHT_SHIFT_8);
+    // Set RFC 4122 version 4: byte[6] high nibble = 0100
+    uuid[UUID_VERSION_BYTE] = (uuid[UUID_VERSION_BYTE] & UUID_VERSION_MASK) | UUID_VERSION_4;
+    // Set RFC 4122 variant: byte[8] high bits = 10
+    uuid[UUID_VARIANT_BYTE] = (uuid[UUID_VARIANT_BYTE] & UUID_VARIANT_MASK) | UUID_VARIANT_RFC4122;
+
     std::string tmp = "";
     std::string ret = "";
     static const char *hex = "0123456789ABCDEF";
-    static const int NIBBLE_SHIFT = 4;
-    static const int NIBBLE_MASK = 0xF;
-    for (auto it = uuid_.begin(); it != uuid_.end(); it++) {
-        tmp.push_back(hex[(*it >> NIBBLE_SHIFT) & NIBBLE_MASK]); // Right shift by 4 bits
-        tmp.push_back(hex[*it & NIBBLE_MASK]); // Take the lower 4 bits
+    for (auto it = uuid.begin(); it != uuid.end(); it++) {
+        tmp.push_back(hex[(*it >> NIBBLE_SHIFT) & NIBBLE_MASK]);
+        tmp.push_back(hex[*it & NIBBLE_MASK]);
     }
     ret = tmp.substr(0, UUID_HEAD_LEN) + "-" +
         tmp.substr(UUID_START_POS_1, UUID_OTHER_LEN) + "-" +
