@@ -283,8 +283,12 @@ bool PackageData::WriteFileToSandbox(Stream *stream, StreamPos &offset, const st
             readLen = dataSize_ - readOffset;
         }
         std::vector<Byte> data(readLen);
-        stream->Read(data.data(), readLen);
-        if (!outFile.write(reinterpret_cast<const char*>(data.data()), readLen)) {
+        auto bytesRead = stream->Read(data.data(), readLen);
+        if (bytesRead <= 0) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "read stream failed");
+            break;
+        }
+        if (!outFile.write(reinterpret_cast<const char*>(data.data()), bytesRead)) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "write failed");
             outFile.close();
             if (fs::exists(outputPathStr, ec)) {
@@ -292,9 +296,9 @@ bool PackageData::WriteFileToSandbox(Stream *stream, StreamPos &offset, const st
             }
             return false;
         }
-        readOffset += readLen;
+        readOffset += static_cast<uint32_t>(bytesRead);
     } while (readOffset < dataSize_);
-    if (!outFile.good()) {
+    if (!outFile.good() || readOffset != dataSize_) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "write file data failed");
         outFile.close();
         if (fs::exists(outputPathStr, ec)) {

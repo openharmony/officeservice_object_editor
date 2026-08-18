@@ -454,7 +454,6 @@ uint32_t StreamImpl::WriteMiniBlocks(const Byte *data, uint32_t targetLen,
     uint32_t count = 0;
     for (; ((index < blocks_.size()) && (count < targetLen)); index++) {
         const uint32_t minifatIndex = blocks_[index];
-        const uint64_t sbindexOffset = minifatIndex % 8;
         if (static_cast<uint64_t>(minifatIndex) > UINT64_MAX / smallBlockSize) {
             state_ |= BAD_FLAG;
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "minifatIndex * smallBlockSize overflow");
@@ -473,7 +472,7 @@ uint32_t StreamImpl::WriteMiniBlocks(const Byte *data, uint32_t targetLen,
             return count;
         }
         uint64_t baseOffset = static_cast<uint64_t>(bbindice) * bigBlockSize;
-        uint64_t miniOffset = sbindexOffset * smallBlockSize;
+        uint64_t miniOffset = position % bigBlockSize;
         if (baseOffset > UINT64_MAX - bigBlockSize - miniOffset - offset) {
             state_ |= BAD_FLAG;
             return count;

@@ -455,10 +455,17 @@ HWTEST_F(PackageDataTest, WriteFileToSandbox_002, TestSize.Level1)
 {
     packageData_->filename_ = "oe_test_write_002.dat";
     packageData_->dataSize_ = 4;
-    auto stream = std::make_unique<Stream>(nullptr);
+    // Create an in-memory OLE2 Storage with a stream containing 4 bytes of test data
+    Storage storage(std::string("0003000C-0000-0000-C000-000000000046"));
+    Stream *stream = storage.GetStream("test_data", true, true);
+    ASSERT_NE(stream, nullptr);
+    Byte testData[] = {0x01, 0x02, 0x03, 0x04};
+    stream->Write(testData, sizeof(testData));
+    EXPECT_TRUE(storage.Flush());
+    stream->Seek(0);
     StreamPos offset = 0;
     std::string tmpFilePath = "/data/local/tmp/oe_test_write_002/oe_test_write_002.dat";
-    auto result = packageData_->WriteFileToSandbox(stream.get(), offset, tmpFilePath);
+    auto result = packageData_->WriteFileToSandbox(stream, offset, tmpFilePath);
     EXPECT_EQ(result, true);
     EXPECT_FALSE(packageData_->filepath_.empty());
     std::error_code ec;

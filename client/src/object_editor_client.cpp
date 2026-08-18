@@ -410,8 +410,8 @@ std::string ObjectEditorClient::GenRandomUuid()
     std::string ret = "";
     static const char *hex = "0123456789ABCDEF";
     for (auto it = uuid.begin(); it != uuid.end(); it++) {
-        tmp.push_back(hex[(*it >> NIBBLE_SHIFT) & NIBBLE_MASK]);
-        tmp.push_back(hex[*it & NIBBLE_MASK]);
+        tmp.push_back(hex[(*it >> NIBBLE_SHIFT) & NIBBLE_MASK]); // Right shift by 4 bits
+        tmp.push_back(hex[*it & NIBBLE_MASK]); // Take the lower 4 bits
     }
     ret = tmp.substr(0, UUID_HEAD_LEN) + "-" +
         tmp.substr(UUID_START_POS_1, UUID_OTHER_LEN) + "-" +
