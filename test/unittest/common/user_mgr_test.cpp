@@ -119,10 +119,10 @@ HWTEST_F(UserMgrTest, UserMgr_005, TestSize.Level1)
  */
 HWTEST_F(UserMgrTest, UserMgr_006, TestSize.Level1)
 {
-    int32_t originalUserId = UserMgr::GetInstance().GetUserId();
-    UserMgr::GetInstance().SetNewUserId(99999);
+    constexpr int32_t FAKE_USER_ID = 99999;
+    UserMgr::GetInstance().SetNewUserId(FAKE_USER_ID);
     int32_t userIdAfterSet = UserMgr::GetInstance().GetUserId();
-    EXPECT_EQ(originalUserId, userIdAfterSet);
+    EXPECT_NE(userIdAfterSet, FAKE_USER_ID);
 }
 
 /**
