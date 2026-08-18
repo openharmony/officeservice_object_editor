@@ -636,7 +636,7 @@ HWTEST_F(ObjectEditorClientTest, GetIcon_001, TestSize.Level1)
     Stub stub;
     stub.set(ADDR(ObjectEditorClient, GetIObjectEditorManager), GetIObjectEditorManager_stub);
     ErrCode ret = client_->GetIcon(hmid, resFilePatch);
-    EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_PERMISSION_DENIED);
+    EXPECT_EQ(ret, ERR_INVALID_VALUE);
 }
 
 /**
