@@ -46,13 +46,16 @@ public:
           index_(0),
           modify_(false),
           creationTime_(0),
-          modifiedTime_(0)
+          modifiedTime_(0),
+          color_(1),
+          stateBits_(0)
     {
     }
     DirEntry(const std::string &name, uint16_t len, uint8_t type, uint64_t size, uint32_t start, uint32_t prev,
-             uint32_t next, uint32_t child, size_t index, uint64_t creationTime, uint64_t modifiedTime)
+             uint32_t next, uint32_t child, size_t index, uint64_t creationTime, uint64_t modifiedTime,
+             uint8_t color = 1, uint32_t stateBits = 0)
     {
-        Set(name, len, type, size, start, prev, next, child, index, creationTime, modifiedTime);
+        Set(name, len, type, size, start, prev, next, child, index, creationTime, modifiedTime, color, stateBits);
     }
 
 public:
@@ -105,6 +108,14 @@ public:
     {
         return modifiedTime_;
     }
+    uint8_t Color() const
+    {
+        return color_;
+    }
+    uint32_t StateBits() const
+    {
+        return stateBits_;
+    }
     const std::array<std::uint8_t, CLSID_SIZE> &Clsid() const;
     bool Modified() const
     {
@@ -118,7 +129,7 @@ public:
 public:
     void Set(const std::string &name, uint16_t len, uint8_t type, uint64_t size, uint32_t start, uint32_t prev,
              uint32_t next, uint32_t child, size_t index, uint64_t creationTime,
-             uint64_t modifiedTime, bool modify = false)
+             uint64_t modifiedTime, uint8_t color = 1, uint32_t stateBits = 0, bool modify = false)
     {
         name_ = name;
         nameLen_ = len;
@@ -133,6 +144,8 @@ public:
         clsid_.fill(0);
         index_ = index;
         modify_ = modify;
+        color_ = color;
+        stateBits_ = stateBits;
     }
     void SetName(const std::string &name)
     {
@@ -179,6 +192,16 @@ public:
         creationTime_ = ct;
         SetModify();
     }
+    void SetColor(uint8_t color)
+    {
+        color_ = color;
+        SetModify();
+    }
+    void SetStateBits(uint32_t stateBits)
+    {
+        stateBits_ = stateBits;
+        SetModify();
+    }
 
     void SetClsid(const std::array<std::uint8_t, CLSID_SIZE> &clsid, uint8_t size);
     void SetModify(bool modify = true, bool modtime = true)
@@ -203,6 +226,8 @@ private:
     bool modify_ = false;
     uint64_t creationTime_ = 0;
     uint64_t modifiedTime_ = 0;
+    uint8_t color_ = 1;
+    uint32_t stateBits_ = 0;
 };
 
 class DirTree {
@@ -258,6 +283,8 @@ private:
     size_t FindChild(size_t parent, const std::string &segment) const;
     size_t ReuseOrAppendSlot();
     DirEntry MakeNewEntry(const std::string &name, size_t index, uint32_t oldChild, int type) const;
+    bool SaveDirEntryName(Byte *buffer, size_t len, size_t i, const DirEntry *e);
+    bool SaveDirEntryFields(Byte *buffer, size_t len, size_t i, const DirEntry *e);
 
     size_t current_;
     std::deque<DirEntry> entries_;

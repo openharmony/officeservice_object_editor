@@ -68,9 +68,9 @@ HWTEST_F(HeaderTest, Valid_001, TestSize.Level1)
 {
     header_->threshold_ = MINI_STREAM_CUTOFF;
     header_->numBat_ = HEADER_DIFAT_ARRAY_SIZE;
-    header_->bigBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT + 1;
+    header_->bigBlockShift_ = DEFAULT_SECTOR_SHIFT;
     header_->miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT;
-    header_->numDifat_ = 10;
+    header_->numDifat_ = 0;
     EXPECT_EQ(header_->Valid(), true);
 }
 
@@ -83,7 +83,7 @@ HWTEST_F(HeaderTest, Valid_002, TestSize.Level1)
 {
     header_->threshold_ = MINI_STREAM_CUTOFF + 1;
     header_->numBat_ = 100;
-    header_->bigBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT + 1;
+    header_->bigBlockShift_ = DEFAULT_SECTOR_SHIFT;
     header_->miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT;
     header_->numDifat_ = 10;
     EXPECT_EQ(header_->Valid(), false);
@@ -98,7 +98,7 @@ HWTEST_F(HeaderTest, Valid_003, TestSize.Level1)
 {
     header_->threshold_ = MINI_STREAM_CUTOFF;
     header_->numBat_ = 0;
-    header_->bigBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT + 1;
+    header_->bigBlockShift_ = DEFAULT_SECTOR_SHIFT;
     header_->miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT;
     header_->numDifat_ = 10;
     EXPECT_EQ(header_->Valid(), false);
@@ -113,7 +113,7 @@ HWTEST_F(HeaderTest, Valid_004, TestSize.Level1)
 {
     header_->threshold_ = MINI_STREAM_CUTOFF;
     header_->numBat_ = 100;
-    header_->bigBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT + 1;
+    header_->bigBlockShift_ = DEFAULT_SECTOR_SHIFT;
     header_->miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT;
     header_->numDifat_ = 10;
     EXPECT_EQ(header_->Valid(), false);
@@ -143,7 +143,7 @@ HWTEST_F(HeaderTest, Valid_006, TestSize.Level1)
 {
     header_->threshold_ = MINI_STREAM_CUTOFF;
     header_->numBat_ = 100;
-    header_->bigBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT + 1;
+    header_->bigBlockShift_ = DEFAULT_SECTOR_SHIFT;
     header_->miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT + 1;
     header_->numDifat_ = 10;
     EXPECT_EQ(header_->Valid(), false);
@@ -158,7 +158,7 @@ HWTEST_F(HeaderTest, Valid_007, TestSize.Level1)
 {
     header_->threshold_ = MINI_STREAM_CUTOFF;
     header_->numBat_ = HEADER_DIFAT_ARRAY_SIZE + 100;
-    header_->bigBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT + 1;
+    header_->bigBlockShift_ = DEFAULT_SECTOR_SHIFT;
     header_->miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT;
     header_->numDifat_ = 10;
     const uint32_t sectorSize = 1u << header_->bigBlockShift_;
@@ -183,7 +183,7 @@ HWTEST_F(HeaderTest, Valid_008, TestSize.Level1)
 {
     header_->threshold_ = MINI_STREAM_CUTOFF;
     header_->numBat_ = 50;
-    header_->bigBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT + 1;
+    header_->bigBlockShift_ = DEFAULT_SECTOR_SHIFT;
     header_->miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT;
     header_->numDifat_ = 10;
     EXPECT_EQ(header_->Valid(), false);
@@ -294,7 +294,7 @@ HWTEST_F(HeaderTest, Load_005, TestSize.Level1)
     for (size_t i = 0; i < FILE_SIGNATURE_SIZE; ++i) {
         data[i] = g_cdMagic[i];
     }
-    WriteUint16(data.data() + HEADER_SECTOR_SHIFT_OFFSET, DEFAULT_MINI_SECTOR_SHIFT + 1);
+    WriteUint16(data.data() + HEADER_SECTOR_SHIFT_OFFSET, DEFAULT_SECTOR_SHIFT);
     WriteUint16(data.data() + HEADER_MINI_STREAM_CUTOFF_OFFSET, DEFAULT_MINI_SECTOR_SHIFT);
     WriteUint32(data.data() + HEADER_FAT_SECTOR_NUMBER_OFFSET, 100);
     WriteUint32(data.data() + HEADER_FIRST_DIR_SECTOR_OFFSET, 1);
@@ -322,7 +322,7 @@ HWTEST_F(HeaderTest, Load_006, TestSize.Level1)
     for (size_t i = 0; i < FILE_SIGNATURE_SIZE; ++i) {
         data[i] = g_cdMagic[i];
     }
-    WriteUint16(data.data() + HEADER_SECTOR_SHIFT_OFFSET, DEFAULT_MINI_SECTOR_SHIFT + 1);
+    WriteUint16(data.data() + HEADER_SECTOR_SHIFT_OFFSET, DEFAULT_SECTOR_SHIFT);
     WriteUint16(data.data() + HEADER_MINI_STREAM_CUTOFF_OFFSET, DEFAULT_MINI_SECTOR_SHIFT);
     WriteUint32(data.data() + HEADER_FAT_SECTOR_NUMBER_OFFSET, 100);
     WriteUint32(data.data() + HEADER_FIRST_DIR_SECTOR_OFFSET, 1);
@@ -348,7 +348,7 @@ HWTEST_F(HeaderTest, Save_001, TestSize.Level1)
     Header header;
     header.threshold_ = MINI_STREAM_CUTOFF;
     header.numBat_ = 100;
-    header.bigBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT + 1;
+    header.bigBlockShift_ = DEFAULT_SECTOR_SHIFT;
     header.miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT;
     header.direntStart_ = 1;
     header.transactionSignature_ = 0x12345678;
@@ -356,7 +356,7 @@ HWTEST_F(HeaderTest, Save_001, TestSize.Level1)
     header.numSbat_ = 20;
     header.difatStart_ = 3;
     header.numDifat_ = 30;
-    
+
     for (size_t i = 0; i < HEADER_DIFAT_ARRAY_SIZE; ++i) {
         header.bbBlocks_[i] = i;
     }
@@ -434,6 +434,202 @@ HWTEST_F(HeaderTest, Debug, TestSize.Level1)
     header_->numDifat_ = 10;
     header_->Debug();
     EXPECT_EQ(header_->numDifat_, 10);
+}
+
+/**
+ * @tc.name ValidateDifatSectors_001
+ * @tc.desc Test ValidateDifatSectors: numBat_ < 109, numDifat_ == 0 -> pass
+ * @tc.type FUNC
+ */
+HWTEST_F(HeaderTest, ValidateDifatSectors_001, TestSize.Level1)
+{
+    header_->threshold_ = MINI_STREAM_CUTOFF;
+    header_->numBat_ = HEADER_DIFAT_ARRAY_SIZE - 10;
+    header_->bigBlockShift_ = DEFAULT_SECTOR_SHIFT;
+    header_->miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT;
+    header_->numDifat_ = 0;
+    EXPECT_EQ(header_->Valid(), true);
+}
+
+/**
+ * @tc.name ValidateDifatSectors_002
+ * @tc.desc Test ValidateDifatSectors: numBat_ < 109, numDifat_ != 0 -> fail
+ * @tc.type FUNC
+ */
+HWTEST_F(HeaderTest, ValidateDifatSectors_002, TestSize.Level1)
+{
+    header_->threshold_ = MINI_STREAM_CUTOFF;
+    header_->numBat_ = HEADER_DIFAT_ARRAY_SIZE - 10;
+    header_->bigBlockShift_ = DEFAULT_SECTOR_SHIFT;
+    header_->miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT;
+    header_->numDifat_ = 5;
+    EXPECT_EQ(header_->Valid(), false);
+}
+
+/**
+ * @tc.name ValidateDifatSectors_003
+ * @tc.desc Test ValidateDifatSectors: numBat_ == 109, numDifat_ == 0 -> pass
+ * @tc.type FUNC
+ */
+HWTEST_F(HeaderTest, ValidateDifatSectors_003, TestSize.Level1)
+{
+    header_->threshold_ = MINI_STREAM_CUTOFF;
+    header_->numBat_ = HEADER_DIFAT_ARRAY_SIZE;
+    header_->bigBlockShift_ = DEFAULT_SECTOR_SHIFT;
+    header_->miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT;
+    header_->numDifat_ = 0;
+    EXPECT_EQ(header_->Valid(), true);
+}
+
+/**
+ * @tc.name ValidateDifatSectors_006
+ * @tc.desc Test ValidateDifatSectors: numBat_ == 109, numDifat_ != 0 -> fail
+ * @tc.type FUNC
+ */
+HWTEST_F(HeaderTest, ValidateDifatSectors_006, TestSize.Level1)
+{
+    header_->threshold_ = MINI_STREAM_CUTOFF;
+    header_->numBat_ = HEADER_DIFAT_ARRAY_SIZE;
+    header_->bigBlockShift_ = DEFAULT_SECTOR_SHIFT;
+    header_->miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT;
+    header_->numDifat_ = 99;
+    EXPECT_EQ(header_->Valid(), false);
+}
+
+/**
+ * @tc.name ValidateDifatSectors_004
+ * @tc.desc Test ValidateDifatSectors: numBat_ > 109, sufficient DIFAT sectors -> pass
+ * @tc.type FUNC
+ */
+HWTEST_F(HeaderTest, ValidateDifatSectors_004, TestSize.Level1)
+{
+    header_->threshold_ = MINI_STREAM_CUTOFF;
+    header_->numBat_ = HEADER_DIFAT_ARRAY_SIZE + 200;
+    header_->bigBlockShift_ = DEFAULT_SECTOR_SHIFT;
+    header_->miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT;
+    const uint32_t sectorSize = 1u << header_->bigBlockShift_;
+    const uint32_t entriesPerSector = sectorSize / sizeof(uint32_t);
+    const uint32_t difatEntries = entriesPerSector - 1;
+    const uint32_t extraNeeded = header_->numBat_ - HEADER_DIFAT_ARRAY_SIZE;
+    const uint32_t difatSectorsNeeded = (extraNeeded + difatEntries - 1) / difatEntries;
+    header_->numDifat_ = difatSectorsNeeded;
+    EXPECT_EQ(header_->Valid(), true);
+}
+
+/**
+ * @tc.name ValidateDifatSectors_005
+ * @tc.desc Test ValidateDifatSectors: numBat_ > 109, insufficient DIFAT sectors -> fail
+ * @tc.type FUNC
+ */
+HWTEST_F(HeaderTest, ValidateDifatSectors_005, TestSize.Level1)
+{
+    header_->threshold_ = MINI_STREAM_CUTOFF;
+    header_->numBat_ = HEADER_DIFAT_ARRAY_SIZE + 200;
+    header_->bigBlockShift_ = DEFAULT_SECTOR_SHIFT;
+    header_->miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT;
+    header_->numDifat_ = 0;
+    EXPECT_EQ(header_->Valid(), false);
+}
+
+/**
+ * @tc.name Valid_MajorVersion_001
+ * @tc.desc Test Valid: majorVersion_ invalid (not 3 or 4) -> fail
+ * @tc.type FUNC
+ */
+HWTEST_F(HeaderTest, Valid_MajorVersion_001, TestSize.Level1)
+{
+    header_->majorVersion_ = 0x0005;
+    header_->byteOrder_ = DEFAULT_BYTE_ORDER;
+    header_->miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT;
+    header_->threshold_ = MINI_STREAM_CUTOFF;
+    header_->numBat_ = HEADER_DIFAT_ARRAY_SIZE;
+    header_->bigBlockShift_ = DEFAULT_SECTOR_SHIFT;
+    EXPECT_EQ(header_->Valid(), false);
+}
+
+/**
+ * @tc.name Valid_MajorVersion_002
+ * @tc.desc Test Valid: majorVersion_ == 4 -> pass
+ * @tc.type FUNC
+ */
+HWTEST_F(HeaderTest, Valid_MajorVersion_002, TestSize.Level1)
+{
+    header_->majorVersion_ = 0x0004;
+    header_->byteOrder_ = DEFAULT_BYTE_ORDER;
+    header_->miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT;
+    header_->threshold_ = MINI_STREAM_CUTOFF;
+    header_->numBat_ = HEADER_DIFAT_ARRAY_SIZE;
+    header_->bigBlockShift_ = SECTOR_SHIFT_V4;
+    header_->numDifat_ = 0;
+    EXPECT_EQ(header_->Valid(), true);
+}
+
+/**
+ * @tc.name Valid_ByteOrder_001
+ * @tc.desc Test Valid: byteOrder_ != 0xFFFE -> fail
+ * @tc.type FUNC
+ */
+HWTEST_F(HeaderTest, Valid_ByteOrder_001, TestSize.Level1)
+{
+    header_->majorVersion_ = DEFAULT_MAJOR_VERSION;
+    header_->byteOrder_ = 0xFFFD;
+    header_->miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT;
+    header_->threshold_ = MINI_STREAM_CUTOFF;
+    header_->numBat_ = HEADER_DIFAT_ARRAY_SIZE;
+    header_->bigBlockShift_ = DEFAULT_SECTOR_SHIFT;
+    EXPECT_EQ(header_->Valid(), false);
+}
+
+/**
+ * @tc.name Valid_MiniBlockShift_001
+ * @tc.desc Test Valid: miniBlockShift_ != 0x0006 -> fail
+ * @tc.type FUNC
+ */
+HWTEST_F(HeaderTest, Valid_MiniBlockShift_001, TestSize.Level1)
+{
+    header_->majorVersion_ = DEFAULT_MAJOR_VERSION;
+    header_->byteOrder_ = DEFAULT_BYTE_ORDER;
+    header_->miniBlockShift_ = 0x0007;
+    header_->threshold_ = MINI_STREAM_CUTOFF;
+    header_->numBat_ = HEADER_DIFAT_ARRAY_SIZE;
+    header_->bigBlockShift_ = DEFAULT_SECTOR_SHIFT;
+    EXPECT_EQ(header_->Valid(), false);
+}
+
+/**
+ * @tc.name Valid_DirSectorCount_001
+ * @tc.desc Test Valid: v3 with dirSectorCount_ != 0 -> fail
+ * @tc.type FUNC
+ */
+HWTEST_F(HeaderTest, Valid_DirSectorCount_001, TestSize.Level1)
+{
+    header_->majorVersion_ = DEFAULT_MAJOR_VERSION;
+    header_->byteOrder_ = DEFAULT_BYTE_ORDER;
+    header_->miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT;
+    header_->dirSectorCount_ = 5;
+    header_->threshold_ = MINI_STREAM_CUTOFF;
+    header_->numBat_ = HEADER_DIFAT_ARRAY_SIZE;
+    header_->bigBlockShift_ = DEFAULT_SECTOR_SHIFT;
+    header_->numDifat_ = 0;
+    EXPECT_EQ(header_->Valid(), false);
+}
+
+/**
+ * @tc.name Valid_DirSectorCount_002
+ * @tc.desc Test Valid: v4 with dirSectorCount_ != 0 -> pass (v4 allows it)
+ * @tc.type FUNC
+ */
+HWTEST_F(HeaderTest, Valid_DirSectorCount_002, TestSize.Level1)
+{
+    header_->majorVersion_ = 0x0004;
+    header_->byteOrder_ = DEFAULT_BYTE_ORDER;
+    header_->miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT;
+    header_->dirSectorCount_ = 5;
+    header_->threshold_ = MINI_STREAM_CUTOFF;
+    header_->numBat_ = HEADER_DIFAT_ARRAY_SIZE;
+    header_->bigBlockShift_ = SECTOR_SHIFT_V4;
+    header_->numDifat_ = 0;
+    EXPECT_EQ(header_->Valid(), true);
 }
 
 }

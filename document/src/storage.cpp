@@ -14,6 +14,7 @@
  */
 
 #include <algorithm>
+#include <cinttypes>
 #include <cstring>
 #include <cstdint>
 #include <iostream>
@@ -668,7 +669,7 @@ bool StorageIO::LoadDirectoryTree(SectorIndex &sbStart)
             "Directory buffer too small to read sbStart");
         return false;
     }
-    sbStart = ReadUint32(buffer.data() + 0x74);
+    sbStart = ReadUint32(buffer.data() + DIR_ENTRY_START_OFFSET);
     return true;
 }
 
@@ -2523,6 +2524,47 @@ bool StorageIO::SaveFat()
     return true;
 }
 
+bool StorageIO::ValidateFileSizeLimit()
+{
+    constexpr uint64_t MAX_V3_FILE_SIZE = 2ULL * 1024 * 1024 * 1024;
+    if (!header_ || header_->BigBlockShift() != DEFAULT_SECTOR_SHIFT) {
+        return true;
+    }
+    if (!bbat_ || bbat_->Count() == 0) {
+        return true;
+    }
+    size_t maxUsedBlock = 0;
+    bool found = false;
+    for (size_t i = 0; i < bbat_->Count(); i++) {
+        if ((*bbat_)[i] != AllocTable::Avail) {
+            maxUsedBlock = i;
+            found = true;
+        }
+    }
+    if (!found) {
+        return true;
+    }
+    if (maxUsedBlock > SIZE_MAX - FLUSH_EXTRA_SIZE) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "maxUsedBlock overflow in size limit check");
+        SetError(ErrorCode::BadOLE, "v3 compound file exceeds 2GB limit");
+        return false;
+    }
+    const size_t blockSize = 1u << header_->BigBlockShift();
+    if (maxUsedBlock + FLUSH_EXTRA_SIZE > SIZE_MAX / blockSize) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "projected size overflow in size limit check");
+        SetError(ErrorCode::BadOLE, "v3 compound file exceeds 2GB limit");
+        return false;
+    }
+    const uint64_t projectedSize = static_cast<uint64_t>(maxUsedBlock + FLUSH_EXTRA_SIZE) * blockSize;
+    if (projectedSize > MAX_V3_FILE_SIZE) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "v3 compound file projected size exceeds 2GB limit: %{public}" PRIu64 " bytes", projectedSize);
+        SetError(ErrorCode::BadOLE, "v3 compound file exceeds 2GB limit");
+        return false;
+    }
+    return true;
+}
+
 bool StorageIO::Flush()
 {
     std::lock_guard<std::recursive_mutex> lock(ioMutex_);
@@ -2558,6 +2600,10 @@ bool StorageIO::Flush()
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Flush failed");
         return false;
     };
+    if (!ValidateFileSizeLimit()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "File size limit validation failed");
+        return fail();
+    }
     if (!ExecuteFlushSequence(blocks, neededBlocks, blockSize)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to execute flush sequence");
         return fail();

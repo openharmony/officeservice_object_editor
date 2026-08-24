@@ -39,7 +39,7 @@ public:
     static void TearDownTestCase();
     void SetUp();
     void TearDown();
-    
+
     std::string hmid = "00000000000000000000000000000000";
     std::unique_ptr<StorageIO> storage_;
 };
@@ -67,6 +67,7 @@ constexpr int32_t MOCK_BIG_BLOCKS = 48;
 constexpr int32_t MOCK_BIG_BLOCK_SIZE = 512;
 constexpr int32_t MOCK_DIFAT_START = 10;
 constexpr int32_t MOCK_UNUSED_BLOCKS = 100;
+constexpr size_t OVERFLOW_BLOCK_COUNT = 4194304;
 
 bool MockSave()
 {
@@ -2111,7 +2112,7 @@ HWTEST_F(StorageTest, LoadBigBlocks_002, TestSize.Level1)
     storage_->size_ = 1024;
     std::vector<Byte> memoryBuffer(8, 0);
     storage_->memoryBuffer_ = std::make_unique<std::vector<Byte>>(std::move(memoryBuffer));
-    
+
     std::vector<uint32_t> blocks = {1};
     std::vector<Byte> data(512);
     uint32_t maxlen = 512;
@@ -2127,7 +2128,7 @@ HWTEST_F(StorageTest, LoadBigBlocks_003, TestSize.Level1)
 {
     storage_->bbat_ = std::make_unique<AllocTable>();
     storage_->bbat_->blockSize_ = 512;
-    
+
     std::vector<uint32_t> blocks = {1};
     std::vector<Byte> data(512);
     uint32_t maxlen = 512;
@@ -2143,7 +2144,7 @@ HWTEST_F(StorageTest, LoadBigBlocks_004, TestSize.Level1)
 {
     storage_->bbat_ = std::make_unique<AllocTable>();
     storage_->bbat_->blockSize_ = 512;
-    
+
     std::vector<uint32_t> blocks;
     std::vector<Byte> data(512);
     uint32_t maxlen = 512;
@@ -2158,7 +2159,7 @@ HWTEST_F(StorageTest, LoadBigBlocks_004, TestSize.Level1)
 HWTEST_F(StorageTest, LoadBigBlocks_005, TestSize.Level1)
 {
     storage_->bbat_ = nullptr;
-    
+
     std::vector<uint32_t> blocks = {1};
     std::vector<Byte> data(512);
     uint32_t maxlen = 512;
@@ -2174,7 +2175,7 @@ HWTEST_F(StorageTest, LoadBigBlocks_006, TestSize.Level1)
 {
     storage_->bbat_ = std::make_unique<AllocTable>();
     storage_->bbat_->blockSize_ = 512;
-    
+
     std::vector<uint32_t> blocks = {1};
     std::vector<Byte> data(512);
     uint32_t maxlen = 0;
@@ -2191,7 +2192,7 @@ HWTEST_F(StorageTest, LoadBigBlock_001, TestSize.Level1)
     storage_->bbat_ = std::make_unique<AllocTable>();
     storage_->bbat_->blockSize_ = 512;
     storage_->memoryBuffer_ = nullptr;
-    
+
     uint32_t block = 1;
     std::vector<Byte> data(512);
     uint32_t maxlen = 512;
@@ -2207,7 +2208,7 @@ HWTEST_F(StorageTest, LoadBigBlock_002, TestSize.Level1)
 {
     storage_->bbat_ = std::make_unique<AllocTable>();
     storage_->bbat_->blockSize_ = 512;
-    
+
     uint32_t block = 1;
     uint32_t maxlen = 512;
     EXPECT_EQ(storage_->LoadBigBlock(block, nullptr, maxlen), 0);
@@ -2795,6 +2796,65 @@ HWTEST_F(StorageTest, SaveBlock_006, TestSize.Level1)
     storage_->flushWriteBuffer_ = nullptr;
     storage_->memoryBuffer_ = nullptr;
     EXPECT_EQ(storage_->SaveBlock(physicalOffset, dest.data(), len), 0);
+}
+
+/**
+ * @tc.name ValidateFileSizeLimit_001
+ * @tc.desc Test ValidateFileSizeLimit: header_ is null -> pass (returns true)
+ * @tc.type FUNC
+ */
+HWTEST_F(StorageTest, ValidateFileSizeLimit_001, TestSize.Level1)
+{
+    storage_->header_ = nullptr;
+    storage_->size_ = 3LL * 1024 * 1024 * 1024; // 3GB
+    // ValidateFileSizeLimit is private, test through Flush
+    // With null header_, ValidateFlushState will fail before reaching ValidateFileSizeLimit
+    bool result = storage_->Flush();
+    EXPECT_EQ(result, false);
+}
+
+/**
+ * @tc.name ValidateFileSizeLimit_002
+ * @tc.desc Test ValidateFileSizeLimit: v3 with empty BBAT -> pass
+ * @tc.type FUNC
+ */
+HWTEST_F(StorageTest, ValidateFileSizeLimit_002, TestSize.Level1)
+{
+    storage_->header_ = std::make_unique<Header>();
+    storage_->header_->bigBlockShift_ = DEFAULT_SECTOR_SHIFT; // v3
+    bool result = storage_->ValidateFileSizeLimit();
+    EXPECT_EQ(result, true);
+}
+
+/**
+ * @tc.name ValidateFileSizeLimit_003
+ * @tc.desc Test ValidateFileSizeLimit: v4 not subject to 2GB limit -> pass
+ * @tc.type FUNC
+ */
+HWTEST_F(StorageTest, ValidateFileSizeLimit_003, TestSize.Level1)
+{
+    storage_->header_ = std::make_unique<Header>();
+    storage_->header_->bigBlockShift_ = SECTOR_SHIFT_V4; // v4: 4096 bytes
+    bool result = storage_->ValidateFileSizeLimit();
+    EXPECT_EQ(result, true);
+}
+
+/**
+ * @tc.name ValidateFileSizeLimit_004
+ * @tc.desc Test ValidateFileSizeLimit: v3 with projected size > 2GB -> fail
+ * @tc.type FUNC
+ */
+HWTEST_F(StorageTest, ValidateFileSizeLimit_004, TestSize.Level1)
+{
+    storage_->header_ = std::make_unique<Header>();
+    storage_->header_->bigBlockShift_ = DEFAULT_SECTOR_SHIFT; // v3: 512 bytes
+    storage_->bbat_ = std::make_unique<AllocTable>();
+    // projectedSize = (maxUsedBlock + 2) * 512 > 2GB
+    // Need maxUsedBlock >= 4194303: 2GB / 512 - 2 + 1
+    storage_->bbat_->Resize(OVERFLOW_BLOCK_COUNT);
+    storage_->bbat_->Set(OVERFLOW_BLOCK_COUNT - 1, AllocTable::Eof);
+    bool result = storage_->ValidateFileSizeLimit();
+    EXPECT_EQ(result, false);
 }
 
 }

@@ -912,5 +912,80 @@ HWTEST_F(DirTreeTest, DeleteEntry_003, TestSize.Level1)
     EXPECT_EQ(result, false);
 }
 
+/**
+ * @tc.name SaveLoadRoundTrip_ASCII_001
+ * @tc.desc Test Save/Load round-trip with ASCII name
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, SaveLoadRoundTrip_ASCII_001, TestSize.Level1)
+{
+    DirEntry root("Root Entry", 22, 5, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0, 0);
+    DirEntry file("test.txt", 18, 2, 100, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0);
+    dirtree_->entries_.clear();
+    dirtree_->entries_.push_back(root);
+    dirtree_->entries_.push_back(file);
+
+    std::vector<uint8_t> buffer(256, 0);
+    bool saveResult = dirtree_->Save(buffer.data(), buffer.size());
+    EXPECT_EQ(saveResult, true);
+
+    DirTree loaded;
+    bool loadResult = loaded.Load(buffer.data(), buffer.size());
+    EXPECT_EQ(loadResult, true);
+    EXPECT_EQ(loaded.EntryCount(), 2);
+    EXPECT_EQ(loaded.Entry(1)->Name(), "test.txt");
+}
+
+/**
+ * @tc.name SaveLoadRoundTrip_NonASCII_001
+ * @tc.desc Test Save/Load round-trip with non-ASCII (Chinese) name
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, SaveLoadRoundTrip_NonASCII_001, TestSize.Level1)
+{
+    std::string chineseName = "\xe6\x96\x87\xe6\xa1\xa3"; // "文档" in UTF-8
+    DirEntry root("Root Entry", 22, 5, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0, 0);
+    DirEntry file(chineseName, 14, 2, 100, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0);
+    dirtree_->entries_.clear();
+    dirtree_->entries_.push_back(root);
+    dirtree_->entries_.push_back(file);
+
+    std::vector<uint8_t> buffer(256, 0);
+    bool saveResult = dirtree_->Save(buffer.data(), buffer.size());
+    EXPECT_EQ(saveResult, true);
+
+    DirTree loaded;
+    bool loadResult = loaded.Load(buffer.data(), buffer.size());
+    EXPECT_EQ(loadResult, true);
+    EXPECT_EQ(loaded.EntryCount(), 2);
+    EXPECT_EQ(loaded.Entry(1)->Name(), chineseName);
+}
+
+/**
+ * @tc.name SaveLoadRoundTrip_ColorStateBits_001
+ * @tc.desc Test Save/Load round-trip preserves color and stateBits
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, SaveLoadRoundTrip_ColorStateBits_001, TestSize.Level1)
+{
+    DirEntry root("Root Entry", 22, 5, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0, 0, 1, 0x12345678);
+    DirEntry storage("Storage1", 18, 1, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0, 0, 0xABCD);
+    dirtree_->entries_.clear();
+    dirtree_->entries_.push_back(root);
+    dirtree_->entries_.push_back(storage);
+
+    std::vector<uint8_t> buffer(256, 0);
+    bool saveResult = dirtree_->Save(buffer.data(), buffer.size());
+    EXPECT_EQ(saveResult, true);
+
+    DirTree loaded;
+    bool loadResult = loaded.Load(buffer.data(), buffer.size());
+    EXPECT_EQ(loadResult, true);
+    EXPECT_EQ(loaded.Entry(0)->Color(), 1);
+    EXPECT_EQ(loaded.Entry(0)->StateBits(), 0x12345678);
+    EXPECT_EQ(loaded.Entry(1)->Color(), 0);
+    EXPECT_EQ(loaded.Entry(1)->StateBits(), 0xABCD);
+}
+
 }
 }

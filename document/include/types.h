@@ -29,6 +29,7 @@ constexpr uint16_t DEFAULT_MINOR_VERSION  = 0x003Eu;
 constexpr uint16_t DEFAULT_MAJOR_VERSION  = 0x0003u;
 constexpr uint16_t DEFAULT_BYTE_ORDER = 0xFFFEu;         // Default to little-endian
 constexpr uint16_t DEFAULT_SECTOR_SHIFT = 0x0009u;       // MAJOR_VERSION 3: 2^9 = 512 bytes
+constexpr uint16_t SECTOR_SHIFT_V4 = 0x000Cu;             // MAJOR_VERSION 4: 2^12 = 4096 bytes
 constexpr uint16_t DEFAULT_MINI_SECTOR_SHIFT = 0x0006u;  // 2^6 = 64 bytes
 constexpr uint32_t MINI_STREAM_CUTOFF = 4096;            // Mini Stream threshold
 constexpr size_t HEADER_FIXED_SIZE = 0x4C;               // Fixed field length
@@ -77,9 +78,19 @@ constexpr uint32_t INDEX_SEVEN = 7;
 
 constexpr uint32_t BUFFER_OFFSET = 128;
 constexpr uint32_t TYPE_OFFSET = 0x42;
+constexpr uint32_t FLAG_OFFSET = 0x43;
+constexpr uint32_t DIR_ENTRY_PREV_OFFSET = 0x44;
+constexpr uint32_t DIR_ENTRY_NEXT_OFFSET = 0x48;
 constexpr uint32_t CHILD_OFFSET = 0x4C;
 constexpr uint32_t CLSID_OFFSET = 0x50;
-constexpr uint32_t FLAG_OFFSET = 0x43;
+constexpr uint32_t DIR_ENTRY_STATE_BITS_OFFSET = 0x60;
+constexpr uint32_t DIR_ENTRY_CREATION_TIME_LOW_OFFSET = 0x64;
+constexpr uint32_t DIR_ENTRY_CREATION_TIME_HIGH_OFFSET = 0x68;
+constexpr uint32_t DIR_ENTRY_MODIFIED_TIME_LOW_OFFSET = 0x6C;
+constexpr uint32_t DIR_ENTRY_MODIFIED_TIME_HIGH_OFFSET = 0x70;
+constexpr uint32_t DIR_ENTRY_START_OFFSET = 0x74;
+constexpr uint32_t DIR_ENTRY_SIZE_OFFSET = 0x78;
+constexpr uint32_t DIR_ENTRY_SIZE_HIGH_OFFSET = 0x7C;
 constexpr uint32_t ROOT_ENTRY_NAME_LEN = 22;
 constexpr uint32_t OFFSET = 8;
 constexpr uint32_t DIR_MAX_NAME_LENGTH = 64;
