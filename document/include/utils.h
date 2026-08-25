@@ -42,17 +42,11 @@ constexpr uint32_t BYTE_SHIFT_3 = 3 * BITS_PER_BYTE;  // 24
 
 constexpr size_t BUFFER_ENTRY_SIZE = 128;
 constexpr uint32_t FULL_MASK = 0xFFFFFFFFU;
-constexpr size_t BIT_MASK = 32;
-constexpr size_t CREATION_TIME_LOW_OFFSET = 0x64;
-constexpr size_t CREATION_TIME_HIGH_OFFSET = 0x68;
-constexpr size_t MODIFIED_TIME_LOW_OFFSET = 0x6C;
-constexpr size_t MODIFIED_TIME_HIGH_OFFSET = 0x70;
 constexpr uint64_t WINDOWS_TICK = 10000000ULL;
 constexpr uint64_t SEC_TO_UNIX_EPOCH = 11644473600ULL;
 constexpr uint64_t NANOS_PER_SEC = 1000000000ULL;
 constexpr uint32_t READ_U32_BUF_LEN = 4;
 constexpr uint32_t READ_U16_BUF_LEN = 2;
-constexpr uint32_t DIR_ENTRY_SIZE_OFFSET = 0x78;   // Size offset in DirEntry
 
 inline uint64_t GetCurrentFileTime()
 {

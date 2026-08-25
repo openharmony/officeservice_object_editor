@@ -82,6 +82,7 @@ public:
         return bbBlocks_;
     }
     bool Valid() const;
+    bool ValidateDifatSectors() const;
     bool IsCompoundDocument() const;
 public:
     bool Load(const Byte *buffer, size_t len);

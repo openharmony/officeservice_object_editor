@@ -26,6 +26,228 @@ namespace OHOS {
 namespace ObjectEditor {
 namespace {
 constexpr size_t INVALID_INDEX = static_cast<size_t>(-1);
+
+// UTF-8 encoding constants
+constexpr uint8_t UTF8_CONT_PREFIX = 0x80;
+constexpr uint8_t UTF8_CONT_LOW_MASK = 0x3F;
+constexpr uint8_t UTF8_CONT_MASK = 0xC0;
+constexpr uint8_t UTF8_2BYTE_PREFIX = 0xC0;
+constexpr uint8_t UTF8_3BYTE_PREFIX = 0xE0;
+constexpr uint8_t UTF8_4BYTE_PREFIX = 0xF0;
+constexpr uint8_t UTF8_2BYTE_MASK = 0xE0;
+constexpr uint8_t UTF8_3BYTE_MASK = 0xF0;
+constexpr uint8_t UTF8_4BYTE_MASK = 0xF8;
+constexpr uint8_t UTF8_2BYTE_LOW_MASK = 0x1F;
+constexpr uint8_t UTF8_3BYTE_LOW_MASK = 0x0F;
+constexpr uint8_t UTF8_4BYTE_LOW_MASK = 0x07;
+constexpr uint16_t UTF8_2BYTE_MAX = 0x800; // Upper bound of 2-byte UTF-8 range (U+0800 starts 3-byte)
+
+// UTF-8 encoding bit shifts
+constexpr uint32_t UTF8_SHIFT_6 = 6;
+constexpr uint32_t UTF8_SHIFT_12 = 12;
+constexpr uint32_t UTF8_SHIFT_18 = 18;
+
+// UTF-16 surrogate pair constants
+constexpr uint16_t SURROGATE_HIGH_START = 0xD800;
+constexpr uint16_t SURROGATE_HIGH_END = 0xDBFF;
+constexpr uint16_t SURROGATE_LOW_START = 0xDC00;
+constexpr uint16_t SURROGATE_LOW_END = 0xDFFF;
+constexpr uint32_t SURROGATE_PAIR_SHIFT = 10;
+constexpr uint32_t SURROGATE_BASE = 0x10000;
+constexpr uint32_t SURROGATE_LOW_MASK = 0x3FF;
+constexpr uint32_t UNICODE_MAX_BMP = 0xFFFF;
+constexpr uint32_t UNICODE_MAX = 0x10FFFF;
+constexpr uint32_t UNICODE_REPLACEMENT_CHAR = 0xFFFD;
+
+// UTF-8 byte sequence lengths
+constexpr size_t UTF8_SINGLE_ADVANCE = 1;
+constexpr size_t UTF8_SEQ_LEN_2 = 2;
+constexpr size_t UTF8_SEQ_LEN_3 = 3;
+constexpr size_t UTF8_SEQ_LEN_4 = 4;
+
+// UTF-8 continuation byte counts (for AppendUtf8Continuation)
+constexpr uint32_t UTF8_CONT_COUNT_2 = 2;  // 3-byte sequence: 2 continuation bytes
+constexpr uint32_t UTF8_CONT_COUNT_3 = 3;  // 4-byte sequence: 3 continuation bytes
+
+// UTF-8 byte position offsets within multi-byte sequences
+constexpr size_t UTF8_BYTE_POS_1 = 1;
+constexpr size_t UTF8_BYTE_POS_2 = 2;
+constexpr size_t UTF8_BYTE_POS_3 = 3;
+
+// CFB directory entry name limits
+constexpr uint16_t MAX_UTF16_CODE_UNITS = 31; // Max UTF-16 code units excluding null terminator
+
+void AppendUtf8Continuation(std::string &result, uint32_t codePoint, uint32_t byteCount)
+{
+    for (uint32_t shift = (byteCount - 1) * UTF8_SHIFT_6; shift > 0; shift -= UTF8_SHIFT_6) {
+        result.push_back(static_cast<char>(UTF8_CONT_PREFIX | ((codePoint >> shift) & UTF8_CONT_LOW_MASK)));
+    }
+    result.push_back(static_cast<char>(UTF8_CONT_PREFIX | (codePoint & UTF8_CONT_LOW_MASK)));
+}
+
+bool DecodeSurrogatePair(const Byte *buffer, uint16_t codeUnitCount, uint16_t &i, std::string &result)
+{
+    if (i + 1 >= codeUnitCount) {
+        return false;
+    }
+    uint16_t low = static_cast<uint16_t>(buffer[(i + 1) * TWO_BYTE_SIZE]) |
+        (static_cast<uint16_t>(buffer[(i + 1) * TWO_BYTE_SIZE + 1]) << BITS_PER_BYTE);
+    if (low < SURROGATE_LOW_START || low > SURROGATE_LOW_END) {
+        return false;
+    }
+    uint16_t high = static_cast<uint16_t>(buffer[i * TWO_BYTE_SIZE]) |
+        (static_cast<uint16_t>(buffer[i * TWO_BYTE_SIZE + 1]) << BITS_PER_BYTE);
+    uint32_t codePoint = SURROGATE_BASE +
+        ((static_cast<uint32_t>(high) - SURROGATE_HIGH_START) << SURROGATE_PAIR_SHIFT) +
+        (static_cast<uint32_t>(low) - SURROGATE_LOW_START);
+    result.push_back(static_cast<char>(UTF8_4BYTE_PREFIX | (codePoint >> UTF8_SHIFT_18)));
+    AppendUtf8Continuation(result, codePoint, UTF8_CONT_COUNT_3);
+    i++;
+    return true;
+}
+
+// Convert UTF-16LE code units from buffer to UTF-8 string
+std::string Utf16LeToUtf8(const Byte *buffer, uint16_t byteLen)
+{
+    std::string result;
+    const uint16_t codeUnitCount = byteLen / TWO_BYTE_SIZE;
+    for (uint16_t i = 0; i < codeUnitCount; i++) {
+        uint16_t codeUnit = static_cast<uint16_t>(buffer[i * TWO_BYTE_SIZE]) |
+            (static_cast<uint16_t>(buffer[i * TWO_BYTE_SIZE + 1]) << BITS_PER_BYTE);
+        if (codeUnit == 0) {
+            break;
+        }
+        if (codeUnit < UTF8_CONT_PREFIX) {
+            result.push_back(static_cast<char>(codeUnit));
+        } else if (codeUnit < UTF8_2BYTE_MAX) {
+            result.push_back(static_cast<char>(UTF8_2BYTE_PREFIX | (codeUnit >> UTF8_SHIFT_6)));
+            result.push_back(static_cast<char>(UTF8_CONT_PREFIX | (codeUnit & UTF8_CONT_LOW_MASK)));
+        } else if (codeUnit >= SURROGATE_HIGH_START && codeUnit <= SURROGATE_HIGH_END) {
+            if (!DecodeSurrogatePair(buffer, codeUnitCount, i, result)) {
+                result.push_back(static_cast<char>(UTF8_3BYTE_PREFIX | (UNICODE_REPLACEMENT_CHAR >> UTF8_SHIFT_12)));
+                AppendUtf8Continuation(result, UNICODE_REPLACEMENT_CHAR, UTF8_CONT_COUNT_2);
+            }
+        } else if (codeUnit >= SURROGATE_LOW_START && codeUnit <= SURROGATE_LOW_END) {
+            result.push_back(static_cast<char>(UTF8_3BYTE_PREFIX | (UNICODE_REPLACEMENT_CHAR >> UTF8_SHIFT_12)));
+            AppendUtf8Continuation(result, UNICODE_REPLACEMENT_CHAR, UTF8_CONT_COUNT_2);
+        } else {
+            result.push_back(static_cast<char>(UTF8_3BYTE_PREFIX | (codeUnit >> UTF8_SHIFT_12)));
+            AppendUtf8Continuation(result, codeUnit, UTF8_CONT_COUNT_2);
+        }
+    }
+    return result;
+}
+
+bool IsContinuationByte(uint8_t byte)
+{
+    return (byte & UTF8_CONT_MASK) == UTF8_CONT_PREFIX;
+}
+
+size_t CountValidContBytes(const std::string &utf8, size_t i, size_t maxCount)
+{
+    size_t count = 0;
+    while (count < maxCount && i + count + UTF8_SINGLE_ADVANCE < utf8.size() &&
+        IsContinuationByte(static_cast<uint8_t>(utf8[i + count + UTF8_SINGLE_ADVANCE]))) {
+        count++;
+    }
+    return count;
+}
+
+uint32_t DecodeUtf8CodePoint(const std::string &utf8, size_t &i)
+{
+    uint32_t codePoint = UNICODE_REPLACEMENT_CHAR;
+    uint8_t byte = static_cast<uint8_t>(utf8[i]);
+    if (byte < UTF8_CONT_PREFIX) {
+        codePoint = byte;
+        i += UTF8_SINGLE_ADVANCE;
+    } else if ((byte & UTF8_2BYTE_MASK) == UTF8_2BYTE_PREFIX) {
+        size_t needed = UTF8_SEQ_LEN_2 - UTF8_SINGLE_ADVANCE;
+        size_t validCont = CountValidContBytes(utf8, i, needed);
+        if (validCont == needed) {
+            codePoint = byte & UTF8_2BYTE_LOW_MASK;
+            codePoint = (codePoint << UTF8_SHIFT_6) |
+                (static_cast<uint8_t>(utf8[i + UTF8_BYTE_POS_1]) & UTF8_CONT_LOW_MASK);
+        }
+        i += UTF8_SINGLE_ADVANCE + validCont;
+    } else if ((byte & UTF8_3BYTE_MASK) == UTF8_3BYTE_PREFIX) {
+        size_t needed = UTF8_SEQ_LEN_3 - UTF8_SINGLE_ADVANCE;
+        size_t validCont = CountValidContBytes(utf8, i, needed);
+        if (validCont == needed) {
+            codePoint = byte & UTF8_3BYTE_LOW_MASK;
+            codePoint = (codePoint << UTF8_SHIFT_6) |
+                (static_cast<uint8_t>(utf8[i + UTF8_BYTE_POS_1]) & UTF8_CONT_LOW_MASK);
+            codePoint = (codePoint << UTF8_SHIFT_6) |
+                (static_cast<uint8_t>(utf8[i + UTF8_BYTE_POS_2]) & UTF8_CONT_LOW_MASK);
+        }
+        i += UTF8_SINGLE_ADVANCE + validCont;
+    } else if ((byte & UTF8_4BYTE_MASK) == UTF8_4BYTE_PREFIX) {
+        size_t needed = UTF8_SEQ_LEN_4 - UTF8_SINGLE_ADVANCE;
+        size_t validCont = CountValidContBytes(utf8, i, needed);
+        if (validCont == needed) {
+            codePoint = byte & UTF8_4BYTE_LOW_MASK;
+            codePoint = (codePoint << UTF8_SHIFT_6) |
+                (static_cast<uint8_t>(utf8[i + UTF8_BYTE_POS_1]) & UTF8_CONT_LOW_MASK);
+            codePoint = (codePoint << UTF8_SHIFT_6) |
+                (static_cast<uint8_t>(utf8[i + UTF8_BYTE_POS_2]) & UTF8_CONT_LOW_MASK);
+            codePoint = (codePoint << UTF8_SHIFT_6) |
+                (static_cast<uint8_t>(utf8[i + UTF8_BYTE_POS_3]) & UTF8_CONT_LOW_MASK);
+        }
+        i += UTF8_SINGLE_ADVANCE + validCont;
+    } else {
+        i += UTF8_SINGLE_ADVANCE;
+    }
+    return codePoint;
+}
+
+void WriteUtf16CodeUnit(Byte *buffer, uint16_t &codeUnitCount, uint16_t codeUnit)
+{
+    buffer[codeUnitCount * TWO_BYTE_SIZE] = static_cast<Byte>(codeUnit & BYTE_MASK);
+    buffer[codeUnitCount * TWO_BYTE_SIZE + 1] = static_cast<Byte>((codeUnit >> BITS_PER_BYTE) & BYTE_MASK);
+    codeUnitCount++;
+}
+
+// Convert UTF-8 string to UTF-16LE code units, return code unit count
+uint16_t Utf8ToUtf16Le(const std::string &utf8, Byte *buffer, size_t bufferBytes)
+{
+    uint16_t codeUnitCount = 0;
+    const size_t maxCodeUnits = bufferBytes / TWO_BYTE_SIZE;
+    size_t i = 0;
+    while (i < utf8.size() && codeUnitCount < maxCodeUnits) {
+        uint32_t codePoint = DecodeUtf8CodePoint(utf8, i);
+        if (codePoint == 0 && i > 0 && i <= utf8.size() && utf8[i - 1] != 0) {
+            continue;
+        }
+        if (codePoint <= UNICODE_MAX_BMP) {
+            WriteUtf16CodeUnit(buffer, codeUnitCount, static_cast<uint16_t>(codePoint));
+        } else if (codePoint <= UNICODE_MAX && codeUnitCount + 1 < maxCodeUnits) {
+            codePoint -= SURROGATE_BASE;
+            uint16_t high = static_cast<uint16_t>(SURROGATE_HIGH_START + (codePoint >> SURROGATE_PAIR_SHIFT));
+            uint16_t low = static_cast<uint16_t>(SURROGATE_LOW_START + (codePoint & SURROGATE_LOW_MASK));
+            WriteUtf16CodeUnit(buffer, codeUnitCount, high);
+            WriteUtf16CodeUnit(buffer, codeUnitCount, low);
+        } else if (codePoint <= UNICODE_MAX) {
+            WriteUtf16CodeUnit(buffer, codeUnitCount, static_cast<uint16_t>(UNICODE_REPLACEMENT_CHAR));
+        }
+    }
+    return codeUnitCount;
+}
+
+void TruncateUtf16Name(uint16_t &codeUnitCount, Byte *nameBuffer)
+{
+    if (codeUnitCount > MAX_UTF16_CODE_UNITS) {
+        codeUnitCount = MAX_UTF16_CODE_UNITS;
+    }
+    if (codeUnitCount > 0) {
+        size_t idx = (codeUnitCount - 1) * TWO_BYTE_SIZE;
+        uint16_t lastUnit = static_cast<uint16_t>(nameBuffer[idx]) |
+            (static_cast<uint16_t>(nameBuffer[idx + 1]) << BITS_PER_BYTE);
+        if (lastUnit >= SURROGATE_HIGH_START && lastUnit <= SURROGATE_HIGH_END) {
+            codeUnitCount--;
+        }
+    }
+    nameBuffer[codeUnitCount * TWO_BYTE_SIZE] = 0;
+    nameBuffer[codeUnitCount * TWO_BYTE_SIZE + 1] = 0;
+}
 }
 
 bool DirEntry::Valid() const
@@ -186,7 +408,10 @@ size_t DirTree::ReuseOrAppendSlot()
 
 DirEntry DirTree::MakeNewEntry(const std::string &name, size_t index, uint32_t oldChild, int type) const
 {
-    const uint16_t nameLen = static_cast<uint16_t>(name.size() * 2 + 2);
+    Byte nameBuffer[DIR_MAX_NAME_LENGTH] = {0};
+    uint16_t codeUnitCount = Utf8ToUtf16Le(name, nameBuffer, sizeof(nameBuffer));
+    TruncateUtf16Name(codeUnitCount, nameBuffer);
+    const uint16_t nameLen = static_cast<uint16_t>((codeUnitCount + 1) * TWO_BYTE_SIZE);
     DirEntry e(name, nameLen, type, 0, 0, DIR_ENTRY_END,
                     oldChild,
                     DIR_ENTRY_END,
@@ -336,35 +561,93 @@ bool DirTree::Load(Byte *buffer, size_t size)
     OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "size: %{public}zu, initCount: %{public}zu", size, initCount);
     for (size_t i = 0; i < initCount; i++) {
         size_t p = i * BUFFER_ENTRY_SIZE;
-        std::string name;
         uint16_t nameLen = ReadUint16(buffer + DIR_ENTRY_NAME_LENGTH_OFFSET + p);
         if (nameLen > DIR_MAX_NAME_LENGTH) {
             nameLen = DIR_MAX_NAME_LENGTH;
         }
-        const uint16_t step = DIR_ENTRY_NAME_CHAR_LEN;
-        for (uint16_t j = 0; j + p < size && j < nameLen && (buffer[j + p]); j += step) {
-            name.append(1, static_cast<char>(buffer[j + p]));
-        }
-        uint8_t type = buffer[0x42 + p];
+        std::string name = Utf16LeToUtf8(buffer + p, nameLen);
+        uint8_t type = buffer[TYPE_OFFSET + p];
+        uint8_t color = buffer[FLAG_OFFSET + p];
         uint16_t len = ReadUint16(buffer + DIR_ENTRY_NAME_LENGTH_OFFSET + p);
-        uint32_t start = ReadUint32(buffer + 0x74 + p);
-        uint64_t entrySize = ReadUint32(buffer + 0x78 + p);
-        entrySize |= static_cast<uint64_t>(ReadUint32(buffer + 0x7C + p)) << BIT_SHIFT;
-        uint32_t prev = ReadUint32(buffer + 0x44 + p);
-        uint32_t next = ReadUint32(buffer + 0x48 + p);
-        uint32_t child = ReadUint32(buffer + 0x4C + p);
-        uint64_t creationTime = static_cast<uint64_t>(ReadUint32(buffer + CREATION_TIME_LOW_OFFSET + p));
-        creationTime |= static_cast<uint64_t>(ReadUint32(buffer + CREATION_TIME_HIGH_OFFSET + p)) << BIT_MASK;
-        uint64_t modifiedTime = static_cast<uint64_t>(ReadUint32(buffer + MODIFIED_TIME_LOW_OFFSET + p));
-        modifiedTime |= static_cast<uint64_t>(ReadUint32(buffer + MODIFIED_TIME_HIGH_OFFSET + p)) << BIT_MASK;
+        uint32_t start = ReadUint32(buffer + DIR_ENTRY_START_OFFSET + p);
+        uint64_t entrySize = ReadUint32(buffer + DIR_ENTRY_SIZE_OFFSET + p);
+        entrySize |= static_cast<uint64_t>(ReadUint32(buffer + DIR_ENTRY_SIZE_HIGH_OFFSET + p)) << BIT_SHIFT;
+        uint32_t prev = ReadUint32(buffer + DIR_ENTRY_PREV_OFFSET + p);
+        uint32_t next = ReadUint32(buffer + DIR_ENTRY_NEXT_OFFSET + p);
+        uint32_t child = ReadUint32(buffer + CHILD_OFFSET + p);
+        uint32_t stateBits = ReadUint32(buffer + DIR_ENTRY_STATE_BITS_OFFSET + p);
+        uint64_t creationTime = static_cast<uint64_t>(ReadUint32(buffer + DIR_ENTRY_CREATION_TIME_LOW_OFFSET + p));
+        creationTime |= static_cast<uint64_t>(
+            ReadUint32(buffer + DIR_ENTRY_CREATION_TIME_HIGH_OFFSET + p)) << BIT_SHIFT;
+        uint64_t modifiedTime = static_cast<uint64_t>(ReadUint32(buffer + DIR_ENTRY_MODIFIED_TIME_LOW_OFFSET + p));
+        modifiedTime |= static_cast<uint64_t>(
+            ReadUint32(buffer + DIR_ENTRY_MODIFIED_TIME_HIGH_OFFSET + p)) << BIT_SHIFT;
         std::array<std::uint8_t, CLSID_SIZE> clsid;
         for (size_t j = 0; j < CLSID_SIZE; j++) {
             clsid[j] = buffer[DIR_CLSID_OFFSET + p + j];
         }
-        DirEntry e(name, len, type, entrySize, start, prev, next, child, entries_.size(), creationTime, modifiedTime);
+        DirEntry e(name, len, type, entrySize, start, prev, next, child, entries_.size(), creationTime, modifiedTime,
+                   color, stateBits);
         e.SetClsid(clsid, std::size(clsid));
         entries_.push_back(e);
     }
+    return true;
+}
+
+bool DirTree::SaveDirEntryName(Byte *buffer, size_t len, size_t i, const DirEntry *e)
+{
+    std::string name = e->Name();
+    Byte nameBuffer[DIR_MAX_NAME_LENGTH] = {0};
+    uint16_t codeUnitCount = Utf8ToUtf16Le(name, nameBuffer, sizeof(nameBuffer));
+    TruncateUtf16Name(codeUnitCount, nameBuffer);
+    size_t offset = i * BUFFER_OFFSET;
+    if (len < BUFFER_OFFSET || offset > len - BUFFER_OFFSET) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "buffer too small for entry name %{public}zu", i);
+        return false;
+    }
+    if (memcpy_s(buffer + offset, len - offset, nameBuffer,
+        (codeUnitCount + 1) * TWO_BYTE_SIZE) != EOK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "memcpy_s name failed");
+        return false;
+    }
+    WriteUint16(buffer + offset + DIR_ENTRY_NAME_LENGTH_OFFSET,
+        static_cast<uint16_t>((codeUnitCount + 1) * TWO_BYTE_SIZE));
+    return true;
+}
+
+bool DirTree::SaveDirEntryFields(Byte *buffer, size_t len, size_t i, const DirEntry *e)
+{
+    size_t offset = i * BUFFER_OFFSET;
+    if (len < BUFFER_OFFSET || offset > len - BUFFER_OFFSET) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "buffer too small for entry %{public}zu", i);
+        return false;
+    }
+    uint64_t entrySize = e->Size();
+    WriteUint32(buffer + offset + DIR_ENTRY_START_OFFSET, e->Start());
+    WriteUint32(buffer + offset + DIR_ENTRY_SIZE_OFFSET,
+        static_cast<uint32_t>(entrySize & FULL_MASK));
+    WriteUint32(buffer + offset + DIR_ENTRY_SIZE_HIGH_OFFSET,
+        static_cast<uint32_t>((entrySize >> BIT_SHIFT) & FULL_MASK));
+    WriteUint32(buffer + offset + DIR_ENTRY_PREV_OFFSET, e->Prev());
+    WriteUint32(buffer + offset + DIR_ENTRY_NEXT_OFFSET, e->Next());
+    WriteUint32(buffer + offset + CHILD_OFFSET, e->Child());
+    uint64_t ct = e->GetCreationTime();
+    WriteUint32(buffer + offset + DIR_ENTRY_CREATION_TIME_LOW_OFFSET,
+        static_cast<uint32_t>(ct & FULL_MASK));
+    WriteUint32(buffer + offset + DIR_ENTRY_CREATION_TIME_HIGH_OFFSET,
+        static_cast<uint32_t>((ct >> BIT_SHIFT) & FULL_MASK));
+    uint64_t mt = e->GetModifiedTime();
+    WriteUint32(buffer + offset + DIR_ENTRY_MODIFIED_TIME_LOW_OFFSET,
+        static_cast<uint32_t>(mt & FULL_MASK));
+    WriteUint32(buffer + offset + DIR_ENTRY_MODIFIED_TIME_HIGH_OFFSET,
+        static_cast<uint32_t>((mt >> BIT_SHIFT) & FULL_MASK));
+    const auto &clsid = e->Clsid();
+    for (size_t j = 0; j < CLSID_SIZE; j++) {
+        buffer[offset + CLSID_OFFSET + j] = clsid[j];
+    }
+    buffer[offset + TYPE_OFFSET] = e->Type();
+    buffer[offset + FLAG_OFFSET] = e->Color();
+    WriteUint32(buffer + offset + DIR_ENTRY_STATE_BITS_OFFSET, e->StateBits());
     return true;
 }
 
@@ -387,36 +670,16 @@ bool DirTree::Save(Byte *buffer, size_t len)
     }
     for (size_t i = 0; i < EntryCount(); i++) {
         const DirEntry *e = Entry(i);
-        const size_t maxNameLength = 32;
         if (!e) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry %{public}zu is null", i);
             return false;
         }
-        std::string name = e->Name();
-        if (name.length() > maxNameLength)
-            name.erase(maxNameLength, name.length());
-        for (size_t j = 0; j < name.length(); j++)
-            buffer[i * BUFFER_OFFSET + j * TWO_BYTE_SIZE] = static_cast<Byte>(name[j]);
-        WriteUint16(buffer + i * BUFFER_OFFSET + 0x40, (uint16_t)(name.length() * TWO_BYTE_SIZE + TWO_BYTE_SIZE));
-        WriteUint32(buffer + i * BUFFER_OFFSET + 0x74, e->Start());
-        WriteUint32(buffer + i * BUFFER_OFFSET + 0x78, static_cast<uint32_t>(e->Size() & 0xFFFFFFFFULL));
-        WriteUint32(buffer + i * BUFFER_OFFSET + 0x7C, static_cast<uint32_t>((e->Size() >> BIT_SHIFT) & 0xFFFFFFFFULL));
-        WriteUint32(buffer + i * BUFFER_OFFSET + 0x44, e->Prev());
-        WriteUint32(buffer + i * BUFFER_OFFSET + 0x48, e->Next());
-        WriteUint32(buffer + i * BUFFER_OFFSET + 0x4c, e->Child());
-        uint64_t ct = e->GetCreationTime();
-        WriteUint32(buffer + i * BUFFER_ENTRY_SIZE + CREATION_TIME_LOW_OFFSET, static_cast<uint32_t>(ct & FULL_MASK));
-        WriteUint32(buffer + i * BUFFER_ENTRY_SIZE + CREATION_TIME_HIGH_OFFSET,
-            static_cast<uint32_t>((ct >> BIT_MASK) & FULL_MASK));
-        uint64_t mt = e->GetModifiedTime();
-        WriteUint32(buffer + i * BUFFER_ENTRY_SIZE + MODIFIED_TIME_LOW_OFFSET, static_cast<uint32_t>(mt & FULL_MASK));
-        WriteUint32(buffer + i * BUFFER_ENTRY_SIZE + MODIFIED_TIME_HIGH_OFFSET,
-            static_cast<uint32_t>((mt >> BIT_MASK) & FULL_MASK));
-        const auto &clsid = e->Clsid();
-        for (size_t j = 0; j < CLSID_SIZE; j++)
-            buffer[i * BUFFER_OFFSET + CLSID_OFFSET + j] = clsid[j];
-        buffer[i * BUFFER_OFFSET + TYPE_OFFSET] = e->Type();
-        buffer[i * BUFFER_OFFSET + FLAG_OFFSET] = 1;
+        if (!SaveDirEntryName(buffer, len, i, e)) {
+            return false;
+        }
+        if (!SaveDirEntryFields(buffer, len, i, e)) {
+            return false;
+        }
     }
     return true;
 }
@@ -804,7 +1067,7 @@ void DirTree::ClearDirEntry(DirEntry *e)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry is null");
         return;
     }
-    e->Set("", 0, 0, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 0, 0, 0, true);
+    e->Set("", 0, 0, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 0, 0, 0, 1, 0, true);
 }
 
 bool DirTree::DeleteEntry(const std::string &path, int level, std::vector<bool> *visited)

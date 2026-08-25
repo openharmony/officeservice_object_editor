@@ -54,38 +54,73 @@ Header::Header()
     }
 }
 
+bool Header::ValidateDifatSectors() const
+{
+    if (numBat_ <= HEADER_DIFAT_ARRAY_SIZE) {
+        if (numDifat_ != 0) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid numBat");
+            return false;
+        }
+        return true;
+    }
+    const uint32_t sectorSize = 1u << bigBlockShift_;
+    const uint32_t entriesPerSector = sectorSize / static_cast<uint32_t>(sizeof(uint32_t));
+    const uint32_t difatEntries = entriesPerSector > 0 ? entriesPerSector - 1 : 0;
+    if (difatEntries == 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid DIFAT");
+        return false;
+    }
+    const uint32_t extraNeeded = numBat_ - HEADER_DIFAT_ARRAY_SIZE;
+    if (extraNeeded > std::numeric_limits<uint32_t>::max() - difatEntries + 1) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "extraNeeded overflow");
+        return false;
+    }
+    const uint32_t difatSectorsNeeded = (extraNeeded + difatEntries - 1) / difatEntries;
+    if (numDifat_ < difatSectorsNeeded) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid number of DIFAT sectors");
+        return false;
+    }
+    return true;
+}
+
 bool Header::Valid() const
 {
     constexpr int32_t MAX_SECTOR_SHIFT_SIZE = 31;
+    constexpr uint16_t MAJOR_VERSION_3 = 0x0003;
+    constexpr uint16_t MAJOR_VERSION_4 = 0x0004;
+    if (majorVersion_ != MAJOR_VERSION_3 && majorVersion_ != MAJOR_VERSION_4) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "invalid major version: %{public}u, expected 3 or 4", majorVersion_);
+        return false;
+    }
+    if (byteOrder_ != DEFAULT_BYTE_ORDER) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "invalid byte order: %{public}u, expected %{public}u", byteOrder_, DEFAULT_BYTE_ORDER);
+        return false;
+    }
+    if (miniBlockShift_ != DEFAULT_MINI_SECTOR_SHIFT) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "invalid mini sector shift: %{public}u, expected %{public}u",
+            miniBlockShift_, DEFAULT_MINI_SECTOR_SHIFT);
+        return false;
+    }
+    if (majorVersion_ == MAJOR_VERSION_3 && dirSectorCount_ != 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "v3 dirSectorCount must be 0, got: %{public}u", dirSectorCount_);
+        return false;
+    }
+    if ((majorVersion_ == MAJOR_VERSION_3 && bigBlockShift_ != DEFAULT_SECTOR_SHIFT) ||
+        (majorVersion_ == MAJOR_VERSION_4 && bigBlockShift_ != SECTOR_SHIFT_V4)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "invalid sector shift: %{public}u for major version: %{public}u", bigBlockShift_, majorVersion_);
+        return false;
+    }
     if (threshold_ != MINI_STREAM_CUTOFF || numBat_ == 0 || bigBlockShift_ <= DEFAULT_MINI_SECTOR_SHIFT ||
         bigBlockShift_ >= MAX_SECTOR_SHIFT_SIZE || miniBlockShift_ >= bigBlockShift_) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid header");
         return false;
     }
-    if (numBat_ > HEADER_DIFAT_ARRAY_SIZE) {
-        const uint32_t sectorSize = 1u << bigBlockShift_;
-        const uint32_t entriesPerSector = sectorSize / static_cast<uint32_t>(sizeof(uint32_t));
-        const uint32_t difatEntries = entriesPerSector > 0 ? entriesPerSector - 1 : 0;
-        if (difatEntries == 0) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid DIFAT");
-            return false;
-        }
-        const uint32_t extraNeeded = numBat_ - HEADER_DIFAT_ARRAY_SIZE;
-        if (extraNeeded > std::numeric_limits<uint32_t>::max() - difatEntries + 1) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "extraNeeded overflow");
-            return false;
-        }
-        const uint32_t difatSectorsNeeded = (extraNeeded + difatEntries - 1) / difatEntries;
-        if (numDifat_ < difatSectorsNeeded) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid number of DIFAT sectors");
-            return false;
-        }
-    }
-    if ((numBat_ < HEADER_DIFAT_ARRAY_SIZE) && (numDifat_ != 0)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid numBat");
-        return false;
-    }
-    return true;
+    return ValidateDifatSectors();
 }
 
 bool Header::IsCompoundDocument() const
@@ -112,12 +147,16 @@ bool Header::Load(const Byte *buffer, size_t len)
         id_[i] = buffer[i];
     }
 
-    if (memcpy_s(clsid_.data(), clsid_.size(), buffer + 0x08, clsid_.size()) != EOK) {
+    if (memcpy_s(clsid_.data(), clsid_.size(), buffer + HEADER_CLSID_OFFSET, clsid_.size()) != EOK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "memcpy_s failed");
         return false;
     }
+    minorVersion_ = ReadUint16(buffer + HEADER_MINOR_VERSION_OFFSET);
+    majorVersion_ = ReadUint16(buffer + HEADER_MAJOR_VERSION_OFFSET);
+    byteOrder_ = ReadUint16(buffer + HEADER_BYTE_ORDER_OFFSET);
     bigBlockShift_ = ReadUint16(buffer + HEADER_SECTOR_SHIFT_OFFSET);
     miniBlockShift_ = ReadUint16(buffer + HEADER_MINI_SECTOR_SHIFT_OFFSET);
+    dirSectorCount_ = ReadUint32(buffer + HEADER_DIR_SECTOR_NUMBER_OFFSET);
     numBat_ = ReadUint32(buffer + HEADER_FAT_SECTOR_NUMBER_OFFSET);
     direntStart_ = ReadUint32(buffer + HEADER_FIRST_DIR_SECTOR_OFFSET);
     transactionSignature_ = ReadUint32(buffer + HEADER_TRANSACTION_SIGNATURE_OFFSET);
@@ -163,11 +202,12 @@ bool Header::Save(Byte *buffer, size_t len)
         return false;
     }
 
-    WriteUint16(buffer + HEADER_MINOR_VERSION_OFFSET, DEFAULT_MINOR_VERSION);
-    WriteUint16(buffer + HEADER_MAJOR_VERSION_OFFSET, DEFAULT_MAJOR_VERSION);
-    WriteUint16(buffer + HEADER_BYTE_ORDER_OFFSET, DEFAULT_BYTE_ORDER);
+    WriteUint16(buffer + HEADER_MINOR_VERSION_OFFSET, minorVersion_);
+    WriteUint16(buffer + HEADER_MAJOR_VERSION_OFFSET, majorVersion_);
+    WriteUint16(buffer + HEADER_BYTE_ORDER_OFFSET, byteOrder_);
     WriteUint16(buffer + HEADER_SECTOR_SHIFT_OFFSET, bigBlockShift_);
     WriteUint16(buffer + HEADER_MINI_SECTOR_SHIFT_OFFSET, miniBlockShift_);
+    WriteUint32(buffer + HEADER_DIR_SECTOR_NUMBER_OFFSET, dirSectorCount_);
     WriteUint32(buffer + HEADER_TRANSACTION_SIGNATURE_OFFSET, transactionSignature_);
     WriteUint32(buffer + HEADER_FAT_SECTOR_NUMBER_OFFSET, numBat_);
     WriteUint32(buffer + HEADER_FIRST_DIR_SECTOR_OFFSET, direntStart_);

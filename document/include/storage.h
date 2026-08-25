@@ -384,6 +384,7 @@ private:
     [[nodiscard]] bool SetupStagingBuffer(bool memoryMode, FlushSnapshot &snap);
     [[nodiscard]] bool ExecuteFlushSequence(std::vector<uint32_t> &blocks, size_t neededBlocks, size_t blockSize);
     [[nodiscard]] bool FinalizeFlush(bool memoryMode, FlushSnapshot &snap, size_t blockSize);
+    [[nodiscard]] bool ValidateFileSizeLimit();
     [[nodiscard]] bool ValidateDeletePreconditions(uint32_t &threshold, uint32_t &miniBlockSize,
         uint32_t &bigBlockSize);
     [[nodiscard]] bool CollectDeleteTargets(const std::string &path, std::vector<DirEntry> &targets);
