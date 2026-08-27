@@ -15,11 +15,17 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include "mock_access_token_verify.h"
+#include "mock_ipc_skeleton.h"
 #include "object_editor_permission_utils.h"
 #include "hilog_object_editor.h"
 
 using namespace testing;
 using namespace testing::ext;
+using ::OHOS::Security::AccessToken::MOCK_PERMISSION_DENIED;
+using ::OHOS::Security::AccessToken::ResetAccessTokenVerifyMock;
+using ::OHOS::Security::AccessToken::SetGetHapTokenIDResult;
+using ::OHOS::Security::AccessToken::SetVerifyAccessTokenResult;
 
 namespace OHOS {
 namespace ObjectEditor {
@@ -46,6 +52,8 @@ void ObjectEditorPermissionUtilsTest::SetUp()
 
 void ObjectEditorPermissionUtilsTest::TearDown()
 {
+    ResetAccessTokenVerifyMock();
+    SetCallingTokenId(0);
 }
 
 namespace {
@@ -192,6 +200,76 @@ HWTEST_F(ObjectEditorPermissionUtilsTest, PERMISSION_SERVERConstant_002, TestSiz
 {
     EXPECT_NE(PERMISSION_SERVER, nullptr);
     EXPECT_NE(strlen(PERMISSION_SERVER), 0);
+}
+
+/**
+ * @tc.name CheckCallingPermission_Granted_001
+ * @tc.desc Test CheckCallingPermission returns true when VerifyAccessToken grants
+ * @tc.type FUNC
+ */
+HWTEST_F(ObjectEditorPermissionUtilsTest, CheckCallingPermission_Granted_001, TestSize.Level1)
+{
+    SetVerifyAccessTokenResult(0); // 0 means PERMISSION_GRANTED
+    std::string permission = "ohos.permission.REGISTER_OBJECTEDITOR_EXTENSION";
+    bool ret = ObjectEditorPermissionUtils::CheckCallingPermission(permission);
+    EXPECT_EQ(ret, true);
+}
+
+/**
+ * @tc.name CheckCallingPermission_NotGranted_001
+ * @tc.desc Test CheckCallingPermission returns false when VerifyAccessToken denies
+ * @tc.type FUNC
+ */
+HWTEST_F(ObjectEditorPermissionUtilsTest, CheckCallingPermission_NotGranted_001, TestSize.Level1)
+{
+    SetVerifyAccessTokenResult(MOCK_PERMISSION_DENIED);
+    std::string permission = "ohos.permission.REGISTER_OBJECTEDITOR_EXTENSION";
+    bool ret = ObjectEditorPermissionUtils::CheckCallingPermission(permission);
+    EXPECT_EQ(ret, false);
+}
+
+/**
+ * @tc.name CheckRequestPermission_TokenIdZero_001
+ * @tc.desc Test CheckRequestPermission returns false when GetHapTokenID returns 0
+ * @tc.type FUNC
+ */
+HWTEST_F(ObjectEditorPermissionUtilsTest, CheckRequestPermission_TokenIdZero_001, TestSize.Level1)
+{
+    SetGetHapTokenIDResult(0);
+    std::string bundleName = "com.test.bundle";
+    std::string permission = "ohos.permission.REGISTER_OBJECTEDITOR_EXTENSION";
+    bool ret = ObjectEditorPermissionUtils::CheckRequestPermission(bundleName, permission);
+    EXPECT_EQ(ret, false);
+}
+
+/**
+ * @tc.name CheckRequestPermission_TokenIdValidNotGranted_001
+ * @tc.desc Test CheckRequestPermission returns false when token valid but permission denied
+ * @tc.type FUNC
+ */
+HWTEST_F(ObjectEditorPermissionUtilsTest, CheckRequestPermission_TokenIdValidNotGranted_001, TestSize.Level1)
+{
+    SetGetHapTokenIDResult(100); // 100 is a valid non-zero token id
+    SetVerifyAccessTokenResult(MOCK_PERMISSION_DENIED);
+    std::string bundleName = "com.test.bundle";
+    std::string permission = "ohos.permission.REGISTER_OBJECTEDITOR_EXTENSION";
+    bool ret = ObjectEditorPermissionUtils::CheckRequestPermission(bundleName, permission);
+    EXPECT_EQ(ret, false);
+}
+
+/**
+ * @tc.name CheckRequestPermission_TokenIdValidGranted_001
+ * @tc.desc Test CheckRequestPermission returns true when token valid and permission granted
+ * @tc.type FUNC
+ */
+HWTEST_F(ObjectEditorPermissionUtilsTest, CheckRequestPermission_TokenIdValidGranted_001, TestSize.Level1)
+{
+    SetGetHapTokenIDResult(100); // 100 is a valid non-zero token id
+    SetVerifyAccessTokenResult(0); // 0 means PERMISSION_GRANTED
+    std::string bundleName = "com.test.bundle";
+    std::string permission = "ohos.permission.REGISTER_OBJECTEDITOR_EXTENSION";
+    bool ret = ObjectEditorPermissionUtils::CheckRequestPermission(bundleName, permission);
+    EXPECT_EQ(ret, true);
 }
 }
 }
