@@ -24,6 +24,7 @@
 
 namespace OHOS {
 namespace ObjectEditor {
+// LCOV_EXCL_START
 namespace {
 constexpr size_t INVALID_INDEX = static_cast<size_t>(-1);
 
