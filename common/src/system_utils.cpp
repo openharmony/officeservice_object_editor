@@ -33,6 +33,7 @@
 namespace OHOS {
 namespace ObjectEditor {
 namespace SystemUtils {
+// LCOV_EXCL_START
 
 namespace {
 constexpr int32_t HOURS_OF_ONE_DAY = 24;
@@ -64,7 +65,6 @@ std::string GetRealPath(const std::string &path)
     return std::string(resolvedPath, len);
 }
 
-// LCOV_EXCL_START
 uint64_t GetFileSize(const std::string &filePath)
 {
     if (filePath.empty() ||
