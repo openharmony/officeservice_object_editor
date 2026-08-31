@@ -30,6 +30,10 @@ config("utils_test_config") {
     "${object_editor_path}/frameworks/kits/extension/include",
     "${object_editor_path}/frameworks/ndk/include",
     "${object_editor_path}/test/mock/",
+    "${object_editor_path}/test/mock/message_parcel",
+    "${object_editor_path}/test/mock/system_ability",
+    "${object_editor_path}/test/mock/access_token",
+    "${object_editor_path}/test/mock/ipc_skeleton",
   ]
 
   cflags = [
@@ -127,6 +131,9 @@ ohos_unittest("object_editor_permission_utils_test") {
 
   sources = [
     "object_editor_permission_utils_test.cpp",
+    "${object_editor_path}/utils/src/object_editor_permission_utils.cpp",
+    "${object_editor_path}/test/mock/access_token/mock_access_token_verify.cpp",
+    "${object_editor_path}/test/mock/ipc_skeleton/mock_ipc_skeleton.cpp",
   ]
 
   deps = [
@@ -168,6 +175,8 @@ ohos_unittest("object_editor_bms_utils_test") {
 
   sources = [
     "object_editor_bms_utils_test.cpp",
+    "${object_editor_path}/utils/src/object_editor_bms_utils.cpp",
+    "${object_editor_path}/test/mock/system_ability/mock_system_ability_manager.cpp",
   ]
 
   deps = [

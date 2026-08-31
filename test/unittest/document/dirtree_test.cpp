@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+#include <algorithm>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "dirtree.h"
@@ -24,6 +25,19 @@ using namespace testing::ext;
 
 namespace OHOS {
 namespace ObjectEditor {
+namespace {
+std::vector<Byte> BuildNameEntry(const std::vector<Byte> &utf16Name, uint16_t nameLen, uint8_t type = 1)
+{
+    std::vector<Byte> buf(BUFFER_ENTRY_SIZE, 0);
+    size_t copyLen = std::min(utf16Name.size(), static_cast<size_t>(DIR_MAX_NAME_LENGTH));
+    for (size_t i = 0; i < copyLen; i++) {
+        buf[i] = utf16Name[i];
+    }
+    WriteUint16(buf.data() + DIR_ENTRY_NAME_LENGTH_OFFSET, nameLen);
+    buf[TYPE_OFFSET] = type;
+    return buf;
+}
+}
 
 class DirTreeTest : public testing::Test {
 public:
@@ -985,6 +999,309 @@ HWTEST_F(DirTreeTest, SaveLoadRoundTrip_ColorStateBits_001, TestSize.Level1)
     EXPECT_EQ(loaded.Entry(0)->StateBits(), 0x12345678);
     EXPECT_EQ(loaded.Entry(1)->Color(), 0);
     EXPECT_EQ(loaded.Entry(1)->StateBits(), 0xABCD);
+}
+
+/**
+ * @tc.name Load_TwoByteUtf16CodeUnit_001
+ * @tc.desc Test Utf16LeToUtf8 encodes a 2-byte UTF-16 code unit (U+00E9) to UTF-8
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, Load_TwoByteUtf16CodeUnit_001, TestSize.Level1)
+{
+    std::vector<Byte> name = {0xE9, 0x00, 0x00, 0x00};
+    auto buf = BuildNameEntry(name, 4);
+    ASSERT_EQ(dirtree_->Load(buf.data(), buf.size()), true);
+    EXPECT_EQ(dirtree_->Entry(0)->Name(), "\xC3\xA9");
+}
+
+/**
+ * @tc.name Load_SurrogatePair_001
+ * @tc.desc Test Utf16LeToUtf8 decodes a valid UTF-16 surrogate pair (U+1F600)
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, Load_SurrogatePair_001, TestSize.Level1)
+{
+    std::vector<Byte> name = {0x3D, 0xD8, 0x00, 0xDE, 0x00, 0x00};
+    auto buf = BuildNameEntry(name, 6);
+    ASSERT_EQ(dirtree_->Load(buf.data(), buf.size()), true);
+    EXPECT_EQ(dirtree_->Entry(0)->Name(), "\xF0\x9F\x98\x80");
+}
+
+/**
+ * @tc.name Load_LoneHighSurrogateNoLow_001
+ * @tc.desc Test DecodeSurrogatePair returns false when high surrogate has no following unit
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, Load_LoneHighSurrogateNoLow_001, TestSize.Level1)
+{
+    std::vector<Byte> name = {0x3D, 0xD8};
+    auto buf = BuildNameEntry(name, 2);
+    ASSERT_EQ(dirtree_->Load(buf.data(), buf.size()), true);
+    EXPECT_EQ(dirtree_->Entry(0)->Name(), "\xEF\xBF\xBD");
+}
+
+/**
+ * @tc.name Load_HighSurrogateInvalidLow_001
+ * @tc.desc Test DecodeSurrogatePair returns false when following unit is out of low range
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, Load_HighSurrogateInvalidLow_001, TestSize.Level1)
+{
+    std::vector<Byte> name = {0x00, 0xD8, 0x41, 0x00, 0x00, 0x00};
+    auto buf = BuildNameEntry(name, 6);
+    ASSERT_EQ(dirtree_->Load(buf.data(), buf.size()), true);
+    EXPECT_EQ(dirtree_->Entry(0)->Name(), std::string("\xEF\xBF\xBD") + "A");
+}
+
+/**
+ * @tc.name Load_LoneLowSurrogate_001
+ * @tc.desc Test Utf16LeToUtf8 replaces a lone low surrogate with U+FFFD
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, Load_LoneLowSurrogate_001, TestSize.Level1)
+{
+    std::vector<Byte> name = {0x00, 0xDC, 0x00, 0x00};
+    auto buf = BuildNameEntry(name, 4);
+    ASSERT_EQ(dirtree_->Load(buf.data(), buf.size()), true);
+    EXPECT_EQ(dirtree_->Entry(0)->Name(), "\xEF\xBF\xBD");
+}
+
+/**
+ * @tc.name Load_NameLenExceedsMax_001
+ * @tc.desc Test Load caps nameLen to DIR_MAX_NAME_LENGTH
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, Load_NameLenExceedsMax_001, TestSize.Level1)
+{
+    std::vector<Byte> name = {0x41, 0x00, 0x42, 0x00};
+    auto buf = BuildNameEntry(name, 100);
+    ASSERT_EQ(dirtree_->Load(buf.data(), buf.size()), true);
+    EXPECT_EQ(dirtree_->Entry(0)->Name(), "AB");
+}
+
+/**
+ * @tc.name RoundTrip_TwoByteUtf8Name_001
+ * @tc.desc Test Save/Load round-trip of a 2-byte UTF-8 name (U+00E9)
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, RoundTrip_TwoByteUtf8Name_001, TestSize.Level1)
+{
+    DirEntry root("Root Entry", 22, 5, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0, 0);
+    DirEntry file("caf\xC3\xA9", 0, 2, 100, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0);
+    dirtree_->entries_.clear();
+    dirtree_->entries_.push_back(root);
+    dirtree_->entries_.push_back(file);
+
+    std::vector<uint8_t> buffer(256, 0);
+    ASSERT_EQ(dirtree_->Save(buffer.data(), buffer.size()), true);
+
+    DirTree loaded;
+    ASSERT_EQ(loaded.Load(buffer.data(), buffer.size()), true);
+    EXPECT_EQ(loaded.Entry(1)->Name(), "caf\xC3\xA9");
+}
+
+/**
+ * @tc.name RoundTrip_FourByteUtf8Name_001
+ * @tc.desc Test Save/Load round-trip of a 4-byte UTF-8 name (U+1F600) via surrogate pair
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, RoundTrip_FourByteUtf8Name_001, TestSize.Level1)
+{
+    DirEntry root("Root Entry", 22, 5, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0, 0);
+    DirEntry file("\xF0\x9F\x98\x80", 0, 2, 100, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0);
+    dirtree_->entries_.clear();
+    dirtree_->entries_.push_back(root);
+    dirtree_->entries_.push_back(file);
+
+    std::vector<uint8_t> buffer(256, 0);
+    ASSERT_EQ(dirtree_->Save(buffer.data(), buffer.size()), true);
+
+    DirTree loaded;
+    ASSERT_EQ(loaded.Load(buffer.data(), buffer.size()), true);
+    EXPECT_EQ(loaded.Entry(1)->Name(), "\xF0\x9F\x98\x80");
+}
+
+/**
+ * @tc.name RoundTrip_LongNameTruncation_001
+ * @tc.desc Test TruncateUtf16Name caps a 32-unit name to MAX_UTF16_CODE_UNITS (31)
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, RoundTrip_LongNameTruncation_001, TestSize.Level1)
+{
+    std::string longName(32, 'a');
+    DirEntry root("Root Entry", 22, 5, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0, 0);
+    DirEntry file(longName, 0, 2, 100, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0);
+    dirtree_->entries_.clear();
+    dirtree_->entries_.push_back(root);
+    dirtree_->entries_.push_back(file);
+
+    std::vector<uint8_t> buffer(256, 0);
+    ASSERT_EQ(dirtree_->Save(buffer.data(), buffer.size()), true);
+
+    DirTree loaded;
+    ASSERT_EQ(loaded.Load(buffer.data(), buffer.size()), true);
+    std::string loadedName = loaded.Entry(1)->Name();
+    EXPECT_EQ(loadedName.size(), static_cast<size_t>(31));
+    EXPECT_EQ(loadedName, std::string(31, 'a'));
+}
+
+/**
+ * @tc.name RoundTrip_TruncationTrailingHighSurrogate_001
+ * @tc.desc Test TruncateUtf16Name drops a lone trailing high surrogate after truncation
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, RoundTrip_TruncationTrailingHighSurrogate_001, TestSize.Level1)
+{
+    std::string name = std::string(30, 'a') + "\xF0\x9F\x98\x80";
+    DirEntry root("Root Entry", 22, 5, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0, 0);
+    DirEntry file(name, 0, 2, 100, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0);
+    dirtree_->entries_.clear();
+    dirtree_->entries_.push_back(root);
+    dirtree_->entries_.push_back(file);
+
+    std::vector<uint8_t> buffer(256, 0);
+    ASSERT_EQ(dirtree_->Save(buffer.data(), buffer.size()), true);
+
+    DirTree loaded;
+    ASSERT_EQ(loaded.Load(buffer.data(), buffer.size()), true);
+    std::string loadedName = loaded.Entry(1)->Name();
+    EXPECT_EQ(loadedName.size(), static_cast<size_t>(30));
+    EXPECT_EQ(loadedName, std::string(30, 'a'));
+}
+
+/**
+ * @tc.name RoundTrip_InvalidUtf8_LoneContByte_001
+ * @tc.desc Test DecodeUtf8CodePoint replaces a lone continuation byte with U+FFFD
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, RoundTrip_InvalidUtf8_LoneContByte_001, TestSize.Level1)
+{
+    DirEntry root("Root Entry", 22, 5, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0, 0);
+    DirEntry file("\x80", 0, 2, 100, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0);
+    dirtree_->entries_.clear();
+    dirtree_->entries_.push_back(root);
+    dirtree_->entries_.push_back(file);
+
+    std::vector<uint8_t> buffer(256, 0);
+    ASSERT_EQ(dirtree_->Save(buffer.data(), buffer.size()), true);
+
+    DirTree loaded;
+    ASSERT_EQ(loaded.Load(buffer.data(), buffer.size()), true);
+    EXPECT_EQ(loaded.Entry(1)->Name(), "\xEF\xBF\xBD");
+}
+
+/**
+ * @tc.name RoundTrip_InvalidUtf8_Truncated2Byte_001
+ * @tc.desc Test DecodeUtf8CodePoint handles a 2-byte lead with no continuation
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, RoundTrip_InvalidUtf8_Truncated2Byte_001, TestSize.Level1)
+{
+    DirEntry root("Root Entry", 22, 5, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0, 0);
+    DirEntry file("\xC3", 0, 2, 100, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0);
+    dirtree_->entries_.clear();
+    dirtree_->entries_.push_back(root);
+    dirtree_->entries_.push_back(file);
+
+    std::vector<uint8_t> buffer(256, 0);
+    ASSERT_EQ(dirtree_->Save(buffer.data(), buffer.size()), true);
+
+    DirTree loaded;
+    ASSERT_EQ(loaded.Load(buffer.data(), buffer.size()), true);
+    EXPECT_EQ(loaded.Entry(1)->Name(), "\xEF\xBF\xBD");
+}
+
+/**
+ * @tc.name RoundTrip_InvalidUtf8_Truncated3Byte_001
+ * @tc.desc Test DecodeUtf8CodePoint handles a 3-byte lead with insufficient continuation
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, RoundTrip_InvalidUtf8_Truncated3Byte_001, TestSize.Level1)
+{
+    DirEntry root("Root Entry", 22, 5, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0, 0);
+    DirEntry file("\xE0\x80", 0, 2, 100, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0);
+    dirtree_->entries_.clear();
+    dirtree_->entries_.push_back(root);
+    dirtree_->entries_.push_back(file);
+
+    std::vector<uint8_t> buffer(256, 0);
+    ASSERT_EQ(dirtree_->Save(buffer.data(), buffer.size()), true);
+
+    DirTree loaded;
+    ASSERT_EQ(loaded.Load(buffer.data(), buffer.size()), true);
+    EXPECT_EQ(loaded.Entry(1)->Name(), "\xEF\xBF\xBD");
+}
+
+/**
+ * @tc.name RoundTrip_InvalidUtf8_Truncated4Byte_001
+ * @tc.desc Test DecodeUtf8CodePoint handles a 4-byte lead with insufficient continuation
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, RoundTrip_InvalidUtf8_Truncated4Byte_001, TestSize.Level1)
+{
+    DirEntry root("Root Entry", 22, 5, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0, 0);
+    DirEntry file("\xF0\x80\x80", 0, 2, 100, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0);
+    dirtree_->entries_.clear();
+    dirtree_->entries_.push_back(root);
+    dirtree_->entries_.push_back(file);
+
+    std::vector<uint8_t> buffer(256, 0);
+    ASSERT_EQ(dirtree_->Save(buffer.data(), buffer.size()), true);
+
+    DirTree loaded;
+    ASSERT_EQ(loaded.Load(buffer.data(), buffer.size()), true);
+    EXPECT_EQ(loaded.Entry(1)->Name(), "\xEF\xBF\xBD");
+}
+
+/**
+ * @tc.name FindRightmostSibling_Success_001
+ * @tc.desc Test FindRightmostSibling returns entry index when prev is DIR_ENTRY_END
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, FindRightmostSibling_Success_001, TestSize.Level1)
+{
+    DirEntry entry("entry", 0, 1, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0);
+    entry.prev_ = DIR_ENTRY_END;
+    dirtree_->entries_.push_back(entry);
+    EXPECT_EQ(dirtree_->FindRightmostSibling(1), 1);
+}
+
+/**
+ * @tc.name SetPrevLink_AllBranches_001
+ * @tc.desc Test SetPrevLink updates prev, next and child links of the prev-link entry
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, SetPrevLink_AllBranches_001, TestSize.Level1)
+{
+    dirtree_->entries_.resize(1);
+    dirtree_->entries_[0].prev_ = 1;
+    dirtree_->entries_[0].next_ = 1;
+    dirtree_->entries_[0].child_ = 1;
+    EXPECT_EQ(dirtree_->SetPrevLink(0, 1, 5), true);
+    EXPECT_EQ(dirtree_->entries_[0].Prev(), 5);
+    EXPECT_EQ(dirtree_->entries_[0].Next(), 5);
+    EXPECT_EQ(dirtree_->entries_[0].Child(), 5);
+}
+
+/**
+ * @tc.name DeleteEntry_Success_001
+ * @tc.desc Test DeleteEntry successfully removes a leaf entry and fixes parent link
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, DeleteEntry_Success_001, TestSize.Level1)
+{
+    DirEntry root("Root Entry", 22, 5, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0, 0);
+    DirEntry leaf("leaf", 0, 2, 100, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0);
+    dirtree_->entries_.clear();
+    dirtree_->entries_.push_back(root);
+    dirtree_->entries_.push_back(leaf);
+    std::vector<bool> visited;
+
+    bool result = dirtree_->DeleteEntry("leaf", 0, &visited);
+    EXPECT_EQ(result, true);
+    EXPECT_EQ(dirtree_->entries_[1].Name(), "");
+    EXPECT_EQ(dirtree_->entries_[1].Valid(), false);
+    EXPECT_EQ(dirtree_->entries_[0].Child(), DIR_ENTRY_END);
 }
 
 }

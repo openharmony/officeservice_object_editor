@@ -22,6 +22,8 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include "mock_i_remote_object.h"
+#include "mock_system_ability_manager.h"
 #include "object_editor_bms_utils.h"
 #include "hilog_object_editor.h"
 
@@ -53,6 +55,7 @@ void ObjectEditorBmsUtilsTest::SetUp()
 
 void ObjectEditorBmsUtilsTest::TearDown()
 {
+    ResetMockSystemAbilityManager();
 }
 
 namespace {
@@ -164,6 +167,47 @@ HWTEST_F(ObjectEditorBmsUtilsTest, QueryAbilityInfoMultiple_001, TestSize.Level1
     bool ret2 = ObjectEditorBmsUtils::QueryAbilityInfo(want, abilityInfo);
     EXPECT_EQ(ret1, false);
     EXPECT_EQ(ret2, false);
+}
+
+/**
+ * @tc.name GetBundleMgr_SaMgrNull_002
+ * @tc.desc Test GetBundleMgr when SystemAbilityManager is explicitly null
+ * @tc.type FUNC
+ */
+HWTEST_F(ObjectEditorBmsUtilsTest, GetBundleMgr_SaMgrNull_002, TestSize.Level1)
+{
+    SetMockSaMgrNull(true);
+    auto bundleMgr = ObjectEditorBmsUtils::GetBundleMgr();
+    EXPECT_EQ(bundleMgr, nullptr);
+    SetMockSaMgrNull(false);
+}
+
+/**
+ * @tc.name GetBundleMgr_RemoteObjectNull
+ * @tc.desc Test GetBundleMgr when GetSystemAbility returns null remote object
+ * @tc.type FUNC
+ */
+HWTEST_F(ObjectEditorBmsUtilsTest, GetBundleMgr_RemoteObjectNull, TestSize.Level1)
+{
+    InitMockSystemAbilityManager();
+    SetMockBundleMgrRemoteNull(true);
+    auto bundleMgr = ObjectEditorBmsUtils::GetBundleMgr();
+    EXPECT_EQ(bundleMgr, nullptr);
+}
+
+/**
+ * @tc.name GetBundleMgr_CastReturnsNull
+ * @tc.desc Test GetBundleMgr when remote object is not a valid BundleMgr
+ * @tc.type FUNC
+ */
+HWTEST_F(ObjectEditorBmsUtilsTest, GetBundleMgr_CastReturnsNull, TestSize.Level1)
+{
+    InitMockSystemAbilityManager();
+    sptr<MockIRemoteObject> mockRemoteObj = sptr<MockIRemoteObject>::MakeSptr();
+    ASSERT_NE(mockRemoteObj, nullptr);
+    SetMockBundleMgrRemoteObj(mockRemoteObj);
+    auto bundleMgr = ObjectEditorBmsUtils::GetBundleMgr();
+    EXPECT_EQ(bundleMgr, nullptr);
 }
 }
 }
