@@ -95,6 +95,8 @@ alike). Non-compliance must be fixed before declaring work done.
 - **Average cyclomatic complexity ≤ 20** across the module. No in-repo tool measures this — track it in review and refactor hotspots with early returns, extracted helpers, or table-driven logic.
 - **Nesting depth ≤ 5** (no more than four levels of nested blocks inside a function). Flatten with guard clauses, early returns, or extracted helpers.
 - **No magic numbers.** Define named `constexpr`/`enum` constants (e.g. in `utils/` or a header near the use site) instead of inline literals. Existing code already follows this (`OBJECT_EDITOR_SERVICE_SA_ID`, `LOAD_TIMEOUT_MS`, `RETRY_TIMES`, `CONNECT_TIMEOUT`) — reuse the defined constants rather than re-introducing literals.
+- use the unsafe function: memcpy
+- macro argument 'method' should be enclosed in parentheses
 
 ## Conventions and gotchas
 
