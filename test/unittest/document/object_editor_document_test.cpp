@@ -198,9 +198,9 @@ HWTEST_F(ObjectEditorDocumentTest, CreateByFile_002, TestSize.Level1)
     const std::string path;
     bool isLinking = false;
     Stub stub;
-    stub.set(ADDR(ObjectEditorDocument, CreateByOEid), MockCreateByOEid);
+    stub.set(ADDR(&ObjectEditorDocument::CreateByOEid), MockCreateByOEid);
     std::unique_ptr<ObjectEditorDocument> doc = document_->CreateByFile(path, isLinking);
-    EXPECT_NE(doc, nullptr);
+    EXPECT_EQ(doc, nullptr);
 }
 
 /**
@@ -212,7 +212,7 @@ HWTEST_F(ObjectEditorDocumentTest, LoadFromFile_001_OpenFailed, TestSize.Level1)
 {
     const std::string path;
     Stub stub;
-    stub.set(ADDR(Storage, Result), MockStorageResult);
+    stub.set(ADDR(&Storage::Result), MockStorageResult);
     std::unique_ptr<ObjectEditorDocument> doc = document_->LoadFromFile(path);
     EXPECT_EQ(doc, nullptr);
 }
@@ -226,7 +226,7 @@ HWTEST_F(ObjectEditorDocumentTest, LoadFromFile_002, TestSize.Level1)
 {
     const std::string path;
     Stub stub;
-    stub.set(ADDR(Storage, Result), MockStorageResult);
+    stub.set(ADDR(&Storage::Result), MockStorageResult);
     std::unique_ptr<ObjectEditorDocument> doc = document_->LoadFromFile(path);
     EXPECT_EQ(doc, nullptr);
 }
@@ -240,9 +240,9 @@ HWTEST_F(ObjectEditorDocumentTest, LoadFromFile_004, TestSize.Level1)
 {
     const std::string path = "tempfile";
     Stub stub;
-    stub.set(ADDR(Storage, Result), MockStorageResultOk);
+    stub.set(ADDR(&Storage::Result), MockStorageResultOk);
     std::unique_ptr<ObjectEditorDocument> doc = document_->LoadFromFile(path);
-    EXPECT_EQ(doc, nullptr);
+    EXPECT_NE(doc, nullptr);
 }
 
 /**
@@ -254,7 +254,7 @@ HWTEST_F(ObjectEditorDocumentTest, LoadFromFile_003, TestSize.Level1)
 {
     const std::string path = "tempfile";
     Stub stub;
-    stub.set(ADDR(Storage, Result), MockStorageResult);
+    stub.set(ADDR(&Storage::Result), MockStorageResult);
     std::unique_ptr<ObjectEditorDocument> doc = document_->LoadFromFile(path);
     EXPECT_EQ(doc, nullptr);
 }
@@ -279,7 +279,7 @@ HWTEST_F(ObjectEditorDocumentTest, FlushOEid_001, TestSize.Level1)
 {
     const std::string hmid = "00000000000000000000000000000000";
     Stub stub;
-    stub.set(ADDR(Storage, GetRootEntry), MockGetRootEntry);
+    stub.set(ADDR(&Storage::GetRootEntry), MockGetRootEntry);
     document_->SetOEid(hmid);
     auto res = document_->FlushOEid();
     EXPECT_EQ(res, false);
@@ -296,10 +296,10 @@ HWTEST_F(ObjectEditorDocumentTest, FlushOEid_002, TestSize.Level1)
     std::string path = "tempfile";
     document_->storage_ = std::make_unique<Storage>(path.c_str());
     Stub stub;
-    stub.set(ADDR(Storage, Flush), MockFlush);
+    stub.set(ADDR(&Storage::Flush), MockFlush);
     document_->SetOEid(hmid);
     auto res = document_->FlushOEid();
-    EXPECT_EQ(res, false);
+    EXPECT_EQ(res, true);
 }
 
 /**
@@ -452,7 +452,7 @@ HWTEST_F(ObjectEditorDocumentTest, Flush_002, TestSize.Level1)
     std::string path = "tempfile";
     document_->storage_ = std::make_unique<Storage>(path.c_str());
     Stub stub;
-    stub.set(ADDR(ObjectEditorDocument, GetTmpFilePath), MockGetTmpFilePath);
+    stub.set(ADDR(&ObjectEditorDocument::GetTmpFilePath), MockGetTmpFilePath);
     document_->userTmpFilePath_ = "/test";
     auto res = document_->Flush();
     EXPECT_EQ(res, false);
@@ -468,7 +468,7 @@ HWTEST_F(ObjectEditorDocumentTest, Flush_003, TestSize.Level1)
     std::string path = "tempfile";
     document_->storage_ = std::make_unique<Storage>(path.c_str());
     Stub stub;
-    stub.set(ADDR(ObjectEditorDocument, GetTmpFilePath), MockGetTmpFilePathEmpty);
+    stub.set(ADDR(&ObjectEditorDocument::GetTmpFilePath), MockGetTmpFilePathEmpty);
     document_->userTmpFilePath_ = "/test";
     auto res = document_->Flush();
     EXPECT_EQ(res, false);
@@ -484,7 +484,7 @@ HWTEST_F(ObjectEditorDocumentTest, Flush_004, TestSize.Level1)
     std::string path = "tempfile";
     document_->storage_ = std::make_unique<Storage>(path.c_str());
     Stub stub;
-    stub.set(ADDR(ObjectEditorDocument, GetTmpFilePath), MockGetTmpFilePath);
+    stub.set(ADDR(&ObjectEditorDocument::GetTmpFilePath), MockGetTmpFilePath);
     document_->userTmpFilePath_ = "";
     auto res = document_->Flush();
     EXPECT_EQ(res, false);
@@ -500,7 +500,7 @@ HWTEST_F(ObjectEditorDocumentTest, Flush_005, TestSize.Level1)
     std::string path = "tempfile";
     document_->storage_ = std::make_unique<Storage>(path.c_str());
     Stub stub;
-    stub.set(ADDR(ObjectEditorDocument, GetTmpFilePath), MockGetTmpFilePathEmpty);
+    stub.set(ADDR(&ObjectEditorDocument::GetTmpFilePath), MockGetTmpFilePathEmpty);
     auto res = document_->Flush();
     EXPECT_EQ(res, false);
 }
@@ -563,7 +563,7 @@ HWTEST_F(ObjectEditorDocumentTest, ShouldRebuild_002, TestSize.Level1)
     std::string path = "tempfile";
     document_->storage_ = std::make_unique<Storage>(path.c_str());
     Stub stub;
-    stub.set(ADDR(ObjectEditorDocument, GetTmpFilePath), MockGetTmpFilePathEmpty);
+    stub.set(ADDR(&ObjectEditorDocument::GetTmpFilePath), MockGetTmpFilePathEmpty);
     auto res = document_->ShouldRebuild();
     EXPECT_EQ(res, false);
 }
@@ -578,7 +578,7 @@ HWTEST_F(ObjectEditorDocumentTest, ShouldRebuild_003, TestSize.Level1)
     std::string path = "tempfile";
     document_->storage_ = std::make_unique<Storage>(path.c_str());
     Stub stub;
-    stub.set(ADDR(ObjectEditorDocument, GetTmpFilePath), MockGetTmpFilePath);
+    stub.set(ADDR(&ObjectEditorDocument::GetTmpFilePath), MockGetTmpFilePath);
     stub.set("std::filesystem::file_size", MockFileSizeZero);
     auto res = document_->ShouldRebuild();
     EXPECT_EQ(res, false);
@@ -594,9 +594,9 @@ HWTEST_F(ObjectEditorDocumentTest, ShouldRebuild_004, TestSize.Level1)
     std::string path = "tempfile";
     document_->storage_ = std::make_unique<Storage>(path.c_str());
     Stub stub;
-    stub.set(ADDR(ObjectEditorDocument, GetTmpFilePath), MockGetTmpFilePath);
+    stub.set(ADDR(&ObjectEditorDocument::GetTmpFilePath), MockGetTmpFilePath);
     stub.set("std::filesystem::file_size", MockFileSizeZero);
-    stub.set(ADDR(ObjectEditorDocument, ComputeLiveDataSize), MockComputeLiveDataSize);
+    stub.set(ADDR(&ObjectEditorDocument::ComputeLiveDataSize), MockComputeLiveDataSize);
     auto res = document_->ShouldRebuild();
     EXPECT_EQ(res, false);
 }
@@ -611,9 +611,9 @@ HWTEST_F(ObjectEditorDocumentTest, ShouldRebuild_005, TestSize.Level1)
     std::string path = "tempfile";
     document_->storage_ = std::make_unique<Storage>(path.c_str());
     Stub stub;
-    stub.set(ADDR(ObjectEditorDocument, GetTmpFilePath), MockGetTmpFilePath);
+    stub.set(ADDR(&ObjectEditorDocument::GetTmpFilePath), MockGetTmpFilePath);
     stub.set("std::filesystem::file_size", MockFileSizeZero);
-    stub.set(ADDR(ObjectEditorDocument, ComputeLiveDataSize), MockComputeLiveDataSizeSmall);
+    stub.set(ADDR(&ObjectEditorDocument::ComputeLiveDataSize), MockComputeLiveDataSizeSmall);
     auto res = document_->ShouldRebuild();
     EXPECT_EQ(res, false);
 }
@@ -645,7 +645,7 @@ HWTEST_F(ObjectEditorDocumentTest, CopyStreamData_002, TestSize.Level1)
     std::unique_ptr<Storage> src = std::make_unique<Storage>(hmid);
     std::unique_ptr<Storage> dst = std::make_unique<Storage>(hmid);
     Stub stub;
-    stub.set(ADDR(Storage, GetStream), MockGetStream);
+    stub.set(ADDR(&Storage::GetStream), MockGetStream);
     auto res = document_->CopyStreamData(src.get(), dst.get(), path, 0);
     EXPECT_EQ(res, true);
 }
@@ -662,8 +662,8 @@ HWTEST_F(ObjectEditorDocumentTest, CopyStreamData_003, TestSize.Level1)
     std::unique_ptr<Storage> src = std::make_unique<Storage>(hmid);
     std::unique_ptr<Storage> dst = std::make_unique<Storage>(hmid);
     Stub stub;
-    stub.set(ADDR(Storage, GetStream), MockGetStream);
-    stub.set(ADDR(Stream, Seek), MockSeek);
+    stub.set(ADDR(&Storage::GetStream), MockGetStream);
+    stub.set(ADDR(&Stream::Seek), MockSeek);
     auto res = document_->CopyStreamData(src.get(), dst.get(), path, 16);
     EXPECT_EQ(res, false);
 }
@@ -736,7 +736,7 @@ HWTEST_F(ObjectEditorDocumentTest, CopyAllStreamRecursively_004, TestSize.Level1
 HWTEST_F(ObjectEditorDocumentTest, RebuildAndFlush_001, TestSize.Level1)
 {
     Stub stub;
-    stub.set(ADDR(ObjectEditorDocument, GetTmpFilePath), MockGetTmpFilePathEmpty);
+    stub.set(ADDR(&ObjectEditorDocument::GetTmpFilePath), MockGetTmpFilePathEmpty);
     std::string hmid = "00000000000000000000000000000000";
     document_->storage_ = std::make_unique<Storage>(hmid);
     auto res = document_->RebuildAndFlush();
@@ -751,7 +751,7 @@ HWTEST_F(ObjectEditorDocumentTest, RebuildAndFlush_001, TestSize.Level1)
 HWTEST_F(ObjectEditorDocumentTest, RebuildAndFlush_002, TestSize.Level1)
 {
     Stub stub;
-    stub.set(ADDR(ObjectEditorDocument, GetTmpFilePath), MockGetTmpFilePath);
+    stub.set(ADDR(&ObjectEditorDocument::GetTmpFilePath), MockGetTmpFilePath);
     auto res = document_->RebuildAndFlush();
     EXPECT_EQ(res, false);
 }
@@ -778,9 +778,9 @@ HWTEST_F(ObjectEditorDocumentTest, GetOEidInternal_002, TestSize.Level1)
     std::string path = "tempfile";
     document_->storage_ = std::make_unique<Storage>(path.c_str());
     Stub stub;
-    stub.set(ADDR(Storage, GetRootEntry), MockGetRootEntry);
+    stub.set(ADDR(&Storage::GetRootEntry), MockGetRootEntry);
     auto res = document_->GetOEidInternal();
-    EXPECT_NE(res, "");
+    EXPECT_EQ(res, "");
 }
 
 /**
@@ -793,7 +793,7 @@ HWTEST_F(ObjectEditorDocumentTest, GetOEidInternal_003, TestSize.Level1)
     std::string path = "tempfile";
     document_->storage_ = std::make_unique<Storage>(path.c_str());
     Stub stub;
-    stub.set(ADDR(Storage, GetRootEntry), MockGetRootEntryNonEmpty);
+    stub.set(ADDR(&Storage::GetRootEntry), MockGetRootEntryNonEmpty);
     auto res = document_->GetOEidInternal();
     EXPECT_NE(res, "");
     delete MockGetRootEntryNonEmpty();
@@ -809,9 +809,9 @@ HWTEST_F(ObjectEditorDocumentTest, Marshalling_001, TestSize.Level1)
     Parcel parcel;
     document_->oeid_ = "00000000000000000000000000000000";
     Stub stub;
-    stub.set(ADDR(Parcel, WriteString), MockWriteString);
+    stub.set(ADDR(&Parcel::WriteString), MockWriteString);
     auto res = document_->Marshalling(parcel);
-    EXPECT_EQ(res, true);
+    EXPECT_EQ(res, false);
 }
 
 /**
@@ -823,9 +823,9 @@ HWTEST_F(ObjectEditorDocumentTest, Marshalling_002, TestSize.Level1)
 {
     Parcel parcel;
     Stub stub;
-    stub.set(ADDR(Parcel, WriteBool), MockWriteBoolLinking);
+    stub.set(ADDR(&Parcel::WriteBool), MockWriteBoolLinking);
     auto res = document_->Marshalling(parcel);
-    EXPECT_EQ(res, true);
+    EXPECT_EQ(res, false);
 }
 
 /**
@@ -837,9 +837,9 @@ HWTEST_F(ObjectEditorDocumentTest, Marshalling_003, TestSize.Level1)
 {
     Parcel parcel;
     Stub stub;
-    stub.set(ADDR(Parcel, WriteInt32), MockWriteInt32OperateType);
+    stub.set(ADDR(&Parcel::WriteInt32), MockWriteInt32OperateType);
     auto res = document_->Marshalling(parcel);
-    EXPECT_EQ(res, true);
+    EXPECT_EQ(res, false);
 }
 
 /**

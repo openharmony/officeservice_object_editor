@@ -670,7 +670,7 @@ HWTEST_F(StorageTest, SerializeToMemory_005, TestSize.Level1)
     storage_->header_ = std::make_unique<Header>();
     storage_->bbat_ = std::make_unique<AllocTable>();
     Stub stub;
-    stub.set(ADDR(Header, Save), MockSave);
+    stub.set(ADDR(&Header::Save), MockSave);
     bool res = storage_->SerializeToMemory();
     EXPECT_EQ(res, false);
 }
@@ -948,7 +948,7 @@ HWTEST_F(StorageTest, Load_002, TestSize.Level1)
     const char *testFile = "test_file.txt";
     storage_->stream_ = new std::fstream(testFile, std::ios::in | std::ios::binary | std::ios::out);
     Stub stub;
-    stub.set(ADDR(StorageIO, ValidateHeader), MockValidateHeader);
+    stub.set(ADDR(&StorageIO::ValidateHeader), MockValidateHeader);
     EXPECT_EQ(storage_->Load(), false);
     delete storage_->stream_;
 }
@@ -963,7 +963,7 @@ HWTEST_F(StorageTest, Load_003, TestSize.Level1)
     const char *testFile = "test_file.txt";
     storage_->stream_ = new std::fstream(testFile, std::ios::in | std::ios::binary | std::ios::out);
     Stub stub;
-    stub.set(ADDR(StorageIO, LoadDifatChain), MockLoadDifatChain);
+    stub.set(ADDR(&StorageIO::LoadDifatChain), MockLoadDifatChain);
     EXPECT_EQ(storage_->Load(), false);
     delete storage_->stream_;
 }
@@ -978,7 +978,7 @@ HWTEST_F(StorageTest, Load_004, TestSize.Level1)
     const char *testFile = "test_file.txt";
     storage_->stream_ = new std::fstream(testFile, std::ios::in | std::ios::binary | std::ios::out);
     Stub stub;
-    stub.set(ADDR(StorageIO, LoadFatChain), MockLoadFatChain);
+    stub.set(ADDR(&StorageIO::LoadFatChain), MockLoadFatChain);
     EXPECT_EQ(storage_->Load(), false);
     delete storage_->stream_;
 }
@@ -993,7 +993,7 @@ HWTEST_F(StorageTest, Load_005, TestSize.Level1)
     const char *testFile = "test_file.txt";
     storage_->stream_ = new std::fstream(testFile, std::ios::in | std::ios::binary | std::ios::out);
     Stub stub;
-    stub.set(ADDR(StorageIO, LoadDirectory), MockLoadDirectoryTree);
+    stub.set(ADDR(&StorageIO::LoadDirectoryTree), MockLoadDirectoryTree);
     EXPECT_EQ(storage_->Load(), false);
     delete storage_->stream_;
 }
@@ -1008,7 +1008,7 @@ HWTEST_F(StorageTest, Load_006, TestSize.Level1)
     const char *testFile = "test_file.txt";
     storage_->stream_ = new std::fstream(testFile, std::ios::in | std::ios::binary | std::ios::out);
     Stub stub;
-    stub.set(ADDR(StorageIO, LoadMiniFat), MockLoadMiniFat);
+    stub.set(ADDR(&StorageIO::LoadMiniFat), MockLoadMiniFat);
     EXPECT_EQ(storage_->Load(), false);
     delete storage_->stream_;
 }
@@ -1021,7 +1021,7 @@ HWTEST_F(StorageTest, Load_006, TestSize.Level1)
 HWTEST_F(StorageTest, ValidateHeader_001, TestSize.Level1)
 {
     Stub stub;
-    stub.set(ADDR(StorageIO, ReadAndLoadHeader), MockReadAndLoadHeader);
+    stub.set(ADDR(&StorageIO::ReadAndLoadHeader), MockReadAndLoadHeader);
     EXPECT_EQ(storage_->ValidateHeader(64), false);
 }
 
@@ -1033,7 +1033,7 @@ HWTEST_F(StorageTest, ValidateHeader_001, TestSize.Level1)
 HWTEST_F(StorageTest, ValidateHeader_002, TestSize.Level1)
 {
     Stub stub;
-    stub.set(ADDR(StorageIO, ValidateSectorSizes), MockValidateSectorSizes);
+    stub.set(ADDR(&StorageIO::ValidateSectorSizes), MockValidateSectorSizes);
     EXPECT_EQ(storage_->ValidateHeader(64), false);
 }
 
@@ -1045,7 +1045,7 @@ HWTEST_F(StorageTest, ValidateHeader_002, TestSize.Level1)
 HWTEST_F(StorageTest, ValidateHeader_003, TestSize.Level1)
 {
     Stub stub;
-    stub.set(ADDR(StorageIO, CheckClaimTableSizes), MockCheckClaimedTableSizes);
+    stub.set(ADDR(&StorageIO::CheckClaimedTableSizes), MockCheckClaimedTableSizes);
     EXPECT_EQ(storage_->ValidateHeader(64), false);
 }
 
@@ -1069,7 +1069,7 @@ HWTEST_F(StorageTest, ValidateHeader_005, TestSize.Level1)
 {
     storage_->header_ = std::make_unique<Header>();
     Stub stub;
-    stub.set(ADDR(StorageIO, ValidateHeaderSectorIndex), MockValidateHeaderSectorIndex);
+    stub.set(ADDR(&StorageIO::ValidateHeaderSectorIndex), MockValidateHeaderSectorIndex);
     EXPECT_EQ(storage_->ValidateHeader(64), false);
 }
 
@@ -1092,7 +1092,7 @@ HWTEST_F(StorageTest, LoadFatChain_001, TestSize.Level1)
 HWTEST_F(StorageTest, LoadFatChain_002, TestSize.Level1)
 {
     Stub stub;
-    stub.set(ADDR(StorageIO, LoadBigBlocks), MockLoadBigBlocks);
+    stub.set(ADDR(&StorageIO::LoadBigBlocks), MockLoadBigBlocks);
     std::vector<uint32_t> fatBlocks = {1, 2, 3};
     EXPECT_EQ(storage_->LoadFatChain(4096, fatBlocks), false);
 }
@@ -1105,7 +1105,7 @@ HWTEST_F(StorageTest, LoadFatChain_002, TestSize.Level1)
 HWTEST_F(StorageTest, LoadFatChain_003, TestSize.Level1)
 {
     Stub stub;
-    stub.set(ADDR(StorageIO, LoadBigBlocks), MockLoadBigBlocks);
+    stub.set(ADDR(&StorageIO::LoadBigBlocks), MockLoadBigBlocks);
     std::vector<uint32_t> fatBlocks = {1, 2, 3};
     EXPECT_EQ(storage_->LoadFatChain(16, fatBlocks), true);
 }
@@ -1118,7 +1118,7 @@ HWTEST_F(StorageTest, LoadFatChain_003, TestSize.Level1)
 HWTEST_F(StorageTest, LoadFatChain_004, TestSize.Level1)
 {
     Stub stub;
-    stub.set(ADDR(StorageIO, LoadBigBlocks), MockLoadBigBlocks);
+    stub.set(ADDR(&StorageIO::LoadBigBlocks), MockLoadBigBlockFail);
     std::vector<uint32_t> fatBlocks = {1, 2, 3};
     storage_->bbat_ = std::make_unique<AllocTable>();
     EXPECT_EQ(storage_->LoadFatChain(16, fatBlocks), false);
@@ -1132,7 +1132,7 @@ HWTEST_F(StorageTest, LoadFatChain_004, TestSize.Level1)
 HWTEST_F(StorageTest, ReadDifatSector_001, TestSize.Level1)
 {
     Stub stub;
-    stub.set(ADDR(StorageIO, LoadBigBlocks), MockLoadBigBlockSuccess);
+    stub.set(ADDR(&StorageIO::LoadBigBlocks), MockLoadBigBlockFail);
     uint32_t sectorSize = 512;
     uint32_t difatSector = 10;
     std::vector<uint8_t> difatBuf;
@@ -1148,7 +1148,7 @@ HWTEST_F(StorageTest, ReadDifatSector_001, TestSize.Level1)
 HWTEST_F(StorageTest, ReadDifatSector_002, TestSize.Level1)
 {
     Stub stub;
-    stub.set(ADDR(StorageIO, LoadBigBlocks), MockLoadBigBlockFail);
+    stub.set(ADDR(&StorageIO::LoadBigBlocks), MockLoadBigBlockFail);
     uint32_t sectorSize = 512;
     uint32_t difatSector = 10;
     std::vector<uint8_t> difatBuf;
@@ -1163,7 +1163,7 @@ HWTEST_F(StorageTest, ReadDifatSector_002, TestSize.Level1)
 HWTEST_F(StorageTest, ReadDifatSector_003, TestSize.Level1)
 {
     Stub stub;
-    stub.set(ADDR(StorageIO, LoadBigBlocks), MockLoadBigBlockSuccess);
+    stub.set(ADDR(&StorageIO::LoadBigBlocks), MockLoadBigBlockFail);
     uint32_t sectorSize = 512;
     uint32_t difatSector = 10;
     std::vector<uint8_t> difatBuf;
@@ -1179,7 +1179,7 @@ HWTEST_F(StorageTest, ReadDifatSector_003, TestSize.Level1)
 HWTEST_F(StorageTest, ReadDifatSector_004, TestSize.Level1)
 {
     Stub stub;
-    stub.set(ADDR(StorageIO, LoadBigBlocks), MockLoadBigBlockSuccess);
+    stub.set(ADDR(&StorageIO::LoadBigBlocks), MockLoadBigBlockFail);
     uint32_t sectorSize = 512;
     uint32_t difatSector = 10;
     std::vector<uint8_t> difatBuf;
@@ -1269,7 +1269,7 @@ HWTEST_F(StorageTest, LoadDifatChainBody_002, TestSize.Level1)
     std::vector<uint32_t> fatBlocks;
     storage_->header_ = std::make_unique<Header>();
     Stub stub;
-    stub.set(ADDR(Header, DifatStart), MockDifatStart);
+    stub.set(ADDR(&Header::DifatStart), MockDifatStart);
     bool ret = storage_->LoadDifatChainBody(sectorSize, expectedFromDifat, expectedMaxSectors,
         fatBlocks);
     EXPECT_EQ(ret, false);
@@ -1288,8 +1288,8 @@ HWTEST_F(StorageTest, LoadDifatChainBody_003, TestSize.Level1)
     std::vector<uint32_t> fatBlocks;
     storage_->header_ = std::make_unique<Header>();
     Stub stub;
-    stub.set(ADDR(Header, DifatStart), MockDifatStart);
-    stub.set(ADDR(StorageIO, ReadDifatSector), MockReadDifatSectorFail);
+    stub.set(ADDR(&Header::DifatStart), MockDifatStart);
+    stub.set(ADDR(&StorageIO::ReadDifatSector), MockReadDifatSectorFail);
     bool ret = storage_->LoadDifatChainBody(sectorSize, expectedFromDifat, expectedMaxSectors,
         fatBlocks);
     EXPECT_EQ(ret, false);
@@ -1308,9 +1308,9 @@ HWTEST_F(StorageTest, LoadDifatChainBody_004, TestSize.Level1)
     std::vector<uint32_t> fatBlocks;
     storage_->header_ = std::make_unique<Header>();
     Stub stub;
-    stub.set(ADDR(Header, DifatStart), MockDifatStart);
-    stub.set(ADDR(StorageIO, ReadDifatSector), MockReadDifatSectorSuccess);
-    stub.set(ADDR(StorageIO, ProcessDifatEntries), MockProcessDifatEntriesFail);
+    stub.set(ADDR(&Header::DifatStart), MockDifatStart);
+    stub.set(ADDR(&StorageIO::ReadDifatSector), MockReadDifatSectorSuccess);
+    stub.set(ADDR(&StorageIO::ProcessDifatEntries), MockProcessDifatEntriesFail);
     bool ret = storage_->LoadDifatChainBody(sectorSize, expectedFromDifat, expectedMaxSectors,
         fatBlocks);
     EXPECT_EQ(ret, false);
@@ -1329,9 +1329,7 @@ HWTEST_F(StorageTest, LoadDifatChainBody_005, TestSize.Level1)
     std::vector<uint32_t> fatBlocks;
     storage_->header_ = std::make_unique<Header>();
     Stub stub;
-    stub.set(ADDR(Header, DifatStart), MockDifatStart);
-    stub.set(ADDR(StorageIO, ReadDifatSector), MockReadDifatSectorSuccess);
-    stub.set(ADDR(StorageIO, ProcessDifatEntries), MockProcessDifatEntriesSuccess);
+    stub.set(ADDR(&Header::DifatStart), MockDifatStart);
     bool ret = storage_->LoadDifatChainBody(sectorSize, expectedFromDifat, expectedMaxSectors,
         fatBlocks);
     EXPECT_EQ(ret, false);
@@ -1350,9 +1348,9 @@ HWTEST_F(StorageTest, LoadDifatChainBody_006, TestSize.Level1)
     std::vector<uint32_t> fatBlocks;
     storage_->header_ = std::make_unique<Header>();
     Stub stub;
-    stub.set(ADDR(Header, DifatStart), MockDifatStartFail);
-    stub.set(ADDR(StorageIO, ReadDifatSector), MockReadDifatSectorSuccess);
-    stub.set(ADDR(StorageIO, ProcessDifatEntries), MockProcessDifatEntriesSuccess);
+    stub.set(ADDR(&Header::DifatStart), MockDifatStartFail);
+    stub.set(ADDR(&StorageIO::ReadDifatSector), MockReadDifatSectorSuccess);
+    stub.set(ADDR(&StorageIO::ProcessDifatEntries), MockProcessDifatEntriesSuccess);
     bool ret = storage_->LoadDifatChainBody(sectorSize, expectedFromDifat, expectedMaxSectors,
         fatBlocks);
     EXPECT_EQ(ret, false);
@@ -1371,9 +1369,7 @@ HWTEST_F(StorageTest, LoadDifatChainBody_007, TestSize.Level1)
     std::vector<uint32_t> fatBlocks;
     storage_->header_ = std::make_unique<Header>();
     Stub stub;
-    stub.set(ADDR(Header, DifatStart), MockDifatStart);
-    stub.set(ADDR(StorageIO, ReadDifatSector), MockReadDifatSectorSuccess);
-    stub.set(ADDR(StorageIO, ProcessDifatEntries), MockProcessDifatEntriesSuccess);
+    stub.set(ADDR(&Header::DifatStart), MockDifatStart);
     bool ret = storage_->LoadDifatChainBody(sectorSize, expectedFromDifat, expectedMaxSectors,
         fatBlocks);
     EXPECT_EQ(ret, false);
@@ -1392,7 +1388,7 @@ HWTEST_F(StorageTest, LoadDifatChainBody_008, TestSize.Level1)
     std::vector<uint32_t> fatBlocks;
     storage_->header_ = std::make_unique<Header>();
     Stub stub;
-    stub.set(ADDR(Header, DifatStart), MockDifatStartFail);
+    stub.set(ADDR(&Header::DifatStart), MockDifatStartFail);
     bool ret = storage_->LoadDifatChainBody(sectorSize, expectedFromDifat, expectedMaxSectors,
         fatBlocks);
     EXPECT_EQ(ret, false);
@@ -1411,7 +1407,7 @@ HWTEST_F(StorageTest, LoadDifatChainBody_009, TestSize.Level1)
     std::vector<uint32_t> fatBlocks;
     storage_->header_ = std::make_unique<Header>();
     Stub stub;
-    stub.set(ADDR(Header, DifatStart), MockDifatStartFail);
+    stub.set(ADDR(&Header::DifatStart), MockDifatStartFail);
     bool ret = storage_->LoadDifatChainBody(sectorSize, expectedFromDifat, expectedMaxSectors,
         fatBlocks);
     EXPECT_EQ(ret, true);
@@ -1512,7 +1508,7 @@ HWTEST_F(StorageTest, LoadDirectoryTree_004, TestSize.Level1)
     storage_->header_ = std::make_unique<Header>();
     storage_->bbat_ = std::make_unique<AllocTable>();
     Stub stub;
-    stub.set(ADDR(AllocTable, Follow), MockFollowFail);
+    stub.set(ADDR(&AllocTable::Follow), MockFollowFail);
     SectorIndex sbStart = 0;
     bool ret = storage_->LoadDirectoryTree(sbStart);
     EXPECT_EQ(ret, false);
@@ -1529,8 +1525,8 @@ HWTEST_F(StorageTest, LoadDirectoryTree_005, TestSize.Level1)
     storage_->bbat_ = std::make_unique<AllocTable>();
     storage_->dirtree_ = nullptr;
     Stub stub;
-    stub.set(ADDR(AllocTable, Follow), MockFollowSuccess);
-    stub.set(ADDR(StorageIO, LoadBigBlocks), MockLoadBigBlocksZero);
+    stub.set(ADDR(&AllocTable::Follow), MockFollowSuccess);
+    stub.set(ADDR(&StorageIO::LoadBigBlocks), MockLoadBigBlocksZero);
     SectorIndex sbStart = 0;
     bool ret = storage_->LoadDirectoryTree(sbStart);
     EXPECT_EQ(ret, false);
@@ -1547,9 +1543,9 @@ HWTEST_F(StorageTest, LoadDirectoryTree_006, TestSize.Level1)
     storage_->bbat_ = std::make_unique<AllocTable>();
     storage_->dirtree_ = std::make_unique<DirTree>();
     Stub stub;
-    stub.set(ADDR(AllocTable, Follow), MockFollowSuccess);
-    stub.set(ADDR(StorageIO, LoadBigBlocks), MockLoadBigBlocksZero);
-    stub.set(ADDR(DirTree, Load), MockLoadFail);
+    stub.set(ADDR(&AllocTable::Follow), MockFollowSuccess);
+    stub.set(ADDR(&StorageIO::LoadBigBlocks), MockLoadBigBlocksZero);
+    stub.set(ADDR(&DirTree::Load), MockLoadFail);
     SectorIndex sbStart = 0;
     bool ret = storage_->LoadDirectoryTree(sbStart);
     EXPECT_EQ(ret, false);
@@ -1563,10 +1559,10 @@ HWTEST_F(StorageTest, LoadDirectoryTree_006, TestSize.Level1)
 HWTEST_F(StorageTest, LoadMiniFat_001, TestSize.Level1)
 {
     Stub stub;
-    stub.set(ADDR(StorageIO, LoadMiniFatBlocks), MockLoadMiniFatBlocksFail);
+    stub.set(ADDR(&StorageIO::LoadMiniFatBlocks), MockLoadMiniFatBlocksFail);
     SectorIndex sbStart = 0;
     bool ret = storage_->LoadMiniFat(sbStart);
-    EXPECT_EQ(ret, true);
+    EXPECT_EQ(ret, false);
 }
 
 /**
@@ -1577,11 +1573,11 @@ HWTEST_F(StorageTest, LoadMiniFat_001, TestSize.Level1)
 HWTEST_F(StorageTest, LoadMiniFat_002, TestSize.Level1)
 {
     Stub stub;
-    stub.set(ADDR(StorageIO, LoadMiniFatBlocks), MockLoadMiniFatBlocksSuccess);
-    stub.set(ADDR(StorageIO, FollowMiniStream), MockFollowMiniStreamFail);
+    stub.set(ADDR(&StorageIO::LoadMiniFatBlocks), MockLoadMiniFatBlocksSuccess);
+    stub.set(ADDR(&StorageIO::FollowMiniStream), MockFollowMiniStreamFail);
     SectorIndex sbStart = 0;
     bool ret = storage_->LoadMiniFat(sbStart);
-    EXPECT_EQ(ret, true);
+    EXPECT_EQ(ret, false);
 }
 
 /**
@@ -1592,12 +1588,12 @@ HWTEST_F(StorageTest, LoadMiniFat_002, TestSize.Level1)
 HWTEST_F(StorageTest, LoadMiniFat_003, TestSize.Level1)
 {
     Stub stub;
-    stub.set(ADDR(StorageIO, LoadMiniFatBlocks), MockLoadMiniFatBlocksSuccess);
-    stub.set(ADDR(StorageIO, FollowMiniStream), MockFollowMiniStreamSuccess);
-    stub.set(ADDR(StorageIO, ValidateMiniFatEntries), MockValidateMiniFatEntriesFail);
+    stub.set(ADDR(&StorageIO::LoadMiniFatBlocks), MockLoadMiniFatBlocksSuccess);
+    stub.set(ADDR(&StorageIO::FollowMiniStream), MockFollowMiniStreamSuccess);
+    stub.set(ADDR(&StorageIO::ValidateMiniFatEntries), MockValidateMiniFatEntriesFail);
     SectorIndex sbStart = 0;
     bool ret = storage_->LoadMiniFat(sbStart);
-    EXPECT_EQ(ret, true);
+    EXPECT_EQ(ret, false);
 }
 
 /**
@@ -1608,9 +1604,9 @@ HWTEST_F(StorageTest, LoadMiniFat_003, TestSize.Level1)
 HWTEST_F(StorageTest, LoadMiniFat_004, TestSize.Level1)
 {
     Stub stub;
-    stub.set(ADDR(StorageIO, LoadMiniFatBlocks), MockLoadMiniFatBlocksSuccess);
-    stub.set(ADDR(StorageIO, FollowMiniStream), MockFollowMiniStreamSuccess);
-    stub.set(ADDR(StorageIO, ValidateMiniFatEntries), MockValidateMiniFatEntriesSuccess);
+    stub.set(ADDR(&StorageIO::LoadMiniFatBlocks), MockLoadMiniFatBlocksSuccess);
+    stub.set(ADDR(&StorageIO::FollowMiniStream), MockFollowMiniStreamSuccess);
+    stub.set(ADDR(&StorageIO::ValidateMiniFatEntries), MockValidateMiniFatEntriesSuccess);
     SectorIndex sbStart = 0;
     bool ret = storage_->LoadMiniFat(sbStart);
     EXPECT_EQ(ret, true);
@@ -1654,7 +1650,7 @@ HWTEST_F(StorageTest, LoadMiniFatBlocks_003, TestSize.Level1)
     storage_->bbat_ = std::make_unique<AllocTable>();
     storage_->header_ = std::make_unique<Header>();
     Stub stub;
-    stub.set(ADDR(AllocTable, Follow), MockFollowFail);
+    stub.set(ADDR(&AllocTable::Follow), MockFollowFail);
     std::vector<uint32_t> blocks;
     std::vector<Byte> buffer;
     bool ret = storage_->LoadMiniFatBlocks(blocks, buffer);
@@ -1671,11 +1667,11 @@ HWTEST_F(StorageTest, LoadMiniFatBlocks_004, TestSize.Level1)
     storage_->bbat_ = std::make_unique<AllocTable>();
     storage_->header_ = std::make_unique<Header>();
     Stub stub;
-    stub.set(ADDR(AllocTable, Follow), MockFollowSuccess);
+    stub.set(ADDR(&AllocTable::Follow), MockFollowSuccess);
     std::vector<uint32_t> blocks;
     std::vector<Byte> buffer;
     bool ret = storage_->LoadMiniFatBlocks(blocks, buffer);
-    EXPECT_EQ(ret, false);
+    EXPECT_EQ(ret, true);
 }
 
 /**
@@ -1689,8 +1685,8 @@ HWTEST_F(StorageTest, LoadMiniFatBlocks_005, TestSize.Level1)
     storage_->header_ = std::make_unique<Header>();
     storage_->bbat_->blockSize_ = 48;
     Stub stub;
-    stub.set(ADDR(AllocTable, Follow), MockFollowSuccess);
-    stub.set(ADDR(StorageIO, LoadBigBlocks), MockLoadBigBlocks);
+    stub.set(ADDR(&AllocTable::Follow), MockFollowSuccess);
+    stub.set(ADDR(&StorageIO::LoadBigBlocks), MockLoadBigBlocks);
     std::vector<uint32_t> blocks = {1};
     std::vector<Byte> buffer;
     bool ret = storage_->LoadMiniFatBlocks(blocks, buffer);
@@ -1709,8 +1705,8 @@ HWTEST_F(StorageTest, LoadMiniFatBlocks_006, TestSize.Level1)
     storage_->header_ = std::make_unique<Header>();
     storage_->bbat_->blockSize_ = 48;
     Stub stub;
-    stub.set(ADDR(AllocTable, Follow), MockFollowSuccess);
-    stub.set(ADDR(StorageIO, LoadBigBlocks), MockLoadBigBlocks);
+    stub.set(ADDR(&AllocTable::Follow), MockFollowSuccess);
+    stub.set(ADDR(&StorageIO::LoadBigBlocks), MockLoadBigBlocks);
     std::vector<uint32_t> blocks = {1};
     std::vector<Byte> buffer;
     bool ret = storage_->LoadMiniFatBlocks(blocks, buffer);
@@ -1729,9 +1725,9 @@ HWTEST_F(StorageTest, LoadMiniFatBlocks_007, TestSize.Level1)
     storage_->header_ = std::make_unique<Header>();
     storage_->bbat_->blockSize_ = 48;
     Stub stub;
-    stub.set(ADDR(AllocTable, Follow), MockFollowSuccess);
-    stub.set(ADDR(StorageIO, LoadBigBlocks), MockLoadBigBlocks);
-    stub.set(ADDR(AllocTable, Load), MockLoadSuccess);
+    stub.set(ADDR(&AllocTable::Follow), MockFollowSuccess);
+    stub.set(ADDR(&StorageIO::LoadBigBlocks), MockLoadBigBlocks);
+    stub.set(ADDR(&AllocTable::Load), MockLoadSuccess);
     std::vector<uint32_t> blocks = {1};
     std::vector<Byte> buffer;
     bool ret = storage_->LoadMiniFatBlocks(blocks, buffer);
@@ -1759,9 +1755,9 @@ HWTEST_F(StorageTest, FollowMiniStream_002, TestSize.Level1)
 {
     storage_->bbat_ = std::make_unique<AllocTable>();
     Stub stub;
-    stub.set(ADDR(AllocTable, Follow), MockFollowFail);
+    stub.set(ADDR(&AllocTable::Follow), MockFollowFail);
     bool ret = storage_->FollowMiniStream(0);
-    EXPECT_EQ(ret, true);
+    EXPECT_EQ(ret, false);
 }
 
 /**
@@ -1773,7 +1769,7 @@ HWTEST_F(StorageTest, FollowMiniStream_003, TestSize.Level1)
 {
     storage_->bbat_ = std::make_unique<AllocTable>();
     Stub stub;
-    stub.set(ADDR(AllocTable, Follow), MockFollowSuccess);
+    stub.set(ADDR(&AllocTable::Follow), MockFollowSuccess);
     bool ret = storage_->FollowMiniStream(0);
     EXPECT_EQ(ret, true);
 }
@@ -1824,7 +1820,7 @@ HWTEST_F(StorageTest, ValidateMiniRootCoverage_001, TestSize.Level1)
 HWTEST_F(StorageTest, ValidateMiniRootCoverage_002, TestSize.Level1)
 {
     Stub stub;
-    stub.set(ADDR(StorageIO, BigBlockSize), MockBigBlockSizeNonZero);
+    stub.set(ADDR(&StorageIO::BigBlockSize), MockBigBlockSizeNonZero);
     storage_->sbat_ = std::make_unique<AllocTable>();
     storage_->sbat_->blockSize_ = 0;
     storage_->sbBlocks_.resize(10);
@@ -1841,7 +1837,7 @@ HWTEST_F(StorageTest, ValidateMiniRootCoverage_002, TestSize.Level1)
 HWTEST_F(StorageTest, ValidateMiniRootCoverage_003, TestSize.Level1)
 {
     Stub stub;
-    stub.set(ADDR(StorageIO, BigBlockSize), MockBigBlockSizeNonZero);
+    stub.set(ADDR(&StorageIO::BigBlockSize), MockBigBlockSizeNonZero);
     storage_->sbat_ = std::make_unique<AllocTable>();
     storage_->sbat_->blockSize_ = 1;
     storage_->bbat_->blockSize_ = 1;
@@ -1858,7 +1854,7 @@ HWTEST_F(StorageTest, ValidateMiniRootCoverage_003, TestSize.Level1)
 HWTEST_F(StorageTest, ValidateMiniRootCoverage_004, TestSize.Level1)
 {
     Stub stub;
-    stub.set(ADDR(StorageIO, BigBlockSize), MockBigBlockSizeZero);
+    stub.set(ADDR(&StorageIO::BigBlockSize), MockBigBlockSizeZero);
     size_t size = 20;
     bool ret = storage_->ValidateMiniRootCoverage(size);
     EXPECT_EQ(ret, false);
@@ -1908,7 +1904,7 @@ HWTEST_F(StorageTest, Create_003, TestSize.Level1)
 HWTEST_F(StorageTest, Close_001, TestSize.Level1)
 {
     Stub stub;
-    stub.set(ADDR(StorageIO, Flush), MockFlushFail);
+    stub.set(ADDR(&StorageIO::Flush), MockFlushFail);
     storage_->Close();
     EXPECT_EQ(storage_->stream_, nullptr);
 }
@@ -1921,7 +1917,7 @@ HWTEST_F(StorageTest, Close_001, TestSize.Level1)
 HWTEST_F(StorageTest, Close_002, TestSize.Level1)
 {
     Stub stub;
-    stub.set(ADDR(StorageIO, Flush), MockFlushSuccess);
+    stub.set(ADDR(&StorageIO::Flush), MockFlushSuccess);
     storage_->Close();
     EXPECT_EQ(storage_->stream_, nullptr);
 }
@@ -2292,7 +2288,7 @@ HWTEST_F(StorageTest, ReadMiniBlock_001, TestSize.Level1)
     std::vector<Byte> dest(256);
     uint32_t copied = 0;
     Stub stub;
-    stub.set(ADDR(StorageIO, ValidateMiniBlockAccess), MockValidateMiniBlockAccessFail);
+    stub.set(ADDR(&StorageIO::ValidateMiniBlockAccess), MockValidateMiniBlockAccessFail);
     EXPECT_EQ(storage_->ReadMiniBlock(block, pos64, miniStreamSize,
         bigBlockSz, smallBlockSz, remaining, dest.data(), copied), false);
 }
@@ -2314,10 +2310,10 @@ HWTEST_F(StorageTest, ReadMiniBlock_002, TestSize.Level1)
     uint32_t copied = 0;
     storage_->sbBlocks_ = {1, 2, 3};
     Stub stub;
-    stub.set(ADDR(StorageIO, ValidateMiniBlockAccess), MockValidateMiniBlockAccessSuccess);
-    stub.set(ADDR(StorageIO, LoadBigBlock), MockLoadBigBlockFail);
+    stub.set(ADDR(&StorageIO::ValidateMiniBlockAccess), MockValidateMiniBlockAccessSuccess);
+    stub.set(ADDR(&StorageIO::LoadBigBlock), MockLoadBigBlockFail);
     EXPECT_EQ(storage_->ReadMiniBlock(block, pos64, miniStreamSize,
-        bigBlockSz, smallBlockSz, remaining, dest.data(), copied), true);
+        bigBlockSz, smallBlockSz, remaining, dest.data(), copied), false);
 }
 
 /**
@@ -2337,8 +2333,8 @@ HWTEST_F(StorageTest, ReadMiniBlock_003, TestSize.Level1)
     uint32_t copied = 0;
     storage_->sbBlocks_ = {1, 2, 3};
     Stub stub;
-    stub.set(ADDR(StorageIO, ValidateMiniBlockAccess), MockValidateMiniBlockAccessSuccess);
-    stub.set(ADDR(StorageIO, LoadBigBlock), MockLoadBigBlockSuccess);
+    stub.set(ADDR(&StorageIO::ValidateMiniBlockAccess), MockValidateMiniBlockAccessSuccess);
+    stub.set(ADDR(&StorageIO::LoadBigBlock), MockLoadBigBlockSuccess);
     EXPECT_EQ(storage_->ReadMiniBlock(block, pos64, miniStreamSize,
         bigBlockSz, smallBlockSz, remaining, dest.data(), copied), false);
 }
@@ -2360,8 +2356,8 @@ HWTEST_F(StorageTest, ReadMiniBlock_004, TestSize.Level1)
     uint32_t copied = 0;
     storage_->sbBlocks_ = {1, 2, 3};
     Stub stub;
-    stub.set(ADDR(StorageIO, ValidateMiniBlockAccess), MockValidateMiniBlockAccessSuccess);
-    stub.set(ADDR(StorageIO, LoadBigBlock), MockLoadBigBlockSuccess);
+    stub.set(ADDR(&StorageIO::ValidateMiniBlockAccess), MockValidateMiniBlockAccessSuccess);
+    stub.set(ADDR(&StorageIO::LoadBigBlock), MockLoadBigBlockSuccess);
     EXPECT_EQ(storage_->ReadMiniBlock(block, pos64, miniStreamSize,
         bigBlockSz, smallBlockSz, remaining, dest.data(), copied), true);
 }
@@ -2486,9 +2482,8 @@ HWTEST_F(StorageTest, ReadMiniBlocks_008, TestSize.Level1)
     storage_->sbat_->blockSize_ = 256;
     storage_->sbBlocks_ = {1, 2, 3};
     Stub stub;
-    stub.set(ADDR(StorageIO, ReadMiniBlock), MockReadMiniBLockFail);
-    constexpr int32_t res = 256;
-    EXPECT_EQ(storage_->ReadMiniBlocks(blocks, dest.data(), maxlen), res);
+    stub.set(ADDR(&StorageIO::ReadMiniBlock), MockReadMiniBLockFail);
+    EXPECT_EQ(storage_->ReadMiniBlocks(blocks, dest.data(), maxlen), 0);
 }
 
 /**
@@ -2507,9 +2502,8 @@ HWTEST_F(StorageTest, ReadMiniBlocks_009, TestSize.Level1)
     storage_->sbat_->blockSize_ = 256;
     storage_->sbBlocks_ = {1, 2, 3};
     Stub stub;
-    stub.set(ADDR(StorageIO, ReadMiniBlock), MockReadMiniBLockSuccess);
-    constexpr int32_t res = 256;
-    EXPECT_EQ(storage_->ReadMiniBlocks(blocks, dest.data(), maxlen), res);
+    stub.set(ADDR(&StorageIO::ReadMiniBlock), MockReadMiniBLockSuccess);
+    EXPECT_EQ(storage_->ReadMiniBlocks(blocks, dest.data(), maxlen), 0);
 }
 
 /**
@@ -2778,8 +2772,8 @@ HWTEST_F(StorageTest, SaveBlock_005, TestSize.Level1)
     uint32_t len = 256;
     storage_->file_ = nullptr;
     Stub stub;
-    stub.set(ADDR(StorageIO, SaveBlockToBuffer), MockSaveBlockToBufferFail);
-    EXPECT_EQ(storage_->SaveBlock(physicalOffset, dest.data(), len), len);
+    stub.set(ADDR(&StorageIO::SaveBlockToBuffer), MockSaveBlockToBufferFail);
+    EXPECT_EQ(storage_->SaveBlock(physicalOffset, dest.data(), len), 0);
 }
 
 /**

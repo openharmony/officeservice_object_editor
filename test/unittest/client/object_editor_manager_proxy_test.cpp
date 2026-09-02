@@ -64,7 +64,7 @@ bool MockWriteParcelable()
     return false;
 }
 
-bool MockRemote()
+[[maybe_unused]] bool MockRemote()
 {
     return false;
 }
@@ -107,10 +107,10 @@ HWTEST_F(ObjectEditorManagerProxyTest, StartObjectEditorExtension_002, TestSize.
     sptr<IRemoteObject> oeExtensionRemoteObject = nullptr;
     bool isPackageExtension = false;
     Stub stub;
-    stub.set(ADDR(MessageParcel, WriteInterfaceToken), MockWriteInterfaceToken);
+    stub.set(ADDR(&MessageParcel::WriteInterfaceToken), MockWriteInterfaceToken);
     ErrCode ret = client_->StartObjectEditorExtension(
         document, objectEditorCallback, oeExtensionRemoteObject, isPackageExtension);
-    EXPECT_EQ(ret, ERR_INVALID_DATA);
+    EXPECT_EQ(ret, ERR_INVALID_VALUE);
 }
 
 /**
@@ -126,7 +126,7 @@ HWTEST_F(ObjectEditorManagerProxyTest, StartObjectEditorExtension_003, TestSize.
     sptr<IRemoteObject> oeExtensionRemoteObject = nullptr;
     bool isPackageExtension = false;
     Stub stub;
-    stub.set(ADDR(MessageParcel, WriteParcelable), MockWriteParcelable);
+    stub.set(ADDR(&MessageParcel::WriteParcelable), MockWriteParcelable);
     ErrCode ret = client_->StartObjectEditorExtension(
         document, objectEditorCallback, oeExtensionRemoteObject, isPackageExtension);
     EXPECT_EQ(ret, ERR_INVALID_DATA);
@@ -144,8 +144,6 @@ HWTEST_F(ObjectEditorManagerProxyTest, StartObjectEditorExtension_004, TestSize.
     std::unique_ptr<ObjectEditorDocument> document = std::make_unique<ObjectEditorDocument>();
     sptr<IRemoteObject> oeExtensionRemoteObject = nullptr;
     bool isPackageExtension = false;
-    Stub stub;
-    stub.set(ADDR(ObjectEditorManagerProxy, RemoteRequest), MockRemote);
     ErrCode ret = client_->StartObjectEditorExtension(
         document, objectEditorCallback, oeExtensionRemoteObject, isPackageExtension);
     EXPECT_EQ(ret, ERR_INVALID_DATA);
@@ -195,7 +193,7 @@ HWTEST_F(ObjectEditorManagerProxyTest, StopObjectEditorExtension_001, TestSize.L
     sptr<IRemoteObject> oeExtensionRemoteObject = nullptr;
     bool isPackageExtension = false;
     Stub stub;
-    stub.set(ADDR(MessageParcel, WriteInterfaceToken), MockWriteInterfaceToken);
+    stub.set(ADDR(&MessageParcel::WriteInterfaceToken), MockWriteInterfaceToken);
     std::string documentId = "123456";
     ErrCode ret = client_->StopObjectEditorExtension(
         documentId, oeExtensionRemoteObject, isPackageExtension);
@@ -211,8 +209,6 @@ HWTEST_F(ObjectEditorManagerProxyTest, StopObjectEditorExtension_003, TestSize.L
 {
     sptr<IRemoteObject> oeExtensionRemoteObject = nullptr;
     bool isPackageExtension = false;
-    Stub stub;
-    stub.set(ADDR(ObjectEditorManagerProxy, RemoteRequest), MockRemote);
     std::string documentId = "123456";
     ErrCode ret = client_->StopObjectEditorExtension(
         documentId, oeExtensionRemoteObject, isPackageExtension);
@@ -228,8 +224,6 @@ HWTEST_F(ObjectEditorManagerProxyTest, StopObjectEditorExtension_004, TestSize.L
 {
     sptr<IRemoteObject> oeExtensionRemoteObject = nullptr;
     bool isPackageExtension = false;
-    Stub stub;
-    stub.set(ADDR(ObjectEditorManagerProxy, RemoteRequest), MockRemote);
     std::string documentId = "123456";
     ErrCode ret = client_->StopObjectEditorExtension(
         documentId, oeExtensionRemoteObject, isPackageExtension);
@@ -246,9 +240,9 @@ HWTEST_F(ObjectEditorManagerProxyTest, GetOEidByFileExtension_001, TestSize.Leve
     const std::string hmid;
     std::string fileExtension;
     Stub stub;
-    stub.set(ADDR(MessageParcel, WriteInterfaceToken), MockWriteInterfaceToken);
+    stub.set(ADDR(&MessageParcel::WriteInterfaceToken), MockWriteInterfaceToken);
     ErrCode ret = client_->GetOEidByFileExtension(hmid, fileExtension);
-    EXPECT_EQ(ret, ERR_INVALID_DATA);
+    EXPECT_EQ(ret, ERR_INVALID_VALUE);
 }
 
 /**
@@ -261,7 +255,7 @@ HWTEST_F(ObjectEditorManagerProxyTest, GetOEidByFileExtension_002, TestSize.Leve
     const std::string hmid;
     std::string fileExtension;
     Stub stub;
-    stub.set(ADDR(MessageParcel, WriteString16), MockWriteString16);
+    stub.set(ADDR(&MessageParcel::WriteString16), MockWriteString16);
     ErrCode ret = client_->GetOEidByFileExtension(hmid, fileExtension);
     EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
@@ -275,8 +269,6 @@ HWTEST_F(ObjectEditorManagerProxyTest, GetOEidByFileExtension_003, TestSize.Leve
 {
     const std::string hmid;
     std::string fileExtension;
-    Stub stub;
-    stub.set(ADDR(ObjectEditorManagerProxy, RemoteRequest), MockRemote);
     ErrCode ret = client_->GetOEidByFileExtension(hmid, fileExtension);
     EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
@@ -291,9 +283,9 @@ HWTEST_F(ObjectEditorManagerProxyTest, GetIconByOEid_001, TestSize.Level1)
     const std::string hmid;
     std::string fileExtension;
     Stub stub;
-    stub.set(ADDR(MessageParcel, WriteInterfaceToken), MockWriteInterfaceToken);
+    stub.set(ADDR(&MessageParcel::WriteInterfaceToken), MockWriteInterfaceToken);
     ErrCode ret = client_->GetIconByOEid(hmid, fileExtension);
-    EXPECT_EQ(ret, ERR_INVALID_DATA);
+    EXPECT_EQ(ret, ERR_INVALID_VALUE);
 }
 
 /**
@@ -306,7 +298,7 @@ HWTEST_F(ObjectEditorManagerProxyTest, GetIconByOEid_002, TestSize.Level1)
     const std::string hmid;
     std::string fileExtension;
     Stub stub;
-    stub.set(ADDR(MessageParcel, WriteString16), MockWriteString16);
+    stub.set(ADDR(&MessageParcel::WriteString16), MockWriteString16);
     ErrCode ret = client_->GetIconByOEid(hmid, fileExtension);
     EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
@@ -320,8 +312,6 @@ HWTEST_F(ObjectEditorManagerProxyTest, GetIconByOEid_003, TestSize.Level1)
 {
     const std::string hmid;
     std::string fileExtension;
-    Stub stub;
-    stub.set(ADDR(ObjectEditorManagerProxy, RemoteRequest), MockRemote);
     ErrCode ret = client_->GetIconByOEid(hmid, fileExtension);
     EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
@@ -337,9 +327,9 @@ HWTEST_F(ObjectEditorManagerProxyTest, GetFormatName_001, TestSize.Level1)
     std::string locale;
     std::string formatName;
     Stub stub;
-    stub.set(ADDR(MessageParcel, WriteInterfaceToken), MockWriteInterfaceToken);
+    stub.set(ADDR(&MessageParcel::WriteInterfaceToken), MockWriteInterfaceToken);
     ErrCode ret = client_->GetFormatName(hmid, locale, formatName);
-    EXPECT_EQ(ret, ERR_INVALID_DATA);
+    EXPECT_EQ(ret, ERR_INVALID_VALUE);
 }
 
 /**
@@ -353,7 +343,7 @@ HWTEST_F(ObjectEditorManagerProxyTest, GetFormatName_002, TestSize.Level1)
     std::string locale;
     std::string formatName;
     Stub stub;
-    stub.set(ADDR(MessageParcel, WriteString16), MockWriteString16);
+    stub.set(ADDR(&MessageParcel::WriteString16), MockWriteString16);
     ErrCode ret = client_->GetFormatName(hmid, locale, formatName);
     EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
@@ -368,8 +358,6 @@ HWTEST_F(ObjectEditorManagerProxyTest, GetFormatName_003, TestSize.Level1)
     const std::string hmid;
     std::string locale;
     std::string formatName;
-    Stub stub;
-    stub.set(ADDR(ObjectEditorManagerProxy, RemoteRequest), MockRemote);
     ErrCode ret = client_->GetFormatName(hmid, locale, formatName);
     EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
@@ -399,9 +387,9 @@ HWTEST_F(ObjectEditorManagerProxyTest, GetObjectEditorFormatByOEidAndLocale_002,
     std::string locale;
     std::unique_ptr<ObjectEditorFormat> format = std::make_unique<ObjectEditorFormat>();
     Stub stub;
-    stub.set(ADDR(MessageParcel, WriteInterfaceToken), MockWriteInterfaceToken);
+    stub.set(ADDR(&MessageParcel::WriteInterfaceToken), MockWriteInterfaceToken);
     ErrCode ret = client_->GetObjectEditorFormatByOEidAndLocale(hmid, locale, format);
-    EXPECT_EQ(ret, ERR_INVALID_DATA);
+    EXPECT_EQ(ret, ERR_INVALID_VALUE);
 }
 
 /**
@@ -415,7 +403,7 @@ HWTEST_F(ObjectEditorManagerProxyTest, GetObjectEditorFormatByOEidAndLocale_003,
     std::string locale;
     std::unique_ptr<ObjectEditorFormat> format = std::make_unique<ObjectEditorFormat>();
     Stub stub;
-    stub.set(ADDR(MessageParcel, WriteString16), MockWriteString16);
+    stub.set(ADDR(&MessageParcel::WriteString16), MockWriteString16);
     ErrCode ret = client_->GetObjectEditorFormatByOEidAndLocale(hmid, locale, format);
     EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
@@ -430,8 +418,6 @@ HWTEST_F(ObjectEditorManagerProxyTest, GetObjectEditorFormatByOEidAndLocale_004,
     std::string hmid;
     std::string locale;
     std::unique_ptr<ObjectEditorFormat> format = std::make_unique<ObjectEditorFormat>();
-    Stub stub;
-    stub.set(ADDR(ObjectEditorManagerProxy, RemoteRequest), MockRemote);
     ErrCode ret = client_->GetObjectEditorFormatByOEidAndLocale(hmid, locale, format);
     EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
@@ -447,9 +433,9 @@ HWTEST_F(ObjectEditorManagerProxyTest, GetObjectEditorFormatsByLocale_001, TestS
     std::vector<std::unique_ptr<ObjectEditorFormat>> formats;
     formats.push_back(std::make_unique<ObjectEditorFormat>());
     Stub stub;
-    stub.set(ADDR(MessageParcel, WriteInterfaceToken), MockWriteInterfaceToken);
+    stub.set(ADDR(&MessageParcel::WriteInterfaceToken), MockWriteInterfaceToken);
     ErrCode ret = client_->GetObjectEditorFormatsByLocale(locale, formats);
-    EXPECT_EQ(ret, ERR_INVALID_VALUE);
+    EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
 
 /**
@@ -463,9 +449,9 @@ HWTEST_F(ObjectEditorManagerProxyTest, GetObjectEditorFormatsByLocale_002, TestS
     std::vector<std::unique_ptr<ObjectEditorFormat>> formats;
     formats.push_back(std::make_unique<ObjectEditorFormat>());
     Stub stub;
-    stub.set(ADDR(MessageParcel, WriteString16), MockWriteString16);
+    stub.set(ADDR(&MessageParcel::WriteString16), MockWriteString16);
     ErrCode ret = client_->GetObjectEditorFormatsByLocale(locale, formats);
-    EXPECT_EQ(ret, ERR_INVALID_VALUE);
+    EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
 
 /**
@@ -478,8 +464,6 @@ HWTEST_F(ObjectEditorManagerProxyTest, GetObjectEditorFormatsByLocale_003, TestS
     const std::string locale;
     std::vector<std::unique_ptr<ObjectEditorFormat>> formats;
     formats.push_back(std::make_unique<ObjectEditorFormat>());
-    Stub stub;
-    stub.set(ADDR(ObjectEditorManagerProxy, RemoteRequest), MockRemote);
     ErrCode ret = client_->GetObjectEditorFormatsByLocale(locale, formats);
     EXPECT_EQ(ret, ERR_INVALID_VALUE);
 }
@@ -493,7 +477,7 @@ HWTEST_F(ObjectEditorManagerProxyTest, StartUIAbility_001, TestSize.Level1)
 {
     const std::unique_ptr<AAFwk::Want> want = std::make_unique<AAFwk::Want>();
     Stub stub;
-    stub.set(ADDR(MessageParcel, WriteInterfaceToken), MockWriteInterfaceToken);
+    stub.set(ADDR(&MessageParcel::WriteInterfaceToken), MockWriteInterfaceToken);
     ErrCode ret = client_->StartUIAbility(std::make_unique<AAFwk::Want>(), sptr<IRemoteObject>(nullptr), 0);
     EXPECT_EQ(ret, ERR_INVALID_VALUE);
 }
@@ -507,9 +491,9 @@ HWTEST_F(ObjectEditorManagerProxyTest, StartUIAbility_002, TestSize.Level1)
 {
     const std::unique_ptr<AAFwk::Want> want = std::make_unique<AAFwk::Want>();
     Stub stub;
-    stub.set(ADDR(MessageParcel, WriteParcelable), MockWriteParcelable);
+    stub.set(ADDR(&MessageParcel::WriteParcelable), MockWriteParcelable);
     ErrCode ret = client_->StartUIAbility(std::make_unique<AAFwk::Want>(), sptr<IRemoteObject>(nullptr), 0);
-    EXPECT_EQ(ret, ERR_INVALID_VALUE);
+    EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
 
 /**
@@ -520,8 +504,6 @@ HWTEST_F(ObjectEditorManagerProxyTest, StartUIAbility_002, TestSize.Level1)
 HWTEST_F(ObjectEditorManagerProxyTest, StartUIAbility_003, TestSize.Level1)
 {
     const std::unique_ptr<AAFwk::Want> want = std::make_unique<AAFwk::Want>();
-    Stub stub;
-    stub.set(ADDR(ObjectEditorManagerProxy, RemoteRequest), MockRemote);
     ErrCode ret = client_->StartUIAbility(std::make_unique<AAFwk::Want>(), sptr<IRemoteObject>(nullptr), 0);
     EXPECT_EQ(ret, ERR_INVALID_VALUE);
 }

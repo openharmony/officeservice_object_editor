@@ -157,7 +157,7 @@ HWTEST_F(PackageDataTest, CreateByDocument_002, TestSize.Level1)
     EXPECT_CALL(*document, GetNativeFilePath()).WillRepeatedly(Return(MockGetNativeFilePath()));
     EXPECT_CALL(*document, GetOriFilePath()).WillRepeatedly(Return(MockGetOriFilePath()));
     Stub stub;
-    stub.set(ADDR(PackageData, SaveData), MockSaveDataFalse);
+    stub.set(ADDR(&PackageData::SaveData), MockSaveDataFalse);
     auto result = PackageData::CreateByDocument(document);
     EXPECT_EQ(result, nullptr);
 }
@@ -173,9 +173,9 @@ HWTEST_F(PackageDataTest, CreateByDocument_003, TestSize.Level1)
     EXPECT_CALL(*document, GetNativeFilePath()).WillRepeatedly(Return(MockGetNativeFilePath()));
     EXPECT_CALL(*document, GetOriFilePath()).WillRepeatedly(Return(MockGetOriFilePath()));
     Stub stub;
-    stub.set(ADDR(PackageData, SaveData), MockSaveDataTrue);
+    stub.set(ADDR(&PackageData::SaveData), MockSaveDataTrue);
     auto result = PackageData::CreateByDocument(document);
-    EXPECT_EQ(result, nullptr);
+    EXPECT_NE(result, nullptr);
 }
 
 /**
@@ -214,7 +214,7 @@ HWTEST_F(PackageDataTest, LoadFromDocument_003, TestSize.Level1)
     EXPECT_CALL(*document, GetTmpFilePath()).WillRepeatedly(Return(MockGetTmpFilePath()));
     g_mockStorage = std::make_unique<MockStorage>("test_storage");
     Stub stub;
-    stub.set(ADDR(Storage, GetStream), MockGetStreamNull);
+    stub.set(ADDR(&Storage::GetStream), MockGetStreamNull);
     auto result = PackageData::LoadFromDocument(document);
     EXPECT_EQ(result, nullptr);
 }

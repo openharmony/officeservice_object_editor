@@ -174,7 +174,7 @@ HWTEST_F(ObjectEditorExtensionDeathRecipientTest, OnRemoteDied_003, TestSize.Lev
     proxy_->onErrorFunc = MockErrorFunc;
     const wptr<IRemoteObject> remote = nullptr;
     Stub stub;
-    stub.set(ADDR(ObjectEditorClient, QueryExtensionStopReason), MockQueryExtensionStopReasonSaCleanIdle);
+    stub.set(ADDR(&ObjectEditorClient::QueryExtensionStopReason), MockQueryExtensionStopReasonSaCleanIdle);
     recipient_->OnRemoteDied(remote);
     EXPECT_EQ(gLastError, CE_ERR_EXTENSION_ABNORMAL_EXIT);
 }
@@ -191,7 +191,7 @@ HWTEST_F(ObjectEditorExtensionDeathRecipientTest, OnRemoteDied_004, TestSize.Lev
     proxy_->onErrorFunc = MockErrorFunc;
     const wptr<IRemoteObject> remote = nullptr;
     Stub stub;
-    stub.set(ADDR(ObjectEditorClient, QueryExtensionStopReason), MockQueryExtensionStopReasonUnknown);
+    stub.set(ADDR(&ObjectEditorClient::QueryExtensionStopReason), MockQueryExtensionStopReasonUnknown);
     recipient_->OnRemoteDied(remote);
     EXPECT_EQ(gLastError, CE_ERR_EXTENSION_ABNORMAL_EXIT);
 }
@@ -208,7 +208,7 @@ HWTEST_F(ObjectEditorExtensionDeathRecipientTest, OnRemoteDied_005, TestSize.Lev
     proxy_->onErrorFunc = MockErrorFunc;
     const wptr<IRemoteObject> remote = nullptr;
     Stub stub;
-    stub.set(ADDR(ObjectEditorClient, QueryExtensionStopReason), MockQueryExtensionStopReasonProxyStop);
+    stub.set(ADDR(&ObjectEditorClient::QueryExtensionStopReason), MockQueryExtensionStopReasonProxyStop);
     recipient_->OnRemoteDied(remote);
     EXPECT_EQ(gLastError, CE_ERR_EXTENSION_ABNORMAL_EXIT);
 }
@@ -225,7 +225,7 @@ HWTEST_F(ObjectEditorExtensionDeathRecipientTest, OnRemoteDied_006, TestSize.Lev
     proxy_->onErrorFunc = MockErrorFunc;
     const wptr<IRemoteObject> remote = nullptr;
     Stub stub;
-    stub.set(ADDR(ObjectEditorClient, QueryExtensionStopReason), MockQueryExtensionStopReasonFail);
+    stub.set(ADDR(&ObjectEditorClient::QueryExtensionStopReason), MockQueryExtensionStopReasonFail);
     recipient_->OnRemoteDied(remote);
     EXPECT_EQ(gLastError, CE_ERR_EXTENSION_ABNORMAL_EXIT);
 }

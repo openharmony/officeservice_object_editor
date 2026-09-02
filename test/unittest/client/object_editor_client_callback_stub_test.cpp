@@ -193,7 +193,7 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, HandleOnUpdate_003, TestSize.Level1
     auto document = std::make_unique<ObjectEditorDocument>();
     data.WriteParcelable(document.get());
     Stub funcStub;
-    funcStub.set(ADDR(MessageParcel, WriteInt32), MockWriteInt32Fail);
+    funcStub.set(ADDR(&MessageParcel::WriteInt32), MockWriteInt32Fail);
     int32_t ret = stub->HandleOnUpdate(data, reply);
     EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
@@ -228,10 +228,10 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, HandleOnError_002, TestSize.Level1)
     int32_t errorCode = static_cast<int32_t>(0);
     data.WriteInt32(errorCode);
     Stub funcStub;
-    funcStub.set(ADDR(MessageParcel, WriteInt32), MockWriteInt32Fail);
+    funcStub.set(ADDR(&MessageParcel::WriteInt32), MockWriteInt32Fail);
     sptr<MockObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
     int32_t ret = stub->HandleOnError(data, reply);
-    EXPECT_EQ(ret, ERR_NONE);
+    EXPECT_EQ(ret, ERR_INVALID_VALUE);
 }
 
 /**
@@ -262,10 +262,10 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, HandleOnStopEdit_002, TestSize.Leve
     int32_t errorCode = static_cast<int32_t>(0);
     data.WriteInt32(errorCode);
     Stub funcStub;
-    funcStub.set(ADDR(MessageParcel, WriteInt32), MockWriteInt32Fail);
+    funcStub.set(ADDR(&MessageParcel::WriteInt32), MockWriteInt32Fail);
     sptr<MockObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
     int32_t ret = stub->HandleOnStopEdit(data, reply);
-    EXPECT_EQ(ret, ERR_NONE);
+    EXPECT_EQ(ret, ERR_INVALID_VALUE);
 }
 
 /**
@@ -296,10 +296,10 @@ HWTEST_F(ObjectEditorClientCallbackStubTest, HandleOnExtensionStopped_002, TestS
     int32_t errorCode = static_cast<int32_t>(0);
     data.WriteInt32(errorCode);
     Stub funcStub;
-    funcStub.set(ADDR(MessageParcel, WriteInt32), MockWriteInt32Fail);
+    funcStub.set(ADDR(&MessageParcel::WriteInt32), MockWriteInt32Fail);
     sptr<MockObjectEditorClientCallbackStub> stub = sptr<MockObjectEditorClientCallbackStub>::MakeSptr();
     int32_t ret = stub->HandleOnExtensionStopped(data, reply);
-    EXPECT_EQ(ret, ERR_NONE);
+    EXPECT_EQ(ret, ERR_INVALID_VALUE);
 }
 }
 }
