@@ -66,6 +66,9 @@ ohos_unittest("object_editor_manager_database_test") {
     "${object_editor_path}/test/mock/hisysevent/mock_hisysevent.cpp",
     "${object_editor_path}/test/mock/system_ability/mock_system_ability_manager.cpp",
     "${object_editor_path}/test/mock/access_token/mock_access_token_kit.cpp",
+    "${object_editor_path}/test/mock/access_token/mock_access_token_verify.cpp",
+    "${object_editor_path}/test/mock/ipc_skeleton/mock_ipc_skeleton.cpp",
+    "${object_editor_path}/utils/src/object_editor_permission_utils.cpp",
   ]
 
   configs = [
@@ -112,6 +115,7 @@ ohos_unittest("object_editor_manager_database_test") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "access_token:libaccesstoken_sdk",
+    "access_token:libtokenid_sdk",
     "udmf:utd_client",
   ]
 

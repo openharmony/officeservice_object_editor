@@ -31,6 +31,8 @@ namespace ObjectEditor {
 // LCOV_EXCL_START
 namespace {
 constexpr const char* APP_INDEX = "appIndex";
+constexpr const char* USER_ID = "userId";
+constexpr int32_t INVALID_EVENT_USER_ID = -1;
 const char* TABLE_NAME = "object_editor_info";
 const char* DB_DIR = "/data/service/el2/public/object_editor_service/database/";
 
@@ -842,6 +844,16 @@ void ObjectEditorManagerDatabase::DbPackageSubscriber::OnReceiveEvent(
         OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE,
             "ignore bundleName:%{public}s, appIndex:%{public}d", bundleName.c_str(), appIndex);
         return;
+    }
+    int32_t eventUserId = want.GetIntParam(USER_ID, INVALID_EVENT_USER_ID);
+    if (action != EventFwk::CommonEventSupport::COMMON_EVENT_USER_SWITCHED) {
+        int32_t currentUserId = UserMgr::GetInstance().GetUserId();
+        if (eventUserId != currentUserId) {
+            OBJECT_EDITOR_LOGW(ObjectEditorDomain::DATABASE,
+                "ignore event, action:%{public}s, eventUserId:%{public}d, currentUserId:%{public}d",
+                action.c_str(), eventUserId, currentUserId);
+            return;
+        }
     }
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_ADDED) {
         ObjectEditorManagerDatabase::GetInstance().AddBundle(bundleName);
