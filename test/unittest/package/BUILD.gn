@@ -81,6 +81,7 @@ ohos_unittest("package_data_test") {
     "app_file_service:fileuri_native",
     "bundle_framework:appexecfwk_base",
     "c_utils:utils",
+    "bounds_checking_function:libsec_shared",
     "googletest:gmock",
     "googletest:gtest_main",
     "hilog:libhilog",
@@ -137,6 +138,7 @@ ohos_unittest("object_editor_package_test") {
     "bundle_framework:appexecfwk_base",
     "access_token:libaccesstoken_sdk",
     "c_utils:utils",
+    "bounds_checking_function:libsec_shared",
     "googletest:gmock",
     "googletest:gtest_main",
     "hilog:libhilog",
@@ -165,6 +167,7 @@ ohos_unittest("file_watcher_test") {
   ]
   external_deps = [
     "c_utils:utils",
+    "bounds_checking_function:libsec_shared",
     "googletest:gmock",
     "googletest:gtest_main",
     "hilog:libhilog",
