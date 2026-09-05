@@ -21,6 +21,7 @@
             "components": [
                 "hilog",
                 "c_utils",
+                "bounds_checking_function",
                 "samgr",
                 "image_framework",
                 "ipc",
