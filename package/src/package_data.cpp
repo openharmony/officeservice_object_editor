@@ -33,6 +33,9 @@ constexpr uint32_t MARKER_VAL = 2;
 constexpr uint32_t MARKER2_VAL = 0x30000;
 constexpr uint32_t CHUNK_SIZE = 4 * 1024 * 1024; // 4MB
 constexpr uint32_t BLOCK_SIZE = 4 * 1024; // 4KB
+constexpr uint32_t MAX_FILENAME_SIZE = 2048;
+constexpr uint32_t MAX_FILEPATH_SIZE = 4096;
+constexpr const char* NATIVE_SUBDIR = "native";
 }
 
 std::unique_ptr<PackageData> PackageData::CreateByDocument(std::shared_ptr<ObjectEditorDocument> document)
@@ -90,7 +93,7 @@ std::unique_ptr<PackageData> PackageData::LoadFromDocument(std::shared_ptr<Objec
 
 bool ReadStreamUint32(Stream *stream, uint64_t streamSize, StreamPos &offset, uint32_t &value)
 {
-    if (streamSize <= U32_BUF_LEN) {
+    if (streamSize < U32_BUF_LEN) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "stream size too small");
         return false;
     }
@@ -147,8 +150,8 @@ bool PackageData::ParseOle10NativeStream(Stream *stream, const std::string &tmpF
     stream->Seek(offset);
     std::vector<Byte> filenameBuf;
     auto filenameSize = stream->ReadBufferUntilNull(filenameBuf);
-    if (filenameSize <= 0) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "filename is empty");
+    if (filenameSize <= 0 || static_cast<uint32_t>(filenameSize) >= MAX_FILENAME_SIZE) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "filename size invalid: %{public}zd", filenameSize);
         return false;
     }
     filename_ = std::string(filenameBuf.begin(), filenameBuf.end());
@@ -157,8 +160,8 @@ bool PackageData::ParseOle10NativeStream(Stream *stream, const std::string &tmpF
     stream->Seek(offset);
     std::vector<Byte> filepathBuf;
     auto filepathSize = stream->ReadBufferUntilNull(filepathBuf);
-    if (filepathSize <= 0) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "filepath is empty");
+    if (filepathSize <= 0 || static_cast<uint32_t>(filepathSize) >= MAX_FILEPATH_SIZE) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "filepath size invalid: %{public}zd", filepathSize);
         return false;
     }
     filepath_ = std::string(filepathBuf.begin(), filepathBuf.end());
@@ -264,9 +267,18 @@ bool PackageData::WriteFileToSandbox(Stream *stream, StreamPos &offset, const st
         }
     }
     fs::path safeFilename = fs::path(filename_).filename();
-    std::string canonicalPath = parentDir.string() + "/" + safeFilename.string();
+    fs::path nativeDir = parentDir / NATIVE_SUBDIR;
+    if (!fs::exists(nativeDir, ec)) {
+        fs::create_directories(nativeDir, ec);
+        if (ec) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "create native dir failed, ec: %{public}d", ec.value());
+            return false;
+        }
+    }
+    fs::path canonicalPath = nativeDir;
+    canonicalPath.append(safeFilename.string());
     std::string outputPathStr;
-    if (!SystemUtils::ValidateAndNormalizePath(canonicalPath, outputPathStr)) {
+    if (!SystemUtils::ValidateAndNormalizePath(canonicalPath.string(), outputPathStr)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "Failed to validate and normalize path");
         return false;
     }
