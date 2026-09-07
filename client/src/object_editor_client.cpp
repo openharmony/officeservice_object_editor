@@ -47,6 +47,7 @@ constexpr int32_t UUID_START_POS_4 = 20;
 constexpr int32_t NIBBLE_SHIFT = 4;
 constexpr int32_t NIBBLE_MASK = 0x0F;
 constexpr int32_t METADATA_BUFFER_SIZE = 2048;
+constexpr const char* NATIVE_SUBDIR = "native";
 }
 namespace fs = std::filesystem;
 // LCOV_EXCL_START
@@ -474,68 +475,97 @@ ErrCode ObjectEditorClient::PrepareFiles(const std::unique_ptr<ObjectEditorDocum
         return ObjectEditorClientErrCode::CLIENT_UNKNOWN_OPERATE;
     }
     if (document->GetOperateType() == OperateType::CREATE_BY_FILE) {
-        OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "handle copy file");
-        std::string source = document->GetOriFilePath();
-        if (source.empty()) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "source is empty");
-            return ObjectEditorClientErrCode::CLIENT_GET_PATH_ERROR;
-        }
-        if (document->GetLinking()) {
-            std::string canonicalFileSourcePath;
-            if (!SystemUtils::ValidateAndNormalizePath(source, canonicalFileSourcePath)) {
-                OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "Failed to validate and normalize path");
-                return ObjectEditorClientErrCode::CLIENT_GET_PATH_ERROR;
-            }
-            document->SetNativeFileUri(SystemUtils::GetUriFromPath(canonicalFileSourcePath));
-        } else {
-            fs::path sourcePath(source);
-            fs::path destPath = targetDirPath / sourcePath.filename().string();
-            std::uintmax_t fileSize = fs::file_size(sourcePath, ec);
-            if (ec) {
-                OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "get file_size failed, ec: %{public}d", ec.value());
-                return ObjectEditorClientErrCode::CLIENT_COPY_FILE_FAILED;
-            }
-            auto spaceInfo = fs::space(destPath.parent_path(), ec);
-            if (ec) {
-                OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "get space failed, ec: %{public}d", ec.value());
-                return ObjectEditorClientErrCode::CLIENT_COPY_FILE_FAILED;
-            }
-            std::uintmax_t freeSpace = spaceInfo.available;
-            if (freeSpace < fileSize + METADATA_BUFFER_SIZE) {
-                OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,
-                    "freeSpace: %{public}" PRIu64 " fileSize: %{public}" PRIu64,
-                    static_cast<uint64_t>(freeSpace), static_cast<uint64_t>(fileSize));
-                return ObjectEditorClientErrCode::CLIENT_COPY_FILE_FAILED;
-            }
-            result = fs::copy_file(sourcePath, destPath, fs::copy_options::overwrite_existing, ec);
-            if (!result || ec) {
-                OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "copy source to sandboxPath failed, ec: %{public}d",
-                    ec.value());
-                return ObjectEditorClientErrCode::CLIENT_UNKNOWN_OPERATE;
-            }
-            document->SetNativeFileUri(SystemUtils::GetUriFromPath(destPath.string()));
+        auto ret = CopySourceFile(document, targetDirPath.string());
+        if (ret != ObjectEditorClientErrCode::CLIENT_OK) {
+            return ret;
         }
     }
+    return PrepareSnapshotAndTmpFile(document, sandboxPath);
+}
+
+ErrCode ObjectEditorClient::CopySourceFile(const std::unique_ptr<ObjectEditorDocument> &document,
+    const std::string &targetDirPath)
+{
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "handle copy file");
+    std::string source = document->GetOriFilePath();
+    if (source.empty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "source is empty");
+        return ObjectEditorClientErrCode::CLIENT_GET_PATH_ERROR;
+    }
+    if (document->GetLinking()) {
+        std::string canonicalFileSourcePath;
+        if (!SystemUtils::ValidateAndNormalizePath(source, canonicalFileSourcePath)) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "Failed to validate and normalize path");
+            return ObjectEditorClientErrCode::CLIENT_GET_PATH_ERROR;
+        }
+        document->SetNativeFileUri(SystemUtils::GetUriFromPath(canonicalFileSourcePath));
+        return ObjectEditorClientErrCode::CLIENT_OK;
+    }
+    std::error_code ec;
+    fs::path sourcePath(source);
+    fs::path nativeDir = fs::path(targetDirPath) / NATIVE_SUBDIR;
+    if (!fs::exists(nativeDir, ec)) {
+        fs::create_directories(nativeDir, ec);
+        if (ec) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "create native dir failed, ec: %{public}d", ec.value());
+            return ObjectEditorClientErrCode::CLIENT_COPY_FILE_FAILED;
+        }
+    }
+    fs::path destPath = nativeDir / sourcePath.filename().string();
+    std::uintmax_t fileSize = fs::file_size(sourcePath, ec);
+    if (ec) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "get file_size failed, ec: %{public}d", ec.value());
+        return ObjectEditorClientErrCode::CLIENT_COPY_FILE_FAILED;
+    }
+    auto spaceInfo = fs::space(destPath.parent_path(), ec);
+    if (ec) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "get space failed, ec: %{public}d", ec.value());
+        return ObjectEditorClientErrCode::CLIENT_COPY_FILE_FAILED;
+    }
+    std::uintmax_t freeSpace = spaceInfo.available;
+    if (freeSpace < fileSize + METADATA_BUFFER_SIZE) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT,
+            "freeSpace: %{public}" PRIu64 " fileSize: %{public}" PRIu64,
+            static_cast<uint64_t>(freeSpace), static_cast<uint64_t>(fileSize));
+        return ObjectEditorClientErrCode::CLIENT_COPY_FILE_FAILED;
+    }
+    bool result = fs::copy_file(sourcePath, destPath, fs::copy_options::overwrite_existing, ec);
+    if (!result || ec) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "copy source to sandboxPath failed, ec: %{public}d",
+            ec.value());
+        return ObjectEditorClientErrCode::CLIENT_UNKNOWN_OPERATE;
+    }
+    document->SetNativeFileUri(SystemUtils::GetUriFromPath(destPath.string()));
+    return ObjectEditorClientErrCode::CLIENT_OK;
+}
+
+ErrCode ObjectEditorClient::PrepareSnapshotAndTmpFile(const std::unique_ptr<ObjectEditorDocument> &document,
+    const std::string &sandboxPath)
+{
     std::string canonicalFilePath;
     if (!SystemUtils::ValidateAndNormalizePath(sandboxPath, canonicalFilePath)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "Failed to validate and normalize path");
         return ObjectEditorClientErrCode::CLIENT_PREPARE_FILES_ERROR;
     }
-    sandboxPath = canonicalFilePath;
-    std::string snapshotFilePath = sandboxPath + "/snapshot.png";
+    std::string snapshotFilePath = canonicalFilePath + "/snapshot.png";
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "snapshotFilePath is %{private}s", snapshotFilePath.c_str());
-    std::ofstream snapshotFile(snapshotFilePath, std::ios::binary);
+    std::string snapshotCanonicalFilePath;
+    if (!SystemUtils::ValidateAndNormalizePath(snapshotFilePath, snapshotCanonicalFilePath)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "Failed to validate and normalize snapshotFile path");
+        return ObjectEditorClientErrCode::CLIENT_PREPARE_FILES_ERROR;
+    }
+    std::ofstream snapshotFile(snapshotCanonicalFilePath, std::ios::binary);
     if (!snapshotFile.is_open()) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "open snapshotFilePath failed");
         return ObjectEditorClientErrCode::CLIENT_PREPARE_FILES_ERROR;
     }
     snapshotFile.close();
-    document->SetSnapshotUri(SystemUtils::GetUriFromPath(snapshotFilePath));
+    document->SetSnapshotUri(SystemUtils::GetUriFromPath(snapshotCanonicalFilePath));
     if (document->GetLinking()) {
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::CLIENT, "ole.bin not need generate");
         return ObjectEditorClientErrCode::CLIENT_OK;
     }
-    document->SetTmpFileUri(SystemUtils::GetUriFromPath(sandboxPath + "/ole.bin"));
+    document->SetTmpFileUri(SystemUtils::GetUriFromPath(canonicalFilePath + "/ole.bin"));
     return FlushDocument(document);
 }
 
@@ -562,16 +592,19 @@ ErrCode ObjectEditorClient::CleanupTempFiles(const std::unique_ptr<ObjectEditorD
     }
     if (document->GetOperateType() == OperateType::CREATE_BY_FILE && !document->GetLinking()) {
         std::string source = document->GetOriFilePath();
-        if (source.empty()) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "source is empty");
-            return ObjectEditorClientErrCode::CLIENT_GET_PATH_ERROR;
+        if (!source.empty()) {
+            fs::path sourcePath(source);
+            std::string oldDestPath = sandboxPath + "/" + NATIVE_SUBDIR + "/" + sourcePath.filename().string();
+            if (fs::exists(oldDestPath, ec)) {
+                fs::remove(oldDestPath, ec);
+                OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "remove old destPath result: %{public}d", ec.value());
+            }
         }
-        fs::path sourcePath(source);
-        std::string destPath = sandboxPath + "/" + sourcePath.filename().string();
-        if (fs::exists(destPath, ec)) {
-            fs::remove(destPath, ec);
-            OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "remove destPath result: %{public}d", ec.value());
-        }
+    }
+    std::string nativeDir = sandboxPath + "/" + NATIVE_SUBDIR;
+    if (fs::exists(nativeDir, ec) && fs::is_empty(nativeDir, ec)) {
+        fs::remove(nativeDir, ec);
+        OBJECT_EDITOR_LOGD(ObjectEditorDomain::CLIENT, "remove native dir result: %{public}d", ec.value());
     }
     if (fs::exists(sandboxPath, ec) && fs::is_empty(sandboxPath, ec)) {
         fs::remove(sandboxPath, ec);
@@ -597,7 +630,20 @@ ErrCode ObjectEditorClient::StopObjectEditorExtension(
         return ERR_INVALID_VALUE;
     }
     HITRACE_METER_FMT(HITRACE_TAG_OHOS, "client::StopObjectEditorExtension");
+    auto ret = StopObjectEditorExtensionInner(document, oeExtensionRemoteObject, isPackageExtension);
     CleanupTempFiles(document);
+    return ret;
+}
+
+ErrCode ObjectEditorClient::StopObjectEditorExtensionInner(
+    const std::unique_ptr<ObjectEditorDocument> &document,
+    const sptr<IObjectEditorService> &oeExtensionRemoteObject,
+    const bool &isPackageExtension)
+{
+    if (document == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "document is null");
+        return ERR_INVALID_VALUE;
+    }
     if (isPackageExtension) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "is package");
         return ObjectEditorClientErrCode::CLIENT_OK;
@@ -612,6 +658,7 @@ ErrCode ObjectEditorClient::StopObjectEditorExtension(
         return ERR_INVALID_VALUE;
     }
     sptr<IRemoteObject> remoteObject = oeExtensionRemoteObject->GetRemoteObject();
+    std::string documentId = document->GetDocumentId();
     ErrCode ret = objectEditorManagerProxy->StopObjectEditorExtension(documentId, remoteObject, isPackageExtension);
     if (ret != ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "proxy fail:%{public}d", ret);

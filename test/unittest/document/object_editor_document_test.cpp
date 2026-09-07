@@ -119,6 +119,11 @@ void MockSeek()
 {
 }
 
+std::streamsize MockRead()
+{
+    return 0;
+}
+
 std::uintmax_t MockFileSizeZero()
 {
     return 0;
@@ -140,15 +145,20 @@ uint64_t MockComputeLiveDataSizeSmall()
 }
 
 std::unique_ptr<Stream> g_stream;
+static std::unique_ptr<StorageIO> g_mockIo[2];
+static std::unique_ptr<Stream> g_mockStream[2];
+static int g_mockStreamIdx = 0;
 
 Stream *MockGetStream()
 {
+    int idx = g_mockStreamIdx++ % 2;
+    g_mockStream[idx].reset();
     std::string hmid = "00000000000000000000000000000000";
-    std::unique_ptr<StorageIO> io = std::make_unique<StorageIO>(hmid);
-    auto impl = std::make_unique<StreamImpl>(io.get(), "/test/file");
-    g_stream = std::make_unique<Stream>(impl.get());
+    g_mockIo[idx] = std::make_unique<StorageIO>(hmid);
+    auto impl = std::make_unique<StreamImpl>(g_mockIo[idx].get(), "/test/file");
+    g_mockStream[idx] = std::make_unique<Stream>(impl.get());
     impl.release();
-    return g_stream.get();
+    return g_mockStream[idx].get();
 }
 
 /**
@@ -664,6 +674,7 @@ HWTEST_F(ObjectEditorDocumentTest, CopyStreamData_003, TestSize.Level1)
     Stub stub;
     stub.set(ADDR(&Storage::GetStream), MockGetStream);
     stub.set(ADDR(&Stream::Seek), MockSeek);
+    stub.set(ADDR(&Stream::Read), MockRead);
     auto res = document_->CopyStreamData(src.get(), dst.get(), path, 16);
     EXPECT_EQ(res, false);
 }
