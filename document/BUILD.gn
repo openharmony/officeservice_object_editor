@@ -52,6 +52,7 @@ ohos_shared_library("content_embed_document") {
 
     external_deps = [
         "c_utils:utils",
+        "bounds_checking_function:libsec_shared",
         "ipc:ipc_core",
         "ability_base:zuri",
         "ability_base:configuration",
