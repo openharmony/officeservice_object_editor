@@ -21,6 +21,8 @@
 #include "mock_hilog.h"
 #include "mock_ability_manager_client.h"
 #include "mock_i_remote_object.h"
+#include "stub.h"
+#include "object_editor_permission_utils.h"
 #define protected public
 #define private public
 #include "object_editor_config.h"
@@ -33,6 +35,12 @@ using namespace testing::ext;
 
 namespace OHOS {
 namespace ObjectEditor {
+namespace {
+bool MockCheckCallingPermissionTrue(const std::string &)
+{
+    return true;
+}
+}
 
 class ObjectEditorManagerSystemAbilityTest : public testing::Test {
 public:
@@ -177,6 +185,8 @@ HWTEST_F(ObjectEditorManagerSystemAbilityTest, CallbackEnter_001, TestSize.Level
 HWTEST_F(ObjectEditorManagerSystemAbilityTest, CallbackEnter_002, TestSize.Level1)
 {
     uint32_t code = static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_QUERY_EXTENSION_STOP_REASON);
+    Stub stub;
+    stub.set(ADDR(&ObjectEditorPermissionUtils::CheckCallingPermission), MockCheckCallingPermissionTrue);
     int32_t ret = sa_->CallbackEnter(code);
     EXPECT_EQ(ret, ERR_NONE);
 }
@@ -534,6 +544,8 @@ HWTEST_F(ObjectEditorManagerSystemAbilityTest, CheckCallingPermission_002, TestS
 HWTEST_F(ObjectEditorManagerSystemAbilityTest, CheckCallingPermission_003, TestSize.Level1)
 {
     uint32_t code = static_cast<uint32_t>(IObjectEditorManagerIpcCode::COMMAND_QUERY_EXTENSION_STOP_REASON);
+    Stub stub;
+    stub.set(ADDR(&ObjectEditorPermissionUtils::CheckCallingPermission), MockCheckCallingPermissionTrue);
     bool ret = sa_->CheckCallingPermission(code);
     EXPECT_TRUE(ret);
 }

@@ -89,6 +89,7 @@ ErrCode ObjectEditorPackage::DoEdit(const std::string &documentId)
                     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "load document failed");
                     return;
                 }
+                newDocument->SetDocumentId(document_->GetDocumentId());
                 if (document_->GetTmpFileUri().has_value()) {
                     newDocument->SetTmpFileUri(document_->GetTmpFileUri().value());
                 }
