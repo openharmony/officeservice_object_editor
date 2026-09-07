@@ -116,6 +116,9 @@ private:
     void InitLoadState();
     bool WaitLoadStateChange();
     ErrCode PrepareFiles(const std::unique_ptr<ObjectEditorDocument> &document);
+    ErrCode CopySourceFile(const std::unique_ptr<ObjectEditorDocument> &document, const std::string &targetDirPath);
+    ErrCode PrepareSnapshotAndTmpFile(const std::unique_ptr<ObjectEditorDocument> &document,
+        const std::string &sandboxPath);
     ErrCode HandlePackage(
         const std::unique_ptr<ObjectEditorDocument> &document,
         const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
@@ -128,6 +131,10 @@ private:
         const sptr<IObjectEditorClientCallback> &objectEditorClientCallback,
         sptr<IObjectEditorService> &oeExtensionRemoteObject,
         bool &isPackageExtension);
+    ErrCode StopObjectEditorExtensionInner(
+        const std::unique_ptr<ObjectEditorDocument> &document,
+        const sptr<IObjectEditorService> &oeExtensionRemoteObject,
+        const bool &isPackageExtension);
 
     std::mutex proxyMutex_;
     sptr<IObjectEditorManager> oeSAProxy_ { nullptr };

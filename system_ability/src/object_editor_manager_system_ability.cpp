@@ -383,14 +383,12 @@ bool ObjectEditorManagerSystemAbility::CheckCallingPermission(uint32_t code)
         case IObjectEditorManagerIpcCode::COMMAND_GET_FORMAT_NAME:
         case IObjectEditorManagerIpcCode::COMMAND_GET_FORMAT_BY_OEID_AND_LOCALE:
         case IObjectEditorManagerIpcCode::COMMAND_GET_FORMATS_BY_LOCALE:
-        case IObjectEditorManagerIpcCode::COMMAND_STOP_OBJECT_EDITOR_EXTENSION: {
+        case IObjectEditorManagerIpcCode::COMMAND_STOP_OBJECT_EDITOR_EXTENSION:
+        case IObjectEditorManagerIpcCode::COMMAND_QUERY_EXTENSION_STOP_REASON: {
             return ObjectEditorPermissionUtils::CheckCallingPermission(permissionClient_);
         }
         case IObjectEditorManagerIpcCode::COMMAND_START_UI_ABILITY: {
             return ObjectEditorPermissionUtils::CheckCallingPermission(PERMISSION_SERVER);
-        }
-        case IObjectEditorManagerIpcCode::COMMAND_QUERY_EXTENSION_STOP_REASON: {
-            return true;
         }
         default: {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "unknown code:%{public}d", code);
