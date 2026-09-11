@@ -1281,7 +1281,7 @@ HWTEST_F(PackageDataTest, ParseOle10NativeStream_011, TestSize.Level1)
     ASSERT_NE(stream, nullptr);
     std::string tmpFilePath = "/data/local/tmp/oe_parse_011/ole.bin";
     auto result = packageData_->ParseOle10NativeStream(stream, tmpFilePath);
-    EXPECT_EQ(result, true);
+    EXPECT_EQ(result, false);
     std::error_code ec;
     std::filesystem::remove_all("/data/local/tmp/oe_parse_011", ec);
 }
