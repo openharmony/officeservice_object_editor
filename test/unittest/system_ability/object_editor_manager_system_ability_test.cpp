@@ -41,6 +41,11 @@ bool MockCheckCallingPermissionTrue(const std::string &)
 {
     return true;
 }
+
+ObjectEditorManagerErrCode MockCheckIsAllowStartExtensionOk()
+{
+    return ObjectEditorManagerErrCode::SA_CHECK_START_EXTENSION_OK;
+}
 }
 
 class ObjectEditorManagerSystemAbilityTest : public testing::Test {
@@ -1951,9 +1956,12 @@ HWTEST_F(ObjectEditorManagerSystemAbilityTest, StartObjectEditorExtension_005, T
     document->SetOperateType(OperateType::EDIT);
     document->SetLinking(false);
     document->SetSnapshotUri("file:///test/snapshot.png");
+    document->SetTmpFileUri("file:///test/tmp.ole");
     sptr<IObjectEditorClientCallback> callback = sptr<MockObjectEditorClientCallback>::MakeSptr();
     sptr<IRemoteObject> remoteObject;
     bool isPackageExtension = false;
+    Stub stub;
+    stub.set(ADDR(&ObjectEditorManagerSystemAbility::CheckIsAllowStartExtension), MockCheckIsAllowStartExtensionOk);
     ErrCode ret = sa_->StartObjectEditorExtension(document, callback, remoteObject, isPackageExtension);
     EXPECT_EQ(ret, ObjectEditorManagerErrCode::SA_OK);
     EXPECT_TRUE(isPackageExtension);
