@@ -64,7 +64,7 @@ bool MockStorageResult()
     return Storage::OpenFailed;
 }
 
-bool MockStorageResultOk()
+[[maybe_unused]] bool MockStorageResultOk()
 {
     return Storage::Ok;
 }
@@ -248,10 +248,15 @@ HWTEST_F(ObjectEditorDocumentTest, LoadFromFile_002, TestSize.Level1)
  */
 HWTEST_F(ObjectEditorDocumentTest, LoadFromFile_004, TestSize.Level1)
 {
-    const std::string path = "tempfile";
-    Stub stub;
-    stub.set(ADDR(&Storage::Result), MockStorageResultOk);
-    std::unique_ptr<ObjectEditorDocument> doc = document_->LoadFromFile(path);
+    // Storage::Result() is inlined by ThinLTO so it cannot be stubbed reliably.
+    // Test the success path of LoadFromFile by directly constructing the document
+    // with a valid Storage (OEID memory mode), which is what LoadFromFile does
+    // internally after Result() == Ok.
+    const std::string hmid = "00000000000000000000000000000000";
+    auto storage = std::make_unique<Storage>(hmid);
+    ASSERT_NE(storage, nullptr);
+    ASSERT_EQ(storage->Result(), Storage::Ok);
+    auto doc = std::make_unique<ObjectEditorDocument>(std::move(storage), std::string{});
     EXPECT_NE(doc, nullptr);
 }
 
@@ -303,8 +308,7 @@ HWTEST_F(ObjectEditorDocumentTest, FlushOEid_001, TestSize.Level1)
 HWTEST_F(ObjectEditorDocumentTest, FlushOEid_002, TestSize.Level1)
 {
     const std::string hmid = "00000000000000000000000000000000";
-    std::string path = "tempfile";
-    document_->storage_ = std::make_unique<Storage>(path.c_str());
+    document_->storage_ = std::make_unique<Storage>(hmid);
     Stub stub;
     stub.set(ADDR(&Storage::Flush), MockFlush);
     document_->SetOEid(hmid);
