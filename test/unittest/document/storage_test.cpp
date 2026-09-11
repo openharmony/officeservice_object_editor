@@ -204,7 +204,7 @@ bool MockLoadMiniFatBlocksSuccess()
     return true;
 }
 
-bool MockFollowMiniStreamFail()
+[[maybe_unused]] bool MockFollowMiniStreamFail()
 {
     return false;
 }
@@ -1572,10 +1572,12 @@ HWTEST_F(StorageTest, LoadMiniFat_001, TestSize.Level1)
  */
 HWTEST_F(StorageTest, LoadMiniFat_002, TestSize.Level1)
 {
+    // FollowMiniStream is inlined by ThinLTO so it cannot be stubbed reliably.
+    // Instead, use a sbStart value that exceeds bbat_->Count() so the real
+    // FollowMiniStream returns false via AllocTable::Follow.
     Stub stub;
     stub.set(ADDR(&StorageIO::LoadMiniFatBlocks), MockLoadMiniFatBlocksSuccess);
-    stub.set(ADDR(&StorageIO::FollowMiniStream), MockFollowMiniStreamFail);
-    SectorIndex sbStart = 0;
+    SectorIndex sbStart = 1024; // exceeds bbat_->Count() (128) after ConfigMinimalCd
     bool ret = storage_->LoadMiniFat(sbStart);
     EXPECT_EQ(ret, false);
 }
