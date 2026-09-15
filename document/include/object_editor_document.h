@@ -77,8 +77,8 @@ public:
         isLinking_ = isLinking;
     }
 
-    [[nodiscard]] Storage *GetRootStorage() noexcept;
-    [[nodiscard]] const Storage *GetRootStorage() const noexcept;
+    [[nodiscard]] std::shared_ptr<Storage> GetRootStorage() noexcept;
+    [[nodiscard]] std::shared_ptr<const Storage> GetRootStorage() const noexcept;
     [[nodiscard]] std::optional<std::string> GetOriFileUri() const noexcept;
     void SetOriFileUri(const std::string &oriFileUri) noexcept;
     [[nodiscard]] std::optional<std::string> GetTmpFileUri() const noexcept;
@@ -143,20 +143,21 @@ public:
 private:
     bool RebuildAndFlush();
     bool ShouldRebuild() const;
-    bool FlushCopyUserTmp(const std::string &userTmpPath, const std::string &tmpFilePath);
-    bool GenerateAndSaveTempFile(std::string &outTmpFileUri);
-    bool FlushDispatch(bool hasUserTmp, bool hasTmpFilePath,
+    bool FlushCopyUserTmp(const std::shared_ptr<Storage> &storage,
+        const std::string &userTmpPath, const std::string &tmpFilePath);
+    bool GenerateAndSaveTempFile(const std::shared_ptr<Storage> &storage, std::string &outTmpFileUri);
+    bool FlushDispatch(const std::shared_ptr<Storage> &storage, bool hasUserTmp, bool hasTmpFilePath,
         const std::string &userTmpPath, const std::string &tmpFilePath,
         bool &doRestore, bool &clearUserTmp, std::string &newTmpFileUri);
-    uint64_t ComputeLiveDataSize() const;
+    uint64_t ComputeLiveDataSize(const std::shared_ptr<Storage> &storage) const;
     bool CopyAllStreamsRecursively(Storage* src, Storage* dst, const std::string& basePath);
     bool CopyAllStreamRecursivelyImpl(Storage *src, Storage *dst, const std::string& path,
         std::size_t depth, std::size_t &visitCount);
     bool CopyStreamData(Storage* src, Storage* dst, const std::string& path, uint64_t size);
-    void TraverseDirectory(const std::string &path, std::size_t depth,
+    void TraverseDirectory(const std::shared_ptr<Storage> &storage, const std::string &path, std::size_t depth,
         uint64_t &total, std::size_t &visitCount) const;
 
-    std::unique_ptr<Storage> storage_;
+    std::shared_ptr<Storage> storage_;
     std::string oriFileUri_;
     std::string tmpFileUri_;
     std::string nativeFileUri_;

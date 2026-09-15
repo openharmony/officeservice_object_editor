@@ -41,11 +41,20 @@ ObjectEditorPackage::ObjectEditorPackage()
 ObjectEditorPackage::~ObjectEditorPackage()
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "destructor");
-    if (watcher_ != nullptr) {
-        watcher_->Stop();
+    std::shared_ptr<FileWatcher> watcherToStop;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        watcherToStop = watcher_;
+        watcher_ = nullptr;
     }
-    if (clientCb_ != nullptr) {
-        clientCb_->OnStopEdit(true);
+    if (watcherToStop != nullptr) {
+        watcherToStop->Stop();
+    }
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (clientCb_ != nullptr) {
+            clientCb_->OnStopEdit(true);
+        }
     }
 }
 
@@ -58,6 +67,7 @@ ErrCode ObjectEditorPackage::GetSnapshot(const std::string &documentId)
 ErrCode ObjectEditorPackage::DoEdit(const std::string &documentId)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "package");
+    std::lock_guard<std::mutex> lock(mutex_);
     if (document_ == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "document is null");
         return ERR_INVALID_VALUE;
@@ -74,10 +84,12 @@ ErrCode ObjectEditorPackage::DoEdit(const std::string &documentId)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "packageData is null");
         return ERR_INVALID_VALUE;
     }
-    watcher_ = std::make_shared<FileWatcher>(packageData_->GetFilePath(),
-        [this](uint32_t mask, const std::string &filepath) {
+    std::string filepath = packageData_->GetFilePath();
+    watcher_ = std::make_shared<FileWatcher>(filepath,
+        [this](uint32_t mask, const std::string &watchedPath) {
             OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "file mask:%{public}d, path:%{private}s",
-                mask, filepath.c_str());
+                mask, watchedPath.c_str());
+            std::lock_guard<std::mutex> cbLock(mutex_);
             if (packageData_ == nullptr) {
                 OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "lambda packageData is null");
                 return;
@@ -105,7 +117,7 @@ ErrCode ObjectEditorPackage::DoEdit(const std::string &documentId)
         watcher_.reset();
         return ERR_INVALID_VALUE;
     }
-    return OpenFile(SystemUtils::GetUriFromPath(packageData_->GetFilePath()));
+    return OpenFile(SystemUtils::GetUriFromPath(filepath));
 }
 
 ErrCode ObjectEditorPackage::GetEditStatus(const std::string &documentId, bool *isEditing, bool *isModified)
@@ -144,9 +156,16 @@ ErrCode ObjectEditorPackage::Close(const std::string &documentId, bool &isAllObj
     [[maybe_unused]] uint32_t callerTokenId)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "package");
-    if (watcher_ != nullptr) {
-        watcher_->Stop();
+    std::shared_ptr<FileWatcher> watcherToStop;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        watcherToStop = watcher_;
+        watcher_ = nullptr;
     }
+    if (watcherToStop != nullptr) {
+        watcherToStop->Stop();
+    }
+    std::lock_guard<std::mutex> lock(mutex_);
     isAllObjectsRemoved = true;
     return ERR_OK;
 }
@@ -160,6 +179,7 @@ ErrCode ObjectEditorPackage::Initial(std::unique_ptr<ObjectEditorDocument> docum
     }
     document->RestoreStorage();
     document->FlushOEid();
+    std::lock_guard<std::mutex> lock(mutex_);
     document_ = std::move(document);
     clientCb_ = clientCb;
     if (document_ == nullptr) {
@@ -184,7 +204,7 @@ ErrCode ObjectEditorPackage::Initial(std::unique_ptr<ObjectEditorDocument> docum
         auto newDocument = ObjectEditorDocument::CreateByFile(document_->GetOriFilePath());
         if (newDocument == nullptr) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "create document by file failed");
-            return ERR_OK;
+            return ERR_INVALID_VALUE;
         }
         newDocument->SetOEid(PACKAGE_OEID);
         if (document_->GetNativeFileUri().has_value()) {

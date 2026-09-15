@@ -332,28 +332,38 @@ ErrCode ObjectEditorExtension::GetSnapshot(const std::string &documentId)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is null");
         return ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER;
     }
-    std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
-    auto iter = ceInstance_->objects.find(documentId);
-    if (iter == ceInstance_->objects.end()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId not found");
-        return ObjectorEditorExtensionErrCode::EXTENSION_DOCUMENT_NOT_FOUND;
+    std::shared_ptr<ContentEmbed_Object> object;
+    {
+        std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
+        auto iter = ceInstance_->objects.find(documentId);
+        if (iter == ceInstance_->objects.end()) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId not found");
+            return ObjectorEditorExtensionErrCode::EXTENSION_DOCUMENT_NOT_FOUND;
+        }
+        if (iter->second == nullptr || iter->second->onGetSnapshotFunc == nullptr) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onGetSnapshotFunc is nullptr");
+            return ObjectorEditorExtensionErrCode::EXTENSION_CALLBACK_NULL;
+        }
+        uint32_t callingTokenID = IPCSkeleton::GetCallingTokenID();
+        if (callingTokenID != iter->second->callerTokenId && IPCSkeleton::GetCallingUid() != OESA_UID) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid caller token id");
+            return ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_CALLER_TOKEN;
+        }
+        object = iter->second;
     }
-    if (iter->second == nullptr || iter->second->onGetSnapshotFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onGetSnapshotFunc is nullptr");
+    // Callbacks invoked outside the lock to prevent deadlock if the callback
+    // re-enters and tries to acquire objectsMutex.
+    if (object->onGetCapabilityFunc == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onGetCapabilityFunc is nullptr");
         return ObjectorEditorExtensionErrCode::EXTENSION_CALLBACK_NULL;
     }
-    uint32_t callingTokenID = IPCSkeleton::GetCallingTokenID();
-    if (callingTokenID != iter->second->callerTokenId && IPCSkeleton::GetCallingUid() != OESA_UID) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid caller token id");
-        return ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_CALLER_TOKEN;
-    }
     uint32_t bitmask = 0;
-    iter->second->onGetCapabilityFunc(iter->second.get(), &bitmask);
+    object->onGetCapabilityFunc(object.get(), &bitmask);
     if ((bitmask & CE_CAPABILITY_SUPPORT_SNAPSHOT) == 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "capability not support");
         return ObjectorEditorExtensionErrCode::EXTENSION_CAPABILITY_NOT_SUPPORT;
     }
-    iter->second->onGetSnapshotFunc(iter->second.get());
+    object->onGetSnapshotFunc(object.get());
     return ObjectorEditorExtensionErrCode::EXTENSION_OK;
 }
 
@@ -364,28 +374,38 @@ ErrCode ObjectEditorExtension::DoEdit(const std::string &documentId)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is null");
         return ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER;
     }
-    std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
-    auto iter = ceInstance_->objects.find(documentId);
-    if (iter == ceInstance_->objects.end()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId not found");
-        return ObjectorEditorExtensionErrCode::EXTENSION_DOCUMENT_NOT_FOUND;
+    std::shared_ptr<ContentEmbed_Object> object;
+    {
+        std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
+        auto iter = ceInstance_->objects.find(documentId);
+        if (iter == ceInstance_->objects.end()) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId not found");
+            return ObjectorEditorExtensionErrCode::EXTENSION_DOCUMENT_NOT_FOUND;
+        }
+        if (iter->second == nullptr || iter->second->onDoEditFunc == nullptr) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onDoEditFunc is nullptr");
+            return ObjectorEditorExtensionErrCode::EXTENSION_CALLBACK_NULL;
+        }
+        uint32_t callingTokenID = IPCSkeleton::GetCallingTokenID();
+        if (callingTokenID != iter->second->callerTokenId && IPCSkeleton::GetCallingUid() != OESA_UID) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid caller token id");
+            return ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_CALLER_TOKEN;
+        }
+        object = iter->second;
     }
-    if (iter->second == nullptr || iter->second->onDoEditFunc == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onDoEditFunc is nullptr");
+    // Callbacks invoked outside the lock to prevent deadlock if the callback
+    // re-enters and tries to acquire objectsMutex.
+    if (object->onGetCapabilityFunc == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onGetCapabilityFunc is nullptr");
         return ObjectorEditorExtensionErrCode::EXTENSION_CALLBACK_NULL;
     }
-    uint32_t callingTokenID = IPCSkeleton::GetCallingTokenID();
-    if (callingTokenID != iter->second->callerTokenId && IPCSkeleton::GetCallingUid() != OESA_UID) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid caller token id");
-        return ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_CALLER_TOKEN;
-    }
     uint32_t bitmask = 0;
-    iter->second->onGetCapabilityFunc(iter->second.get(), &bitmask);
+    object->onGetCapabilityFunc(object.get(), &bitmask);
     if ((bitmask & CE_CAPABILITY_SUPPORT_DO_EDIT) == 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "capability not support");
         return ObjectorEditorExtensionErrCode::EXTENSION_CAPABILITY_NOT_SUPPORT;
     }
-    iter->second->onDoEditFunc(iter->second.get());
+    object->onDoEditFunc(object.get());
     return ObjectorEditorExtensionErrCode::EXTENSION_OK;
 }
 
@@ -400,6 +420,7 @@ ErrCode ObjectEditorExtension::GetEditStatus(const std::string &documentId, bool
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "isEditing or isModified is null");
         return ObjectorEditorExtensionErrCode::EXTENSION_PARAM_INVALID;
     }
+    std::shared_ptr<ContentEmbed_Object> object;
     {
         std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
         auto iter = ceInstance_->objects.find(documentId);
@@ -416,8 +437,11 @@ ErrCode ObjectEditorExtension::GetEditStatus(const std::string &documentId, bool
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid caller token id");
             return ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_CALLER_TOKEN;
         }
-        iter->second->onGetEditStatusFunc(iter->second.get(), isEditing, isModified);
+        object = iter->second;
     }
+    // Callback invoked outside the lock to prevent deadlock if the callback
+    // re-enters and tries to acquire objectsMutex.
+    object->onGetEditStatusFunc(object.get(), isEditing, isModified);
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "isEditing:%{public}d, isModified:%{public}d",
         *isEditing, *isModified);
     return ObjectorEditorExtensionErrCode::EXTENSION_OK;
@@ -436,15 +460,23 @@ ErrCode ObjectEditorExtension::GetExtensionEditStatus(bool &isEditing)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is null");
         return ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER;
     }
-    std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
-    for (const auto &iter : ceInstance_->objects) {
-        if (iter.second == nullptr || iter.second->onGetEditStatusFunc == nullptr) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onGetEditStatusFunc is nullptr");
-            continue;
+    // Copy all valid shared_ptrs under the lock so callbacks can be invoked
+    // outside without risking deadlock if they re-enter and acquire objectsMutex.
+    std::vector<std::shared_ptr<ContentEmbed_Object>> objectsSnapshot;
+    {
+        std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
+        for (const auto &iter : ceInstance_->objects) {
+            if (iter.second == nullptr || iter.second->onGetEditStatusFunc == nullptr) {
+                OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onGetEditStatusFunc is nullptr");
+                continue;
+            }
+            objectsSnapshot.push_back(iter.second);
         }
+    }
+    for (const auto &object : objectsSnapshot) {
         bool objectIsEditing = false;
         bool objectIsModified = false;
-        iter.second->onGetEditStatusFunc(iter.second.get(), &objectIsEditing, &objectIsModified);
+        object->onGetEditStatusFunc(object.get(), &objectIsEditing, &objectIsModified);
         if (objectIsEditing) {
             isEditing = true;
             break;
@@ -464,6 +496,7 @@ ErrCode ObjectEditorExtension::GetCapability(const std::string &documentId, uint
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "bitmask is null");
         return ObjectorEditorExtensionErrCode::EXTENSION_PARAM_INVALID;
     }
+    std::shared_ptr<ContentEmbed_Object> object;
     {
         std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
         auto iter = ceInstance_->objects.find(documentId);
@@ -480,8 +513,11 @@ ErrCode ObjectEditorExtension::GetCapability(const std::string &documentId, uint
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid caller token id");
             return ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_CALLER_TOKEN;
         }
-        iter->second->onGetCapabilityFunc(iter->second.get(), bitmask);
+        object = iter->second;
     }
+    // Callback invoked outside the lock to prevent deadlock if the callback
+    // re-enters and tries to acquire objectsMutex.
+    object->onGetCapabilityFunc(object.get(), bitmask);
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "bitmask: %{public}u", *bitmask);
     return ObjectorEditorExtensionErrCode::EXTENSION_OK;
 }
@@ -500,29 +536,39 @@ ErrCode ObjectEditorExtension::Close(const std::string &documentId, bool &isAllO
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "ceInstance is null");
         return ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER;
     }
-    std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
-    isAllObjectsRemoved = ceInstance_->objects.size() == 0;
-    auto iter = ceInstance_->objects.find(documentId);
-    if (iter == ceInstance_->objects.end()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId not found");
-        return ObjectorEditorExtensionErrCode::EXTENSION_DOCUMENT_NOT_FOUND;
+    std::shared_ptr<ContentEmbed_Object> object;
+    OH_ContentEmbed_Extension_OnObjectDetachFunc onDetachFunc = nullptr;
+    {
+        std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
+        isAllObjectsRemoved = ceInstance_->objects.size() == 0;
+        auto iter = ceInstance_->objects.find(documentId);
+        if (iter == ceInstance_->objects.end()) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId not found");
+            return ObjectorEditorExtensionErrCode::EXTENSION_DOCUMENT_NOT_FOUND;
+        }
+        if (iter->second == nullptr) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "object is nullptr");
+            return ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER;
+        }
+        if (callerTokenId != iter->second->callerTokenId) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid caller token id");
+            return ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_CALLER_TOKEN;
+        }
+        object = iter->second;
+        ceInstance_->objects.erase(iter);
+        isAllObjectsRemoved = ceInstance_->objects.size() == 0;
+        onDetachFunc = ceInstance_->onObjectDetachFunc;
     }
-    if (iter->second == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "object is nullptr");
-        return ObjectorEditorExtensionErrCode::EXTENSION_NULL_POINTER;
-    }
-    if (callerTokenId != iter->second->callerTokenId) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "invalid caller token id");
-        return ObjectorEditorExtensionErrCode::EXTENSION_ERR_INVALID_CALLER_TOKEN;
-    }
+    // Callback invoked outside the lock to prevent deadlock if the callback
+    // re-enters and tries to acquire objectsMutex.
+    // The object is kept alive by the local shared_ptr even though it has
+    // been removed from the map.
     ErrCode ret = ObjectorEditorExtensionErrCode::EXTENSION_CALLBACK_NULL;
-    if (ceInstance_->onObjectDetachFunc != nullptr) {
+    if (onDetachFunc != nullptr) {
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "call onObjectDetachFunc");
-        ceInstance_->onObjectDetachFunc(ceInstance_.get(), iter->second.get());
+        onDetachFunc(ceInstance_.get(), object.get());
         ret = ObjectorEditorExtensionErrCode::EXTENSION_OK;
     }
-    ceInstance_->objects.erase(iter);
-    isAllObjectsRemoved = ceInstance_->objects.size() == 0;
     return ret;
 }
 
@@ -580,7 +626,7 @@ ErrCode ObjectEditorExtension::CreateObject(std::unique_ptr<ObjectEditorDocument
             return ObjectorEditorExtensionErrCode::EXTENSION_DOCUMENT_ALREADY_INITIAL;
         }
     }
-    std::unique_ptr<ContentEmbed_Object> object = std::make_unique<struct ContentEmbed_Object>();
+    auto object = std::make_shared<struct ContentEmbed_Object>();
     if (object == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "create object failed");
         return ObjectorEditorExtensionErrCode::EXTENSION_MEMORY_ALLOCATION_FAILED;
@@ -596,22 +642,35 @@ ErrCode ObjectEditorExtension::CreateObject(std::unique_ptr<ObjectEditorDocument
     object->document->oeDocumentInner = std::move(document);
     object->clientCb = clientCb;
     object->callerTokenId = callerTokenId;
-    std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
-    ceInstance_->objects.insert({documentId, std::move(object)});
-    auto iter = ceInstance_->objects.find(documentId);
-    ceInstance_->onObjectAttachFunc(ceInstance_.get(), iter->second.get());
-    if (iter->second->document->oeDocumentInner->GetOperateType() == OperateType::CREATE_BY_FILE) {
+    OH_ContentEmbed_Extension_OnObjectAttachFunc onAttachFunc = nullptr;
+    {
+        std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
+        auto iter = ceInstance_->objects.find(documentId);
+        if (iter != ceInstance_->objects.end()) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "documentId already initial after re-lock");
+            return ObjectorEditorExtensionErrCode::EXTENSION_DOCUMENT_ALREADY_INITIAL;
+        }
+        ceInstance_->objects.insert({documentId, object});
+        onAttachFunc = ceInstance_->onObjectAttachFunc;
+    }
+    // Callbacks invoked outside the lock to prevent deadlock if the callback
+    // re-enters and tries to acquire objectsMutex
+    if (onAttachFunc != nullptr) {
+        onAttachFunc(ceInstance_.get(), object.get());
+    }
+    if (object->document->oeDocumentInner->GetOperateType() == OperateType::CREATE_BY_FILE) {
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "create document by file");
-        if (iter->second->document->linking) {
+        if (object->document->linking) {
             OBJECT_EDITOR_LOGI(ObjectEditorDomain::EXTENSION, "create document by file linking");
             return ObjectorEditorExtensionErrCode::EXTENSION_OK;
         }
-        if (iter->second->onWriteToDataStreamFunc == nullptr) {
+        if (object->onWriteToDataStreamFunc == nullptr) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::EXTENSION, "onWriteToDataStreamFunc is nullptr");
-            ceInstance_->objects.erase(iter);
+            std::lock_guard<std::mutex> lock(ceInstance_->objectsMutex);
+            ceInstance_->objects.erase(documentId);
             return ObjectorEditorExtensionErrCode::EXTENSION_CALLBACK_NULL;
         }
-        iter->second->onWriteToDataStreamFunc(iter->second.get());
+        object->onWriteToDataStreamFunc(object.get());
     }
     return ObjectorEditorExtensionErrCode::EXTENSION_OK;
 }

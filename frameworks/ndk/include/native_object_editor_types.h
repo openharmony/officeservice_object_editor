@@ -110,7 +110,7 @@ struct ContentEmbed_ExtensionInstance : public AbilityRuntime_ExtensionInstance 
     OH_ContentEmbed_Extension_OnObjectAttachFunc onObjectAttachFunc = nullptr;
     OH_ContentEmbed_Extension_OnObjectDetachFunc onObjectDetachFunc = nullptr;
     std::mutex objectsMutex;
-    std::unordered_map<std::string, std::unique_ptr<ContentEmbed_Object>> objects;
+    std::unordered_map<std::string, std::shared_ptr<ContentEmbed_Object>> objects;
 };
 
 struct ContentEmbed_Object {

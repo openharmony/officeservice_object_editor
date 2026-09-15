@@ -38,8 +38,8 @@ public:
     MOCK_METHOD(std::string, GetOEidInternal, (), (const));
     MOCK_METHOD(bool, GetLinking, ());
     MOCK_METHOD(void, SetLinking, (bool isLinking));
-    MOCK_METHOD(Storage *, GetRootStorage, (), (noexcept));
-    MOCK_METHOD(const Storage *, GetRootStorage, (), (const, noexcept));
+    MOCK_METHOD(std::shared_ptr<Storage>, GetRootStorage, (), (noexcept));
+    MOCK_METHOD(std::shared_ptr<const Storage>, GetRootStorage, (), (const, noexcept));
     MOCK_METHOD(std::optional<std::string>, GetOriFileUri, (), (const, noexcept));
     MOCK_METHOD(void, SetOriFileUri, (const std::string &oriFileUri), (noexcept));
     MOCK_METHOD(std::optional<std::string>, GetTmpFileUri, (), (const, noexcept));

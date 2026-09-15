@@ -190,7 +190,12 @@ bool StorageIO::SerializeToMemory()
     }
     Byte *fatSector = oleData.data() + sector * 3;
     std::fill_n(fatSector, sector, 0xFF);
-    if (!bbat_->Save(fatSector, sectorCount * bbat_->Count())) {
+    const size_t fatByteSize = sectorCount * bbat_->Count();
+    if (fatByteSize > sector) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "fatByteSize exceed");
+        return false;
+    }
+    if (!bbat_->Save(fatSector, fatByteSize)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to save bbat");
         return false;
     }
@@ -1139,6 +1144,10 @@ uint32_t StorageIO::SaveBlockToFile(uint64_t physicalOffset, const Byte *data, u
 uint32_t StorageIO::SaveBlockToBuffer(uint64_t physicalOffset, const Byte *data, uint32_t len,
     std::vector<uint8_t> &buffer)
 {
+    if (data == nullptr || len <= 0) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "param invalid");
+        return 0;
+    }
     if (physicalOffset > UINT64_MAX - len) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "physicalOffset overflow");
         return 0;
