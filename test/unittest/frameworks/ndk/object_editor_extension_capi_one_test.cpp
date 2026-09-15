@@ -160,7 +160,7 @@ HWTEST_F(ObjectEditorExtensionCapiOneTest,
     ContentEmbed_ExtensionInstance *instance = new ContentEmbed_ExtensionInstance();
     ContentEmbed_Object *object = new ContentEmbed_Object();
     object->clientCb = nullptr;
-    instance->objects["testObjectId"] = std::unique_ptr<ContentEmbed_Object>(object);
+    instance->objects["testObjectId"] = std::shared_ptr<ContentEmbed_Object>(object);
     ContentEmbed_ErrorCode ret = OH_ContentEmbed_Extension_CallbackToOnExtensionStopped(instance);
     EXPECT_EQ(ret, CE_ERR_CLIENT_CALLBACK_NOT_REGISTERED);
     instance->objects.clear();
@@ -180,7 +180,7 @@ HWTEST_F(ObjectEditorExtensionCapiOneTest,
     sptr<MockObjectEditorClientCallback> mockCallback = sptr<MockObjectEditorClientCallback>::MakeSptr();
     ON_CALL(*mockCallback, OnExtensionStopped()).WillByDefault(Return(ERR_INVALID_VALUE));
     object->clientCb = mockCallback;
-    instance->objects["testObjectId"] = std::unique_ptr<ContentEmbed_Object>(object);
+    instance->objects["testObjectId"] = std::shared_ptr<ContentEmbed_Object>(object);
     ContentEmbed_ErrorCode ret = OH_ContentEmbed_Extension_CallbackToOnExtensionStopped(instance);
     EXPECT_EQ(ret, CE_ERR_CLIENT_CALLBACK_FAILED);
     instance->objects.clear();
@@ -995,7 +995,7 @@ HWTEST_F(ObjectEditorExtensionCapiOneTest,
     sptr<MockObjectEditorClientCallback> mockCallback = sptr<MockObjectEditorClientCallback>::MakeSptr();
     ON_CALL(*mockCallback, OnExtensionStopped()).WillByDefault(Return(ERR_OK));
     object->clientCb = mockCallback;
-    instance->objects["testObjectId"] = std::unique_ptr<ContentEmbed_Object>(object);
+    instance->objects["testObjectId"] = std::shared_ptr<ContentEmbed_Object>(object);
     ContentEmbed_ErrorCode ret = OH_ContentEmbed_Extension_CallbackToOnExtensionStopped(instance);
     EXPECT_EQ(ret, CE_ERR_OK);
     instance->objects.clear();

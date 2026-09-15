@@ -15,6 +15,8 @@
 #ifndef OHOS_OBJECT_EDITOR_OBJECT_EDITOR_PACKAGE_H
 #define OHOS_OBJECT_EDITOR_OBJECT_EDITOR_PACKAGE_H
 
+#include <mutex>
+
 #include "file_watcher.h"
 #include "iobject_editor_package.h"
 #include "package_data.h"
@@ -59,6 +61,7 @@ private:
     std::unique_ptr<PackageData> packageData_ = nullptr;
     std::shared_ptr<FileWatcher> watcher_ = nullptr;
     bool isEditing_ = false;
+    std::mutex mutex_;
 };
 
 } // namespace ObjectEditor

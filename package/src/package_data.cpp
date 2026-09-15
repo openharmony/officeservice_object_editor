@@ -451,18 +451,30 @@ bool PackageData::SaveData()
         return false;
     }
     compObjStream->Seek(0);
+    if (compObjStream->Fail()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "compObjStream seek failed");
+        return false;
+    }
     auto oleStream = rootStorage->GetStream(PACKAGE_STREAM_OBJINFO_NAME, true, true);
     if (oleStream == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "oleStream is null");
         return false;
     }
     oleStream->Seek(0);
+    if (oleStream->Fail()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "oleStream seek failed");
+        return false;
+    }
     auto ole10NativeStream = rootStorage->GetStream(PACKAGE_STREAM_NATIVE_NAME, true, true);
     if (ole10NativeStream == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "ole10NativeStream is null");
         return false;
     }
     ole10NativeStream->Seek(0);
+    if (ole10NativeStream->Fail()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "ole native stream seek failed");
+        return false;
+    }
     std::vector<Byte> buffer;
     bool withData = false;
     if (!FormatOle10NativeStream(documentPtr->GetTmpFilePath(), buffer, withData)) {
