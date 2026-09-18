@@ -44,7 +44,9 @@
                 "hisysevent",
                 "hitrace",
                 "init",
-                "window_manager"
+                "window_manager",
+                "libuv",
+                "node"
             ],
             "third_party": []
         },
