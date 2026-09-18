@@ -88,6 +88,8 @@ ohos_shared_library("content_embed_service") {
     "bundle_framework:appexecfwk_base",
     "bundle_framework:bundle_napi_common",
     "napi:ace_napi",
+    "libuv:uv",
+    "node:node_header_notice",
     "udmf:utd_client",
     "app_file_service:fileuri_native",
     "image_framework:image_native",
