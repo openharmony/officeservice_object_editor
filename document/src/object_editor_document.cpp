@@ -123,9 +123,10 @@ void ObjectEditorDocument::SetOEid(const std::string &oeid)
 
 bool ObjectEditorDocument::FlushOEid()
 {
-    // Snapshot state under docMutex_, then release before calling Storage methods
-    // to avoid lock order inversion (docMutex_ -> Storage::mutex_).
-    Storage *storagePtr = nullptr;
+    // Copy shared_ptr under docMutex_ to keep Storage alive after lock release.
+    // Using a raw pointer (storage_.get()) would risk use-after-free if another
+    // thread replaces storage_ via RestoreStorage() or RebuildAndFlush().
+    std::shared_ptr<Storage> storagePtr;
     std::string oeid;
     {
         std::lock_guard<std::recursive_mutex> lock(docMutex_);
@@ -133,12 +134,8 @@ bool ObjectEditorDocument::FlushOEid()
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "storage is null");
             return false;
         }
-        storagePtr = storage_.get();
+        storagePtr = storage_;
         oeid = oeid_;
-    }
-    if (storagePtr == nullptr) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "storage get is null");
-        return false;
     }
     DirEntry *root = storagePtr->GetRootEntry();
     if (!root) {
@@ -158,11 +155,16 @@ bool ObjectEditorDocument::FlushOEid()
 
 std::string ObjectEditorDocument::GetOEidInternal() const
 {
-    if (!storage_) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "storage is null");
-        return std::string{};
+    std::shared_ptr<Storage> storagePtr;
+    {
+        std::lock_guard<std::recursive_mutex> lock(docMutex_);
+        if (!storage_) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "storage is null");
+            return std::string{};
+        }
+        storagePtr = storage_;
     }
-    DirEntry *root = storage_->GetRootEntry();
+    DirEntry *root = storagePtr->GetRootEntry();
     if (!root) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "root entry is null");
         return std::string{};
@@ -170,16 +172,16 @@ std::string ObjectEditorDocument::GetOEidInternal() const
     return std::string(reinterpret_cast<const char*>(root->Clsid().data()), root->Clsid().size());
 }
 
-Storage *ObjectEditorDocument::GetRootStorage() noexcept
+std::shared_ptr<Storage> ObjectEditorDocument::GetRootStorage() noexcept
 {
     std::lock_guard<std::recursive_mutex> lock(docMutex_);
-    return storage_.get();
+    return storage_;
 }
 
-const Storage *ObjectEditorDocument::GetRootStorage() const noexcept
+std::shared_ptr<const Storage> ObjectEditorDocument::GetRootStorage() const noexcept
 {
     std::lock_guard<std::recursive_mutex> lock(docMutex_);
-    return storage_.get();
+    return storage_;
 }
 
 std::optional<std::string> ObjectEditorDocument::GetOriFileUri() const noexcept
@@ -230,14 +232,15 @@ void ObjectEditorDocument::SetNativeFileUri(const std::string &nativeFileUri) no
 void ObjectEditorDocument::RestoreStorage()
 {
     std::lock_guard<std::recursive_mutex> lock(docMutex_);
-    storage_ = std::make_unique<Storage>(GetTmpFilePath().c_str());
+    storage_ = std::make_shared<Storage>(GetTmpFilePath().c_str());
 }
 
-bool ObjectEditorDocument::FlushCopyUserTmp(const std::string &userTmpPath,
+bool ObjectEditorDocument::FlushCopyUserTmp(const std::shared_ptr<Storage> &storage,
+    const std::string &userTmpPath,
     const std::string &tmpFilePath)
 {
-    if (storage_->IsDirty()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "storage is dirty");
+    if (!storage || storage->IsDirty()) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "storage is dirty or null");
         return false;
     }
     std::filesystem::path sourcePath(userTmpPath);
@@ -253,7 +256,8 @@ bool ObjectEditorDocument::FlushCopyUserTmp(const std::string &userTmpPath,
     return true;
 }
 
-bool ObjectEditorDocument::GenerateAndSaveTempFile(std::string &outTmpFileUri)
+bool ObjectEditorDocument::GenerateAndSaveTempFile(const std::shared_ptr<Storage> &storage,
+    std::string &outTmpFileUri)
 {
     const auto base = std::filesystem::current_path();
     std::random_device rd;
@@ -280,7 +284,7 @@ bool ObjectEditorDocument::GenerateAndSaveTempFile(std::string &outTmpFileUri)
             continue;
         }
 
-        if (!storage_->SaveToFile(candidate.string().c_str())) {
+        if (!storage->SaveToFile(candidate.string().c_str())) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
                 "save to file failed, candidate: %{private}s", candidate.string().c_str());
             return false;
@@ -294,17 +298,18 @@ bool ObjectEditorDocument::GenerateAndSaveTempFile(std::string &outTmpFileUri)
     return false;
 }
 
-bool ObjectEditorDocument::FlushDispatch(bool hasUserTmp, bool hasTmpFilePath,
+bool ObjectEditorDocument::FlushDispatch(const std::shared_ptr<Storage> &storage, bool hasUserTmp,
+    bool hasTmpFilePath,
     const std::string &userTmpPath, const std::string &tmpFilePath,
     bool &doRestore, bool &clearUserTmp, std::string &newTmpFileUri)
 {
     if (hasUserTmp && !hasTmpFilePath) {
         OBJECT_EDITOR_LOGI(ObjectEditorDomain::DOCUMENT, "Direct flush without temp file");
-        return storage_->Flush();
+        return storage->Flush();
     }
     if (hasUserTmp && hasTmpFilePath) {
         OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "Copy user temp file to temp file");
-        if (!FlushCopyUserTmp(userTmpPath, tmpFilePath)) {
+        if (!FlushCopyUserTmp(storage, userTmpPath, tmpFilePath)) {
             return false;
         }
         doRestore = true;
@@ -315,20 +320,22 @@ bool ObjectEditorDocument::FlushDispatch(bool hasUserTmp, bool hasTmpFilePath,
         OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "Temp file path exists");
         if (std::filesystem::exists(std::filesystem::path(tmpFilePath))) {
             OBJECT_EDITOR_LOGI(ObjectEditorDomain::DOCUMENT, "Direct flush to existing file");
-            return storage_->Flush();
+            return storage->Flush();
         }
-        return storage_->SaveToFile(tmpFilePath.c_str());
+        return storage->SaveToFile(tmpFilePath.c_str());
     }
-    return GenerateAndSaveTempFile(newTmpFileUri);
+    return GenerateAndSaveTempFile(storage, newTmpFileUri);
 }
 
 bool ObjectEditorDocument::Flush()
 {
-    // Phase 1: Snapshot state under docMutex_, then release before calling
-    // Storage methods to avoid lock order inversion (docMutex_ -> Storage::mutex_).
+    // Phase 1: Snapshot state and copy shared_ptr under docMutex_, then release
+    // before calling Storage methods. The shared_ptr keeps Storage alive even if
+    // another thread replaces storage_ via RestoreStorage() or RebuildAndFlush().
     bool hasUserTmp = false;
     std::string userTmpPath;
     std::string tmpFilePath;
+    std::shared_ptr<Storage> storagePtr;
     {
         std::lock_guard<std::recursive_mutex> lock(docMutex_);
         OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "oeid: %{private}s, operateType: %{public}d",
@@ -340,6 +347,7 @@ bool ObjectEditorDocument::Flush()
         hasUserTmp = !userTmpFilePath_.empty();
         userTmpPath = userTmpFilePath_;
         tmpFilePath = SystemUtils::GetPathFromUri(tmpFileUri_);
+        storagePtr = storage_;
     }
 
     // Phase 2: Check rebuild (ShouldRebuild manages its own locking)
@@ -348,13 +356,13 @@ bool ObjectEditorDocument::Flush()
         return RebuildAndFlush();
     }
 
-    // Phase 3: I/O operations without docMutex_ held
+    // Phase 3: I/O operations without docMutex_ held; storagePtr keeps Storage alive
     const bool hasTmpFilePath = !tmpFilePath.empty();
     bool doRestore = false;
     bool clearUserTmp = false;
     std::string newTmpFileUri;
 
-    bool result = FlushDispatch(hasUserTmp, hasTmpFilePath, userTmpPath, tmpFilePath,
+    bool result = FlushDispatch(storagePtr, hasUserTmp, hasTmpFilePath, userTmpPath, tmpFilePath,
         doRestore, clearUserTmp, newTmpFileUri);
 
     // Phase 4: Update state under docMutex_
@@ -417,10 +425,11 @@ std::string GenerateTempPath(const std::string &targetPath, const std::string do
     return ss.str();
 }
 
-void ObjectEditorDocument::TraverseDirectory(const std::string &path, std::size_t depth,
+void ObjectEditorDocument::TraverseDirectory(const std::shared_ptr<Storage> &storage,
+    const std::string &path, std::size_t depth,
     uint64_t &total, std::size_t &visitCount) const
 {
-    if (!storage_) {
+    if (!storage) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "storage is null");
         return;
     }
@@ -440,15 +449,15 @@ void ObjectEditorDocument::TraverseDirectory(const std::string &path, std::size_
     }
 
     std::string savedPath;
-    storage_->Path(savedPath);
+    storage->Path(savedPath);
     std::vector<const DirEntry *> entries;
-    if (!storage_->EnterDirectory(path)) {
+    if (!storage->EnterDirectory(path)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "enter directory failed, path: %{private}s", path.c_str());
         return;
     }
-    storage_->ListEntries(entries);
+    storage->ListEntries(entries);
     if (!savedPath.empty()) {
-        (void)storage_->EnterDirectory(savedPath);
+        (void)storage->EnterDirectory(savedPath);
     }
 
     for (const DirEntry *e : entries) {
@@ -465,24 +474,26 @@ void ObjectEditorDocument::TraverseDirectory(const std::string &path, std::size_
             }
             total += size;
         } else if (e->IsDir()) {
-            TraverseDirectory(fullPath, depth + 1, total, visitCount);
+            TraverseDirectory(storage, fullPath, depth + 1, total, visitCount);
         }
     }
 }
 
-uint64_t ObjectEditorDocument::ComputeLiveDataSize() const
+uint64_t ObjectEditorDocument::ComputeLiveDataSize(const std::shared_ptr<Storage> &storage) const
 {
     uint64_t total = 0;
     std::size_t visitCount = 0;
-    TraverseDirectory("/", 0, total, visitCount);
+    TraverseDirectory(storage, "/", 0, total, visitCount);
     return total;
 }
 
 bool ObjectEditorDocument::ShouldRebuild() const
 {
-    // Snapshot state under docMutex_, then release before calling Storage methods
-    // (ComputeLiveDataSize -> TraverseDirectory -> Storage::EnterDirectory/ListEntries).
+    // Snapshot state and copy shared_ptr under docMutex_, then release before
+    // calling Storage methods. The shared_ptr keeps Storage alive even if another
+    // thread replaces storage_ concurrently.
     std::string targetPath;
+    std::shared_ptr<Storage> storagePtr;
     {
         std::lock_guard<std::recursive_mutex> lock(docMutex_);
         if (!storage_) {
@@ -490,6 +501,7 @@ bool ObjectEditorDocument::ShouldRebuild() const
             return false;
         }
         targetPath = SystemUtils::GetPathFromUri(tmpFileUri_);
+        storagePtr = storage_;
     }
 
     if (targetPath.empty()) {
@@ -510,8 +522,9 @@ bool ObjectEditorDocument::ShouldRebuild() const
     }
 
     const uint64_t fileSize = static_cast<uint64_t>(fileSizeRaw);
-    // ComputeLiveDataSize calls Storage methods - docMutex_ must not be held here
-    const uint64_t liveDataSize = ComputeLiveDataSize();
+    // ComputeLiveDataSize calls Storage methods - docMutex_ must not be held here.
+    // storagePtr keeps Storage alive during the traversal.
+    const uint64_t liveDataSize = ComputeLiveDataSize(storagePtr);
     if (liveDataSize >= fileSize) {
         OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "live data size is greater than file size, no rebuild");
         return false;
@@ -688,22 +701,24 @@ struct TempGuard {
 
 bool ObjectEditorDocument::RebuildAndFlush()
 {
-    // Phase 1: Snapshot state under docMutex_, then release for I/O operations.
+    // Phase 1: Snapshot state and copy shared_ptr under docMutex_, then release
+    // for I/O operations. The shared_ptr keeps old Storage alive even if another
+    // thread replaces storage_ concurrently.
     std::string targetPath;
     std::string oeid;
     std::string documentId;
-    Storage *oldStoragePtr = nullptr;
+    std::shared_ptr<Storage> oldStorage;
     {
         std::lock_guard<std::recursive_mutex> lock(docMutex_);
         targetPath = SystemUtils::GetPathFromUri(tmpFileUri_);
         oeid = oeid_;
         documentId = documentId_;
-        oldStoragePtr = storage_.get();
+        oldStorage = storage_;
     }
 
     if (targetPath.empty()) {
         OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "No target path, direct flush");
-        return oldStoragePtr && oldStoragePtr->Flush();
+        return oldStorage && oldStorage->Flush();
     }
 
     // Phase 2: Rebuild without docMutex_ (I/O intensive operations)
@@ -718,7 +733,7 @@ bool ObjectEditorDocument::RebuildAndFlush()
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "CreateByOEid failed, oeid: %{private}s", oeid.c_str());
         return false;
     }
-    Storage *newStorage = newDoc->GetRootStorage();
+    auto newStorage = newDoc->GetRootStorage();
     if (!newStorage) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "GetRootStorage failed");
         return false;
@@ -728,7 +743,9 @@ bool ObjectEditorDocument::RebuildAndFlush()
             "SaveToFile failed, tempPath: %{private}s", tempPath.c_str());
         return false;
     }
-    if (!CopyAllStreamsRecursively(oldStoragePtr, newStorage, "/")) {
+    // oldStorage keeps the old Storage alive during the copy even if another
+    // thread replaces storage_ concurrently.
+    if (!CopyAllStreamsRecursively(oldStorage.get(), newStorage.get(), "/")) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "CopyAllStreamsRecursively failed");
         return false;
     }
@@ -752,23 +769,21 @@ bool ObjectEditorDocument::RebuildAndFlush()
     // concurrent access to storage_ during file replacement.
     {
         std::lock_guard<std::recursive_mutex> lock(docMutex_);
-        auto oldStorage = std::move(storage_);
         if (!AtomicReplaceFile(tempPath, targetPath)) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
                 "AtomicReplaceFile failed, tempPath: %{private}s, targetPath: %{private}s",
                 tempPath.c_str(), targetPath.c_str());
-            storage_ = std::move(oldStorage);
             return false;
         }
         guard.shouldClean = false;
-        auto reloaded = std::make_unique<ObjectEditor::Storage>(targetPath.c_str());
+        auto reloaded = std::make_shared<ObjectEditor::Storage>(targetPath.c_str());
         if (!reloaded || reloaded->Result() != ObjectEditor::Storage::Ok) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
                 "Reload failed, targetPath:%{private}s", targetPath.c_str());
             storage_.reset();
             return false;
         }
-        storage_ = std::move(reloaded);
+        storage_ = reloaded;
     }
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DOCUMENT, "success, targetPath: %{private}s", targetPath.c_str());
     return true;

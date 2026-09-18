@@ -320,7 +320,7 @@ void ObjectEditorManagerDatabase::AddBundle(const std::string &bundleName)
     NativeRdb::ValueObject value;
     buckets.back().GetObject("oeid", value);
     std::string oeid;
-    if (!value.GetString(oeid)) {
+    if (value.GetString(oeid) != NativeRdb::E_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get oeid failed");
         return;
     }
@@ -341,7 +341,10 @@ bool ObjectEditorManagerDatabase::HasRegisteredOEFormat(const std::string &bundl
     if (ret != NativeRdb::E_OK) {
         return false;
     }
-    rowEntity.Get("oeid").GetString(oeid);
+    if (rowEntity.Get("oeid").GetString(oeid) != NativeRdb::E_OK) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get oeid failed");
+        return false;
+    }
     return oeid == "" ? false : true;
 }
 
@@ -412,7 +415,7 @@ void ObjectEditorManagerDatabase::UpdateBundle(const std::string &bundleName)
     NativeRdb::ValueObject value;
     buckets.back().GetObject("oeid", value);
     std::string oeid;
-    if (!value.GetString(oeid)) {
+    if (value.GetString(oeid) != NativeRdb::E_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get oeid failed");
         return;
     }
@@ -822,7 +825,7 @@ ObjectEditorManagerErrCode ObjectEditorManagerDatabase::RefreshDb()
         bucket.GetObject("bundle_name", bundleNameValue);
         std::string oeid;
         std::string bundleName;
-        if (!oeidValue.GetString(oeid) || !bundleNameValue.GetString(bundleName)) {
+        if (oeidValue.GetString(oeid) != NativeRdb::E_OK || bundleNameValue.GetString(bundleName) != NativeRdb::E_OK) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DATABASE, "get oeid or bundleName failed");
             continue;
         }
