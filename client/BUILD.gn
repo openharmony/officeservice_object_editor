@@ -96,6 +96,8 @@ ohos_shared_library("content_embed_client") {
         "hitrace:hitrace_meter",
         "init:libbegetutil",
         "napi:ace_napi",
+        "libuv:uv",
+        "node:node_header_notice",
         "window_manager:libwm",
     ]
     defines = []
