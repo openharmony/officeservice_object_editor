@@ -59,6 +59,12 @@ void ObjectEditorConnection::OnAbilityConnectDone(const AppExecFwk::ElementName 
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "%{public}s/%{public}s/%{public}s, ret: %{public}d",
         element.GetBundleName().c_str(), element.GetModuleName().c_str(),
         element.GetAbilityName().c_str(), resultCode);
+    if (resultCode != ERR_OK) {
+        std::unique_lock<std::mutex> uniqueProxyLock(extensionProxyMutex_);
+        isConnectReady_ = true;
+        connectCondition_.notify_all();
+        return;
+    }
     std::unique_lock<std::mutex> uniqueProxyLock(extensionProxyMutex_);
     extensionProxy_ = remoteObject;
     isConnectReady_ = true;

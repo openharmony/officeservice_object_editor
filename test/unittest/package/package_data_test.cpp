@@ -76,16 +76,16 @@ std::shared_ptr<MockObjectEditorDocument> g_mockDocument;
     return nullptr;
 }
 
-Storage *MockGetRootStorageNull()
+std::shared_ptr<Storage> MockGetRootStorageNull()
 {
     return nullptr;
 }
 
-std::unique_ptr<Storage> g_mockStorage;
-Storage *MockGetRootStorageValid()
+std::shared_ptr<Storage> g_mockStorageShared;
+std::shared_ptr<Storage> MockGetRootStorageValid()
 {
-    g_mockStorage = std::make_unique<MockStorage>("test_storage");
-    return g_mockStorage.get();
+    g_mockStorageShared = std::make_shared<MockStorage>("test_storage");
+    return g_mockStorageShared;
 }
 
 std::unique_ptr<Stream> g_mockStream;
@@ -213,7 +213,7 @@ HWTEST_F(PackageDataTest, LoadFromDocument_003, TestSize.Level1)
     auto document = std::make_shared<MockObjectEditorDocument>();
     EXPECT_CALL(*document, GetRootStorage()).WillRepeatedly(Return(MockGetRootStorageValid()));
     EXPECT_CALL(*document, GetTmpFilePath()).WillRepeatedly(Return(MockGetTmpFilePath()));
-    g_mockStorage = std::make_unique<MockStorage>("test_storage");
+    g_mockStorageShared = std::make_shared<MockStorage>("test_storage");
     Stub stub;
     stub.set(ADDR(&Storage::GetStream), MockGetStreamNull);
     auto result = PackageData::LoadFromDocument(document);
@@ -1240,8 +1240,8 @@ HWTEST_F(PackageDataTest, GetFilePath_003, TestSize.Level1)
 HWTEST_F(PackageDataTest, SaveData_003, TestSize.Level1)
 {
     auto document = std::make_shared<MockObjectEditorDocument>();
-    g_mockStorage = std::make_unique<MockStorage>("test_storage");
-    EXPECT_CALL(*document, GetRootStorage()).WillRepeatedly(Return(g_mockStorage.get()));
+    g_mockStorageShared = std::make_shared<MockStorage>("test_storage");
+    EXPECT_CALL(*document, GetRootStorage()).WillRepeatedly(Return(g_mockStorageShared));
     packageData_->document_ = document;
     Stub stub;
     stub.set(ADDR(&Storage::GetStream), MockGetStreamNull);

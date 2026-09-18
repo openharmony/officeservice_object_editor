@@ -452,8 +452,16 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Extension_CallbackToOnExtensionStopped(
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "instance is null");
         return CE_ERR_PARAM_INVALID;
     }
-    std::lock_guard<std::mutex> lock(instance->objectsMutex);
-    for (const auto &[objectId, object] : instance->objects) {
+    // Copy shared_ptrs under the lock so IPC callbacks can be invoked outside
+    // without risking deadlock if the callback re-enters and acquires objectsMutex.
+    std::vector<std::pair<std::string, std::shared_ptr<ContentEmbed_Object>>> objectsSnapshot;
+    {
+        std::lock_guard<std::mutex> lock(instance->objectsMutex);
+        for (const auto &[objectId, object] : instance->objects) {
+            objectsSnapshot.emplace_back(objectId, object);
+        }
+    }
+    for (const auto &[objectId, object] : objectsSnapshot) {
         if (object == nullptr) {
             continue;
         }

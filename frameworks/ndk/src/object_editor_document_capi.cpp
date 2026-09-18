@@ -14,6 +14,7 @@
  */
 
 #include <cstring>
+#include <memory>
 #include <string_ex.h>
 #include <algorithm>
 
@@ -82,7 +83,7 @@ std::string OH_ContentEmbed_Helper_JoinPath(const std::string &parent, const cha
     return base;
 }
 
-Storage *OH_ContentEmbed_Helper_GetRootStorage(const ContentEmbed_Document *oeDoc)
+std::shared_ptr<Storage> OH_ContentEmbed_Helper_GetRootStorage(const ContentEmbed_Document *oeDoc)
 {
     if (!oeDoc || !oeDoc->oeDocumentInner) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "doc is null");
@@ -91,7 +92,7 @@ Storage *OH_ContentEmbed_Helper_GetRootStorage(const ContentEmbed_Document *oeDo
     return oeDoc->oeDocumentInner->GetRootStorage();
 }
 
-Storage *OH_ContentEmbed_Helper_GetRootStorage(const ContentEmbed_Storage *oeStorage)
+std::shared_ptr<Storage> OH_ContentEmbed_Helper_GetRootStorage(const ContentEmbed_Storage *oeStorage)
 {
     if (!oeStorage || !oeStorage->owner) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storage is null");
@@ -137,7 +138,11 @@ ContentEmbed_ErrorCode CopyStream(ContentEmbed_Storage *srcStorage, ContentEmbed
     size_t bytesRead = 0;
     size_t offset = 0;
     do {
-        OH_ContentEmbed_Stream_Seek(srcStream, offset);
+        err = OH_ContentEmbed_Stream_Seek(srcStream, offset);
+        if (err != CE_ERR_OK) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "srcStream seek failed, err: %{private}d", err);
+            break;
+        }
         err = OH_ContentEmbed_Stream_Read(srcStream, &buffer, BUFFER_SIZE, &bytesRead);
         if (err != CE_ERR_OK) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "Read failed, err: %{private}d", err);
@@ -145,7 +150,11 @@ ContentEmbed_ErrorCode CopyStream(ContentEmbed_Storage *srcStorage, ContentEmbed
         }
         if (bytesRead > 0) {
             size_t bytesWritten = 0;
-            OH_ContentEmbed_Stream_Seek(dstStream, offset);
+            err = OH_ContentEmbed_Stream_Seek(dstStream, offset);
+            if (err != CE_ERR_OK) {
+                OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "dstStream seek failed, err: %{private}d", err);
+                break;
+            }
             err = OH_ContentEmbed_Stream_Write(dstStream, buffer, bytesRead, &bytesWritten);
             if (err != CE_ERR_OK || bytesWritten != bytesRead) {
                 OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "Write failed, err: %{private}d", err);
@@ -260,7 +269,7 @@ ContentEmbed_ErrorCode CopyElements(ContentEmbed_Storage *srcStorage, ContentEmb
 }
 
 ContentEmbed_ErrorCode OH_ContentEmbed_Helper_RequireStorageEntry(const ContentEmbed_Storage *handle,
-    Storage *&storageOut)
+    std::shared_ptr<Storage> &storageOut)
 {
     if (handle == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "handle is null");
@@ -292,7 +301,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Helper_RequireStream(ContentEmbed_Stream 
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "path is empty");
         return CE_ERR_FILE_OPERATION_FAILED;
     }
-    Storage *storage = OH_ContentEmbed_Helper_GetRootStorage(handle->owner);
+    auto storage = OH_ContentEmbed_Helper_GetRootStorage(handle->owner);
     if (storage == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "GetRootStorage failed");
         return CE_ERR_NULL_POINTER;
@@ -301,7 +310,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Helper_RequireStream(ContentEmbed_Stream 
         handle->stream = nullptr;
         return CE_ERR_NULL_POINTER;
     }
-    if (!handle->stream || handle->storage != storage) {
+    if (!handle->stream || handle->storage != storage.get()) {
         Stream *stream = storage->GetStream(handle->path, false, true);
         if (stream == nullptr) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "GetStream failed, path: %{private}s",
@@ -318,7 +327,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Helper_RequireStream(ContentEmbed_Stream 
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "Seek failed, path: %{private}s", handle->path.c_str());
             return CE_ERR_STREAM_OPERATION_FAILED;
         }
-        handle->storage = storage;
+        handle->storage = storage.get();
         handle->stream = stream;
     }
     streamOut = handle->stream;
@@ -481,7 +490,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_Read(uint8_t *buffer, size_t len
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "offset is too large");
         return CE_ERR_PARAM_INVALID;
     }
-    Storage *storage = OH_ContentEmbed_Helper_GetRootStorage(document);
+    auto storage = OH_ContentEmbed_Helper_GetRootStorage(document);
     if (storage == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storage is null");
         return CE_ERR_NULL_POINTER;
@@ -583,7 +592,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Document_GetRootStorage(ContentEmbed_Docu
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "document is null");
         return CE_ERR_PARAM_INVALID;
     }
-    Storage *rootStorage = document->oeDocumentInner->GetRootStorage();
+    auto rootStorage = document->oeDocumentInner->GetRootStorage();
     if (rootStorage == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "root storage is null");
         return CE_ERR_NULL_POINTER;
@@ -645,7 +654,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_CreateStorage(const ContentEmbed_
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "name is invalid, name: %{private}s", name);
         return CE_ERR_PARAM_INVALID;
     }
-    Storage *storage = nullptr;
+    std::shared_ptr<Storage> storage;
     ContentEmbed_ErrorCode ret = OH_ContentEmbed_Helper_RequireStorageEntry(parentStorage, storage);
     if (ret != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create storage failed");
@@ -694,7 +703,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetStorage(const ContentEmbed_Sto
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "name: %{private}s is invalid", name);
         return CE_ERR_PARAM_INVALID;
     }
-    Storage *storage = nullptr;
+    std::shared_ptr<Storage> storage;
     ContentEmbed_ErrorCode ret = OH_ContentEmbed_Helper_RequireStorageEntry(parentStorage, storage);
     if (ret != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create storage failed");
@@ -736,7 +745,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Helper_GetStreamInternal(ContentEmbed_Sto
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "name: %{private}s is invalid", name);
         return CE_ERR_PARAM_INVALID;
     }
-    Storage *storage = nullptr;
+    std::shared_ptr<Storage> storage;
     ContentEmbed_ErrorCode ret = OH_ContentEmbed_Helper_RequireStorageEntry(parentStorage, storage);
     if (ret != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create storage entry failed");
@@ -755,7 +764,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Helper_GetStreamInternal(ContentEmbed_Sto
         return CE_ERR_STREAM_OPERATION_FAILED;
     }
     auto *wrapper = new (std::nothrow) ContentEmbed_Stream{parentStorage->owner,
-        targetPath, storage, stream, stream->Tell()};
+        targetPath, storage.get(), stream, stream->Tell()};
     if (wrapper == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create stream wrapper failed");
         return CE_ERR_NULL_POINTER;
@@ -802,7 +811,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_DeleteEntry(ContentEmbed_Storage 
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "name: %{private}s is invalid", name);
         return CE_ERR_PARAM_INVALID;
     }
-    Storage *storage = nullptr;
+    std::shared_ptr<Storage> storage;
     ContentEmbed_ErrorCode ret = OH_ContentEmbed_Helper_RequireStorageEntry(parentStorage, storage);
     if (ret != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "create storage failed");
@@ -836,7 +845,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_DeleteAllEntry(ContentEmbed_Stora
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storage is null");
         return CE_ERR_PARAM_INVALID;
     }
-    Storage *storageInner = nullptr;
+    std::shared_ptr<Storage> storageInner;
     ContentEmbed_ErrorCode ret = OH_ContentEmbed_Helper_RequireStorageEntry(storage, storageInner);
     if (ret != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "require storage entry failed");
@@ -1126,7 +1135,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetOEid(ContentEmbed_Storage *sto
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid is null");
         return CE_ERR_PARAM_INVALID;
     }
-    OHOS::ObjectEditor::Storage *root = nullptr;
+    std::shared_ptr<OHOS::ObjectEditor::Storage> root;
     ContentEmbed_ErrorCode ret = OH_ContentEmbed_Helper_RequireStorageEntry(storage, root);
     if (ret != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "require storage entry failed");
@@ -1172,7 +1181,7 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_SetOEid(ContentEmbed_Storage *sto
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "oeid is invalid");
         return CE_ERR_PARAM_INVALID;
     }
-    OHOS::ObjectEditor::Storage *root = nullptr;
+    std::shared_ptr<OHOS::ObjectEditor::Storage> root;
     ContentEmbed_ErrorCode ret = OH_ContentEmbed_Helper_RequireStorageEntry(storage, root);
     if (ret != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "require storage entry failed");
@@ -1233,13 +1242,13 @@ ContentEmbed_ErrorCode OH_ContentEmbed_Storage_GetElements(const ContentEmbed_St
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "storageElements is null");
         return CE_ERR_PARAM_INVALID;
     }
-    OHOS::ObjectEditor::Storage *root = nullptr;
+    std::shared_ptr<OHOS::ObjectEditor::Storage> root;
     ContentEmbed_ErrorCode ret = OH_ContentEmbed_Helper_RequireStorageEntry(storage, root);
     if (ret != CE_ERR_OK) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "require storage entry failed");
         return ret;
     }
-    OHOS::ObjectEditor::Storage *rootStorage = storage->owner->oeDocumentInner->GetRootStorage();
+    auto rootStorage = storage->owner->oeDocumentInner->GetRootStorage();
     if (!rootStorage) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT_NDK, "rootStorage is null");
         return CE_ERR_NULL_POINTER;
