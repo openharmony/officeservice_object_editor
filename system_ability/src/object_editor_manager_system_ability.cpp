@@ -203,6 +203,7 @@ void ObjectEditorManagerSystemAbility::OnStart()
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "already running");
         return;
     }
+    fdsan_set_error_level(FDSAN_ERROR_LEVEL_FATAL);
     bool expected = false;
     if (extensionStopCleanRunning_.compare_exchange_strong(expected, true)) {
         extensionStopCleanExit_.store(false);

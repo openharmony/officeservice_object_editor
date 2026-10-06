@@ -26,6 +26,7 @@ namespace ObjectEditor {
 namespace {
 constexpr int32_t KB = 1024;
 constexpr int32_t EVENT_SIZE_OFFSET = 16;
+const uint64_t FILE_WATCHER_FD_TAG = fdsan_create_owner_tag(FDSAN_OWNER_TYPE_DEFAULT, 0xD005118);
 }
 
 bool FileWatcher::Start()
@@ -46,11 +47,12 @@ bool FileWatcher::Start()
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "create inotify fd failed: %{public}s", strerror(errno));
             return false;
         }
+        fdsan_exchange_owner_tag(inotifyFd_, 0, FILE_WATCHER_FD_TAG);
         watchDescriptor_ = inotify_add_watch(inotifyFd_, filepath_.c_str(),
             IN_MODIFY | IN_ATTRIB | IN_MOVE_SELF | IN_DELETE_SELF | IN_CLOSE_WRITE);
         if (watchDescriptor_ < 0) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "add watch failed: %{public}s", strerror(errno));
-            close(inotifyFd_);
+            fdsan_close_with_tag(inotifyFd_, FILE_WATCHER_FD_TAG);
             inotifyFd_ = -1;
             return false;
         }
@@ -99,7 +101,7 @@ void FileWatcher::CleanupResources()
         watchDescriptor_ = -1;
     }
     if (inotifyFd_ >= 0) {
-        close(inotifyFd_);
+        fdsan_close_with_tag(inotifyFd_, FILE_WATCHER_FD_TAG);
         inotifyFd_ = -1;
     }
     running_.store(false);
