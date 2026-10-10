@@ -78,6 +78,11 @@ constexpr size_t UTF8_BYTE_POS_3 = 3;
 // CFB directory entry name limits
 constexpr uint16_t MAX_UTF16_CODE_UNITS = 31; // Max UTF-16 code units excluding null terminator
 
+// ASCII lowercase range for UTF-16 uppercase conversion (MS-CFB §13.2 simple case conversion)
+constexpr uint16_t LOWER_A = 0x0061;
+constexpr uint16_t LOWER_Z = 0x007A;
+constexpr uint16_t CASE_OFFSET = 0x0020;
+
 void AppendUtf8Continuation(std::string &result, uint32_t codePoint, uint32_t byteCount)
 {
     for (uint32_t shift = (byteCount - 1) * UTF8_SHIFT_6; shift > 0; shift -= UTF8_SHIFT_6) {
@@ -249,6 +254,40 @@ void TruncateUtf16Name(uint16_t &codeUnitCount, Byte *nameBuffer)
     nameBuffer[codeUnitCount * TWO_BYTE_SIZE] = 0;
     nameBuffer[codeUnitCount * TWO_BYTE_SIZE + 1] = 0;
 }
+
+// MS-CFB §13.2: uppercase a UTF-16 code unit (ASCII subset; surrogates are never uppercased per spec)
+uint16_t ToUpperUtf16(uint16_t cp)
+{
+    if (cp >= LOWER_A && cp <= LOWER_Z) {
+        return static_cast<uint16_t>(cp - CASE_OFFSET);
+    }
+    return cp;
+}
+
+// MS-CFB §13.2 name comparison: shorter name < longer name; same length → uppercase UTF-16 comparison
+// Returns < 0 if a < b, 0 if equal, > 0 if a > b
+int32_t CompareEntryNames(const std::string &a, const std::string &b)
+{
+    Byte bufA[DIR_MAX_NAME_LENGTH] = {0};
+    Byte bufB[DIR_MAX_NAME_LENGTH] = {0};
+    uint16_t codeUnitsA = Utf8ToUtf16Le(a, bufA, sizeof(bufA));
+    uint16_t codeUnitsB = Utf8ToUtf16Le(b, bufB, sizeof(bufB));
+    if (codeUnitsA != codeUnitsB) {
+        return (codeUnitsA < codeUnitsB) ? -1 : 1;
+    }
+    for (uint16_t i = 0; i < codeUnitsA; i++) {
+        uint16_t ca = static_cast<uint16_t>(bufA[i * TWO_BYTE_SIZE]) |
+            (static_cast<uint16_t>(bufA[i * TWO_BYTE_SIZE + 1]) << BITS_PER_BYTE);
+        uint16_t cb = static_cast<uint16_t>(bufB[i * TWO_BYTE_SIZE]) |
+            (static_cast<uint16_t>(bufB[i * TWO_BYTE_SIZE + 1]) << BITS_PER_BYTE);
+        ca = ToUpperUtf16(ca);
+        cb = ToUpperUtf16(cb);
+        if (ca != cb) {
+            return (ca < cb) ? -1 : 1;
+        }
+    }
+    return 0;
+}
 }
 
 bool DirEntry::Valid() const
@@ -387,12 +426,38 @@ void DirTree::SplitPath(const std::string &name, std::list<std::string> &parts) 
 
 size_t DirTree::FindChild(size_t parent, const std::string &segment) const
 {
-    std::vector<size_t> child;
-    Children(parent, child);
-    for (size_t idx : child) {
-        const DirEntry *ce = Entry(idx);
-        if (ce && ce->Valid() && !segment.empty() && ce->Name() == segment)
-            return idx;
+    if (segment.empty()) {
+        return 0;
+    }
+    const DirEntry *e = Entry(parent);
+    if (e == nullptr || !e->Valid() || e->Child() == DIR_ENTRY_END || e->Child() == 0 ||
+        e->Child() >= EntryCount()) {
+        return 0;
+    }
+    uint32_t cur = e->Child();
+    size_t guard = 0;
+    while (guard++ < EntryCount()) {
+        const DirEntry *curEntry = Entry(cur);
+        if (curEntry == nullptr || !curEntry->Valid()) {
+            return 0;
+        }
+        int32_t cmp = CompareEntryNames(segment, curEntry->Name());
+        if (cmp == 0) {
+            return cur;
+        }
+        if (cmp < 0) {
+            uint32_t prev = curEntry->Prev();
+            if (prev == DIR_ENTRY_END || prev == 0 || prev >= EntryCount()) {
+                return 0;
+            }
+            cur = prev;
+        } else {
+            uint32_t next = curEntry->Next();
+            if (next == DIR_ENTRY_END || next == 0 || next >= EntryCount()) {
+                return 0;
+            }
+            cur = next;
+        }
     }
     return 0;
 }
@@ -407,17 +472,61 @@ size_t DirTree::ReuseOrAppendSlot()
     return EntryCount();
 }
 
-DirEntry DirTree::MakeNewEntry(const std::string &name, size_t index, uint32_t oldChild, int type) const
+DirEntry DirTree::MakeNewEntry(const std::string &name, size_t index, int type) const
 {
     Byte nameBuffer[DIR_MAX_NAME_LENGTH] = {0};
     uint16_t codeUnitCount = Utf8ToUtf16Le(name, nameBuffer, sizeof(nameBuffer));
     TruncateUtf16Name(codeUnitCount, nameBuffer);
     const uint16_t nameLen = static_cast<uint16_t>((codeUnitCount + 1) * TWO_BYTE_SIZE);
     DirEntry e(name, nameLen, type, 0, 0, DIR_ENTRY_END,
-                    oldChild,
+                    DIR_ENTRY_END,
                     DIR_ENTRY_END,
                     index, 0, 0);
     return e;
+}
+
+bool DirTree::InsertSiblingBST(size_t parentIndex, size_t newEntryIndex, const std::string &name)
+{
+    DirEntry *parent = Entry(parentIndex);
+    if (parent == nullptr) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "parent entry %{public}zu is null", parentIndex);
+        return false;
+    }
+    if (parent->Child() == DIR_ENTRY_END || parent->Child() == 0 || parent->Child() >= EntryCount()) {
+        parent->SetChild(static_cast<uint32_t>(newEntryIndex));
+        return true;
+    }
+    uint32_t cur = parent->Child();
+    size_t guard = 0;
+    while (guard++ < EntryCount()) {
+        DirEntry *curEntry = Entry(cur);
+        if (curEntry == nullptr || !curEntry->Valid()) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "invalid BST node at %{public}u", cur);
+            return false;
+        }
+        int32_t cmp = CompareEntryNames(name, curEntry->Name());
+        if (cmp == 0) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "duplicate BST name: %{private}s", name.c_str());
+            return false;
+        }
+        if (cmp < 0) {
+            uint32_t prev = curEntry->Prev();
+            if (prev == DIR_ENTRY_END || prev == 0 || prev >= EntryCount()) {
+                curEntry->SetPrev(static_cast<uint32_t>(newEntryIndex));
+                return true;
+            }
+            cur = prev;
+        } else {
+            uint32_t next = curEntry->Next();
+            if (next == DIR_ENTRY_END || next == 0 || next >= EntryCount()) {
+                curEntry->SetNext(static_cast<uint32_t>(newEntryIndex));
+                return true;
+            }
+            cur = next;
+        }
+    }
+    OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "BST insert loop guard exceeded for %{private}s", name.c_str());
+    return false;
 }
 
 DirEntry *DirTree::Entry(const std::string &name, bool create)
@@ -466,27 +575,29 @@ DirEntry *DirTree::Entry(const std::string &name, bool create, int leafType)
             return nullptr;
         }
         const size_t parentIndex = index;
-        if (parentIndex < 0 || parentIndex >= EntryCount()) {
+        if (parentIndex >= EntryCount()) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "parent index out of range");
             return nullptr;
         }
-        const uint32_t oldChild = entries_[parentIndex].Child();
         const size_t newIndex = ReuseOrAppendSlot();
-        DirEntry e = MakeNewEntry(seg, newIndex, oldChild, segmentType);
-
-        if (newIndex >=0 && newIndex < EntryCount()) {
+        const size_t oldEntryCount = EntryCount();
+        DirEntry e = MakeNewEntry(seg, newIndex, segmentType);
+        if (newIndex < oldEntryCount) {
             entries_[newIndex] = e;
         } else {
             entries_.push_back(e);
         }
-        index = newIndex;
-        entries_[parentIndex].SetChild(index);
-        if (oldChild != DIR_ENTRY_END && oldChild < EntryCount()) {
-            DirEntry *siblingHead = Entry(oldChild);
-            if (siblingHead) {
-                siblingHead->SetPrev(index);
+        if (!InsertSiblingBST(parentIndex, newIndex, seg)) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+                "insert sibling BST failed, name: %{private}s", seg.c_str());
+            if (newIndex < oldEntryCount) {
+                ClearDirEntry(&entries_[newIndex]);
+            } else {
+                entries_.pop_back();
             }
+            return nullptr;
         }
+        index = newIndex;
         ++it;
     }
     return Entry(index);
@@ -746,43 +857,47 @@ void DirTree::Debug()
 
 void DirTree::FindSiblings(std::vector<size_t> &result, uint32_t index) const
 {
-    const DirEntry *e = Entry(index);
-    if (!e) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry %{public}u is null", index);
+    const size_t n = EntryCount();
+    if (n == 0) {
         return;
     }
-    if (!e->Valid()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry %{public}u is invalid", index);
+    if (index >= n) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry %{public}u is out of range", index);
         return;
     }
-    for (size_t i = 0; i < result.size(); i++) {
-        if (result[i] == index) {
-            OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "entry %{public}u is already in result", index);
-            return;
+    std::vector<bool> visited(n, false);
+    // Pre-mark entries already in result so they are not collected again.
+    for (size_t val : result) {
+        if (val < n) {
+            visited[val] = true;
         }
     }
-    result.push_back(index);
-
-    uint32_t prev = e->Prev();
-    if ((prev > 0) && (prev < EntryCount())) {
-        for (size_t i = 0; i < result.size(); i++) {
-            if (result[i] == prev) {
-                prev = 0;
-            }
+    std::vector<uint32_t> stack;
+    stack.push_back(index);
+    size_t guard = 0;
+    while (!stack.empty()) {
+        uint32_t cur = stack.back();
+        stack.pop_back();
+        if (cur >= n || visited[cur]) {
+            continue;
         }
-        if (prev) {
-            FindSiblings(result, prev);
+        const DirEntry *e = Entry(cur);
+        if (e == nullptr || !e->Valid()) {
+            continue;
         }
-    }
-    uint32_t next = e->Next();
-    if ((next > 0) && (next < EntryCount())) {
-        for (size_t i = 0; i < result.size(); i++) {
-            if (result[i] == next) {
-                next = 0;
-            }
+        visited[cur] = true;
+        result.push_back(cur);
+        if (++guard > n) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "FindSiblings guard exceeded at %{public}u", cur);
+            break;
         }
-        if (next) {
-            FindSiblings(result, next);
+        uint32_t prev = e->Prev();
+        if (prev > 0 && prev < n) {
+            stack.push_back(prev);
+        }
+        uint32_t next = e->Next();
+        if (next > 0 && next < n) {
+            stack.push_back(next);
         }
     }
 }
@@ -803,26 +918,43 @@ bool DirTree::CollectSubtreeEntries(const std::string &path, std::vector<DirEntr
 void DirTree::CollectSubtree(size_t index, std::vector<bool> &visited,
     std::vector<DirEntry> &result) const
 {
-    if (index >= EntryCount()) {
+    const size_t n = EntryCount();
+    if (index >= n) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "index: %{public}d is out of range",
             static_cast<int32_t>(index));
         return;
     }
-    const DirEntry *node = Entry(index);
-    if (!node || !node->Valid()) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "entry %{public}d is invalid",
-            static_cast<int32_t>(index));
-        return;
+    if (visited.size() < n) {
+        visited.resize(n, false);
     }
-    if (visited[index]) {
-        OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "entry %{public}d is already visited",
-            static_cast<int32_t>(index));
-        return;
-    }
-    visited[index] = true;
-    result.push_back(*node);
-    if (node->IsDir() && node->Child() != DIR_ENTRY_END) {
-        CollectSiblingChain(node->Child(), visited, result);
+    std::vector<uint32_t> stack;
+    stack.push_back(static_cast<uint32_t>(index));
+    size_t guard = 0;
+    while (!stack.empty()) {
+        uint32_t cur = stack.back();
+        stack.pop_back();
+        if (cur >= n || visited[cur]) {
+            continue;
+        }
+        const DirEntry *node = Entry(cur);
+        if (node == nullptr || !node->Valid()) {
+            continue;
+        }
+        visited[cur] = true;
+        result.push_back(*node);
+        if (++guard > n) {
+            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "CollectSubtree guard exceeded at %{public}u", cur);
+            break;
+        }
+        if (node->IsDir() && node->Child() != DIR_ENTRY_END && node->Child() > 0 && node->Child() < n) {
+            stack.push_back(node->Child());
+        }
+        if (node->Prev() != DIR_ENTRY_END && node->Prev() > 0 && node->Prev() < n) {
+            stack.push_back(node->Prev());
+        }
+        if (node->Next() != DIR_ENTRY_END && node->Next() > 0 && node->Next() < n) {
+            stack.push_back(node->Next());
+        }
     }
 }
 
@@ -837,23 +969,31 @@ void DirTree::CollectSiblingChain(uint32_t index, std::vector<bool> &visited,
     if (visited.size() < EntryCount()) {
         visited.resize(EntryCount(), false);
     }
-    if (visited[index]) {
-        OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "entry %{public}d is already visited",
-            static_cast<int32_t>(index));
-        return;
-    }
-    const DirEntry *node = Entry(index);
-    if (!node || !node->Valid()) {
-        OBJECT_EDITOR_LOGD(ObjectEditorDomain::DOCUMENT, "entry %{public}d is invalid",
-            static_cast<int32_t>(index));
-        return;
-    }
-    CollectSubtree(index, visited, result);
-    if (node->Prev() != DIR_ENTRY_END) {
-        CollectSiblingChain(node->Prev(), visited, result);
-    }
-    if (node->Next() != DIR_ENTRY_END) {
-        CollectSiblingChain(node->Next(), visited, result);
+    // Iteratively walk the sibling chain (prev/next links) and collect each
+    // sibling's subtree.  This preserves the original semantics where
+    // CollectSiblingChain gathers a horizontal sibling layer, not a vertical
+    // subtree descent (which is CollectSubtree's job).
+    std::vector<uint32_t> stack;
+    stack.push_back(index);
+    while (!stack.empty()) {
+        uint32_t cur = stack.back();
+        stack.pop_back();
+        if (cur >= EntryCount() || (visited.size() > cur && visited[cur])) {
+            continue;
+        }
+        const DirEntry *node = Entry(cur);
+        if (node == nullptr || !node->Valid()) {
+            continue;
+        }
+        CollectSubtree(cur, visited, result);
+        uint32_t prev = node->Prev();
+        if (prev != DIR_ENTRY_END && prev < EntryCount() && !(visited.size() > prev && visited[prev])) {
+            stack.push_back(prev);
+        }
+        uint32_t next = node->Next();
+        if (next != DIR_ENTRY_END && next < EntryCount() && !(visited.size() > next && visited[next])) {
+            stack.push_back(next);
+        }
     }
 }
 
@@ -1094,27 +1234,33 @@ bool DirTree::DeleteEntry(const std::string &path, int level, std::vector<bool> 
         visited->resize(EntryCount(), false);
     }
     (*visited)[idx] = true;
-    if (e->Type() == 1 && !DeleteChildrenRecursive(path, e, level, visited)) {
+    // Disconnect e from its parent's sibling BST before clearing the subtree.
+    // FixParentLinks only uses e->Prev()/e->Next() and never touches e->Child(), so calling it
+    // before the subtree collection is safe and lets us collect from the still-intact child BST.
+    // Runs unconditionally — the level parameter is vestigial (MAX_DELETE_DEPTH was removed),
+    // and any entry being deleted must be detached from its parent's BST to avoid dangling links.
+    size_t prevLink = SearchPrevLink(e->Index());
+    if (prevLink == INVALID_INDEX) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-            "delete children recursive failed, path: %{private}s", path.c_str());
+            "search prev link failed, path: %{private}s", path.c_str());
         return false;
     }
-    if (!DeleteSiblingChain(path, e, level, visited)) {
+    if (!FixParentLinks(e, prevLink)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-            "delete sibling chain failed, path: %{private}s", path.c_str());
+            "fix parent links failed, path: %{private}s", path.c_str());
         return false;
     }
-    if (level == 0) {
-        size_t prevLink = SearchPrevLink(e->Index());
-        if (prevLink == INVALID_INDEX) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-                "search prev link failed, path: %{private}s", path.c_str());
-            return false;
-        }
-        if (!FixParentLinks(e, prevLink)) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-                "fix parent links failed, path: %{private}s", path.c_str());
-            return false;
+    // Iteratively collect and clear the entire child subtree (child BST root + all BST siblings
+    // + all descendants).  This replaces the former recursive DeleteChildrenRecursive /
+    // DeleteSiblingChain calls and eliminates the stack-overflow DoS surface entirely.
+    if (e->Type() == 1 && e->Child() != DIR_ENTRY_END && e->Child() > 0 && e->Child() < EntryCount()) {
+        std::vector<DirEntry> subtree;
+        CollectSubtree(e->Child(), *visited, subtree);
+        for (const auto &descendant : subtree) {
+            DirEntry *toClear = Entry(descendant.Index());
+            if (toClear != nullptr) {
+                ClearDirEntry(toClear);
+            }
         }
     }
     ClearDirEntry(e);

@@ -282,7 +282,8 @@ private:
     void SplitPath(const std::string &name, std::list<std::string> &parts) const;
     size_t FindChild(size_t parent, const std::string &segment) const;
     size_t ReuseOrAppendSlot();
-    DirEntry MakeNewEntry(const std::string &name, size_t index, uint32_t oldChild, int type) const;
+    DirEntry MakeNewEntry(const std::string &name, size_t index, int type) const;
+    bool InsertSiblingBST(size_t parentIndex, size_t newEntryIndex, const std::string &name);
     bool SaveDirEntryName(Byte *buffer, size_t len, size_t i, const DirEntry *e);
     bool SaveDirEntryFields(Byte *buffer, size_t len, size_t i, const DirEntry *e);
 
