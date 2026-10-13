@@ -37,6 +37,7 @@ std::vector<Byte> BuildNameEntry(const std::vector<Byte> &utf16Name, uint16_t na
     buf[TYPE_OFFSET] = type;
     return buf;
 }
+constexpr size_t CHAIN_LEN = 2000;
 }
 
 class DirTreeTest : public testing::Test {
@@ -1302,6 +1303,174 @@ HWTEST_F(DirTreeTest, DeleteEntry_Success_001, TestSize.Level1)
     EXPECT_EQ(dirtree_->entries_[1].Name(), "");
     EXPECT_EQ(dirtree_->entries_[1].Valid(), false);
     EXPECT_EQ(dirtree_->entries_[0].Child(), DIR_ENTRY_END);
+}
+
+/**
+ * @tc.name BST_InsertOrder_001
+ * @tc.desc Test insert order
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, BST_InsertOrder_001, TestSize.Level1)
+{
+    DirEntry *banana = dirtree_->Entry("/banana", true, 2);
+    DirEntry *apple = dirtree_->Entry("/apple", true, 2);
+    DirEntry *cherry = dirtree_->Entry("/cherry", true, 2);
+    ASSERT_NE(banana, nullptr);
+    ASSERT_NE(apple, nullptr);
+    ASSERT_NE(cherry, nullptr);
+
+    const DirEntry *root = dirtree_->Entry(0);
+    ASSERT_NE(root, nullptr);
+    EXPECT_EQ(root->Child(), banana->Index());
+
+    EXPECT_EQ(banana->Prev(), apple->Index());
+    EXPECT_EQ(banana->Next(), cherry->Index());
+    EXPECT_EQ(apple->Prev(), DIR_ENTRY_END);
+    EXPECT_EQ(apple->Next(), DIR_ENTRY_END);
+    EXPECT_EQ(cherry->Prev(), DIR_ENTRY_END);
+    EXPECT_EQ(cherry->Next(), DIR_ENTRY_END);
+}
+
+/**
+ * @tc.name FindChild_BSTSearch_001
+ * @tc.desc Test FindChild uses BST search to locate children by name
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, FindChild_BSTSearch_001, TestSize.Level1)
+{
+    DirEntry root("Root Entry", 22, 5, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0, 0);
+    DirEntry m("m", 0, 2, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0);
+    DirEntry a("a", 0, 2, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 2, 0, 0);
+    DirEntry z("z", 0, 2, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 3, 0, 0);
+    dirtree_->entries_.clear();
+    dirtree_->entries_.push_back(root);
+    dirtree_->entries_.push_back(m);
+    dirtree_->entries_.push_back(a);
+    dirtree_->entries_.push_back(z);
+    dirtree_->entries_[1].SetPrev(2);
+    dirtree_->entries_[1].SetNext(3);
+
+    EXPECT_EQ(dirtree_->FindChild(0, "m"), 1);
+    EXPECT_EQ(dirtree_->FindChild(0, "a"), 2);
+    EXPECT_EQ(dirtree_->FindChild(0, "z"), 3);
+    EXPECT_EQ(dirtree_->FindChild(0, "x"), 0);
+}
+
+/**
+ * @tc.name FindSiblings_DeepChain_001
+ * @tc.desc Test FindSiblings handles a degenerate 2000-entry chain without stack overflow
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, FindSiblings_DeepChain_001, TestSize.Level1)
+{
+    dirtree_->entries_.clear();
+    DirEntry root("Root Entry", 22, 5, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0, 0);
+    dirtree_->entries_.push_back(root);
+    for (size_t i = 1; i <= CHAIN_LEN; i++) {
+        uint32_t nextVal = (i < CHAIN_LEN) ? static_cast<uint32_t>(i + 1) : DIR_ENTRY_END;
+        DirEntry e("n", 0, 2, 0, 0, DIR_ENTRY_END, nextVal, DIR_ENTRY_END, i, 0, 0);
+        dirtree_->entries_.push_back(e);
+    }
+    dirtree_->entries_[0].SetChild(1);
+
+    std::vector<size_t> result;
+    dirtree_->FindSiblings(result, 1);
+    EXPECT_EQ(result.size(), CHAIN_LEN);
+}
+
+/**
+ * @tc.name FindSiblings_CycleDetection_001
+ * @tc.desc Test FindSiblings terminates on cyclic sibling links
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, FindSiblings_CycleDetection_001, TestSize.Level1)
+{
+    DirEntry root("Root Entry", 22, 5, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0, 0);
+    DirEntry e1("a", 0, 2, 0, 0, DIR_ENTRY_END, 2, DIR_ENTRY_END, 1, 0, 0);
+    DirEntry e2("b", 0, 2, 0, 0, DIR_ENTRY_END, 3, DIR_ENTRY_END, 2, 0, 0);
+    DirEntry e3("c", 0, 2, 0, 0, DIR_ENTRY_END, 1, DIR_ENTRY_END, 3, 0, 0);
+    dirtree_->entries_.clear();
+    dirtree_->entries_.push_back(root);
+    dirtree_->entries_.push_back(e1);
+    dirtree_->entries_.push_back(e2);
+    dirtree_->entries_.push_back(e3);
+    dirtree_->entries_[0].SetChild(1);
+
+    std::vector<size_t> result;
+    dirtree_->FindSiblings(result, 1);
+    EXPECT_EQ(result.size(), static_cast<size_t>(3));
+}
+
+/**
+ * @tc.name CollectSubtree_DeepChain_001
+ * @tc.desc Test CollectSubtree handles a degenerate chain without stack overflow
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, CollectSubtree_DeepChain_001, TestSize.Level1)
+{
+    dirtree_->entries_.clear();
+    DirEntry root("Root Entry", 22, 5, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0, 0);
+    dirtree_->entries_.push_back(root);
+    for (size_t i = 1; i <= CHAIN_LEN; i++) {
+        uint32_t nextVal = (i < CHAIN_LEN) ? static_cast<uint32_t>(i + 1) : DIR_ENTRY_END;
+        DirEntry e("n", 0, 2, 0, 0, DIR_ENTRY_END, nextVal, DIR_ENTRY_END, i, 0, 0);
+        dirtree_->entries_.push_back(e);
+    }
+    dirtree_->entries_[0].SetChild(1);
+
+    std::vector<bool> visited;
+    std::vector<DirEntry> result;
+    dirtree_->CollectSubtree(0, visited, result);
+    EXPECT_EQ(result.size(), CHAIN_LEN + 1);
+}
+
+/**
+ * @tc.name BST_DeleteLeaf_001
+ * @tc.desc Test DeleteEntry removes a BST leaf and maintains structure
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, BST_DeleteLeaf_001, TestSize.Level1)
+{
+    DirEntry root("Root Entry", 22, 5, 0, 0, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0, 0);
+    DirEntry m("m", 0, 2, 100, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 1, 0, 0);
+    DirEntry a("a", 0, 2, 100, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 2, 0, 0);
+    DirEntry z("z", 0, 2, 100, 0, DIR_ENTRY_END, DIR_ENTRY_END, DIR_ENTRY_END, 3, 0, 0);
+    dirtree_->entries_.clear();
+    dirtree_->entries_.push_back(root);
+    dirtree_->entries_.push_back(m);
+    dirtree_->entries_.push_back(a);
+    dirtree_->entries_.push_back(z);
+    dirtree_->entries_[1].SetPrev(2);
+    dirtree_->entries_[1].SetNext(3);
+
+    std::vector<bool> visited;
+    EXPECT_EQ(dirtree_->DeleteEntry("a", 0, &visited), true);
+    EXPECT_EQ(dirtree_->entries_[1].Prev(), DIR_ENTRY_END);
+    EXPECT_EQ(dirtree_->entries_[2].Valid(), false);
+    EXPECT_EQ(dirtree_->entries_[1].Valid(), true);
+    EXPECT_EQ(dirtree_->entries_[3].Valid(), true);
+    EXPECT_EQ(dirtree_->FindChild(0, "m"), 1);
+    EXPECT_EQ(dirtree_->FindChild(0, "z"), 3);
+    EXPECT_EQ(dirtree_->FindChild(0, "a"), 0);
+}
+
+/**
+ * @tc.name BST_InsertViaEntry_FindAll_001
+ * @tc.desc Test inserting multiple entries via Entry() and finding them all
+ * @tc.type FUNC
+ */
+HWTEST_F(DirTreeTest, BST_InsertViaEntry_FindAll_001, TestSize.Level1)
+{
+    dirtree_->Entry("/mid", true, 2);
+    dirtree_->Entry("/abc", true, 2);
+    dirtree_->Entry("/xyz", true, 2);
+    dirtree_->Entry("/aaa", true, 2);
+
+    EXPECT_NE(dirtree_->Entry("/mid", false), nullptr);
+    EXPECT_NE(dirtree_->Entry("/abc", false), nullptr);
+    EXPECT_NE(dirtree_->Entry("/xyz", false), nullptr);
+    EXPECT_NE(dirtree_->Entry("/aaa", false), nullptr);
+    EXPECT_EQ(dirtree_->Entry("/notfound", false), nullptr);
 }
 
 }
