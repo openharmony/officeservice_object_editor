@@ -84,6 +84,7 @@ ohos_shared_library("content_embed_ndk") {
         "hitrace:hitrace_meter",
         "init:libbegetutil",
         "window_manager:libwm",
+        "samgr:samgr_proxy",
     ]
     defines = []
     if (object_editor_dlp_part_enabled) {
