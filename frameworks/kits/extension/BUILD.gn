@@ -109,6 +109,7 @@ ohos_shared_library("content_embed_extension") {
         "bundle_framework:appexecfwk_base",
         "bundle_framework:appexecfwk_core",
         "window_manager:libwm",
+        "samgr:samgr_proxy",
     ]
 
     subsystem_name = "officeservice"
