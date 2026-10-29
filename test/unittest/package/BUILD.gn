@@ -145,6 +145,7 @@ ohos_unittest("object_editor_package_test") {
     "os_account:os_account_innerkits",
     "ipc:ipc_core",
     "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
   ]
   part_name = "object_editor"
   subsystem_name = "officeservice"
