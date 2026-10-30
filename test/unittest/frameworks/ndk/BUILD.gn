@@ -173,6 +173,7 @@ ohos_unittest("object_editor_proxy_capi_one_test") {
     "ipc:ipc_napi",
     "napi:ace_napi",
     "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
   ]
 
   part_name = "object_editor"
