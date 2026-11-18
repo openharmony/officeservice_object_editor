@@ -91,9 +91,6 @@ ohos_shared_library("content_embed_ndk") {
         external_deps += [ "dlp_permission_service:libdlp_permission_sdk" ]
         defines += [ "WITH_DLP" ]
     }
-    if (is_emulator) {
-        defines += [ "IS_EMULATOR" ]
-    }
     relative_install_dir = "ndk/"
     part_name = "object_editor"
     subsystem_name = "officeservice"

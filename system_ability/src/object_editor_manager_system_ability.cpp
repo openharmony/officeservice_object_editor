@@ -822,12 +822,12 @@ bool ObjectEditorManagerSystemAbility::CheckClientFileValid(const ObjectEditorDo
                 OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "link not support sandbox");
                 return false;
             }
-#ifdef IS_EMULATOR
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::SA, "emulator is not supported");
-            return false;
+#ifndef IS_EMULATOR
+            uriVec.push_back(document.GetNativeFileUri().value());
 #endif
+        } else {
+            uriVec.push_back(document.GetNativeFileUri().value());
         }
-        uriVec.push_back(document.GetNativeFileUri().value());
     }
     auto tokenId = IPCSkeleton::GetCallingTokenID();
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::SA, "tokenId = %{private}d", tokenId);
