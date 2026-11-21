@@ -126,18 +126,19 @@ ErrCode ObjectEditorPackage::GetEditStatus(const std::string &documentId, bool *
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::PACKAGE, "isEditing is null");
         return ERR_INVALID_VALUE;
     }
-    *isEditing = isEditing_;
+    bool editingSnapshot = isEditing_.load();
+    *isEditing = editingSnapshot;
     if (isModified != nullptr) {
         *isModified = true;
     }
-    OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "isEditing:%{public}d", isEditing_);
+    OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "isEditing:%{public}d", editingSnapshot);
     return ERR_OK;
 }
 
 ErrCode ObjectEditorPackage::GetExtensionEditStatus(bool &isEditing)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "package");
-    isEditing = isEditing_;
+    isEditing = isEditing_.load();
     return ERR_OK;
 }
 
@@ -241,7 +242,7 @@ ErrCode ObjectEditorPackage::OpenFile(const std::string &fileUri)
         UserMgr::GetInstance().GetUserId());
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::PACKAGE, "StartAbility result: %{public}d", ret);
     if (ret == ERR_OK) {
-        isEditing_ = true;
+        isEditing_.store(true);
     }
     return ret;
 }
