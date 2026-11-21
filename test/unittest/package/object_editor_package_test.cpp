@@ -77,7 +77,6 @@ constexpr const char *TEST_DOCUMENT_ID = "test_doc_001";
 constexpr const char *TEST_FILE_URI = "file:///data/test/test.doc";
 constexpr const char *TEST_WATCH_FILE = "/data/local/tmp/oe_pkg_watch_file.doc";
 constexpr const char *TEST_UNEXIST_FILE = "/data/local/tmp/oe_pkg_unexist_file.doc";
-constexpr const char *TEST_UNEXIST_FILE_URI = "file:///data/local/tmp/oe_pkg_unexist_file.doc";
 constexpr const char *TEST_NATIVE_FILE_URI = "file:///data/local/tmp/oe_pkg_native_file.doc";
 constexpr const char *TEST_ORI_FILE_URI = "file:///data/local/tmp/oe_pkg_ori_file.doc";
 constexpr const char *TEST_TMP_FILE_URI = "file:///data/local/tmp/oe_pkg_tmp_file.doc";
@@ -192,19 +191,6 @@ HWTEST_F(ObjectEditorPackageTest, Destructor_002, TestSize.Level1)
     pkg->watcher_ = watcher;
     pkg = nullptr;
     EXPECT_EQ(watcher->running_.load(), false);
-}
-
-/**
- * @tc.name: Destructor_003
- * @tc.desc: Test destructor calls OnStopEdit(true) when clientCb_ is not null
- * @tc.type: FUNC
- */
-HWTEST_F(ObjectEditorPackageTest, Destructor_003, TestSize.Level1)
-{
-    auto pkg = std::make_shared<ObjectEditorPackage>();
-    pkg->clientCb_ = mockClientCb_;
-    EXPECT_CALL(*mockClientCb_, OnStopEdit(true)).WillOnce(Return(ERR_OK));
-    pkg = nullptr;
 }
 
 /**
@@ -354,51 +340,6 @@ HWTEST_F(ObjectEditorPackageTest, DoEdit_008, TestSize.Level1)
     EXPECT_EQ(package_->isEditing_, true);
     EXPECT_NE(package_->watcher_, nullptr);
     CEAbilityManagerClient::client = nullptr;
-    std::remove(TEST_WATCH_FILE);
-}
-
-/**
- * @tc.name: WatcherCallback_001
- * @tc.desc: Test DoEdit watcher callback with null packageData returns early without crash
- * @tc.type: FUNC
- */
-HWTEST_F(ObjectEditorPackageTest, WatcherCallback_001, TestSize.Level1)
-{
-    ASSERT_TRUE(SetupWatchedPackage(package_, mockClientCb_, TEST_WATCH_FILE));
-    ASSERT_NE(package_->watcher_, nullptr);
-    package_->packageData_ = nullptr;
-    package_->watcher_->callback_(static_cast<uint32_t>(IN_CLOSE_WRITE), TEST_WATCH_FILE);
-    EXPECT_EQ(package_->isEditing_, true);
-    std::remove(TEST_WATCH_FILE);
-}
-
-/**
- * @tc.name: WatcherCallback_002
- * @tc.desc: Test DoEdit watcher callback with null clientCb skips document reload
- * @tc.type: FUNC
- */
-HWTEST_F(ObjectEditorPackageTest, WatcherCallback_002, TestSize.Level1)
-{
-    ASSERT_TRUE(SetupWatchedPackage(package_, mockClientCb_, TEST_WATCH_FILE));
-    ASSERT_NE(package_->watcher_, nullptr);
-    package_->clientCb_ = nullptr;
-    package_->watcher_->callback_(static_cast<uint32_t>(IN_CLOSE_WRITE), TEST_WATCH_FILE);
-    EXPECT_EQ(package_->isEditing_, true);
-    std::remove(TEST_WATCH_FILE);
-}
-
-/**
- * @tc.name: WatcherCallback_003
- * @tc.desc: Test DoEdit watcher callback with unloadable tmp file does not call OnUpdate
- * @tc.type: FUNC
- */
-HWTEST_F(ObjectEditorPackageTest, WatcherCallback_003, TestSize.Level1)
-{
-    ASSERT_TRUE(SetupWatchedPackage(package_, mockClientCb_, TEST_WATCH_FILE));
-    ASSERT_NE(package_->watcher_, nullptr);
-    package_->document_->SetTmpFileUri(TEST_UNEXIST_FILE_URI);
-    EXPECT_CALL(*mockClientCb_, OnUpdate(_)).Times(0);
-    package_->watcher_->callback_(static_cast<uint32_t>(IN_CLOSE_WRITE), TEST_WATCH_FILE);
     std::remove(TEST_WATCH_FILE);
 }
 

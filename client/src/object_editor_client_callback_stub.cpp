@@ -98,12 +98,6 @@ int32_t ObjectEditorClientCallbackStub::HandleOnError(MessageParcel &data, Messa
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write errCode failed");
         return ERR_INVALID_VALUE;
     }
-    if (SUCCEEDED(errCode)) {
-        if (!reply.WriteInt32(static_cast<int32_t>(error))) {
-            OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "write error failed");
-            return ERR_INVALID_DATA;
-        }
-    }
     return ERR_NONE;
 }
 
