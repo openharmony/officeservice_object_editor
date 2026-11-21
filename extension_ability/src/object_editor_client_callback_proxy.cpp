@@ -87,12 +87,6 @@ ErrCode ObjectEditorClientCallbackProxy::OnError(ContentEmbed_ErrorCode error)
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "reply failed");
         return errCode;
     }
-    int32_t enumTmp = 0;
-    if (!reply.ReadInt32(enumTmp)) {
-        OBJECT_EDITOR_LOGE(ObjectEditorDomain::CLIENT, "read enum failed");
-        return ERR_INVALID_DATA;
-    }
-    error = ValidateErrorCode(enumTmp);
     return ERR_OK;
 }
 

@@ -15,6 +15,7 @@
 #ifndef OHOS_OBJECT_EDITOR_OBJECT_EDITOR_PACKAGE_H
 #define OHOS_OBJECT_EDITOR_OBJECT_EDITOR_PACKAGE_H
 
+#include <atomic>
 #include <mutex>
 
 #include "file_watcher.h"
@@ -60,7 +61,7 @@ private:
     sptr<IObjectEditorClientCallback> clientCb_ = nullptr;
     std::unique_ptr<PackageData> packageData_ = nullptr;
     std::shared_ptr<FileWatcher> watcher_ = nullptr;
-    bool isEditing_ = false;
+    std::atomic<bool> isEditing_ { false };
     std::mutex mutex_;
 };
 
