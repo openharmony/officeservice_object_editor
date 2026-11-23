@@ -101,7 +101,9 @@ ohos_shared_library("content_embed_client") {
         "window_manager:libwm",
     ]
     defines = []
-
+    if (is_emulator) {
+        defines += [ "IS_EMULATOR" ]
+    }
     part_name = "object_editor"
     subsystem_name = "officeservice"
 }

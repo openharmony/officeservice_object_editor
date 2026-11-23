@@ -34,6 +34,11 @@ Storage::Storage(const std::string &oeid)
     io_ = std::make_unique<StorageIO>(oeid);
 }
 
+Storage::Storage(const std::string &oeid, CfbVersion version)
+{
+    io_ = std::make_unique<StorageIO>(oeid, version);
+}
+
 Storage::~Storage() = default;
 
 int Storage::Result() const
@@ -205,6 +210,13 @@ bool Storage::IsDirty() const
 {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     return io_ ? io_->IsDirty() : false;
+}
+
+uint16_t Storage::MajorVersion() const
+{
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
+    const Header *header = (io_ != nullptr) ? io_->GetHeader() : nullptr;
+    return (header != nullptr) ? header->MajorVersion() : 0;
 }
 
 bool Storage::ReadRawCd(size_t offset, uint8_t *buf, size_t len, size_t *outRead)

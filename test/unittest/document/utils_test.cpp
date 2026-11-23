@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+#include <fcntl.h>
+#include <unistd.h>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "utils.h"
@@ -377,6 +379,50 @@ HWTEST_F(UtilsTest, GetCurrentFileTime_001, TestSize.Level1)
     uint64_t time2 = GetCurrentFileTime();
     EXPECT_GT(time1, 0);
     EXPECT_GE(time2, time1);
+}
+
+/**
+ * @tc.name IsSourceFileOverV3Limit_001
+ * @tc.desc Test IsSourceFileOverV3Limit with an oversized sparse source file
+ * @tc.type FUNC
+ */
+HWTEST_F(UtilsTest, IsSourceFileOverV3Limit_001, TestSize.Level1)
+{
+    const char *path = "/data/local/tmp/oe_oversize_sparse.bin";
+    const uint64_t oversize = MAX_V3_STREAM_SIZE + 1024 * 1024;
+    int fd = open(path, O_CREAT | O_TRUNC | O_WRONLY, 0644);
+    ASSERT_GE(fd, 0);
+    ASSERT_EQ(ftruncate64(fd, static_cast<off64_t>(oversize)), 0);
+    close(fd);
+    EXPECT_TRUE(IsSourceFileOverV3Limit(path));
+    unlink(path);
+}
+
+/**
+ * @tc.name IsSourceFileOverV3Limit_002
+ * @tc.desc Test IsSourceFileOverV3Limit with a small source file
+ * @tc.type FUNC
+ */
+HWTEST_F(UtilsTest, IsSourceFileOverV3Limit_002, TestSize.Level1)
+{
+    const char *path = "/data/local/tmp/oe_small.bin";
+    int fd = open(path, O_CREAT | O_TRUNC | O_WRONLY, 0644);
+    ASSERT_GE(fd, 0);
+    ASSERT_EQ(write(fd, "x", 1), 1);
+    close(fd);
+    EXPECT_FALSE(IsSourceFileOverV3Limit(path));
+    unlink(path);
+}
+
+/**
+ * @tc.name IsSourceFileOverV3Limit_003
+ * @tc.desc Test IsSourceFileOverV3Limit keeps legacy behavior for a missing file (no stat rejection)
+ * @tc.type FUNC
+ */
+HWTEST_F(UtilsTest, IsSourceFileOverV3Limit_003, TestSize.Level1)
+{
+    EXPECT_FALSE(IsSourceFileOverV3Limit("/data/local/tmp/oe_not_exist_oe.bin"));
+    EXPECT_FALSE(IsSourceFileOverV3Limit(""));
 }
 
 } // namespace ObjectEditor

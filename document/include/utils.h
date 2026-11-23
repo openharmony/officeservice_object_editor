@@ -121,6 +121,11 @@ namespace {
 bool IsValidOEid(const std::string &uuid);
 std::optional<CLSID> ParseOEidToClsid(const std::string &uuid);
 
+// True when the source file's size exceeds the v3 (512-byte sector) compound
+// file stream limit. A file that cannot be stat-ed never blocks creation:
+// existing callers rely on CreateByFile succeeding without the file existing.
+bool IsSourceFileOverV3Limit(const std::string &path);
+
 std::string FormatClsidToOEid(const CLSID &clsid);
 
 }  // namespace ObjectEditor

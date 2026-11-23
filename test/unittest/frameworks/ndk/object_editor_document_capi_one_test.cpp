@@ -15,6 +15,8 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <fcntl.h>
+#include <unistd.h>
 #define final
 
 #define private public
@@ -27,6 +29,7 @@
 #include "stream.h"
 #include "pole.h"
 #include "storage.h"
+#include "types.h"
 #undef private
 
 using namespace testing;
@@ -1819,6 +1822,43 @@ HWTEST_F(ObjectEditorDocumentCapiOneTest, OH_ContentEmbed_CreateDocumentByFile_0
     ContentEmbed_Document *document = nullptr;
     ContentEmbed_ErrorCode ret = OH_ContentEmbed_CreateDocumentByFile(filePath, length, false, &document);
     EXPECT_EQ(ret, CE_ERR_PARAM_INVALID);
+}
+
+/**
+ * @tc.name: OH_ContentEmbed_CreateDocumentByFile_006
+ * @tc.desc: Test CreateDocumentByFile auto-selects a v4 compound container for an
+ *           oversized source file (sparse file, no real disk usage). The version
+ *           is verified through the public Document_Read API (header offset 0x1A).
+ * @tc.type: FUNC
+ */
+HWTEST_F(ObjectEditorDocumentCapiOneTest, OH_ContentEmbed_CreateDocumentByFile_006, TestSize.Level1)
+{
+    const char *filePath = "/data/local/tmp/oe_oversize_sparse.bin";
+    const uint64_t oversize = MAX_V3_STREAM_SIZE + 1024 * 1024;
+    int fd = open(filePath, O_CREAT | O_TRUNC | O_WRONLY, 0644);
+    ASSERT_GE(fd, 0);
+    ASSERT_EQ(ftruncate64(fd, static_cast<off64_t>(oversize)), 0);
+    close(fd);
+    ContentEmbed_Document *document = nullptr;
+    ContentEmbed_ErrorCode ret = OH_ContentEmbed_CreateDocumentByFile(
+        filePath, strlen(filePath), false, &document);
+    EXPECT_EQ(ret, CE_ERR_OK);
+    ASSERT_NE(document, nullptr);
+    // Flush persists the memory-mode document to its temp file and switches it
+    // to file mode, which is required by Document_Read (raw CD access).
+    EXPECT_EQ(OH_ContentEmbed_Document_Flush(document), CE_ERR_OK);
+    uint8_t versionBytes[2] = {0};
+    size_t readSize = 0;
+    ret = OH_ContentEmbed_Document_Read(versionBytes, sizeof(versionBytes), document,
+        0x1A, &readSize);
+    EXPECT_EQ(ret, CE_ERR_OK);
+    EXPECT_EQ(readSize, sizeof(versionBytes));
+    // Little-endian major version at header offset 0x1A
+    constexpr uint8_t majorVersionLowByte = static_cast<uint8_t>(MAJOR_VERSION_V4);
+    EXPECT_EQ(versionBytes[0], majorVersionLowByte);
+    EXPECT_EQ(versionBytes[1], 0x00);
+    OH_ContentEmbed_DestroyDocument(document);
+    unlink(filePath);
 }
 
 /**

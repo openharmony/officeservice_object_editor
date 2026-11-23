@@ -27,9 +27,18 @@ constexpr uint32_t INT_BIT_SIZE = 32;
 // Header info
 constexpr uint16_t DEFAULT_MINOR_VERSION  = 0x003Eu;
 constexpr uint16_t DEFAULT_MAJOR_VERSION  = 0x0003u;
+constexpr uint16_t MAJOR_VERSION_V4 = 0x0004u;              // parallels SECTOR_SHIFT_V4
 constexpr uint16_t DEFAULT_BYTE_ORDER = 0xFFFEu;         // Default to little-endian
 constexpr uint16_t DEFAULT_SECTOR_SHIFT = 0x0009u;       // MAJOR_VERSION 3: 2^9 = 512 bytes
 constexpr uint16_t SECTOR_SHIFT_V4 = 0x000Cu;             // MAJOR_VERSION 4: 2^12 = 4096 bytes
+// MS-CFB caps V3 (512-byte sector) compound files at 2GB. Reject streams above
+// this size during ExtendEntry so allocation fails before any payload I/O;
+// the 200MB margin covers FAT/DIFAT/directory sectors and FLUSH_EXTRA_SIZE.
+constexpr uint64_t MAX_V3_STREAM_SIZE = 2ULL * 1024 * 1024 * 1024 - 200ULL * 1024 * 1024;
+// V4 (4096-byte sector) containers can address ~16TB, but keep an explicit cap:
+// beyond tens of GB the in-memory FAT table and the uint32 FAT save buffer of
+// the current implementation stop being practical. 64GB leaves ample headroom.
+constexpr uint64_t MAX_V4_FILE_SIZE = 64ULL * 1024 * 1024 * 1024;
 constexpr uint16_t DEFAULT_MINI_SECTOR_SHIFT = 0x0006u;  // 2^6 = 64 bytes
 constexpr uint32_t MINI_STREAM_CUTOFF = 4096;            // Mini Stream threshold
 constexpr size_t HEADER_FIXED_SIZE = 0x4C;               // Fixed field length
@@ -66,6 +75,14 @@ using SectorIndex = std::uint32_t;
 using StreamPos = uint64_t;
 using BlockCount = std::uint32_t;
 using CLSID = std::array<uint8_t, CLSID_SIZE>;
+
+// Compound-file version policy. V4 (4096-byte sectors) is selected by the
+// document module when a payload cannot fit a V3 container; V3 remains the
+// default for ordinary documents.
+enum class CfbVersion : uint8_t {
+    V3,
+    V4,
+};
 
 constexpr uint32_t INDEX_ZERO = 0;
 constexpr uint32_t INDEX_ONE = 1;

@@ -84,10 +84,27 @@ public:
     bool Valid() const;
     bool ValidateDifatSectors() const;
     bool IsCompoundDocument() const;
+    uint16_t MajorVersion() const
+    {
+        return majorVersion_;
+    }
+    BlockCount DirSectorCount() const
+    {
+        return dirSectorCount_;
+    }
 public:
     bool Load(const Byte *buffer, size_t len);
     bool Save(Byte *buffer, size_t len);
     void Debug();
+
+    // Configure the MS-CFB major version (0x0003/0x0004) together with the
+    // sector shift it mandates; v3 additionally forces dirSectorCount to 0.
+    // Returns false (leaving the header unchanged) for unsupported versions.
+    bool SetMajorVersion(uint16_t major);
+    void SetDirSectorCount(BlockCount value)
+    {
+        dirSectorCount_ = value;
+    }
 
     void SetFatSectorCount(BlockCount value)
     {

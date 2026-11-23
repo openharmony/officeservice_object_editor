@@ -53,7 +53,8 @@ public:
     bool Marshalling(Parcel &parcel) const override;
     static ObjectEditorDocument *Unmarshalling(Parcel &parcel);
 
-    [[nodiscard]] static std::unique_ptr<ObjectEditorDocument> CreateByOEid(const std::string &oeid);
+    [[nodiscard]] static std::unique_ptr<ObjectEditorDocument> CreateByOEid(const std::string &oeid,
+        CfbVersion version = CfbVersion::V3);
     [[nodiscard]] static std::unique_ptr<ObjectEditorDocument> CreateByFile(const std::string &path,
                                                                             bool isLinking = false);
     [[nodiscard]] static std::unique_ptr<ObjectEditorDocument> LoadFromFile(const std::string &path);

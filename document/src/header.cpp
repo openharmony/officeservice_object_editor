@@ -54,6 +54,21 @@ Header::Header()
     }
 }
 
+bool Header::SetMajorVersion(uint16_t major)
+{
+    if (major != DEFAULT_MAJOR_VERSION && major != MAJOR_VERSION_V4) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "unsupported major version: %{public}u", major);
+        return false;
+    }
+    majorVersion_ = major;
+    bigBlockShift_ = (major == MAJOR_VERSION_V4) ? SECTOR_SHIFT_V4 : DEFAULT_SECTOR_SHIFT;
+    if (major == DEFAULT_MAJOR_VERSION) {
+        dirSectorCount_ = 0; // v3 headers must leave this field zero (MS-CFB 5.1)
+    }
+    return true;
+}
+
 bool Header::ValidateDifatSectors() const
 {
     if (numBat_ <= HEADER_DIFAT_ARRAY_SIZE) {
@@ -86,9 +101,7 @@ bool Header::ValidateDifatSectors() const
 bool Header::Valid() const
 {
     constexpr int32_t MAX_SECTOR_SHIFT_SIZE = 31;
-    constexpr uint16_t MAJOR_VERSION_3 = 0x0003;
-    constexpr uint16_t MAJOR_VERSION_4 = 0x0004;
-    if (majorVersion_ != MAJOR_VERSION_3 && majorVersion_ != MAJOR_VERSION_4) {
+    if (majorVersion_ != DEFAULT_MAJOR_VERSION && majorVersion_ != MAJOR_VERSION_V4) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
             "invalid major version: %{public}u, expected 3 or 4", majorVersion_);
         return false;
@@ -104,13 +117,13 @@ bool Header::Valid() const
             miniBlockShift_, DEFAULT_MINI_SECTOR_SHIFT);
         return false;
     }
-    if (majorVersion_ == MAJOR_VERSION_3 && dirSectorCount_ != 0) {
+    if (majorVersion_ == DEFAULT_MAJOR_VERSION && dirSectorCount_ != 0) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
             "v3 dirSectorCount must be 0, got: %{public}u", dirSectorCount_);
         return false;
     }
-    if ((majorVersion_ == MAJOR_VERSION_3 && bigBlockShift_ != DEFAULT_SECTOR_SHIFT) ||
-        (majorVersion_ == MAJOR_VERSION_4 && bigBlockShift_ != SECTOR_SHIFT_V4)) {
+    if ((majorVersion_ == DEFAULT_MAJOR_VERSION && bigBlockShift_ != DEFAULT_SECTOR_SHIFT) ||
+        (majorVersion_ == MAJOR_VERSION_V4 && bigBlockShift_ != SECTOR_SHIFT_V4)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
             "invalid sector shift: %{public}u for major version: %{public}u", bigBlockShift_, majorVersion_);
         return false;

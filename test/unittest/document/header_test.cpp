@@ -538,7 +538,7 @@ HWTEST_F(HeaderTest, ValidateDifatSectors_005, TestSize.Level1)
  */
 HWTEST_F(HeaderTest, Valid_MajorVersion_001, TestSize.Level1)
 {
-    header_->majorVersion_ = 0x0005;
+    header_->majorVersion_ = 0x0005; // invalid on purpose
     header_->byteOrder_ = DEFAULT_BYTE_ORDER;
     header_->miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT;
     header_->threshold_ = MINI_STREAM_CUTOFF;
@@ -554,7 +554,7 @@ HWTEST_F(HeaderTest, Valid_MajorVersion_001, TestSize.Level1)
  */
 HWTEST_F(HeaderTest, Valid_MajorVersion_002, TestSize.Level1)
 {
-    header_->majorVersion_ = 0x0004;
+    header_->majorVersion_ = MAJOR_VERSION_V4;
     header_->byteOrder_ = DEFAULT_BYTE_ORDER;
     header_->miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT;
     header_->threshold_ = MINI_STREAM_CUTOFF;
@@ -621,7 +621,7 @@ HWTEST_F(HeaderTest, Valid_DirSectorCount_001, TestSize.Level1)
  */
 HWTEST_F(HeaderTest, Valid_DirSectorCount_002, TestSize.Level1)
 {
-    header_->majorVersion_ = 0x0004;
+    header_->majorVersion_ = MAJOR_VERSION_V4;
     header_->byteOrder_ = DEFAULT_BYTE_ORDER;
     header_->miniBlockShift_ = DEFAULT_MINI_SECTOR_SHIFT;
     header_->dirSectorCount_ = 5;
@@ -630,6 +630,59 @@ HWTEST_F(HeaderTest, Valid_DirSectorCount_002, TestSize.Level1)
     header_->bigBlockShift_ = SECTOR_SHIFT_V4;
     header_->numDifat_ = 0;
     EXPECT_EQ(header_->Valid(), true);
+}
+
+/**
+ * @tc.name SetMajorVersion_001
+ * @tc.desc Test SetMajorVersion configures a valid v4 header and round-trips through Save
+ * @tc.type FUNC
+ */
+HWTEST_F(HeaderTest, SetMajorVersion_001, TestSize.Level1)
+{
+    header_->SetFatSectorCount(1); // Valid() requires numBat_ > 0
+    EXPECT_TRUE(header_->SetMajorVersion(MAJOR_VERSION_V4));
+    EXPECT_EQ(header_->MajorVersion(), MAJOR_VERSION_V4);
+    EXPECT_EQ(header_->BigBlockShift(), SECTOR_SHIFT_V4);
+    EXPECT_EQ(header_->Valid(), true);
+    std::array<Byte, 512> buf{};
+    ASSERT_TRUE(header_->Save(buf.data(), buf.size()));
+    EXPECT_EQ(ReadUint16(buf.data() + HEADER_MAJOR_VERSION_OFFSET), MAJOR_VERSION_V4);
+    EXPECT_EQ(ReadUint16(buf.data() + HEADER_SECTOR_SHIFT_OFFSET), SECTOR_SHIFT_V4);
+}
+
+/**
+ * @tc.name SetMajorVersion_002
+ * @tc.desc Test SetMajorVersion rejects unknown versions and resets dirSectorCount on v3
+ * @tc.type FUNC
+ */
+HWTEST_F(HeaderTest, SetMajorVersion_002, TestSize.Level1)
+{
+    header_->SetFatSectorCount(1); // Valid() requires numBat_ > 0
+    EXPECT_TRUE(header_->SetMajorVersion(MAJOR_VERSION_V4));
+    header_->SetDirSectorCount(1);
+    EXPECT_EQ(header_->Valid(), true);
+    EXPECT_TRUE(header_->SetMajorVersion(DEFAULT_MAJOR_VERSION));
+    EXPECT_EQ(header_->MajorVersion(), DEFAULT_MAJOR_VERSION);
+    EXPECT_EQ(header_->BigBlockShift(), DEFAULT_SECTOR_SHIFT);
+    EXPECT_EQ(header_->Valid(), true); // v3 forces dirSectorCount back to 0
+    constexpr uint16_t invalidMajorVersion = 0x0005;
+    EXPECT_FALSE(header_->SetMajorVersion(invalidMajorVersion));
+    EXPECT_EQ(header_->MajorVersion(), DEFAULT_MAJOR_VERSION); // unchanged after rejection
+}
+
+/**
+ * @tc.name SetDirSectorCount_001
+ * @tc.desc Test SetDirSectorCount round-trips through Save for v4
+ * @tc.type FUNC
+ */
+HWTEST_F(HeaderTest, SetDirSectorCount_001, TestSize.Level1)
+{
+    header_->SetFatSectorCount(1); // Valid() requires numBat_ > 0
+    EXPECT_TRUE(header_->SetMajorVersion(MAJOR_VERSION_V4));
+    header_->SetDirSectorCount(1);
+    std::array<Byte, 512> buf{};
+    ASSERT_TRUE(header_->Save(buf.data(), buf.size()));
+    EXPECT_EQ(ReadUint32(buf.data() + HEADER_DIR_SECTOR_NUMBER_OFFSET), 1);
 }
 
 }

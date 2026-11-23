@@ -111,6 +111,26 @@ StorageIO::StorageIO(const std::string &oeid)
     ClearError();
 }
 
+StorageIO::StorageIO(const std::string &oeid, CfbVersion version)
+{
+    dtModified_ = false;
+    Init(version);
+    if (!ConfigMinimalCd(oeid)) {
+        SetError(ErrorCode::BadOLE, "load failed");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "ConfigMinimalCd failed oeid: %{private}s",
+            oeid.c_str());
+        return;
+    }
+
+    if (!SerializeToMemory()) {
+        SetError(ErrorCode::BadOLE, "Failed to serialize the minimal in-memory");
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to serialize the minimal oeid: %{private}s",
+            oeid.c_str());
+        return;
+    }
+    ClearError();
+}
+
 bool StorageIO::ConfigMinimalCd(const std::string &oeid)
 {
     if (!dirtree_ || !header_ || !bbat_) {
@@ -127,6 +147,7 @@ bool StorageIO::ConfigMinimalCd(const std::string &oeid)
         return false;
     }
     const CLSID &clsid = *clsidOpt;
+    const uint32_t sectorSize = 1u << header_->BigBlockShift();
     header_->SetFatSectorCount(1);
     header_->SetFirstDirSector(1);
     header_->SetFirstMiniFat(AllocTable::Eof);
@@ -134,6 +155,9 @@ bool StorageIO::ConfigMinimalCd(const std::string &oeid)
     header_->SetFirstDifat(AllocTable::Eof);
     header_->SetDifatCount(0);
     header_->SetDifatElem(0, DIFAT_ELEM_VALUE);
+    // MS-CFB: only v4 headers may carry a directory-sector count; the minimal
+    // document occupies exactly one directory sector.
+    header_->SetDirSectorCount(header_->MajorVersion() == MAJOR_VERSION_V4 ? 1 : 0);
 
     if (auto *root = GetRootEntry()) {
         root->SetType(DIR_ENTRY_ROOT);
@@ -143,12 +167,12 @@ bool StorageIO::ConfigMinimalCd(const std::string &oeid)
         root->SetNext(DIR_ENTRY_END);
         root->SetChild(DIR_ENTRY_END);
         root->SetStart(0);
-        root->SetSize(kDefaultSectorSize);
+        root->SetSize(sectorSize);
         root->SetClsid(clsid, std::size(clsid));
     }
 
-    bbat_->SetBlockSize(1 << header_->BigBlockShift());
-    const uint32_t fatEntriesPerSector = kDefaultSectorSize / static_cast<uint32_t>(sizeof(uint32_t));
+    bbat_->SetBlockSize(sectorSize);
+    const uint32_t fatEntriesPerSector = sectorSize / static_cast<uint32_t>(sizeof(uint32_t));
     bbat_->Resize(fatEntriesPerSector);
     bbat_->Set(INDEX_ZERO, AllocTable::Eof);
     bbat_->Set(INDEX_ONE, AllocTable::Eof);
@@ -172,7 +196,7 @@ bool StorageIO::SerializeToMemory()
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "dirtree or header or bbat is null");
         return false;
     }
-    const size_t sector = kHeaderSize;
+    const size_t sector = static_cast<size_t>(1u) << header_->BigBlockShift();
     const size_t sectorCount = 4;
     std::vector<Byte> oleData(sector * sectorCount, 0);
     Byte *oleBytes = oleData.data();
@@ -221,10 +245,18 @@ StorageIO::~StorageIO()
 
 void StorageIO::Init()
 {
+    Init(CfbVersion::V3);
+}
+
+void StorageIO::Init(CfbVersion version)
+{
     auto newHeader = std::make_unique<Header>();
     if (newHeader == nullptr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to create new header");
         return;
+    }
+    if (version == CfbVersion::V4) {
+        newHeader->SetMajorVersion(MAJOR_VERSION_V4);
     }
     auto newDirTree = std::make_unique<DirTree>();
     auto newBbat = std::make_unique<AllocTable>(1 << newHeader->BigBlockShift());
@@ -1872,6 +1904,16 @@ bool StorageIO::ValidateExtendPreconditions(DirEntry *entry)
     return true;
 }
 
+bool StorageIO::IsStreamSizeAllowed(uint64_t newSize) const
+{
+    // V4 (4096-byte sector) containers address up to ~16TB and full 64-bit stream
+    // sizes, so only V3 (512-byte sector, shift 0x0009) containers are capped here.
+    if (!header_ || header_->BigBlockShift() != DEFAULT_SECTOR_SHIFT) {
+        return true;
+    }
+    return newSize <= MAX_V3_STREAM_SIZE;
+}
+
 bool StorageIO::NeedsBigBlocks(uint64_t size) const
 {
     return header_ && size >= header_->Threshold();
@@ -2065,6 +2107,13 @@ bool StorageIO::ExtendEntry(DirEntry *entry, uint64_t newSize)
     std::lock_guard<std::recursive_mutex> lock(ioMutex_);
     if (!ValidateExtendPreconditions(entry)) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to validate extend preconditions");
+        return false;
+    }
+    if (!IsStreamSizeAllowed(newSize)) {
+        SetError(ErrorCode::InvalidOperation,
+            "Cannot extend: stream size exceeds v3 compound file 2GB limit", false);
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
+            "stream size exceeds v3 compound file limit, newSize: %{public}" PRIu64, newSize);
         return false;
     }
     const uint64_t oldSize = entry->Size();
@@ -2535,12 +2584,13 @@ bool StorageIO::SaveFat()
 
 bool StorageIO::ValidateFileSizeLimit()
 {
-    constexpr uint64_t MAX_V3_FILE_SIZE = 2ULL * 1024 * 1024 * 1024;
-    if (!header_ || header_->BigBlockShift() != DEFAULT_SECTOR_SHIFT) {
+    if (!header_ || !bbat_ || bbat_->Count() == 0) {
         return true;
     }
-    if (!bbat_ || bbat_->Count() == 0) {
-        return true;
+    const bool isV3 = header_->BigBlockShift() == DEFAULT_SECTOR_SHIFT;
+    const bool isV4 = header_->BigBlockShift() == SECTOR_SHIFT_V4;
+    if (!isV3 && !isV4) {
+        return true; // unknown layout: nothing to enforce locally
     }
     size_t maxUsedBlock = 0;
     bool found = false;
@@ -2553,22 +2603,25 @@ bool StorageIO::ValidateFileSizeLimit()
     if (!found) {
         return true;
     }
+    constexpr uint64_t MAX_V3_FILE_SIZE = 2ULL * 1024 * 1024 * 1024;
+    const uint64_t limit = isV3 ? MAX_V3_FILE_SIZE : MAX_V4_FILE_SIZE;
+    const char *limitName = isV3 ? "v3 compound file exceeds 2GB limit" : "v4 compound file exceeds 64GB limit";
+    const size_t blockSize = 1u << header_->BigBlockShift();
     if (maxUsedBlock > SIZE_MAX - FLUSH_EXTRA_SIZE) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "maxUsedBlock overflow in size limit check");
-        SetError(ErrorCode::BadOLE, "v3 compound file exceeds 2GB limit");
+        SetError(ErrorCode::BadOLE, limitName);
         return false;
     }
-    const size_t blockSize = 1u << header_->BigBlockShift();
     if (maxUsedBlock + FLUSH_EXTRA_SIZE > SIZE_MAX / blockSize) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "projected size overflow in size limit check");
-        SetError(ErrorCode::BadOLE, "v3 compound file exceeds 2GB limit");
+        SetError(ErrorCode::BadOLE, limitName);
         return false;
     }
     const uint64_t projectedSize = static_cast<uint64_t>(maxUsedBlock + FLUSH_EXTRA_SIZE) * blockSize;
-    if (projectedSize > MAX_V3_FILE_SIZE) {
+    if (projectedSize > limit) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT,
-            "v3 compound file projected size exceeds 2GB limit: %{public}" PRIu64 " bytes", projectedSize);
-        SetError(ErrorCode::BadOLE, "v3 compound file exceeds 2GB limit");
+            "compound file projected size exceeds limit: %{public}" PRIu64 " bytes", projectedSize);
+        SetError(ErrorCode::BadOLE, limitName);
         return false;
     }
     return true;
@@ -2626,7 +2679,7 @@ bool StorageIO::Flush()
     return true;
 }
 
-bool StorageIO::FlushDirectoryTree(std::vector<uint32_t> &blocks, size_t neededBlocks, size_t blockSize)
+bool StorageIO::ExtendDirectoryChain(std::vector<uint32_t> &blocks, size_t neededBlocks)
 {
     while (blocks.size() < neededBlocks) {
         if (bbat_ == nullptr) {
@@ -2640,8 +2693,21 @@ bool StorageIO::FlushDirectoryTree(std::vector<uint32_t> &blocks, size_t neededB
         bbat_->Set(newBlock, AllocTable::Eof);
         blocks.push_back(newBlock);
     }
+    return true;
+}
+
+bool StorageIO::FlushDirectoryTree(std::vector<uint32_t> &blocks, size_t neededBlocks, size_t blockSize)
+{
+    if (!ExtendDirectoryChain(blocks, neededBlocks)) {
+        OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to extend directory chain");
+        return false;
+    }
     if (header_ && !blocks.empty() && header_->DirentStart() != blocks.front()) {
         header_->SetFirstDirSector(blocks.front());
+    }
+    // MS-CFB: v4 headers must carry the actual directory sector count.
+    if (header_ && header_->MajorVersion() == MAJOR_VERSION_V4) {
+        header_->SetDirSectorCount(static_cast<BlockCount>(blocks.size()));
     }
     const uint64_t bufflen64 = static_cast<uint64_t>(blocks.size()) * static_cast<uint64_t>(blockSize);
     if (bufflen64 > static_cast<uint64_t>(std::numeric_limits<size_t>::max())) {
@@ -2723,6 +2789,19 @@ bool StorageIO::FlushHeader()
         return false;
     }
     if (header_->Save(headerBuf, kHeaderSize)) {
+        // MS-CFB: a v4 first sector is 4096 bytes — rewrite the whole sector so
+        // the padding after the 512-byte header is guaranteed zero even if the
+        // previous contents were corrupted.
+        const uint32_t sectorSize = 1u << header_->BigBlockShift();
+        if (header_->MajorVersion() == MAJOR_VERSION_V4 && sectorSize > kHeaderSize) {
+            std::vector<Byte> sector(sectorSize, 0);
+            std::copy(headerBuf, headerBuf + kHeaderSize, sector.begin());
+            if (!WriteBlockChecked(0, sector.data(), sectorSize, "storage header v4")) {
+                OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to write v4 header sector");
+                return false;
+            }
+            return true;
+        }
         if (!WriteBlockChecked(0, headerBuf, kHeaderSize, "storage header")) {
             OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "Failed to write header");
             return false;

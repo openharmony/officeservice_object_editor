@@ -49,6 +49,8 @@ public:
     };
     explicit Storage(const char *filename);
     explicit Storage(const std::string &oeid);
+    // Construct memory-mode storage in the given compound-file version
+    explicit Storage(const std::string &oeid, CfbVersion version);
     ~Storage();
     [[nodiscard]] int Result() const;
     void Path(std::string &result) const;
@@ -61,6 +63,9 @@ public:
     [[nodiscard]] DirEntry *GetEntry(const std::string &path, bool create = false);
     [[nodiscard]] bool Flush();
     bool IsDirty() const;
+    // MS-CFB major version of the underlying container (0x0003 / 0x0004);
+    // 0 when the storage is unavailable.
+    [[nodiscard]] uint16_t MajorVersion() const;
     bool ReadRawCd(size_t offset, uint8_t *buf, size_t len, size_t *outRead);
     [[nodiscard]] bool DeleteEntry(const std::string &path);
     [[nodiscard]] bool SaveToFile(const char *filename);

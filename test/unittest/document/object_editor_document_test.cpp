@@ -12,7 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <fcntl.h>
 #include <functional>
+#include <unistd.h>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "object_editor_document.h"
@@ -20,6 +22,7 @@
 #include "stream.h"
 #include "stub.h"
 #include "pole.h"
+#include "types.h"
 using FileSizeFunc = std::uint64_t (*)(const std::filesystem::path&);
 using namespace testing;
 using namespace testing::ext;
@@ -211,6 +214,27 @@ HWTEST_F(ObjectEditorDocumentTest, CreateByFile_002, TestSize.Level1)
     stub.set(ADDR(&ObjectEditorDocument::CreateByOEid), MockCreateByOEid);
     std::unique_ptr<ObjectEditorDocument> doc = document_->CreateByFile(path, isLinking);
     EXPECT_EQ(doc, nullptr);
+}
+
+/**
+ * @tc.name CreateByFile_003
+ * @tc.desc Test CreateByFile auto-selects a v4 container for an oversized source file
+ * @tc.type FUNC
+ */
+HWTEST_F(ObjectEditorDocumentTest, CreateByFile_003, TestSize.Level1)
+{
+    const std::string path = "/data/local/tmp/oe_oversize_sparse.bin";
+    const uint64_t oversize = MAX_V3_STREAM_SIZE + 1024 * 1024;
+    int fd = open(path.c_str(), O_CREAT | O_TRUNC | O_WRONLY, 0644);
+    ASSERT_GE(fd, 0);
+    ASSERT_EQ(ftruncate64(fd, static_cast<off64_t>(oversize)), 0);
+    close(fd);
+    std::unique_ptr<ObjectEditorDocument> doc = document_->CreateByFile(path, false);
+    ASSERT_NE(doc, nullptr);
+    auto storage = doc->GetRootStorage();
+    ASSERT_NE(storage, nullptr);
+    EXPECT_EQ(storage->MajorVersion(), MAJOR_VERSION_V4);
+    unlink(path.c_str());
 }
 
 /**

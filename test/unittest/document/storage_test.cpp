@@ -2853,6 +2853,176 @@ HWTEST_F(StorageTest, ValidateFileSizeLimit_004, TestSize.Level1)
     EXPECT_EQ(result, false);
 }
 
+/**
+ * @tc.name ExtendEntry_V3StreamSizeLimit_001
+ * @tc.desc Test ExtendEntry rejects stream above V3 size limit before allocating blocks
+ * @tc.type FUNC
+ */
+HWTEST_F(StorageTest, ExtendEntry_V3StreamSizeLimit_001, TestSize.Level1)
+{
+    DirEntry *entry = storage_->Entry("/oversize", true);
+    ASSERT_NE(entry, nullptr);
+    const uint64_t oversize = MAX_V3_STREAM_SIZE + 1024 * 1024;
+    const uint64_t sizeBefore = entry->Size();
+    bool result = storage_->ExtendEntry(entry, oversize);
+    EXPECT_EQ(result, false);
+    EXPECT_EQ(entry->Size(), sizeBefore);
+    EXPECT_EQ(storage_->LastError(), StorageIO::ErrorCode::InvalidOperation);
+}
+
+/**
+ * @tc.name ExtendEntry_V3StreamSizeLimit_002
+ * @tc.desc Test ExtendEntry still allows stream below V3 size limit
+ * @tc.type FUNC
+ */
+HWTEST_F(StorageTest, ExtendEntry_V3StreamSizeLimit_002, TestSize.Level1)
+{
+    DirEntry *entry = storage_->Entry("/undersize", true);
+    ASSERT_NE(entry, nullptr);
+    const uint64_t undersize = MAX_V3_STREAM_SIZE - 1024 * 1024;
+    bool result = storage_->ExtendEntry(entry, undersize);
+    EXPECT_EQ(result, true);
+    EXPECT_EQ(entry->Size(), undersize);
+}
+
+/**
+ * @tc.name ExtendEntry_V3StreamSizeLimit_003
+ * @tc.desc Test ExtendEntry is not limited on V4 (4096-byte sector) containers
+ * @tc.type FUNC
+ */
+HWTEST_F(StorageTest, ExtendEntry_V3StreamSizeLimit_003, TestSize.Level1)
+{
+    storage_->header_->bigBlockShift_ = SECTOR_SHIFT_V4;
+    storage_->bbat_->SetBlockSize(1u << SECTOR_SHIFT_V4);
+    DirEntry *entry = storage_->Entry("/v4bigstream", true);
+    ASSERT_NE(entry, nullptr);
+    const uint64_t bigSize = 4ULL * 1024 * 1024 * 1024;
+    bool result = storage_->ExtendEntry(entry, bigSize);
+    EXPECT_EQ(result, true);
+    EXPECT_EQ(entry->Size(), bigSize);
+}
+
+/**
+ * @tc.name ExtendEntry_V3StreamSizeLimit_004
+ * @tc.desc Test end-to-end: a single oversized Stream Write fails fast via the ExtendEntry guard
+ * @tc.type FUNC
+ */
+HWTEST_F(StorageTest, ExtendEntry_V3StreamSizeLimit_004, TestSize.Level1)
+{
+    Storage storage(hmid);
+    Stream *stream = storage.GetStream("/oversize_end_to_end", true, false);
+    ASSERT_NE(stream, nullptr);
+    // One oversized Write: EnsureWriteCapacity computes desiredSize = 0 + len,
+    // the ExtendEntry guard rejects it, and no payload is copied from `chunk`
+    // (the data buffer is intentionally 1 byte to prove the guard fires first).
+    Byte chunk[1] = {0};
+    const uint32_t oversize = static_cast<uint32_t>(MAX_V3_STREAM_SIZE + 1024 * 1024);
+    Stream &result = stream->Write(chunk, oversize);
+    EXPECT_EQ(result.Tell(), 0);
+    EXPECT_TRUE(stream->Fail());
+}
+
+/**
+ * @tc.name StorageIO_V4_001
+ * @tc.desc Test StorageIO created as V4 yields a valid 4096-byte-sector document
+ * @tc.type FUNC
+ */
+HWTEST_F(StorageTest, StorageIO_V4_001, TestSize.Level1)
+{
+    storage_ = std::make_unique<StorageIO>(hmid, CfbVersion::V4);
+    EXPECT_TRUE(storage_->IsValid());
+    EXPECT_EQ(storage_->BigBlockSize(), 4096u);
+    ASSERT_NE(storage_->GetHeader(), nullptr);
+    EXPECT_EQ(storage_->GetHeader()->MajorVersion(), MAJOR_VERSION_V4);
+    EXPECT_EQ(storage_->GetHeader()->DirSectorCount(), 1u);
+}
+
+/**
+ * @tc.name StorageIO_V4_002
+ * @tc.desc Test V4 document write/flush/save/load roundtrip through the real file path
+ * @tc.type FUNC
+ */
+HWTEST_F(StorageTest, StorageIO_V4_002, TestSize.Level1)
+{
+    constexpr uint32_t payloadSize = 64 * 1024; // spans multiple 4096-byte sectors
+    Storage storage(hmid, CfbVersion::V4);
+    Stream *stream = storage.GetStream("/v4roundtrip", true, false);
+    ASSERT_NE(stream, nullptr);
+    std::vector<Byte> payload(payloadSize, 0xAB);
+    Stream &written = stream->Write(payload.data(), payloadSize);
+    EXPECT_EQ(written.Tell(), payloadSize);
+    ASSERT_TRUE(storage.Flush());
+
+    const char *path = "/data/local/tmp/v4_roundtrip.bin";
+    ASSERT_TRUE(storage.SaveToFile(path));
+    Storage reloaded(path);
+    ASSERT_EQ(reloaded.Result(), Storage::Ok);
+    ASSERT_NE(reloaded.GetStream("/v4roundtrip", false, false), nullptr);
+    Stream *rs = reloaded.GetStream("/v4roundtrip", false, false);
+    EXPECT_EQ(rs->Size(), static_cast<StreamPos>(payloadSize));
+    std::vector<Byte> back(payloadSize, 0);
+    EXPECT_EQ(rs->Read(back.data(), payloadSize), static_cast<std::streamsize>(payloadSize));
+    EXPECT_EQ(memcmp(back.data(), payload.data(), payloadSize), 0);
+    unlink(path);
+}
+
+/**
+ * @tc.name StorageIO_V4_003
+ * @tc.desc Test Flush refreshes v4 header dirSectorCount when the directory grows
+ * @tc.type FUNC
+ */
+HWTEST_F(StorageTest, StorageIO_V4_003, TestSize.Level1)
+{
+    Storage storage(hmid, CfbVersion::V4);
+    // 33 entries (root + 32 streams) exceed one 4096-byte directory sector (32 entries)
+    for (uint32_t i = 0; i < 32; i++) {
+        const std::string name = "/dirgrow" + std::to_string(i);
+        ASSERT_NE(storage.GetStream(name, true, false), nullptr);
+    }
+    ASSERT_TRUE(storage.Flush());
+    ASSERT_NE(storage.io_->GetHeader(), nullptr);
+    EXPECT_EQ(storage.io_->GetHeader()->DirSectorCount(), 2u);
+}
+
+/**
+ * @tc.name StorageIO_V4_004
+ * @tc.desc Test Flush zeroes the v4 first-sector padding after the 512-byte header
+ * @tc.type FUNC
+ */
+HWTEST_F(StorageTest, StorageIO_V4_004, TestSize.Level1)
+{
+    storage_ = std::make_unique<StorageIO>(hmid, CfbVersion::V4);
+    ASSERT_TRUE(storage_->IsValid());
+    // Force a modification so Flush actually rewrites structures
+    ASSERT_NE(storage_->Entry("/dirty", true), nullptr);
+    ASSERT_TRUE(storage_->memoryBuffer_ != nullptr);
+    const uint32_t sectorSize = storage_->BigBlockSize();
+    // Dirty the padding region (offset 512 .. sectorSize) as a corrupted file would
+    std::fill_n(storage_->memoryBuffer_->begin() + 512, sectorSize - 512, 0xCD);
+    ASSERT_TRUE(storage_->Flush());
+    for (size_t i = 512; i < sectorSize; i++) {
+        ASSERT_EQ((*storage_->memoryBuffer_)[i], 0) << "padding byte not zeroed at " << i;
+    }
+}
+
+/**
+ * @tc.name ValidateFileSizeLimit_V4_001
+ * @tc.desc Test ValidateFileSizeLimit rejects v4 containers above the v4 cap
+ * @tc.type FUNC
+ */
+HWTEST_F(StorageTest, ValidateFileSizeLimit_V4_001, TestSize.Level1)
+{
+    storage_->header_ = std::make_unique<Header>();
+    storage_->header_->SetMajorVersion(MAJOR_VERSION_V4);
+    storage_->bbat_ = std::make_unique<AllocTable>();
+    // projectedSize = (maxUsedBlock + 2) * 4096 > 64GB
+    constexpr size_t v4OverflowBlocks = 16 * 1024 * 1024;
+    storage_->bbat_->Resize(v4OverflowBlocks);
+    storage_->bbat_->Set(v4OverflowBlocks - 1, AllocTable::Eof);
+    bool result = storage_->ValidateFileSizeLimit();
+    EXPECT_EQ(result, false);
+}
+
 }
 }
 }
