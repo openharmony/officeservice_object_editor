@@ -31,6 +31,12 @@
 //   - aarch64       : 16-byte ldr x16,[pc,#8]; br x16; .quad addr
 //   - ARM 32 Thumb  : 10-byte movw r12,#lo; movt r12,#hi; bx r12
 //   - ARM 32 ARM     : 8-byte  ldr pc,[pc,#-4]; .word addr
+//
+// CFI-aware: libraries built with clang CFI (sanitize = { cfi = true })
+// canonicalize exported function addresses to jump-table entries that hold a
+// single branch to the real function body. Stub::set() follows such a branch
+// and patches the real body, because a 16-byte patch written at a 4-byte
+// aarch64 entry would also smash the neighbouring entries.
 class Stub {
 public:
     ~Stub()
@@ -61,6 +67,9 @@ public:
         // always 0 for aligned code, so this is a harmless no-op.
         bool isThumb = (targetAddr & THUMB_MODE_BIT) != 0;
         target = reinterpret_cast<uint8_t *>(targetAddr & ~THUMB_MODE_BIT);
+        // A CFI jump-table entry or branch thunk holds only a branch, not a
+        // patchable function body; resolve it before writing the patch.
+        target = ResolveRealEntry(target);
 
         StubInfo info;
         info.patchSize = GetPatchSize(isThumb);
@@ -100,6 +109,15 @@ private:
     static constexpr uint8_t X86_JMP_REL32 = 0xE9;
     static constexpr uint32_t AARCH64_LDR_X16 = 0x58000050; // LDR X16, [PC, #8]
     static constexpr uint32_t AARCH64_BR_X16 = 0xD61F0200;  // BR X16
+    // AArch64 "b <label>" encoding: bits [31:26] == 0b000101, imm26 scaled by
+    // the instruction size. Used to recognize CFI jump-table entries and
+    // branch thunks, which hold only this single branch instruction.
+    static constexpr uint32_t AARCH64_B_INSN_MASK = 0xFC000000;
+    static constexpr uint32_t AARCH64_B_INSN_VALUE = 0x14000000;
+    static constexpr uint32_t AARCH64_IMM26_MASK = 0x03FFFFFF;
+    static constexpr uint32_t AARCH64_IMM26_SIGN_BIT = 0x02000000;
+    static constexpr uint32_t AARCH64_IMM26_RANGE = 0x04000000; // 1 << 26
+    static constexpr uint32_t AARCH64_INSN_SIZE = 4;
     static constexpr uint16_t THUMB_BX_R12 = 0x4760;        // BX R12
     static constexpr uint32_t ARM_LDR_PC_LIT = 0xE51FF004;  // LDR PC, [PC, #-4]
     // Thumb-2 32-bit instruction hw1 bases (bits [15:11]=11110, plus opcode).
@@ -167,6 +185,42 @@ private:
         uintptr_t endPage = (end + static_cast<uintptr_t>(pageSize) - 1) & ~pageMask;
         size_t totalLen = endPage - start;
         mprotect(reinterpret_cast<void *>(start), totalLen, PROT_READ | PROT_WRITE | PROT_EXEC);
+    }
+
+    // Resolve the real function entry behind a CFI jump-table entry or a
+    // branch thunk. With clang CFI, the exported address of a function is a
+    // 4-byte ".text.cfi" jump-table entry containing "b <body>"; writing the
+    // 16-byte aarch64 patch there smashes the following entries, and the next
+    // call to one of those functions executes patch bytes with an unrelated
+    // register state (SIGSEGV(SEGV_ACCERR): in object_editor_document_test's
+    // CreateByFile_002, patching CreateByOEid's entry corrupted CreateByFile's
+    // adjacent entry, so calling CreateByFile branched into the read-only
+    // GOT). Following the branch once yields the real body, which is what the
+    // patch layout was designed for. Non-branch targets are returned as-is.
+    static uint8_t *ResolveRealEntry(uint8_t *target)
+    {
+#if defined(__aarch64__)
+        uint32_t insn = 0;
+        memcpy_s(&insn, sizeof(insn), target, sizeof(insn));
+        if ((insn & AARCH64_B_INSN_MASK) != AARCH64_B_INSN_VALUE) {
+            return target;
+        }
+        uint32_t imm26 = insn & AARCH64_IMM26_MASK;
+        int64_t offset = static_cast<int64_t>(imm26);
+        if ((imm26 & AARCH64_IMM26_SIGN_BIT) != 0) {
+            offset -= static_cast<int64_t>(AARCH64_IMM26_RANGE);
+        }
+        return target + offset * AARCH64_INSN_SIZE;
+#elif defined(__x86_64__) || defined(__i386__)
+        if (target[0] != X86_JMP_REL32) {
+            return target;
+        }
+        int32_t rel32 = 0;
+        memcpy_s(&rel32, sizeof(rel32), target + X86_OPCODE_SIZE, sizeof(rel32));
+        return target + X86_PATCH_SIZE + rel32;
+#else
+        return target;
+#endif
     }
 
     // Encode a 32-bit Thumb-2 MOVW or MOVT instruction (4 bytes) into buf.

@@ -226,8 +226,10 @@ ErrCode ObjectEditorPackage::OpenFile(const std::string &fileUri)
     AAFwk::Want want;
     want.SetAction(WANT_ACTION);
     want.SetUri(fileUri);
+#ifndef IS_EMULATOR
     int32_t flags = AAFwk::Want::FLAG_AUTH_READ_URI_PERMISSION | AAFwk::Want::FLAG_AUTH_WRITE_URI_PERMISSION;
     want.SetFlags(flags);
+#endif
     want.SetParam(SHOW_DEFAULT_PICKER, true);
     auto callerToken = GetRemoteObject();
     if (callerToken == nullptr) {

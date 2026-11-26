@@ -63,10 +63,11 @@ ObjectEditorDocument::ObjectEditorDocument(std::unique_ptr<Storage> storage,
     }
 }
 
-std::unique_ptr<ObjectEditorDocument> ObjectEditorDocument::CreateByOEid(const std::string &oeid)
+std::unique_ptr<ObjectEditorDocument> ObjectEditorDocument::CreateByOEid(const std::string &oeid,
+    CfbVersion version)
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DOCUMENT, "oeid: %{private}s", oeid.c_str());
-    auto storage = std::make_unique<Storage>(oeid);
+    auto storage = std::make_unique<Storage>(oeid, version);
     if (!storage || storage->Result() != Storage::Ok) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "storage creation failed");
         return nullptr;
@@ -82,8 +83,12 @@ std::unique_ptr<ObjectEditorDocument> ObjectEditorDocument::CreateByFile(
 {
     OBJECT_EDITOR_LOGI(ObjectEditorDomain::DOCUMENT, "path: %{private}s, isLinking: %{public}d",
         path.c_str(), isLinking);
+    // Auto-select the container version: payloads that cannot fit a v3
+    // (512-byte sector) compound file transparently create a v4 (4096-byte
+    // sector) document instead of failing, with no external API change.
+    const CfbVersion version = IsSourceFileOverV3Limit(path) ? CfbVersion::V4 : CfbVersion::V3;
     static constexpr char kDefaultOEid[] = "00000000000000000000000000000000";
-    auto documentPtr = CreateByOEid(kDefaultOEid);
+    auto documentPtr = CreateByOEid(kDefaultOEid, version);
     if (!documentPtr) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "CreateByOEid failed");
         return nullptr;
@@ -728,7 +733,11 @@ bool ObjectEditorDocument::RebuildAndFlush()
         return false;
     }
     TempGuard guard{tempPath, true};
-    auto newDoc = ObjectEditorDocument::CreateByOEid(oeid);
+    // Preserve the container version across rebuilds so a v4 document is not
+    // silently downgraded to v3 (which would re-introduce the 2GB cap).
+    const CfbVersion rebuildVersion = (oldStorage && oldStorage->MajorVersion() == MAJOR_VERSION_V4) ?
+        CfbVersion::V4 : CfbVersion::V3;
+    auto newDoc = ObjectEditorDocument::CreateByOEid(oeid, rebuildVersion);
     if (!newDoc) {
         OBJECT_EDITOR_LOGE(ObjectEditorDomain::DOCUMENT, "CreateByOEid failed, oeid: %{private}s", oeid.c_str());
         return false;

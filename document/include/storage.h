@@ -54,6 +54,8 @@ public:
     explicit StorageIO(std::iostream *stream);
     // Construct memory-mode CD storage based on OEID (32-bit hex)
     explicit StorageIO(const std::string &oeid);
+    // Construct memory-mode CD storage in the given compound-file version
+    explicit StorageIO(const std::string &oeid, CfbVersion version);
     ~StorageIO();
 
 public:
@@ -241,6 +243,7 @@ private:
     }
 
     void Init();
+    void Init(CfbVersion version);
     [[nodiscard]] bool Load();
     void Close();
 
@@ -274,6 +277,8 @@ private:
     [[nodiscard]] bool FlushDifatChain();
     // Write back Directory
     [[nodiscard]] bool FlushDirectoryTree(std::vector<uint32_t> &blocks, size_t neededBlocks, size_t blockSize);
+    // Grow the directory block chain until it holds neededBlocks sectors
+    [[nodiscard]] bool ExtendDirectoryChain(std::vector<uint32_t> &blocks, size_t neededBlocks);
     // Write back MiniFAT
     [[nodiscard]] bool FlushMiniFat();
 
@@ -364,6 +369,9 @@ private:
                                            const std::vector<uint8_t> &difatBuf,
                                            std::vector<uint32_t> &fatBlocks);
     [[nodiscard]] bool ValidateFlushState(bool &memoryMode, size_t &blockSize);
+    // Fail-fast guard: V3 (512-byte sector) compound files are capped at 2GB by
+    // MS-CFB, so refuse oversized streams before block allocation and payload I/O.
+    [[nodiscard]] bool IsStreamSizeAllowed(uint64_t newSize) const;
     [[nodiscard]] bool PrepareDirectoryBlocks(size_t blockSize, size_t dirEntries,
                                               std::vector<uint32_t> &blocks,
                                               size_t &neededBlocks);

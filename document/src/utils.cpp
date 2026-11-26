@@ -15,8 +15,22 @@
 
 #include "utils.h"
 
+#include <filesystem>
+
 namespace OHOS {
 namespace ObjectEditor {
+bool IsSourceFileOverV3Limit(const std::string &path)
+{
+    // New documents are created as v3 (512-byte sector) compound files, which
+    // MS-CFB caps at 2GB. Fail fast on oversized payloads so embedding is
+    // rejected in milliseconds instead of after a full copy at Flush time.
+    if (path.empty()) {
+        return false;
+    }
+    std::error_code ec;
+    const uint64_t srcFileSize = std::filesystem::file_size(path, ec);
+    return !ec && srcFileSize > MAX_V3_STREAM_SIZE;
+}
 // LCOV_EXCL_START
 bool IsValidOEid(const std::string &uuid)
 {
